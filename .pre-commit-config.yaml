@@ -10,4 +10,4 @@ repos:
     rev: v1.1.0
     hooks:
     -   id: clippy
-        args: ['--release']
+    -   id: fmt

@@ -1,9 +1,5 @@
 # automesh
 
-[![stable](https://img.shields.io/badge/docs-stable-blue)](https://docs.rs/automesh)
-[![dev](https://img.shields.io/badge/docs-latest-blue)](https://autotwin.github.io/automesh/automesh)
-[![DOI](https://img.shields.io/badge/DOI-10.1234/zenodo.12345678-blue)](https://doi.org/10.1234/zenodo.12345678)
-
 Automatic mesh generation
 
 ## Introduction

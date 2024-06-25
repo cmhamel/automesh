@@ -2,7 +2,7 @@
 authors = ["Chad Brian Hovey <chovey@sandia.gov>", "Michael Robert Buche <mrbuche@sandia.gov>"]
 categories = ["mathematics", "science"]
 description = "automesh"
-documentation = "https://docs.rs/crate/automesh"
+documentation = "https://github.com/autotwin/automesh"
 edition = "2021"
 homepage = "https://github.com/autotwin/automesh"
 keywords = ["mesh"]
@@ -11,9 +11,12 @@ name = "automesh"
 repository = "https://github.com/autotwin/automesh"
 version = "0.1.0"
 
-[package.metadata.docs.rs]
-features = ["fem"]
-rustdoc-args = ["--html-in-header", ".github/katex.html"]
+[lib]
+crate-type = ["cdylib", "rlib", "staticlib"]
+
+[dependencies]
+numpy = {version = "0.19"}
+pyo3 = {version = "0.19", features = ["extension-module"]}
 
 [profile.release]
 codegen-units = 1
