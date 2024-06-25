@@ -1,0 +1,20 @@
+[package]
+authors = ["Chad Brian Hovey <chovey@sandia.gov>", "Michael Robert Buche <mrbuche@sandia.gov>"]
+categories = ["mathematics", "science"]
+description = "automesh"
+documentation = "https://docs.rs/crate/automesh"
+edition = "2021"
+homepage = "https://github.com/autotwin/automesh"
+keywords = ["mesh"]
+license = "MIT"
+name = "automesh"
+repository = "https://github.com/autotwin/automesh"
+version = "0.1.0"
+
+[package.metadata.docs.rs]
+features = ["fem"]
+rustdoc-args = ["--html-in-header", ".github/katex.html"]
+
+[profile.release]
+codegen-units = 1
+lto = false
