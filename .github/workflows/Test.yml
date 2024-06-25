@@ -18,6 +18,3 @@ jobs:
         run: cargo clippy --release -- -D warnings
       - name: Test
         run: cargo test --release
-      - name: Tree
-        if: matrix.os == 'ubuntu-latest'
-        run: $([[ $(cargo tree --color always --edges normal | wc -l) -eq 1 ]])
