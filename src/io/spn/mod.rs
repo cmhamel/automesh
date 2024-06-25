@@ -34,6 +34,4 @@ impl Spn {
             scale,
         }
     }
-    // Assume xscale=yscale=zscale if turning voxels directly into hexes.
-    // Maybe ignore scale then? Set implicitly by units in FEM inputs.
 }
