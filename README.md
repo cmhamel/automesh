@@ -55,8 +55,8 @@ Reference: 2024-06-21-1218-EST-ONR-Statement-of-Work.pdf
 A minimum working example (MWE) of the `letter F` model (see [https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md)) will be used as a unit test through the following specific next steps:
 
 * Given:
-  * Semantic segmentation (as a `.spn` file)
-  * Configuration recipe (as a `.yml` file)
+  * Semantic segmentation (as a [`.spn`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f.spn) file)
+  * Configuration recipe (as a [`.yml`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_autotwin.yml) file)
 * Create:
   * Rust command line application that outputs equivalent Sculpt outputs, without void as a mesh constituent, as
     * ABAQUS ascii mesh file (as a `.inp` file)
