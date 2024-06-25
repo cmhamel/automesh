@@ -1,5 +1,3 @@
-#![doc = include_str!("../README.md")]
-
 use pyo3::prelude::*;
 
 pub mod io;

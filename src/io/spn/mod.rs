@@ -15,12 +15,13 @@ pub struct Spn {
     nelx: usize,
     nely: usize,
     nelz: usize,
+    scale: f64,
 }
 
 #[pymethods]
 impl Spn {
     #[new]
-    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
+    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize, scale: f64) -> Self {
         let data = BufReader::new(File::open(file_path).expect("File was not found."))
             .lines()
             .map(|line| line.unwrap().parse().unwrap())
@@ -30,6 +31,7 @@ impl Spn {
             nelx,
             nely,
             nelz,
+            scale,
         }
     }
     // Assume xscale=yscale=zscale if turning voxels directly into hexes.
