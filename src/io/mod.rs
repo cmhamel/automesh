@@ -2,4 +2,5 @@
 
 mod spn;
 
+/// .spn files
 pub use spn::Spn;
