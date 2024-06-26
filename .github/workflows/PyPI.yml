@@ -7,19 +7,27 @@ on:
 jobs:
   linux-wheels:
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
-     - uses: actions/checkout@v4
-     - uses: actions-rs/toolchain@v1
-       with:
-         toolchain: 1.79.0
-         default: true
-     - name: build wheels
-       run: bash .github/workflows/build_wheels.sh
-     - uses: actions/upload-artifact@v4
-       with:
-         name: linux-wheels
-         path: wheelhouse/
+    - uses: actions/checkout@v4
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.79.0
+        default: true
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: build wheels
+      run: |
+        python -m pip install cffi maturin
+        maturin build --release
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux-${{ matrix.python-version }}-wheel
+        path: target/wheels
   osx-wheels:
     runs-on: macos-latest
     strategy:
