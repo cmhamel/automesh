@@ -1,5 +1,7 @@
 # automesh
 
+[![pypi](https://img.shields.io/pypi/v/automesh?logo=pypi&logoColor=FBE072&label=PyPI&color=4B8BBE)](https://pypi.org/project/automesh)
+
 Automatic mesh generation
 
 ## Introduction
