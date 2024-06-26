@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
+requires = ["maturin==1.6.0"]
 build-backend = "maturin"
 
 [project]
@@ -12,7 +12,10 @@ authors = [
   {name = "Michael R. Buche"},
 ]
 requires-python = ">=3.7,<=3.12"
-dependencies = ["cffi", "maturin"]
+dependencies = [
+  "cffi==1.16.0",
+  "maturin==1.6.0"
+]
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Development Status :: 5 - Production/Stable',
