@@ -14,15 +14,9 @@ The current Autotwin workflow has the following broad steps:
 
 As of 2024-06-24, the workflow has demonstrated *automation*, the ability to complete part of the workflow without human interaction, on over 100 patient medical image data sets for both the **segmentation** and **mesh generation** steps. The **simulation** and **injury risk** assessment steps, however, remain as future work.
 
-Since inception of this project, the production of an open-source software work product has been a cornerstone philosophy and aspiration.
+Since inception of this project, the production of an open-source software work product has been a cornerstone philosophy and aspiration. One part of the mesh generation step currently uses a closed-source, proprietary software service, which presents three limitations: (1) the software is not open-source, so at-large collaboration is unavailable, (2) void must be included as part of the mesh,[^void-inclusion] and (3) research-specific mesh experiments (e.g., Taubin smoothing, dual-space adaptivity) cannot be easily performed.
 
-The workflow depends on amalgamation and orchestration of several pieces of software *prerequisites*.  One current prerequisite used for part of the mesh generation step is called Sculpt, which
-
-* is closed-source,
-* proprietary to SNL, and
-* requires that void be meshed and included as part of the discretized geometric model.
-  * Void inclusion can unnecessarily bloat the model.
-  * For example, one recent proof-of-concept [exercise](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh_part_3.md) using the IXI012-HH-1211-T1 data set showed that for a high-fidelity mesh created from segmented data, the void accounted for 2,389,783 elements (55%) of the total mesh 4,329,925 elements, with skull, cerebral spinal fluid, and brain, accounting for the remaining portions, 240,895 elements (6%), 448,654 elements (10%), and 1,250,593 elements (29%), respectively.
+[^void-inclusion]: Void inclusion can unnecessarily bloat the model. For example, one recent proof-of-concept [exercise](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh_part_3.md) using the IXI012-HH-1211-T1 data set showed that for a high-fidelity mesh created from segmented data, the void accounted for 2,389,783 elements (55%) of the total mesh 4,329,925 elements, with skull, cerebral spinal fluid, and brain, accounting for the remaining portions, 240,895 elements (6%), 448,654 elements (10%), and 1,250,593 elements (29%), respectively.
 
 Elimination of the unnecessary void mesh is a top priority toward enhancement of mesh quality.  Additional mesh enchancement topics include smoothing and adaptivity.
 

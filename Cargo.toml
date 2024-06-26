@@ -15,7 +15,7 @@ version = "0.1.0"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
-pyo3 = {version = "0.22", features = ["extension-module"]}
+pyo3 = {version = "=0.22", features = ["extension-module"]}
 
 [profile.release]
 codegen-units = 1

@@ -1,7 +1,7 @@
 name: Test
 on:
   pull_request:
-    branches: [ main ]
+    branches: main
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -10,9 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: Clippy
+      - name: clippy
         run: cargo clippy --release -- -D warnings

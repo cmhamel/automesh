@@ -5,7 +5,7 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-pub fn register_module(_py: Python<'_>, parent_module: &PyModule) -> PyResult<()> {
+pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<Spn>()?;
     Ok(())
 }
