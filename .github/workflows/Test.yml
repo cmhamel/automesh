@@ -1,7 +1,7 @@
 name: Test
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -14,5 +14,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: Clippy
+      - name: clippy
         run: cargo clippy --release -- -D warnings
+      - name: test
+        run: cargo test --release
