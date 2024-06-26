@@ -1,3 +1,4 @@
+use super::Exodus;
 use pyo3::prelude::*;
 use std::{
     fs::File,
@@ -20,8 +21,11 @@ pub struct Spn {
 
 #[pymethods]
 impl Spn {
+    pub fn exodus(&self) -> Exodus {
+        Exodus {}
+    }
     #[new]
-    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize, scale: f64) -> Self {
+    pub fn init(file_path: &str, nelx: usize, nely: usize, nelz: usize, scale: f64) -> Self {
         let data = BufReader::new(File::open(file_path).expect("File was not found."))
             .lines()
             .map(|line| line.unwrap().parse().unwrap())

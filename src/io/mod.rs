@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 mod exodus;
 mod spn;
 
+pub use exodus::Exodus;
 pub use spn::Spn;
 
 pub fn register_module(py: Python<'_>, parent_module: &PyModule) -> PyResult<()> {
