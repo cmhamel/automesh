@@ -36,9 +36,8 @@ jobs:
       - uses: actions/download-artifact@v4
       - name: check
         run: |
-          mkdir wheelhouse/
+          mkdir -p wheelhouse/
           mv ./*-wheel*/*.whl wheelhouse/
-          ls wheelhouse
           pip install twine
           twine check wheelhouse/*.whl
       - name: upload
