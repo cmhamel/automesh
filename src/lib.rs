@@ -1,9 +1,14 @@
 use pyo3::prelude::*;
 
-pub mod io;
+mod exodus;
+mod spn;
+
+pub use exodus::Exodus;
+pub use spn::Spn;
 
 #[pymodule]
 fn automesh(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    io::register_module(m)?;
+    exodus::register_module(m)?;
+    spn::register_module(m)?;
     Ok(())
 }
