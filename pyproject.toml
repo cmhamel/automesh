@@ -1,5 +1,8 @@
 [build-system]
-requires = ["maturin==1.6.0", "cffi==1.16.0"]
+requires = [
+  "cffi==1.16.0",
+  "maturin==1.6.0"
+]
 build-backend = "maturin"
 
 [project]
@@ -13,17 +16,17 @@ authors = [
 ]
 requires-python = ">=3.8,<=3.12"
 classifiers = [
-    'License :: OSI Approved :: BSD License',
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering',
-    'Programming Language :: Python',
-    'Programming Language :: Rust',
+  'License :: OSI Approved :: BSD License',
+  'Development Status :: 5 - Production/Stable',
+  'Intended Audience :: Science/Research',
+  'Topic :: Scientific/Engineering',
+  'Programming Language :: Python',
+  'Programming Language :: Rust',
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pre-commit"
+  "pre-commit"
 ]
 
 [project.urls]
