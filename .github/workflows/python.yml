@@ -5,6 +5,41 @@ on:
   release:
     types: published
 jobs:
+  test:
+    if: github.event_name != 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.79.0
+        default: true
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: maturin
+      run: |
+        pip install maturin
+        maturin build --features python --release --out .
+        pip install --find-links=. polymers
+    - name: pytest
+      run: |
+        pip install pytest
+        pytest --verbose .
+    - name: pycodestyle
+      run: |
+        pip install pycodestyle
+        pycodestyle --verbose .
+    - name: pylint
+      run: |
+        pip install pylint
+        pylint --verbose .
   wheels:
     strategy:
       fail-fast: false
@@ -33,13 +68,13 @@ jobs:
     needs: wheels
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
-      - name: check
-        run: |
-          mkdir -p wheelhouse/
-          mv ./*-wheel*/*.whl wheelhouse/
-          pip install twine
-          twine check wheelhouse/*.whl
-      - name: upload
-        if: github.event_name == 'release'
-        run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} wheelhouse/*.whl
+    - uses: actions/download-artifact@v4
+    - name: check
+      run: |
+        mkdir -p wheelhouse/
+        mv ./*-wheel*/*.whl wheelhouse/
+        pip install twine
+        twine check wheelhouse/*.whl
+    - name: upload
+      if: github.event_name == 'release'
+      run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} wheelhouse/*.whl

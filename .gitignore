@@ -18,3 +18,5 @@ Cargo.lock
 
 **.whl
 *.vscode
+**__pycache__
+**.pytest_cache
