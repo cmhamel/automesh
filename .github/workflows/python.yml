@@ -24,7 +24,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: maturin
-      run: maturin develop --release --features python --extras dev
+      run: pip install maturin
+    - name: develop
+      run: maturin develop --release --features python --extras develop
     - name: pycodestyle
       run: pycodestyle --verbose .
     - name: pylint
@@ -47,10 +49,8 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: build wheels
-      run: |
-        python -m pip install cffi maturin
-        maturin build --release --features python
+    - name: build
+      run: maturin build --release --features python
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel

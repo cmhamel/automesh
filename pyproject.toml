@@ -28,7 +28,7 @@ name = 'automesh'
 requires-python = '>=3.8,<=3.12'
 
 [project.optional-dependencies]
-dev = [
+develop = [
   'pre-commit',
   'pycodestyle',
   'pylint',
