@@ -31,7 +31,6 @@ requires-python = '>=3.8,<=3.12'
 develop = [
   'pre-commit',
   'pycodestyle',
-  'pylint',
   'pytest'
 ]
 
