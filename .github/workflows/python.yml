@@ -25,8 +25,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: maturin
       run: pip install maturin
-    - name: develop
-      run: maturin develop --release --features python --extras develop
+    - name: build
+      run: maturin build --release --features python
+    - name: install
+      run: pip install --find-links=target/wheels/ automesh[develop]
     - name: pycodestyle
       run: pycodestyle --verbose .
     - name: pylint
