@@ -29,17 +29,99 @@ EXODUS II data objects:
 
 Note: automesh will use Initialization Data and Model sections; it will not use the Results section.
 
-Quadrilateral | Hexahedral 
+Quadrilateral | Hexahedral
 :---: | :---:
 ![exodus_quad_node_numbering](fig/exodus_quad_node_numbering.png) | ![exodus_hex_node_numbering](fig/exodus_hex_node_numbering.png)
 
 > Figure 1: EXODUS II node numbering scheme for quadrilateral and hexahedral finite elements.
 
-Quadrilateral | Hexahedral 
+Quadrilateral | Hexahedral
 :---: | :---:
 ![exodus_quad_sideset_numbering](fig/exodus_quad_sideset_numbering.png) | ![exodus_hex_sideset_numbering](fig/exodus_hex_sideset_numbering.png)
 
 > Figure 2: EXODUS II sideset numbering scheme for quadrilateral and hexahedral finite elements.
+
+## Pattern
+
+```bash
+------
+Test 1
+------
+nsd = 2
+nelx = nely = 1
+   y
+   ^
+  3|      4
+   *-----*
+   |4   3|
+   | (1) |
+   |1   2|
+   *-----* --> x
+  1       2
+connectivity
+1 2 4 3
+
+------
+Test 2
+------
+nelx = 2
+nely = 1
+   y
+   ^
+  4|     5      6
+   *-----*-----*
+   |4   3|4   3|
+   | (1) | (2) |
+   |1   2|1   2|
+   *-----*-----* --> x
+  1      2      3
+connectivity
+1 2 5 4
+2 3 6 5
+
+------
+Test 3
+------
+nelx = 3
+nely = 1
+   y
+   ^
+  5|     6     7      8
+   *-----*-----*-----*
+   |4   3|4   3|4   3|
+   | (1) | (2) | (3) |
+   |1   2|1   2|1   2|
+   *-----*-----*-----* --> x
+  1      2     3     4
+connectivity
+1 2 6 5
+2 3 7 6
+3 4 8 7
+
+------
+Test 4
+------
+nelx = 2
+nely = 2
+   y
+   ^
+  7|     8      9
+   *-----*-----*
+   |4   3|4   3|
+   | (3) | (4) |
+   |1   2|1   2|
+  4*-----*-----*6
+   |4   3|4   3|
+   | (1) | (2) |
+   |1   2|1   2|
+   *-----*-----* --> x
+  1      2      3
+connectivity
+1 2 5 4
+2 3 6 4
+4 6 8 7
+5 6 9 8
+```
 
 ## References
 
