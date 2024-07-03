@@ -38,3 +38,9 @@ impl Spn {
         Self { data }
     }
 }
+
+impl Spn {
+    pub fn get_data(&self) -> &Data {
+        &self.data
+    }
+}
