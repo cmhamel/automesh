@@ -19,6 +19,8 @@ jobs:
         with:
           toolchain: 1.79.0
           default: true
+      - name: add
+        run: rustup component add clippy
       - name: clippy
         run: cargo clippy --release -- -D warnings
       - name: test
