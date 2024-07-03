@@ -1,0 +1,73 @@
+name: Python
+on:
+  pull_request:
+    branches: main
+  release:
+    types: published
+jobs:
+  test:
+    if: github.event_name != 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.79.0
+        default: true
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: maturin
+      run: pip install maturin
+    - name: build
+      run: maturin build --release --features python
+    - name: install
+      run: pip install --find-links=target/wheels/ automesh[develop]
+    - name: pycodestyle
+      run: pycodestyle --verbose .
+    - name: pytest
+      run: pytest --verbose .
+  wheels:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.79.0
+        default: true
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: maturin
+      run: pip install maturin
+    - name: build
+      run: maturin build --release --features python
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel
+        path: target/wheels
+  twine:
+    needs: wheels
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+    - name: check
+      run: |
+        mkdir -p wheelhouse/
+        mv ./*-wheel*/*.whl wheelhouse/
+        pip install twine
+        twine check wheelhouse/*.whl
+    - name: upload
+      if: github.event_name == 'release'
+      run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} wheelhouse/*.whl
