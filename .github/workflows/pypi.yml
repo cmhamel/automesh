@@ -24,7 +24,7 @@ jobs:
     - name: build wheels
       run: |
         python -m pip install cffi maturin
-        maturin build --release
+        maturin build --release --features python
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel

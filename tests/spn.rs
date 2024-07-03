@@ -4,7 +4,7 @@ const NELX: usize = 3;
 const NELY: usize = 5;
 const NELZ: usize = 4;
 
-const gold: [[[u8; NELX]; NELY]; NELZ] = [
+const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
     [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 0, 0]],
     [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 0, 0]],
@@ -14,7 +14,7 @@ const gold: [[[u8; NELX]; NELY]; NELZ] = [
 #[test]
 fn read() {
     let spn = Spn::init("tests/spn/f.spn", NELX, NELY, NELZ);
-    gold.iter()
+    GOLD.iter()
         .zip(spn.get_data().iter())
         .for_each(|(gold_i, spn_i)| {
             gold_i
