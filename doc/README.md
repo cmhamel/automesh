@@ -16,5 +16,6 @@
 python -m pip install --upgrade pip
 pip install maturin
 maturin develop --release --extras dev
-# pip install pre-commit
+# pip install pre-commit # already installed with maturin
+pre-commit install
 ```
