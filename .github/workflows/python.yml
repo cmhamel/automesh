@@ -23,6 +23,8 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: clippy
+      run: cargo clippy --features python -- -D warnings
     - name: maturin
       run: pip install maturin
     - name: build
