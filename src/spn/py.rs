@@ -1,4 +1,4 @@
-use super::super::py::Exodus;
+use crate::exodus::py::Exodus;
 use numpy::PyArray3;
 use pyo3::prelude::*;
 
