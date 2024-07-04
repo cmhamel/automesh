@@ -11,7 +11,7 @@ pub struct Exodus {}
 #[pymethods]
 impl Exodus {
     #[new]
-    pub fn new(_file_path: &str) -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
