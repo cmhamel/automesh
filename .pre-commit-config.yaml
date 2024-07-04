@@ -11,7 +11,7 @@ repos:
     hooks:
     -   id: check
     -   id: clippy
-        args: ['--features', 'python']
+        args: ['--release', '-- -D warnings', '--features', 'python']
     -   id: fmt
     -   id: test
         args: ['--release']
