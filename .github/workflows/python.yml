@@ -18,11 +18,14 @@ jobs:
       uses: actions/checkout@v4
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.79.0
+        components: clippy
         default: true
+        toolchain: 1.79.0
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: clippy
+      run: cargo clippy --features python -- -D warnings
     - name: maturin
       run: pip install maturin
     - name: build

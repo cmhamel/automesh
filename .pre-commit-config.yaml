@@ -10,4 +10,9 @@ repos:
     rev: v1.1.0
     hooks:
     -   id: clippy
+        args: ['--', '-D',  'warnings']
+    -   id: clippy
+        args: ['--features', 'python', '--', '-D',  'warnings']
     -   id: fmt
+    -   id: test
+        args: ['--release']

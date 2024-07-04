@@ -24,11 +24,11 @@ jobs:
           default: true
           toolchain: 1.79.0
       - name: build
-        run: cargo build --release
+        run: cargo build
       - name: clippy
-        run: cargo clippy --release -- -D warnings
+        run: cargo clippy -- -D warnings
       - name: doc
-        run: cargo doc --release
+        run: cargo doc
       - name: fmt
         run: cargo fmt --all -- --check
       - name: test
