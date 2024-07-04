@@ -9,19 +9,23 @@ pub mod py;
 
 type Data = Vec<Vec<Vec<u8>>>;
 
+/// The SPN file type.
 pub struct Spn {
     data: Data,
 }
 
+/// Inherent implementation of the SPN file type.
 impl Spn {
+    /// Constructs and returns a new Exodus file type from the SPN file data.
     pub fn exodus(&self) -> Exodus {
-        let _ = self.data;
         Exodus {}
     }
+    /// Returns a reference to the internal SPN file data.
     pub fn get_data(&self) -> &Data {
         &self.data
     }
-    pub fn init(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
+    /// Constructs and returns a new SPN file type.
+    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
         let data = init_data(file_path, nelx, nely, nelz);
         Self { data }
     }

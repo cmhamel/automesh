@@ -1,3 +1,5 @@
+//! Automatic mesh generation.
+
 pub use exodus::Exodus;
 pub use spn::Spn;
 

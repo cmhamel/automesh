@@ -11,7 +11,7 @@ pub struct Exodus {}
 #[pymethods]
 impl Exodus {
     #[new]
-    pub fn init() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }

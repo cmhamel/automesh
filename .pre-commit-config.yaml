@@ -9,5 +9,7 @@ repos:
 -   repo: https://github.com/backplane/pre-commit-rust-hooks
     rev: v1.1.0
     hooks:
+    -   id: check
     -   id: clippy
     -   id: fmt
+    -   id: test
