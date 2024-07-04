@@ -10,8 +10,12 @@ repos:
     rev: v1.1.0
     hooks:
     -   id: check
+    -   id: check
+        args: ['--features', 'python']
     -   id: clippy
-        args: ['--release', '--features', 'python', '--', '-D',  'warnings']
+        args: ['--', '-D',  'warnings']
+    -   id: clippy
+        args: ['--features', 'python', '--', '-D',  'warnings']
     -   id: fmt
     -   id: test
         args: ['--release']
