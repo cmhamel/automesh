@@ -10,6 +10,9 @@
 * [PyO3](https://pyo3.rs) is the Rust package for Python binding in Rust
 * [muturin](https://www.maturin.rs) is the packager
 * [pre-commit](https://pre-commit.com) A Python package for multi-language pre-commit hooks
+  * See the [.pre-commit-config.yml](../.pre-commit-config.yaml)
+  * Clippy is a pre-commit Rust hook, see https://github.com/backplane/pre-commit-rust-hooks
+  * See also [Rust CI Tooling: Clippy, commitlint, pre‑commit and More](https://rodneylab.com/rust-ci-tooling/)
 
 ```bash
 python -m pip install --upgrade pip
@@ -17,6 +20,7 @@ pip install maturin
 maturin develop --release --extras dev
 # pip install pre-commit # already installed with maturin
 pre-commit install
+pre-commit run --all-files
 ```
 
 **Decision:** Pause use of PyO3 to wrap Rust and expose as a Python function.  Develop a pure Rust command line program, and use as a `subprocess`, e.g.,

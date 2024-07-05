@@ -143,13 +143,18 @@ maturin develop --extras develop
 
 We are using Maturin, not Setuptools, as a build backend.
 
-2024-07-05: Ask mrbuche about 
+2024-07-05: Ask mrbuche about
 https://www.maturin.rs/project_layout
 
 ```bash
 maturin develop
 maturin develop --release --extras dev
 maturin develop --release --extras develop
+
+pre-commit install
+# pre-commit installed at .git/hooks/pre-commit
+
+pre-commit run --all-files
 ```
 
 ## References
