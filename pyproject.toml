@@ -8,7 +8,7 @@ requires = [
 [project]
 authors = [
   {email = 'chovey@sandia.gov'},
-  {name = 'Chad Brian Hovey'},
+  {name = 'Chad B. Hovey'},
   {email = 'mrbuche@sandia.gov'},
   {name = 'Michael R. Buche'},
 ]
