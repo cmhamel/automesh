@@ -1,3 +1,9 @@
+# ignore build binaries
+*.so
+
+# ignore macOS database files
+.DS_Store
+
 # ignore virtual environment
 .venv/
 
