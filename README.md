@@ -64,11 +64,13 @@ A minimum working example (MWE) of the `letter F` model (see [https://github.com
   * Taubin smoothing (see [Taubin 1995](https://dl.acm.org/doi/pdf/10.1145/218380.218473) and [Chen 2010](https://link.springer.com/content/pdf/10.1007/s00707-009-0274-0.pdf))
   * Dualization
 
-## Configuration
+## Getting Started
+
+### Configuration
 
 Install the module either as a **client** or as a **developer**.  The client installation is recommended for users in an analyst role, who will to use the module in an analysis workflow.  Knowledge of the Python and Rust programming languages is not necessary.  The developer installation is recommended for users in the code development role, who will create or update functionality.  Knowledge of the Python and Rust programming languages is required.
 
-### Client Installation - work in progress 2024-07-05
+#### Client Installation - work in progress 2024-07-05
 
 Following is an example using the HPC:
 
@@ -107,7 +109,7 @@ python -m pip install git+ssh://git@github.com:autotwin/automesh.git@v0.1.2
 python -m pip install git+ssh://git@github.com:autotwin/automesh.git@v0.1.2@dev
 ```
 
-### Developer Installation
+#### Developer Installation
 
 Update `pip` and `setuptools` with a modern version of Python (e.g., Python 3.11):
 
@@ -137,7 +139,7 @@ pip install maturin
 maturin develop --extras develop
 ```
 
-### Developer Installation - Revised
+#### Developer Installation - Revised
 
 We are using Maturin, not Setuptools, as a build backend.
 
@@ -149,3 +151,7 @@ maturin develop
 maturin develop --release --extras dev
 maturin develop --release --extras develop
 ```
+
+## References
+
+* [Logs](doc/logs.md)
