@@ -1,5 +1,5 @@
 [package]
-authors = ["Chad Brian Hovey <chovey@sandia.gov>", "Michael Robert Buche <mrbuche@sandia.gov>"]
+authors = ["Chad B. Hovey <chovey@sandia.gov>", "Michael R. Buche <mrbuche@sandia.gov>"]
 categories = ["mathematics", "science"]
 description = "automesh"
 documentation = "https://docs.rs/automesh"
