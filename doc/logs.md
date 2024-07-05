@@ -7,8 +7,8 @@
 * repo updates
 * iterators are great, https://doc.rust-lang.org/std/iter/trait.Iterator.html
 * pre-commit, prevent a local from commiting prior to push
-* PyO3 is the rust package for Python binding in Rust
-* muturin is the packager
+* [PyO3](https://pyo3.rs) is the Rust package for Python binding in Rust
+* [muturin](https://www.maturin.rs) is the packager
 
 ```bash
 python -m pip install --upgrade pip
