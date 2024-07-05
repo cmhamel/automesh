@@ -9,6 +9,7 @@
 * pre-commit, prevent a local from commiting prior to push
 * [PyO3](https://pyo3.rs) is the Rust package for Python binding in Rust
 * [muturin](https://www.maturin.rs) is the packager
+* [pre-commit](https://pre-commit.com) A Python package for multi-language pre-commit hooks
 
 ```bash
 python -m pip install --upgrade pip
