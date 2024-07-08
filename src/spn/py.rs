@@ -23,7 +23,7 @@ impl Spn {
     }
     #[new]
     pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
-        let data = super::init_data(file_path, nelx, nely, nelz);
+        let data = super::new(file_path, nelx, nely, nelz);
         Self { data }
     }
 }

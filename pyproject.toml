@@ -43,9 +43,6 @@ Repository = 'https://github.com/autotwin/automesh'
 python_files = [
   '*.py'
 ]
-python_functions = [
-  '*'
-]
 testpaths = [
   'tests/'
 ]

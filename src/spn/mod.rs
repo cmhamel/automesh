@@ -26,12 +26,12 @@ impl Spn {
     }
     /// Constructs and returns a new SPN file type.
     pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
-        let data = init_data(file_path, nelx, nely, nelz);
+        let data = new(file_path, nelx, nely, nelz);
         Self { data }
     }
 }
 
-fn init_data(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Data {
+fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Data {
     let flat = BufReader::new(File::open(file_path).expect("File was not found."))
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
