@@ -18,8 +18,7 @@ impl Npy {
         self.data.to_pyarray_bound(python)
     }
     pub fn exodus(&self) -> Exodus {
-        let _ = self.data;
-        Exodus {}
+        todo!()
     }
     #[new]
     pub fn new(file_path: &str) -> Self {

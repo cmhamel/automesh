@@ -15,8 +15,16 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 fn test_read_npy() {
     let npy = Npy::new("tests/npy/f.npy");
     GOLD.iter()
-        .flatten()
-        .flatten()
-        .zip(npy.get_data().iter())
-        .for_each(|(gold_i, npy_i)| assert_eq!(gold_i, npy_i));
+        .zip(npy.get_data().outer_iter())
+        .for_each(|(gold_i, spn_i)| {
+            gold_i
+                .iter()
+                .zip(spn_i.outer_iter())
+                .for_each(|(gold_ij, spn_ij)| {
+                    gold_ij
+                        .iter()
+                        .zip(spn_ij.iter())
+                        .for_each(|(gold_ijk, spn_ijk)| assert_eq!(gold_ijk, spn_ijk))
+                })
+        })
 }
