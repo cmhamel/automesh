@@ -2,7 +2,7 @@
 build-backend = 'maturin'
 requires = [
   'cffi==1.16.0',
-  'maturin==1.6.0'
+  'maturin==1.7.0'
 ]
 
 [project]
