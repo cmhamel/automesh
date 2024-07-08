@@ -17,7 +17,7 @@ pub struct Npy {
 impl Npy {
     /// Constructs and returns a new Exodus file type from the NPY file data.
     pub fn exodus(&self) -> Exodus {
-        Exodus {}
+        todo!()
     }
     /// Returns a reference to the internal NPY file data.
     pub fn get_data(&self) -> &Data {
