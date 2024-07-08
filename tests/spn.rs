@@ -12,7 +12,7 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 ];
 
 #[test]
-fn test_read_spn() {
+fn new() {
     let spn = Spn::new("tests/spn/f.spn", NELX, NELY, NELZ);
     GOLD.iter()
         .zip(spn.get_data().iter())

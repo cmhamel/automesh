@@ -4,7 +4,7 @@ const NELX: usize = 3;
 const NELY: usize = 5;
 const NELZ: usize = 4;
 
-const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
+const DATA_GOLD: [[[u8; NELX]; NELY]; NELZ] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
     [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 0, 0]],
     [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 0, 0]],
@@ -12,9 +12,10 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 ];
 
 #[test]
-fn test_read_npy() {
+fn new() {
     let npy = Npy::new("tests/npy/f.npy");
-    GOLD.iter()
+    DATA_GOLD
+        .iter()
         .zip(npy.get_data().outer_iter())
         .for_each(|(gold_i, spn_i)| {
             gold_i
