@@ -26,7 +26,7 @@ impl Spn {
     }
 }
 
-fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Data {
+fn new(file_path: &str, nelz: usize, nely: usize, nelx: usize) -> Data {
     let flat = BufReader::new(File::open(file_path).expect("File was not found."))
         .lines()
         .map(|line| line.unwrap().parse().unwrap())

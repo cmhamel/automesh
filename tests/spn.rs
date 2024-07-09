@@ -1,8 +1,8 @@
 use automesh::Spn;
 
-const NELX: usize = 3;
-const NELY: usize = 5;
 const NELZ: usize = 4;
+const NELY: usize = 5;
+const NELX: usize = 3;
 
 const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
@@ -13,7 +13,7 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 
 #[test]
 fn new() {
-    let spn = Spn::new("tests/spn/f.spn", NELX, NELY, NELZ);
+    let spn = Spn::new("tests/spn/f.spn", NELZ, NELY, NELX);
     GOLD.iter()
         .zip(spn.get_data().iter())
         .for_each(|(gold_i, spn_i)| {

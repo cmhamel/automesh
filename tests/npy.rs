@@ -1,8 +1,8 @@
 use automesh::Npy;
 
-const NELX: usize = 3;
-const NELY: usize = 5;
 const NELZ: usize = 4;
+const NELY: usize = 5;
+const NELX: usize = 3;
 
 const DATA_GOLD: [[[u8; NELX]; NELY]; NELZ] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
