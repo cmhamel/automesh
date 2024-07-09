@@ -12,3 +12,10 @@ gold = np.array([
 def test_new():
     npy = Npy('tests/npy/f.npy')
     assert (npy.get_data() == gold).all()
+
+
+def test_temporary():
+    npy = Npy('tests/npy/f.npy')
+    exo = npy.exodus()
+    print(exo.element_connectivity)
+    print("Temporary test.")

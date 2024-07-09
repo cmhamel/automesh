@@ -18,7 +18,8 @@ impl Npy {
         self.data.to_pyarray_bound(python)
     }
     pub fn exodus(&self) -> Exodus {
-        todo!()
+        let (element_blocks, element_connectivity, nodal_coordinates) = super::exodus(&self.data);
+        Exodus::new(element_blocks, element_connectivity, nodal_coordinates)
     }
     #[new]
     pub fn new(file_path: &str) -> Self {
