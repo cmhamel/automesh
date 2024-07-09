@@ -1,7 +1,7 @@
 #[cfg(feature = "python")]
 pub mod py;
 
-pub type BlockConnectivity = Vec<u8>;
+pub type BlockConnectivity = Vec<usize>;
 pub type ElementConnectivity = Vec<[usize; 8]>;
 pub type NodalCoordinates = Vec<[f64; 3]>;
 

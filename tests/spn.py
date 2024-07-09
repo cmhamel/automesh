@@ -10,5 +10,5 @@ gold = np.array([
 
 
 def test_new():
-    spn = Spn('tests/spn/f.spn', 3, 5, 4)
+    spn = Spn('tests/spn/f.spn', 4, 5, 3)
     assert (spn.get_data() == gold).all()

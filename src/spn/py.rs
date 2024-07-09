@@ -17,8 +17,8 @@ impl Spn {
         PyArray3::from_vec3_bound(python, &self.data).unwrap()
     }
     #[new]
-    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
-        let data = super::new(file_path, nelx, nely, nelz);
+    pub fn new(file_path: &str, nelz: usize, nely: usize, nelx: usize) -> Self {
+        let data = super::new(file_path, nelz, nely, nelx);
         Self { data }
     }
 }
