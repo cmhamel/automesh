@@ -52,6 +52,7 @@ impl Npy {
                                                                                    // then combos of +1 to each give other 7 vertices
                                                                                    // but can't double-count for nodal coordinates
                                                                                    // but do need to track for connectivity
+                                                                                   // you should be able to use nel(x,y,z) to get connectivity
                         )
                 })
             });
