@@ -33,5 +33,6 @@ fn new() {
 #[test]
 fn temporary() {
     let npy = Npy::new("tests/npy/f.npy");
-    npy.exodus();
+    let exo = npy.exodus();
+    exo.get_element_connectivity();
 }
