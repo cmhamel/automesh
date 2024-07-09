@@ -17,15 +17,21 @@ fn new() {
     DATA_GOLD
         .iter()
         .zip(npy.get_data().outer_iter())
-        .for_each(|(gold_i, spn_i)| {
-            gold_i
+        .for_each(|(gold_k, npy_k)| {
+            gold_k
                 .iter()
-                .zip(spn_i.outer_iter())
-                .for_each(|(gold_ij, spn_ij)| {
-                    gold_ij
+                .zip(npy_k.outer_iter())
+                .for_each(|(gold_kj, npy_kj)| {
+                    gold_kj
                         .iter()
-                        .zip(spn_ij.iter())
-                        .for_each(|(gold_ijk, spn_ijk)| assert_eq!(gold_ijk, spn_ijk))
+                        .zip(npy_kj.iter())
+                        .for_each(|(gold_kji, npy_kji)| assert_eq!(gold_kji, npy_kji))
                 })
         })
+}
+
+#[test]
+fn temporary() {
+    let npy = Npy::new("tests/npy/f.npy");
+    npy.exodus();
 }
