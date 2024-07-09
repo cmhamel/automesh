@@ -33,6 +33,28 @@ impl Npy {
 
         // Need to filter() out nodes only beloning to "air" elements
         let nodal_coordinates = vec![[0.0; 3]];
+        // self.get_data()
+        //     .iter()
+        //     .enumerate()
+        //     .filter(|(_, &entry)| entry > 0)
+        //     .for_each(|(i, entry)| println!("{:?}", (i, entry)));
+        self.get_data()
+            .outer_iter()
+            .enumerate()
+            .for_each(|(k, data_k)| {
+                data_k.outer_iter().enumerate().for_each(|(j, data_kj)| {
+                    data_kj
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, &data_kji)| data_kji > 0)
+                        .for_each(
+                            |(i, data_kji)| println!("{:?}", (k, j, i, data_kji)), // every (i, j, k) is origin of a hex
+                                                                                   // then combos of +1 to each give other 7 vertices
+                                                                                   // but can't double-count for nodal coordinates
+                                                                                   // but do need to track for connectivity
+                        )
+                })
+            });
 
         // Would the nodal connectivity (elements connected to each node) help you here?
         // And would that be worth saving in the struct?
