@@ -14,9 +14,14 @@ const DATA_GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 #[test]
 fn new() {
     let npy = Npy::new("tests/npy/f.npy");
+    let data = npy.get_data();
+    vec![NELZ, NELY, NELX]
+        .iter()
+        .zip(data.shape().iter())
+        .for_each(|(gold_n, data_n)| assert_eq!(gold_n, data_n));
     DATA_GOLD
         .iter()
-        .zip(npy.get_data().outer_iter())
+        .zip(data.outer_iter())
         .for_each(|(gold_k, npy_k)| {
             gold_k
                 .iter()
