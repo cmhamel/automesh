@@ -6,6 +6,9 @@ use std::fs::File;
 #[cfg(feature = "python")]
 pub mod py;
 
+#[cfg(test)]
+pub mod test;
+
 type Data = Array3<u8>;
 type LatticeData = Vec<Vec<Vec<Vec<usize>>>>;
 
@@ -32,7 +35,7 @@ impl Npy {
     }
 }
 
-fn filter(data: &Data) -> (LatticeData, ElementBlocks) {
+fn filter_data(data: &Data) -> (LatticeData, ElementBlocks) {
     let filtered_lattice_data: LatticeData = data
         .outer_iter()
         .enumerate()
@@ -78,7 +81,7 @@ fn exodus(data: &Data) -> (ElementBlocks, ElementConnectivity, NodalCoordinates)
     let shape = data.shape();
     let nelzplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
-    let (lattice_data, element_blocks) = filter(data);
+    let (lattice_data, element_blocks) = filter_data(data);
     let element_connectivity = lattice_data
         .iter()
         .flatten()
