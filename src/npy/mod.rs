@@ -10,7 +10,7 @@ pub mod py;
 pub mod test;
 
 type Data = Array3<u8>;
-type LatticeData = Vec<Vec<Vec<Vec<usize>>>>;
+type VoxelData<const N: usize> = Vec<[usize; N]>;
 
 /// The NPY file type.
 pub struct Npy {
@@ -35,8 +35,8 @@ impl Npy {
     }
 }
 
-fn filter_data(data: &Data) -> (LatticeData, ElementBlocks) {
-    let filtered_lattice_data: LatticeData = data
+fn filter_data(data: &Data) -> (VoxelData<3>, ElementBlocks) {
+    let filtered_voxel_data_combo: VoxelData<4> = data
         .outer_iter()
         .enumerate()
         .map(|(k, data_k)| {
@@ -48,44 +48,34 @@ fn filter_data(data: &Data) -> (LatticeData, ElementBlocks) {
                         .iter()
                         .enumerate()
                         .filter(|(_, &data_kji)| data_kji > 0)
-                        .map(|(i, data_kji)| vec![k, j, i, *data_kji as usize])
+                        .map(|(i, data_kji)| [k, j, i, *data_kji as usize])
                         .collect()
                 })
                 .collect()
         })
+        .collect::<Vec<Vec<Vec<[usize; 4]>>>>()
+        .into_iter()
+        .flatten()
+        .flatten()
         .collect();
-    let element_blocks = filtered_lattice_data
+    let element_blocks = filtered_voxel_data_combo
         .iter()
-        .flatten()
-        .flatten()
         .map(|entry| entry[3])
         .collect();
-    let lattice_data = filtered_lattice_data
+    let filtered_voxel_data = filtered_voxel_data_combo
         .into_iter()
-        .map(|data_k| {
-            data_k
-                .into_iter()
-                .map(|data_kj| {
-                    data_kj
-                        .into_iter()
-                        .map(|data_kji| data_kji.into_iter().take(3).collect())
-                        .collect()
-                })
-                .collect()
-        })
+        .map(|entry| [entry[0], entry[1], entry[2]])
         .collect();
-    (lattice_data, element_blocks)
+    (filtered_voxel_data, element_blocks)
 }
 
 fn exodus(data: &Data) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
     let shape = data.shape();
     let nelzplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
-    let (lattice_data, element_blocks) = filter_data(data);
-    let element_connectivity = lattice_data
+    let (filtered_voxel_data, element_blocks) = filter_data(data);
+    let element_connectivity = filtered_voxel_data
         .iter()
-        .flatten()
-        .flatten()
         .map(|entry| {
             vec![
                 entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
