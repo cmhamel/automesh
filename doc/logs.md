@@ -1,5 +1,24 @@
 # logs
 
+*In order of most recent to least recent.*
+
+## 2024-07-17
+
+* ONR annual review completed
+  * Void to be optionally includeded or excluded
+  * Generalization: included/exclude any material number that is in the segmentation
+* IMECE conference podium abstract submitted
+* Python dev working in autotwin repo instead of mwe repo
+  * Review unit test documentation for 2D and 3D, how to implement and test w Rust
+* Element connectivity - filters out void, but the current node numbering has gaps
+  * ndarray, ndarray_npy crate for file io of npy files
+  * npy type is uint8
+* new Rust feature: Specialization
+
+## 2024-07-05
+
+* [Maturin demo](https://github.com/hovey/mwe/tree/main/maturin)
+
 ## 2024-07-03
 
 * [Exodus II file format](exodus.md)
@@ -32,7 +51,3 @@ import subprocess
 result = subprocess.run([MD5_BINARY, fin], check=False, stdout=subprocess.PIPE)
         output = result.stdout.decode("utf-8")
 ```
-
-## 2024-07-05
-
-* [Maturin demo](https://github.com/hovey/mwe/tree/main/maturin)
