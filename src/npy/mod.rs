@@ -7,6 +7,7 @@ use std::fs::File;
 pub mod py;
 
 type Data = Array3<u8>;
+type LatticeData = Vec<Vec<Vec<Vec<usize>>>>;
 
 /// The NPY file type.
 pub struct Npy {
@@ -31,11 +32,8 @@ impl Npy {
     }
 }
 
-fn exodus(data: &Data) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
-    let shape = data.shape();
-    let nelzplus1 = shape[0] + 1;
-    let nelyplus1 = shape[1] + 1;
-    let filtered_data: Vec<Vec<Vec<[usize; 4]>>> = data
+fn filter(data: &Data) -> (LatticeData, ElementBlocks) {
+    let filtered_lattice_data: LatticeData = data
         .outer_iter()
         .enumerate()
         .map(|(k, data_k)| {
@@ -47,19 +45,41 @@ fn exodus(data: &Data) -> (ElementBlocks, ElementConnectivity, NodalCoordinates)
                         .iter()
                         .enumerate()
                         .filter(|(_, &data_kji)| data_kji > 0)
-                        .map(|(i, data_kji)| [k, j, i, *data_kji as usize])
+                        .map(|(i, data_kji)| vec![k, j, i, *data_kji as usize])
                         .collect()
                 })
                 .collect()
         })
         .collect();
-    let element_blocks = filtered_data
+    let element_blocks = filtered_lattice_data
         .iter()
         .flatten()
         .flatten()
         .map(|entry| entry[3])
         .collect();
-    let element_connectivity = filtered_data
+    let lattice_data = filtered_lattice_data
+        .into_iter()
+        .map(|data_k| {
+            data_k
+                .into_iter()
+                .map(|data_kj| {
+                    data_kj
+                        .into_iter()
+                        .map(|data_kji| data_kji.into_iter().take(3).collect())
+                        .collect()
+                })
+                .collect()
+        })
+        .collect();
+    (lattice_data, element_blocks)
+}
+
+fn exodus(data: &Data) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
+    let shape = data.shape();
+    let nelzplus1 = shape[0] + 1;
+    let nelyplus1 = shape[1] + 1;
+    let (lattice_data, element_blocks) = filter(data);
+    let element_connectivity = lattice_data
         .iter()
         .flatten()
         .flatten()
