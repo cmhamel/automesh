@@ -1,4 +1,4 @@
-use automesh::Spn;
+use automesh::Npy;
 
 const NELX: usize = 3;
 const NELY: usize = 5;
@@ -12,14 +12,14 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 ];
 
 #[test]
-fn test_read_spn() {
-    let spn = Spn::new("tests/spn/f.spn", NELX, NELY, NELZ);
+fn test_read_npy() {
+    let npy = Npy::new("tests/npy/f.npy");
     GOLD.iter()
-        .zip(spn.get_data().iter())
+        .zip(npy.get_data().outer_iter())
         .for_each(|(gold_i, spn_i)| {
             gold_i
                 .iter()
-                .zip(spn_i.iter())
+                .zip(spn_i.outer_iter())
                 .for_each(|(gold_ij, spn_ij)| {
                     gold_ij
                         .iter()

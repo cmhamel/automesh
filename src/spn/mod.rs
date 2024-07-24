@@ -1,4 +1,3 @@
-use super::Exodus;
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -16,22 +15,18 @@ pub struct Spn {
 
 /// Inherent implementation of the SPN file type.
 impl Spn {
-    /// Constructs and returns a new Exodus file type from the SPN file data.
-    pub fn exodus(&self) -> Exodus {
-        Exodus {}
-    }
     /// Returns a reference to the internal SPN file data.
     pub fn get_data(&self) -> &Data {
         &self.data
     }
     /// Constructs and returns a new SPN file type.
     pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
-        let data = init_data(file_path, nelx, nely, nelz);
+        let data = new(file_path, nelx, nely, nelz);
         Self { data }
     }
 }
 
-fn init_data(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Data {
+fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Data {
     let flat = BufReader::new(File::open(file_path).expect("File was not found."))
         .lines()
         .map(|line| line.unwrap().parse().unwrap())

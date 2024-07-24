@@ -1,5 +1,5 @@
 [package]
-authors = ["Chad Brian Hovey <chovey@sandia.gov>", "Michael Robert Buche <mrbuche@sandia.gov>"]
+authors = ["Chad B. Hovey <chovey@sandia.gov>", "Michael R. Buche <mrbuche@sandia.gov>"]
 categories = ["mathematics", "science"]
 description = "automesh"
 documentation = "https://docs.rs/automesh"
@@ -9,12 +9,14 @@ keywords = ["mesh"]
 license = "MIT"
 name = "automesh"
 repository = "https://github.com/autotwin/automesh"
-version = "0.1.2"
+version = "0.1.3"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+ndarray = {version = "=0.15"}
+ndarray-npy = {version = "=0.8"}
 numpy = {version = "=0.21", optional = true}
 pyo3 = {version = "=0.21", features = ["extension-module"], optional = true}
 
