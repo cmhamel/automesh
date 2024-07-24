@@ -7,7 +7,10 @@ import yaml
 
 
 def yml_to_dict(
-    *, yml_path_file: Path, version: float, required_keys: Tuple[str, ...]
+    *,
+    yml_path_file: Path,
+    yml_schema_version: str,
+    required_keys: Tuple[str, ...],
 ) -> Dict:
     """Given a valid Path to a yml input file, read it in and
     return the result as a dictionary.
@@ -17,7 +20,8 @@ def yml_to_dict(
     key(s) present in the file.
 
     yml_path_file (Path): The fully pathed location to the input file.
-    version (float): The version of the yml in x.y format.
+    yml_schema_version (str): The version of the schema used for the yml input.
+        The semantic versioning x.y.z format is used.
     required_keys (tuple[str,...]): The key(s) that must be in the yml file for
         conversion to a dictionary to occur.
     """
@@ -45,10 +49,14 @@ def yml_to_dict(
         # raise yaml.YAMLError
         raise OSError from error
 
-    version_specified = db.get("version")
-    version_implemented = version
+    # If "version" key does not exist in the dictionary, then return 0.0.0 to
+    # indicate no version specified; this strategy avoids return of the None
+    # type, which is prohibits logic comparisons to strings in the code that
+    # below in this module.
+    version_specified = db.get("yml_schema_version", "0.0.0")
+    version_implemented = yml_schema_version
 
-    if version_specified < version_implemented:
+    if version_specified != version_implemented:
         msg = f"Version mismatch: specified was {version_specified}, "
         msg += f"implemented is {version_implemented}"
         raise ValueError(msg)

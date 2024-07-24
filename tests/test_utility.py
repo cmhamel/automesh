@@ -2,11 +2,12 @@
 
 To run:
 (.venv) ~/autotwin/automesh> pytest tests/test_utility -v
+(.venv) ~/autotwin/automesh> pytest tests/test_utility -v -s  # debug w pdbp
 (.venv) ~/autotwin/automesh> pytest tests/test_utility -vs  # --capture=no
 
 For coverage:
 (.venv) ~/autotwin/automesh> pytest \
-    tests/test_utility.py --cov=src/atmesh --cov-report term-missing
+    tests/test_utility.py --cov=. --cov-report term-missing
 """
 
 from pathlib import Path
@@ -29,7 +30,9 @@ def test_return_is_dict(keys):
     data_path = self_path.joinpath("yml").resolve()
     input_path_file = data_path.joinpath("min_schema_version.yml")
     value = translator.yml_to_dict(
-        yml_path_file=input_path_file, version=1.0, required_keys=keys
+        yml_path_file=input_path_file,
+        yml_schema_version="1.0.0",
+        required_keys=keys,
     )
     assert isinstance(value, dict)
 
