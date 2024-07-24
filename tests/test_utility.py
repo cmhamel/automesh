@@ -5,7 +5,8 @@ To run:
 (.venv) ~/autotwin/automesh> pytest tests/test_utility -vs  # --capture=no
 
 For coverage:
-(.venv) ~/autotwin/automesh> pytest tests/test_utility.py --cov=src/atmesh --cov-report term-missing
+(.venv) ~/autotwin/automesh> pytest \
+    tests/test_utility.py --cov=src/atmesh --cov-report term-missing
 """
 
 from pathlib import Path
@@ -79,7 +80,8 @@ def test_return_is_dict(keys):
 #
 #     # If the yaml cannot be loaded, then test that an OSError is raised.
 #     with pytest.raises(OSError) as error:
-#         input_file = data_path.joinpath("sculpt_stl_to_inp_bad_yaml_load.yml")
+#         bad_yml = "sculpt_stl_to_inp_bad_yaml_load.yml"
+#         input_file = data_path.joinpath(bad_yml)
 #         translator.yml_to_dict(
 #             yml_path_file=input_file, version=1.0, required_keys=keys
 #         )
