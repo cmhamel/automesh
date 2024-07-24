@@ -2,6 +2,10 @@
 
 *In order of most recent to least recent.*
 
+## 2024-07-24
+
+* No pair programming today, MB at [WCCM](https://www.wccm2024.org).
+
 ## 2024-07-17
 
 * ONR annual review completed
