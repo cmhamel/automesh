@@ -22,22 +22,29 @@ classifiers = [
 ]
 description = 'automesh'
 dependencies = [
-  'numpy'
+  'cffi',
+  'numpy',
+  'pyyaml'
 ]
 name = 'automesh'
 requires-python = '>=3.8,<3.13'
 
 [project.optional-dependencies]
 develop = [
+  'pdbp',
   'pre-commit',
   'pycodestyle',
-  'pytest'
+  'pytest',
+  'pytest-cov'
 ]
 
 [project.urls]
 Documentation = 'https://github.com/autotwin/automesh'
 Homepage = 'https://github.com/autotwin/automesh'
 Repository = 'https://github.com/autotwin/automesh'
+
+[tool.maturin]
+python-source = "python"
 
 [tool.pytest.ini_options]
 python_files = [

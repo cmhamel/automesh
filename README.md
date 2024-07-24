@@ -29,7 +29,7 @@ Enhanced mesh quality can improve solver convergence rates, decrease overhead (m
 
 ### Task 1: Solver Automation
 
-*  **Mesh output decks**. Mesh outputs are solver inputs.  Mesh outputs must be automated to provide solver integration and automation for Sierra Solid Mechanics (SSM) in the Genesis/Exodus format, ABAQUS (.inp format), and Generic ASCII (e.g., .vtk), specific format to be determined.
+*  **Mesh output decks**.  Mesh outputs are solver inputs.  Mesh outputs must be automated to provide solver integration and automation for Sierra Solid Mechanics (SSM) in the Genesis/Exodus format, ABAQUS (.inp format), and Generic ASCII (e.g., .vtk), specific format to be determined.
 *  **Solver input decks**.  Current solver runs have hard-coded and manual hand-tailored input decks.  This process must be rewritten and fully automated.
 
 ### Task 2: Injury-Risk Automation
@@ -53,7 +53,9 @@ Reference: 2024-06-21-1218-EST-ONR-Statement-of-Work.pdf
 A minimum working example (MWE) of the `letter F` model (see [https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md)) will be used as a unit test through the following specific next steps:
 
 * Given:
-  * Semantic segmentation (as a [`.spn`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f.spn) file)
+  * Semantic segmentation
+    * as a [`.npy`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_fiducial.npy) file,
+    * as a [`.spn`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f.spn) file,
   * Configuration recipe (as a [`.yml`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_autotwin.yml) file)
 * Create:
   * Rust command line application that outputs equivalent Sculpt outputs, without void as a mesh constituent, as
@@ -63,3 +65,100 @@ A minimum working example (MWE) of the `letter F` model (see [https://github.com
 * Next steps:
   * Taubin smoothing (see [Taubin 1995](https://dl.acm.org/doi/pdf/10.1145/218380.218473) and [Chen 2010](https://link.springer.com/content/pdf/10.1007/s00707-009-0274-0.pdf))
   * Dualization
+
+## Getting Started
+
+### Configuration
+
+Install the module either as a **client** or as a **developer**.  The client installation is recommended for users in an analyst role, who will to use the module in an analysis workflow.  Knowledge of the Python and Rust programming languages is not necessary.  The developer installation is recommended for users in the code development role, who will create or update functionality.  Knowledge of the Python and Rust programming languages is required.
+
+#### Client Installation - work in progress 2024-07-05
+
+Following is an example using the HPC:
+
+```bash
+module purge
+
+# load Python 3.11 or later
+module load aue/anaconda3/2023.09  # (Python 3.11) or similar per the 'module avail' command
+
+# change to a working directory, e.g., scratch
+cd scratch
+
+# if there is an existing virtual environment activated, deactivate it
+deactivate
+
+# if there is an existing virtual environment .venv folder, delete it
+rm -rf .venv
+
+# create a virtual environment called .venv
+python -m venv .venv
+
+# active the virtual environment
+source .venv/bin/activate       # for bash shell
+source .venv/bin/activate.csh   # for c shell
+
+# install, for example, the latest development version, a tagged version,
+# or a specific branch:
+
+# example option 1/3: latest
+python -m pip install git+ssh://git@github.com:autotwin/automesh.git
+
+# example option 2/3: version v0.1.2
+python -m pip install git+ssh://git@github.com:autotwin/automesh.git@v0.1.2
+
+# example option 3/3: branch called 'dev'
+python -m pip install git+ssh://git@github.com:autotwin/automesh.git@v0.1.2@dev
+```
+
+#### Developer Installation
+
+Update `pip` and `setuptools` with a modern version of Python (e.g., Python 3.11):
+
+```bash
+python3.11 -m pip install --upgrade pip setuptools
+```
+
+Use a virtual environment called `.venv`, created with the [venv Python module](https://docs.python.org/3/library/venv.html), to keep the installation isolated from other Python projects.  Create the `.venv` virtual environment:
+
+```bash
+cd ~/autotwin/automesh/
+python3.11 -m venv .venv
+
+source .venv/bin/activate       # for bash shell
+source .venv/bin/activate.csh   # for c shell
+source .venv/bin/activate.fish  # for fish shell
+.\.venv\Scripts\activate        # for powershell
+```
+
+Install with the `-e` (equivalently, `--editable`) flag to create an [editable installation](https://setuptools.pypa.io/en/latest/userguide/development_mode.html):
+
+```bash
+# deprecated
+~~pip install -e .[develop]~~
+pip install --upgrade pip
+pip install maturin
+maturin develop --extras develop
+```
+
+#### Developer Installation - Revised
+
+We are using Maturin, not Setuptools, as a build backend.
+
+2024-07-05: Ask mrbuche about
+https://www.maturin.rs/project_layout
+
+```bash
+maturin develop
+maturin develop --release --extras dev
+maturin develop --release --extras develop
+
+pre-commit install
+# pre-commit installed at .git/hooks/pre-commit
+
+pre-commit run --all-files
+```
+
+## References
+
+* [Logs](doc/logs.md)
