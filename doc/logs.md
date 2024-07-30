@@ -2,14 +2,42 @@
 
 *In order of most recent to least recent.*
 
+## 2024-08-07
+
 ## 2024-07-31
 
+* Candice would like a Work Planning Agreement (WPA)
 * Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
-* Tutorial: Outline of a complete development workflow
+* Tutorial: Outline of a complete [development workflow](dev_workflow.md)
   * Configuration - especially a Python virtual environment
   * Is there a virtual environment equivalent for Rust?
   * Check in and review
 * Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
+  * can we have `main.rs` and `lib.rs` (???), so how to architect if we want both a library and a command line tool?
+  * yamlio or ymlio be in `lib.rs` equivalent
+  * `eprintln!`
+  * tilde bug
+  * serde (serialize-deserialize) crate dependency
+  * serde_yaml
+    * downloads 70,632,177
+    * Rust library for using the Serde serialization framework with data in YAML file format. (This project is no longer maintained.)
+    * https://github.com/dtolnay/serde-yaml
+       * This repository has been archived by the owner on Mar 24, 2024. It is now read-only.
+  * serde_yml (a fork of serde_yaml)
+    * downloads 39,956
+  * alternatives on crates.io
+    * yaml-rust = "0.4"
+      * downloads 61,005,944
+      * http://chyh1990.github.io/yaml-rust/
+    * yaml-merge-keys = "0.4"
+      * downloads 3,062,559
+      * KitWare: https://gitlab.kitware.com/utils/rust-yaml-merge-keys
+      * uses serde_yaml and yaml_rust
+    * yaml = "0.1"
+      * downloads 24,016
+* clap: https://github.com/clap-rs/clap
+  * `cargo run - --help`, `cargo run recipe.yml`
+* clap alternatives: quicli, structopt
 * Code Review: continuation from last week, especially node numbering with gaps
 * Questions for MRB
   * in `/tests/` folder, the `test_utility.py` has the `test_` prefix so that it is picked up by the `pytest` module.  In that same folder, `npy.py` and `spn.py` have tests, and therein has function definitions with the leading `test_foo` format, but the filenames themselves do not have the `test_` prefix.
