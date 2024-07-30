@@ -2,6 +2,69 @@
 
 *In order of most recent to least recent.*
 
+## 2024-07-31
+
+* Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
+* Tutorial: Outline of a complete development workflow
+  * Configuration - especially a Python virtual environment
+  * Is there a virtual environment equivalent for Rust?
+  * Check in and review
+* Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
+* Code Review: continuation from last week, especially node numbering with gaps
+* Questions for MRB
+  * in `/tests/` folder, the `test_utility.py` has the `test_` prefix so that it is picked up by the `pytest` module.  In that same folder, `npy.py` and `spn.py` have tests, and therein has function definitions with the leading `test_foo` format, but the filenames themselves do not have the `test_` prefix.
+
+```bash
+(.venv)  (housekeeping) chovey@s1088757/Users/chovey/autotwin/automesh> pip install -e .
+Obtaining file:///Users/chovey/autotwin/automesh
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: cffi in ./.venv/lib/python3.11/site-packages (from automesh==0.1.3) (1.16.0)
+Requirement already satisfied: numpy in ./.venv/lib/python3.11/site-packages (from automesh==0.1.3) (2.0.0)
+Requirement already satisfied: pyyaml in ./.venv/lib/python3.11/site-packages (from automesh==0.1.3) (6.0.1)
+Requirement already satisfied: pycparser in ./.venv/lib/python3.11/site-packages (from cffi->automesh==0.1.3) (2.22)
+Building wheels for collected packages: automesh
+  Building editable for automesh (pyproject.toml) ... error
+  error: subprocess-exited-with-error
+
+  × Building editable for automesh (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [23 lines of output]
+      Running `maturin pep517 build-wheel -i /Users/chovey/autotwin/automesh/.venv/bin/python3.11 --compatibility off --editable`
+      📦 Including license file "/Users/chovey/autotwin/automesh/LICENSE"
+      🍹 Building a mixed python/rust project
+      🔗 Found cffi bindings
+      🐍 Using CPython 3.11 at /Users/chovey/autotwin/automesh/.venv/bin/python3.11 to generate the cffi bindings
+         Compiling automesh v0.1.3 (/Users/chovey/autotwin/automesh)
+          Finished `release` profile [optimized] target(s) in 0.22s
+
+      ===================================================================
+      maturin has panicked. This is a bug in maturin. Please report this
+      at https://github.com/PyO3/maturin/issues/new/choose.
+      If you can reliably reproduce this panic, include the
+      reproduction steps and re-run with the RUST_BACKTRACE=1 environment
+      variable set and include the backtrace in your report.
+
+      Platform: macos aarch64
+      Version: 1.7.0
+      Args: maturin pep517 build-wheel -i /Users/chovey/autotwin/automesh/.venv/bin/python3.11 --compatibility off --editable
+
+      thread 'main' panicked at /Users/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/cbindgen-0.26.0/src/bindgen/mangle.rs:132:17:
+      not implemented: Unable to mangle generic parameter Array(Primitive(Integer { zeroable: true, signed: false, kind: Size }), Value("8")) for 'Vec'
+      note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+      Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/Users/chovey/autotwin/automesh/.venv/bin/python3.11', '--compatibility', 'off', '--editable'] returned non-zero exit status 101
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building editable for automesh
+Failed to build automesh
+ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (automesh)
+```
+
+**Goal:** A command line Rust application that takes a command line argument, the path to a .yml file, and represents that yaml data as an internal yaml struct.
+
 ## 2024-07-24
 
 * No pair programming today, MB at [WCCM](https://www.wccm2024.org).
