@@ -2,6 +2,7 @@
 
 ## Configuration
 
+* GitHub CLI https://cli.github.com
 * VS Code
   * TODO Rust Analyzer extension
 * Install Python
