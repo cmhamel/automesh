@@ -14,12 +14,12 @@ pub struct Npy {
 
 #[pymethods]
 impl Npy {
-    pub fn get_data<'py>(&self, python: Python<'py>) -> Bound<'py, PyArray3<u8>> {
-        self.data.to_pyarray_bound(python)
-    }
     pub fn exodus(&self) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) = super::exodus(&self.data);
         Exodus::new(element_blocks, element_connectivity, nodal_coordinates)
+    }
+    pub fn get_data<'py>(&self, python: Python<'py>) -> Bound<'py, PyArray3<u8>> {
+        self.data.to_pyarray_bound(python)
     }
     #[new]
     pub fn new(file_path: &str) -> Self {

@@ -40,6 +40,6 @@ impl Exodus {
     }
     /// Writes the Exodus data to a new Exodus file.
     pub fn write(&self, _file_path: &str) {
-        todo!()
+        todo!("Writing Exodus types to file has not yet been implemented.")
     }
 }
