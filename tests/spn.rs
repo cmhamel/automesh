@@ -41,6 +41,8 @@ fn from_npy() {
 
 #[test]
 fn into_exodus() {
+    let spn = Spn::from_npy("tests/input/f.npy");
+    let exo = spn.into_exodus();
     // blocks
     // connectivity
     // coordinates
