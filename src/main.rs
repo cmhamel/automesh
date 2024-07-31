@@ -1,4 +1,4 @@
-use automesh::Npy;
+use automesh::Spn;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -16,12 +16,12 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let input = if args.input.ends_with(".npy") {
-        Npy::new(&args.input)
+        Spn::from_npy(&args.input)
     } else {
         panic!("Invalid input {} specified.", args.input)
     };
     let output = if args.output.ends_with(".exo") {
-        input.exodus()
+        input.into_exodus()
     } else {
         panic!("Invalid output {} specified.", args.output)
     };

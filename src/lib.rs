@@ -1,12 +1,14 @@
 //! Automatic mesh generation.
 
-pub use exodus::Exodus;
-pub use npy::Npy;
-pub use spn::Spn;
-
 #[cfg(feature = "python")]
 mod py;
 
 mod exodus;
-mod npy;
 mod spn;
+
+pub use exodus::Exodus;
+pub use spn::Spn;
+
+type ElementBlocks = Vec<usize>;
+type ElementConnectivity = Vec<Vec<usize>>;
+type NodalCoordinates = Vec<Vec<f64>>;
