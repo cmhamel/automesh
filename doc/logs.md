@@ -8,15 +8,12 @@
 
 - [ ] CFC would like a Work Planning Agreement (WPA)
 - [x] Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
-
-Hello World.
-
-* Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
-* Tutorial: Outline of a complete [development workflow](dev_workflow.md)
+- [ ] Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
+- [ ] Tutorial: Outline of a complete [development workflow](dev_workflow.md)
   * Configuration - especially a Python virtual environment
-  * Is there a virtual environment equivalent for Rust?
+  * Q: Is there a virtual environment equivalent for Rust?  A: Nope, not necessary.
   * Check in and review
-* Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
+- [x] Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
   * can we have `main.rs` and `lib.rs` (???), so how to architect if we want both a library and a command line tool?
   * yamlio or ymlio be in `lib.rs` equivalent
   * `eprintln!`
