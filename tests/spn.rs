@@ -3,7 +3,50 @@ use automesh::Spn;
 const NELZ: usize = 4;
 const NELY: usize = 5;
 const NELX: usize = 3;
+const NUM_ELEMENTS: usize = 39;
 
+const GOLD_BLOCKS: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
+const GOLD_CONNECTIVITY: [[usize; 8]; NUM_ELEMENTS] = [
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8],
+];
 const GOLD_DATA: [[[u8; NELX]; NELY]; NELZ] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
     [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 0, 0]],
@@ -43,10 +86,22 @@ fn from_npy() {
 fn into_exodus() {
     let spn = Spn::from_npy("tests/input/f.npy");
     let exo = spn.into_exodus();
-    // blocks
-    // connectivity
-    // coordinates
-    todo!("Needs to be tested here?")
+    let blocks = exo.get_element_blocks();
+    assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
+    assert_eq!(GOLD_BLOCKS.len(), blocks.len());
+    GOLD_BLOCKS
+        .iter()
+        .zip(blocks.iter())
+        .for_each(|(gold, block)| assert_eq!(gold, block));
+    let connectivity = exo.get_element_connectivity();
+    assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
+    assert_eq!(GOLD_CONNECTIVITY.len(), connectivity.len());
+    GOLD_CONNECTIVITY
+        .iter()
+        .flatten()
+        .zip(connectivity.iter().flatten())
+        .for_each(|(gold, connectivity)| assert_eq!(gold, connectivity));
+    todo!("coordinates")
 }
 
 #[test]
