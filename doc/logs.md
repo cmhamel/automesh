@@ -6,10 +6,22 @@
 
 ## 2024-07-31
 
+### For next week
+
+* CBH
+  * yaml input/ouput
+  * tilde bug
+* MRB
+  * clap
+  * exodus with node numbering (and numbering gaps)
+  * exodus onnectivity
+
+### This week
+
 - [ ] CFC would like a Work Planning Agreement (WPA)
 - [x] Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
 - [ ] Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
-- [ ] Tutorial: Outline of a complete [development workflow](dev_workflow.md)
+- [x] Tutorial: Outline of a complete [development workflow](dev_workflow.md)
   * Configuration - especially a Python virtual environment
   * Q: Is there a virtual environment equivalent for Rust?  A: Nope, not necessary.
   * Check in and review
@@ -36,12 +48,22 @@
       * uses serde_yaml and yaml_rust
     * yaml = "0.1"
       * downloads 24,016
-* clap: https://github.com/clap-rs/clap
+- [x] clap: https://github.com/clap-rs/clap
   * `cargo run - --help`, `cargo run recipe.yml`
-* clap alternatives: quicli, structopt
-* Code Review: continuation from last week, especially node numbering with gaps
-* [done] Questions for MRB
+- [x] * clap alternatives: quicli, structopt
+- [ ] Code Review: continuation from last week, especially node numbering with gaps
+- [x] Questions for MRB
   * in `/tests/` folder, the `test_utility.py` has the `test_` prefix so that it is picked up by the `pytest` module.  In that same folder, `npy.py` and `spn.py` have tests, and therein has function definitions with the leading `test_foo` format, but the filenames themselves do not have the `test_` prefix.
+- [x] Deployment
+  * [crates.io](https://crates.io)
+    * [rust binary](https://crates.io/crates/automesh)
+    * rust library
+  * [PyPI](https://pypi.org)
+    * [Python wheel](https://pypi.org/project/automesh/)
+- [x] Decisions
+  * not require `test_` prefix (as done with Python) for names of Rust test files
+  * tell python testing to look at `.py` files in the `tests/` folders, as shown below from the [`pyproject.toml`](../pyproject.toml)
+  * stop using `pip install -e .` and instead, use Maturin, which will build the Python wheel (`maturin develop --release --features python`) and then use code from the wheel
 
 ```bash
 [tool.pytest.ini_options]
