@@ -9,6 +9,6 @@ gold = np.array([
 ], dtype='uint8')
 
 
-def test_read_npy():
+def test_new():
     npy = Npy('tests/npy/f.npy')
     assert (npy.get_data() == gold).all()
