@@ -8,6 +8,7 @@
 
 * Candice would like a Work Planning Agreement (WPA)
 * Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
+* Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
 * Tutorial: Outline of a complete [development workflow](dev_workflow.md)
   * Configuration - especially a Python virtual environment
   * Is there a virtual environment equivalent for Rust?
