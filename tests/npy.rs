@@ -34,3 +34,10 @@ fn new() {
                 })
         })
 }
+
+#[test]
+fn exodus() {
+    let npy = Npy::new("tests/npy/f.npy");
+    let exo = npy.exodus();
+    todo!("Needs to be tested.")
+}
