@@ -1,4 +1,4 @@
-use super::Exodus;
+use super::exodus::Exodus;
 use ndarray::Array3;
 use ndarray_npy::ReadNpyExt;
 use std::fs::File;
@@ -17,7 +17,27 @@ pub struct Npy {
 impl Npy {
     /// Constructs and returns a new Exodus file type from the NPY file data.
     pub fn exodus(&self) -> Exodus {
-        todo!()
+        // let number_of_elements = self.get_data().iter().filter(|&entry| entry > &0).count();
+        // let mut block_connectivity = Vec::with_capacity(number_of_elements);
+
+        // Exodus needs this, right?
+        let block_connectivity = self
+            .get_data()
+            .iter()
+            .filter(|&entry| entry > &0)
+            .copied()
+            .collect();
+
+        // Need to filter() out "air" elements
+        let element_connectivity = vec![[0; 8]];
+
+        // Need to filter() out nodes only beloning to "air" elements
+        let nodal_coordinates = vec![[0.0; 3]];
+
+        // Would the nodal connectivity (elements connected to each node) help you here?
+        // And would that be worth saving in the struct?
+
+        Exodus::new(block_connectivity, element_connectivity, nodal_coordinates)
     }
     /// Returns a reference to the internal NPY file data.
     pub fn get_data(&self) -> &Data {
