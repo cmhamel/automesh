@@ -1,4 +1,4 @@
-use super::{filter_data, Npy};
+use super::{filter_spn_data, Spn};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -47,8 +47,8 @@ const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
 
 #[test]
 fn filter() {
-    let npy = Npy::new("tests/npy/f.npy");
-    let (filtered_voxel_data, element_blocks) = filter_data(npy.get_data());
+    let spn = Spn::from_npy("tests/input/f.npy");
+    let (filtered_voxel_data, element_blocks) = filter_spn_data(spn.get_data());
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD
         .iter()

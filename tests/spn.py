@@ -9,6 +9,15 @@ gold = np.array([
 ])
 
 
+def test_as_exodus():
+    assert False
+
+
+def test_from_npy():
+    spn = Spn.from_npy('tests/input/f.npy')
+    assert (spn.get_data() == gold).all()
+
+
 def test_new():
-    spn = Spn('tests/spn/f.spn', 4, 5, 3)
+    spn = Spn('tests/input/f.spn', 4, 5, 3)
     assert (spn.get_data() == gold).all()
