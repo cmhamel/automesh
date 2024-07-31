@@ -43,9 +43,6 @@ Documentation = 'https://github.com/autotwin/automesh'
 Homepage = 'https://github.com/autotwin/automesh'
 Repository = 'https://github.com/autotwin/automesh'
 
-[tool.maturin]
-python-source = "python"
-
 [tool.pytest.ini_options]
 python_files = [
   '*.py'

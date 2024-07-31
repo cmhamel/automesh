@@ -12,7 +12,7 @@ const GOLD: [[[u8; NELX]; NELY]; NELZ] = [
 ];
 
 #[test]
-fn test_read_npy() {
+fn read_npy() {
     let npy = Npy::new("tests/npy/f.npy");
     GOLD.iter()
         .zip(npy.get_data().outer_iter())
