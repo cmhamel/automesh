@@ -100,8 +100,11 @@ fn into_exodus() {
         .iter()
         .flatten()
         .zip(connectivity.iter().flatten())
-        .for_each(|(gold, connectivity)| assert_eq!(gold, connectivity));
-    todo!("coordinates")
+        .for_each(|(gold, connective)| assert_eq!(gold, connective));
+    let nodal_coordinates = exo.get_nodal_coordinates();
+    todo!("number of nodes in GOLD == number of unique nodal ids in connectivity");
+    todo!("number of nodes in nodal_coordinates == number of unique nodal ids in connectivity");
+    todo!("coordinates");
 }
 
 #[test]
