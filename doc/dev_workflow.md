@@ -16,4 +16,5 @@
 * Branch
 * Develop
 * Test
+  * `maturin develop --release --features python`
 * Merge request

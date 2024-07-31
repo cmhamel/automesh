@@ -40,8 +40,18 @@
   * `cargo run - --help`, `cargo run recipe.yml`
 * clap alternatives: quicli, structopt
 * Code Review: continuation from last week, especially node numbering with gaps
-* Questions for MRB
+* [done] Questions for MRB
   * in `/tests/` folder, the `test_utility.py` has the `test_` prefix so that it is picked up by the `pytest` module.  In that same folder, `npy.py` and `spn.py` have tests, and therein has function definitions with the leading `test_foo` format, but the filenames themselves do not have the `test_` prefix.
+
+```bash
+[tool.pytest.ini_options]
+python_files = [
+  '*.py'
+]
+testpaths = [
+  'tests/'
+]
+```
 
 ```bash
 (.venv)  (housekeeping) chovey@s1088757/Users/chovey/autotwin/automesh> pip install -e .
