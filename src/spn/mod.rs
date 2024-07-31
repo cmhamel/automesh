@@ -5,6 +5,7 @@ pub mod py;
 pub mod test;
 
 use super::{ElementBlocks, ElementConnectivity, Exodus, NodalCoordinates};
+use itertools::Itertools;
 use ndarray::Array3;
 use ndarray_npy::ReadNpyExt;
 use std::{
@@ -51,7 +52,7 @@ fn exodus_data_from_npy_data(
     let nelzplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
     let (filtered_voxel_data, element_blocks) = filter_spn_data(data);
-    let element_connectivity = filtered_voxel_data
+    let mut element_connectivity: ElementConnectivity = filtered_voxel_data
         .iter()
         .map(|entry| {
             vec![
@@ -66,7 +67,29 @@ fn exodus_data_from_npy_data(
             ]
         })
         .collect();
-    let nodal_coordinates = vec![vec![0.0; 3]];
+    element_connectivity
+        .clone()
+        .into_iter()
+        .flatten()
+        .unique()
+        .sorted()
+        .enumerate()
+        .filter(|(index, id)| &(index + 1) != id)
+        .for_each(|(index, id)| {
+            element_connectivity
+                .iter_mut()
+                .flatten()
+                .filter(|entry| *entry == &id)
+                .for_each(|entry| *entry = index + 1)
+        });
+    let number_of_nodes = element_connectivity
+        .clone()
+        .into_iter()
+        .flatten()
+        .unique()
+        .collect::<Vec<usize>>()
+        .len();
+    let nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
     (element_blocks, element_connectivity, nodal_coordinates)
 }
 
