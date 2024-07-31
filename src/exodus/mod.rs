@@ -24,4 +24,8 @@ impl Exodus {
     pub fn new(_file_path: &str) -> Self {
         todo!()
     }
+    /// Writes the Exodus data to a new Exodus file.
+    pub fn write(&self, _file_path: &str) {
+        todo!()
+    }
 }
