@@ -124,7 +124,7 @@ Failed to build automesh
 ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (automesh)
 ```
 
-**Goal:** A command line Rust application that takes a command line argument, the path to a .yml file, and represents that yaml data as an internal yaml struct.
+**Goal:** A command line Rust application that takes a command line argument, the path to a `.yml` file, and represents that yaml data as an internal yaml struct.
 
 ## 2024-07-24
 
