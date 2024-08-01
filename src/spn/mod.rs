@@ -32,7 +32,21 @@ impl Spn {
     pub fn get_data(&self) -> &SpnData {
         &self.data
     }
+    #[doc = svgbobdoc::transform!(
     /// Converts the SPN type into an Exodus type, consuming the SPN type.
+    ///
+    /// ```svgbob
+    ///     8       7
+    ///      *-------*        +x
+    ///   5 /|    6 /|          ^
+    ///    *-+-----* |          |
+    ///    | |4    | |3         |
+    ///    | *-----|-*          +-----> -z
+    ///    |/      |/          /
+    ///    *-------*          v
+    ///   1       2         -y
+    /// ```
+    )]
     pub fn into_exodus(self) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) =
             exodus_data_from_npy_data(self.get_data());
