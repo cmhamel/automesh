@@ -57,24 +57,13 @@ const GOLD_DATA: [[[u8; NELX]; NELY]; NELZ] = [
 
 fn assert_data_eq_gold(spn: Spn) {
     let data = spn.get_data();
-    vec![NELZ, NELY, NELX]
+    data.shape()
         .iter()
-        .zip(data.shape().iter())
-        .for_each(|(gold_n, data_n)| assert_eq!(gold_n, data_n));
-    GOLD_DATA
-        .iter()
-        .zip(data.outer_iter())
-        .for_each(|(gold_i, spn_i)| {
-            gold_i
-                .iter()
-                .zip(spn_i.outer_iter())
-                .for_each(|(gold_ij, spn_ij)| {
-                    gold_ij
-                        .iter()
-                        .zip(spn_ij.iter())
-                        .for_each(|(gold_ijk, spn_ijk)| assert_eq!(gold_ijk, spn_ijk))
-                })
-        })
+        .zip(vec![NELZ, NELY, NELX].iter())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
+    data.iter()
+        .zip(GOLD_DATA.iter().flatten().flatten())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
 
 #[test]
