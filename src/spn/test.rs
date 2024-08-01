@@ -69,11 +69,7 @@ fn filter() {
     assert_eq!(filtered_voxel_data.len(), NUM_ELEMENTS);
     VOXELS_GOLD
         .iter()
-        .zip(filtered_voxel_data.iter())
-        .for_each(|(gold_n, block_n)| {
-            gold_n
-                .iter()
-                .zip(block_n.iter())
-                .for_each(|(gold_n_i, block_n_i)| assert_eq!(gold_n_i, block_n_i))
-        });
+        .flatten()
+        .zip(filtered_voxel_data.iter().flatten())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
