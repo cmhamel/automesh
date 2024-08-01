@@ -32,7 +32,21 @@ impl Spn {
     pub fn get_data(&self) -> &SpnData {
         &self.data
     }
+    #[doc = svgbobdoc::transform!(
     /// Converts the SPN type into an Exodus type, consuming the SPN type.
+    ///
+    /// ```svgbob
+    ///     8       7
+    ///      *-------*        +x
+    ///   5 /|    6 /|          ^
+    ///    *-+-----* |          |
+    ///    | |4    | |3         |
+    ///    | *-----|-*          +-----> -z
+    ///    |/      |/          /
+    ///    *-------*          v
+    ///   1       2         -y
+    /// ```
+    )]
     pub fn into_exodus(self) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) =
             exodus_data_from_npy_data(self.get_data());
@@ -45,28 +59,7 @@ impl Spn {
     }
 }
 
-fn exodus_data_from_npy_data(
-    data: &SpnData,
-) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
-    let shape = data.shape();
-    let nelzplus1 = shape[0] + 1;
-    let nelyplus1 = shape[1] + 1;
-    let (filtered_voxel_data, element_blocks) = filter_spn_data(data);
-    let mut element_connectivity: ElementConnectivity = filtered_voxel_data
-        .iter()
-        .map(|entry| {
-            vec![
-                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
-                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
-                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
-            ]
-        })
-        .collect();
+fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConnectivity) {
     element_connectivity
         .clone()
         .into_iter()
@@ -82,14 +75,56 @@ fn exodus_data_from_npy_data(
                 .filter(|entry| *entry == &id)
                 .for_each(|entry| *entry = index + 1)
         });
-    let number_of_nodes = element_connectivity
-        .clone()
-        .into_iter()
+}
+
+fn exodus_data_from_npy_data(
+    data: &SpnData,
+) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
+    let shape = data.shape();
+    let nelzplus1 = shape[0] + 1;
+    let nelyplus1 = shape[1] + 1;
+    let (filtered_voxel_data, element_blocks) = filter_spn_data(data);
+    let mut element_connectivity: ElementConnectivity = filtered_voxel_data
+        .iter()
+        .map(|entry| {
+            vec![
+                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
+                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
+                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
+                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
+            ]
+        })
+        .collect();
+    element_connectivity_node_renumbering(&mut element_connectivity);
+    let nodal_coordinates = filtered_voxel_data
+        .iter()
+        .map(|entry| {
+            vec![
+                [entry[2], entry[1], entry[0] + 1],
+                [entry[2], entry[1], entry[0]],
+                [entry[2], entry[1] + 1, entry[0]],
+                [entry[2], entry[1] + 1, entry[0] + 1],
+                [entry[2] + 1, entry[1], entry[0] + 1],
+                [entry[2] + 1, entry[1], entry[0]],
+                [entry[2] + 1, entry[1] + 1, entry[0]],
+                [entry[2] + 1, entry[1] + 1, entry[0] + 1],
+            ]
+        })
+        .collect::<Vec<Vec<[usize; 3]>>>()
+        .iter()
         .flatten()
         .unique()
-        .collect::<Vec<usize>>()
-        .len();
-    let nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
+        .map(|coordinates| {
+            coordinates
+                .iter()
+                .map(|coordinate| *coordinate as f64)
+                .collect()
+        })
+        .collect();
     (element_blocks, element_connectivity, nodal_coordinates)
 }
 

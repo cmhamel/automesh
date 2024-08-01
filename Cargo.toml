@@ -16,11 +16,12 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 clap = { version = "4.5.11", features = ["derive"] }
-itertools = "0.13.0"
+itertools = {version = "=0.13.0"}
 ndarray = {version = "=0.15"}
 ndarray-npy = {version = "=0.8"}
 numpy = {version = "=0.21", optional = true}
 pyo3 = {version = "=0.21", features = ["extension-module"], optional = true}
+svgbobdoc = { version = "=0.3.0", features = ["enable"] }
 
 [features]
 python = ["dep:numpy", "dep:pyo3"]

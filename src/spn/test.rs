@@ -1,4 +1,4 @@
-use super::{filter_spn_data, Spn};
+use super::{element_connectivity_node_renumbering, filter_spn_data, Spn};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -46,6 +46,18 @@ const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
 ];
 
 #[test]
+fn connectivity_node_renumbering() {
+    let mut element_connectivity = vec![vec![1, 6, 3, 4], vec![3, 9, 6, 11], vec![13, 17, 16, 19]];
+    let element_connectivity_gold = vec![vec![1, 4, 2, 3], vec![2, 5, 4, 6], vec![7, 9, 8, 10]];
+    element_connectivity_node_renumbering(&mut element_connectivity);
+    element_connectivity
+        .iter()
+        .flatten()
+        .zip(element_connectivity_gold.iter().flatten())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
+}
+
+#[test]
 fn filter() {
     let spn = Spn::from_npy("tests/input/f.npy");
     let (filtered_voxel_data, element_blocks) = filter_spn_data(spn.get_data());
@@ -57,11 +69,7 @@ fn filter() {
     assert_eq!(filtered_voxel_data.len(), NUM_ELEMENTS);
     VOXELS_GOLD
         .iter()
-        .zip(filtered_voxel_data.iter())
-        .for_each(|(gold_n, block_n)| {
-            gold_n
-                .iter()
-                .zip(block_n.iter())
-                .for_each(|(gold_n_i, block_n_i)| assert_eq!(gold_n_i, block_n_i))
-        });
+        .flatten()
+        .zip(filtered_voxel_data.iter().flatten())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
