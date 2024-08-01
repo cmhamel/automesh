@@ -1,5 +1,7 @@
 # logs
 
+**Goal:** A command line Rust application that takes a command line argument, the path to a `.yml` file, and represents that yaml data as an internal yaml struct.
+
 *In order of most recent to least recent.*
 
 ## 2024-08-07
@@ -14,7 +16,7 @@
 * MRB
   * clap
   * exodus with node numbering (and numbering gaps)
-  * exodus onnectivity
+  * exodus connectivity
 
 ### This week
 
@@ -124,7 +126,68 @@ Failed to build automesh
 ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (automesh)
 ```
 
-**Goal:** A command line Rust application that takes a command line argument, the path to a `.yml` file, and represents that yaml data as an internal yaml struct.
+### MRB accomplishments
+
+* I added clap as a dependency and set up a main.rs to run automesh as a binary, i.e.,
+`cargo run --release -- -i tests/input/f.npy -o foo.exo`
+it automatically changes methods based on IO file extensions, and it fails for now (we don’t have anything that writes exodus files yet)
+* I moved the functionality of the NPY type into the SPN type after realizing that the internal data was essentially the same. Meaning the methods in NPY that read `.npy` files just converted it into SPN equivalent data anyway. So now SPN types can be created from `.spn` or `.npy` files.
+* I added the functionality that renumbers the nodes to avoid gaps, I’m pretty sure it’s working. Itertools is now a dependency so I could use `.unique()`
+* Still no nodal coordinates yet, will work on next.
+
+### Where do the different editable installs originate?
+
+```bash
+cd ~/autotwin/mesh
+source .venv/bin/activate.fish
+
+pip list
+Package         Version     Editable project location
+--------------- ----------- ---------------------------
+atmesh          0.0.7       /Users/chovey/autotwin/mesh
+...
+numpy           1.26.4
+
+python
+
+import atmesh
+print(atmesh)
+<module 'atmesh' from '/Users/chovey/autotwin/mesh/src/atmesh/__init__.py'>
+
+import numpy
+print(numpy)
+<module 'numpy' from '/Users/chovey/autotwin/mesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+
+deactivate
+
+cd ~/autotwin/automesh
+source .venv/bin/activate.fish
+
+pip list
+Package      Version Editable project location
+------------ ------- -------------------------------
+automesh     0.1.3   /Users/chovey/autotwin/automesh
+...
+numpy        2.0.0
+
+python
+
+import automesh
+print(automesh)
+<module 'automesh' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/automesh/__init__.py'>
+
+print(numpy)
+module 'numpy' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+```
+
+### CBH accomplishments
+
+* documentation
+* error handling
 
 ## 2024-07-24
 

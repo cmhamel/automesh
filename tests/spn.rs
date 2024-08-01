@@ -77,10 +77,32 @@ fn assert_data_eq_gold(spn: Spn) {
         })
 }
 
-#[test]
-fn from_npy() {
-    let spn = Spn::from_npy("tests/input/f.npy");
-    assert_data_eq_gold(spn);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_npy() {
+        let _spn = Spn::from_npy("tests/input/f.npy");
+        assert_data_eq_gold(_spn);
+    }
+
+    #[test]
+    #[should_panic(expected = ".npy file unreadable")]
+    fn from_npy_file_unreadable() {
+        // Guard against case where file exists, but it cannot be read,
+        // for example, by specifying a text file, `f.txt`, which is not
+        // `.npy` file.
+        let _spn = Spn::from_npy("tests/input/f.txt");
+    }
+
+    #[test]
+    #[should_panic(expected = ".npy file nonexistent")]
+    fn from_npy_file_nonexistent() {
+        // Guard against case where file does not exist.
+        // Precondition: `f_file_nonexistent.npy` actually does not exist.
+        let _spn = Spn::from_npy("tests/input/f_file_nonexistent.npy");
+    }
 }
 
 #[test]
