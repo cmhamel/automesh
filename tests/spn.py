@@ -165,9 +165,9 @@ def test_as_exodus():
 
 def test_from_npy():
     spn = Spn.from_npy('tests/input/f.npy')
-    assert (spn.get_data() == gold_data).all()
+    assert (spn.data == gold_data).all()
 
 
 def test_new():
     spn = Spn('tests/input/f.spn', 4, 5, 3)
-    assert (spn.get_data() == gold_data).all()
+    assert (spn.data == gold_data).all()
