@@ -45,6 +45,24 @@ impl Spn {
     }
 }
 
+fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConnectivity) {
+    element_connectivity
+        .clone()
+        .into_iter()
+        .flatten()
+        .unique()
+        .sorted()
+        .enumerate()
+        .filter(|(index, id)| &(index + 1) != id)
+        .for_each(|(index, id)| {
+            element_connectivity
+                .iter_mut()
+                .flatten()
+                .filter(|entry| *entry == &id)
+                .for_each(|entry| *entry = index + 1)
+        });
+}
+
 fn exodus_data_from_npy_data(
     data: &SpnData,
 ) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
@@ -67,21 +85,7 @@ fn exodus_data_from_npy_data(
             ]
         })
         .collect();
-    element_connectivity
-        .clone()
-        .into_iter()
-        .flatten()
-        .unique()
-        .sorted()
-        .enumerate()
-        .filter(|(index, id)| &(index + 1) != id)
-        .for_each(|(index, id)| {
-            element_connectivity
-                .iter_mut()
-                .flatten()
-                .filter(|entry| *entry == &id)
-                .for_each(|entry| *entry = index + 1)
-        });
+    element_connectivity_node_renumbering(&mut element_connectivity);
     let number_of_nodes = element_connectivity
         .clone()
         .into_iter()

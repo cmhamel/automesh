@@ -1,4 +1,4 @@
-use super::{filter_spn_data, Spn};
+use super::{element_connectivity_node_renumbering, filter_spn_data, Spn};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -44,6 +44,18 @@ const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
     [3, 3, 0],
     [3, 4, 0],
 ];
+
+#[test]
+fn connectivity_node_renumbering() {
+    let mut element_connectivity = vec![vec![1, 6, 3, 4], vec![3, 9, 6, 11], vec![13, 17, 16, 19]];
+    let element_connectivity_gold = vec![vec![1, 4, 2, 3], vec![2, 5, 4, 6], vec![7, 9, 8, 10]];
+    element_connectivity_node_renumbering(&mut element_connectivity);
+    element_connectivity
+        .iter()
+        .flatten()
+        .zip(element_connectivity_gold.iter().flatten())
+        .for_each(|(entry, gold)| assert_eq!(entry, gold));
+}
 
 #[test]
 fn filter() {
