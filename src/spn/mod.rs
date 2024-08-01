@@ -74,26 +74,43 @@ fn exodus_data_from_npy_data(
         .iter()
         .map(|entry| {
             vec![
-                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
                 entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
+                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
                 entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
+                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
                 (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
                 (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
+                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
             ]
         })
         .collect();
     element_connectivity_node_renumbering(&mut element_connectivity);
-    let number_of_nodes = element_connectivity
-        .clone()
-        .into_iter()
+    let nodal_coordinates = filtered_voxel_data
+        .iter()
+        .map(|entry| {
+            vec![
+                [entry[2], entry[1], entry[0] + 1],
+                [entry[2], entry[1], entry[0]],
+                [entry[2], entry[1] + 1, entry[0]],
+                [entry[2], entry[1] + 1, entry[0] + 1],
+                [entry[2] + 1, entry[1], entry[0] + 1],
+                [entry[2] + 1, entry[1], entry[0]],
+                [entry[2] + 1, entry[1] + 1, entry[0]],
+                [entry[2] + 1, entry[1] + 1, entry[0] + 1],
+            ]
+        })
+        .collect::<Vec<Vec<[usize; 3]>>>()
+        .iter()
         .flatten()
         .unique()
-        .collect::<Vec<usize>>()
-        .len();
-    let nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
+        .map(|coordinates| {
+            coordinates
+                .iter()
+                .map(|coordinate| *coordinate as f64)
+                .collect()
+        })
+        .collect();
     (element_blocks, element_connectivity, nodal_coordinates)
 }
 
