@@ -154,6 +154,7 @@ gold_coordinates = np.array([
     [1.0, 5.0, 4.0],
 ])
 
+
 def test_as_exodus():
     spn = Spn.from_npy('tests/input/f.npy')
     exo = spn.as_exodus()
