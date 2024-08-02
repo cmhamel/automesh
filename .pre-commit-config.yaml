@@ -13,6 +13,7 @@ repos:
         name: clippy
         args: ['--', '-D',  'warnings']
     -   id: clippy
+        name: clippy python
         args: ['--features', 'python', '--', '-D',  'warnings']
     -   id: fmt
 -   repo: local
