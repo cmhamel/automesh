@@ -59,7 +59,7 @@ fn main() {
         panic!("Need to specify zscale > 0.")
     }
     let input = if args.input.ends_with(".npy") {
-        Spn::from_npy(&args.input, [args.xscale, args.yscale, args.zscale])
+        Spn::from_npy(&args.input)
     } else if args.input.ends_with(".spn") {
         if args.nelx < 1 {
             panic!("Need to specify nelx > 0.")
@@ -68,17 +68,16 @@ fn main() {
         } else if args.nelz < 1 {
             panic!("Need to specify nelz > 0.")
         } else {
-            Spn::new(
-                &args.input,
-                [args.nelx, args.nely, args.nelz],
-                [args.xscale, args.yscale, args.zscale],
-            )
+            Spn::new(&args.input, [args.nelx, args.nely, args.nelz])
         }
     } else {
         panic!("Invalid input ({}) specified.", args.input)
     };
     let output = if args.output.ends_with(".exo") {
-        input.into_exodus()
+        input.into_exodus(
+            &[args.xscale, args.yscale, args.zscale],
+            &[args.xtranslate, args.ytranslate, args.ztranslate],
+        )
     } else {
         panic!("Invalid output ({}) specified.", args.output)
     };

@@ -10,14 +10,14 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 #[pyclass]
 pub struct Spn {
     data: super::SpnData,
-    scale: super::Scale,
 }
 
 #[pymethods]
 impl Spn {
-    pub fn as_exodus(&self) -> Exodus {
+    #[pyo3(signature = (scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
+    pub fn as_exodus(&self, scale: super::Scale, translate: super::Translate) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            super::exodus_data_from_npy_data(&self.data, &self.scale);
+            super::exodus_data_from_npy_data(&self.data, &scale, &translate);
         Exodus::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     #[getter]
@@ -25,13 +25,13 @@ impl Spn {
         self.data.to_pyarray_bound(python)
     }
     #[staticmethod]
-    pub fn from_npy(file_path: &str, scale: super::Scale) -> Self {
+    pub fn from_npy(file_path: &str) -> Self {
         let data = super::spn_data_from_npy(file_path);
-        Self { data, scale }
+        Self { data }
     }
     #[new]
-    pub fn new(file_path: &str, nel: super::Nel, scale: super::Scale) -> Self {
+    pub fn new(file_path: &str, nel: super::Nel) -> Self {
         let data = super::new(file_path, nel);
-        Self { data, scale }
+        Self { data }
     }
 }

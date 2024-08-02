@@ -1,7 +1,6 @@
 use super::{element_connectivity_node_renumbering, filter_spn_data, Spn};
 
 const NUM_ELEMENTS: usize = 39;
-const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
 
 const BLOCKS_GOLD: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
@@ -60,7 +59,7 @@ fn connectivity_node_renumbering() {
 
 #[test]
 fn filter() {
-    let spn = Spn::from_npy("tests/input/f.npy", SCALE);
+    let spn = Spn::from_npy("tests/input/f.npy");
     let (filtered_voxel_data, element_blocks) = filter_spn_data(spn.get_data());
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD

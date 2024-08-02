@@ -1,7 +1,7 @@
 #[cfg(feature = "python")]
 pub mod py;
 
-use super::{ElementBlocks, ElementConnectivity, NodalCoordinates, Spn};
+use super::{ElementBlocks, ElementConnectivity, NodalCoordinates};
 
 /// The Exodus type.
 pub struct Exodus {
@@ -39,11 +39,5 @@ impl Exodus {
     /// Writes the Exodus data to a new Exodus file.
     pub fn write(&self, _file_path: &str) {
         todo!("Writing Exodus types to file has not yet been implemented.")
-    }
-}
-
-impl From<Spn> for Exodus {
-    fn from(spn: Spn) -> Self {
-        spn.into_exodus()
     }
 }

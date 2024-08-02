@@ -7,6 +7,7 @@ const NEL: [usize; 3] = [NELX, NELY, NELZ];
 const NUM_ELEMENTS: usize = 39;
 const NUM_NODES: usize = 102;
 const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
+const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
 
 const GOLD_BLOCKS: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const GOLD_CONNECTIVITY: [[usize; 8]; NUM_ELEMENTS] = [
@@ -174,14 +175,14 @@ fn assert_data_eq_gold(spn: Spn) {
 
 #[test]
 fn from_npy() {
-    let spn = Spn::from_npy("tests/input/f.npy", SCALE);
+    let spn = Spn::from_npy("tests/input/f.npy");
     assert_data_eq_gold(spn);
 }
 
 #[test]
 fn into_exodus() {
-    let spn = Spn::from_npy("tests/input/f.npy", SCALE);
-    let exo = spn.into_exodus();
+    let spn = Spn::from_npy("tests/input/f.npy");
+    let exo = spn.into_exodus(&SCALE, &TRANSLATE);
     let blocks = exo.get_element_blocks();
     assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
     assert_eq!(blocks.len(), NUM_ELEMENTS);
@@ -205,8 +206,8 @@ fn into_exodus() {
         .map(|coordinates| {
             coordinates
                 .iter()
-                .zip(SCALE.iter())
-                .map(|(coordinate, scale)| coordinate * scale)
+                .zip(SCALE.iter().zip(TRANSLATE.iter()))
+                .map(|(coordinate, (scale, translate))| coordinate * scale + translate)
                 .collect()
         })
         .collect();
@@ -219,6 +220,6 @@ fn into_exodus() {
 
 #[test]
 fn new() {
-    let spn = Spn::new("tests/input/f.spn", NEL, SCALE);
+    let spn = Spn::new("tests/input/f.spn", NEL);
     assert_data_eq_gold(spn);
 }

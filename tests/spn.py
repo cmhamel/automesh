@@ -4,6 +4,7 @@ from automesh import Spn
 nel = [3, 5, 4]
 number_of_elements = 39
 scale = [1.2, 2.3, 0.4]
+translate = [-0.3, 1.1, 0.5]
 
 gold_blocks = np.ones(number_of_elements)
 gold_data = np.array([
@@ -157,24 +158,24 @@ gold_coordinates = np.array([
     [3.0, 5.0, 0.0],
     [3.0, 5.0, 1.0],
 ])
-gold_coordinates[:, 0] *= scale[0]
-gold_coordinates[:, 1] *= scale[1]
-gold_coordinates[:, 2] *= scale[2]
+for i in range(3):
+    gold_coordinates[:, i] *= scale[i]
+    gold_coordinates[:, i] += translate[i]
 
 
 def test_as_exodus():
-    spn = Spn.from_npy('tests/input/f.npy', scale)
-    exo = spn.as_exodus()
+    spn = Spn.from_npy('tests/input/f.npy')
+    exo = spn.as_exodus(scale, translate)
     assert (exo.element_blocks == gold_blocks).all()
     assert (exo.element_connectivity == gold_connectivity).all()
     assert (exo.nodal_coordinates == gold_coordinates).all()
 
 
 def test_from_npy():
-    spn = Spn.from_npy('tests/input/f.npy', scale)
+    spn = Spn.from_npy('tests/input/f.npy')
     assert (spn.data == gold_data).all()
 
 
 def test_new():
-    spn = Spn('tests/input/f.spn', nel, scale)
+    spn = Spn('tests/input/f.spn', nel)
     assert (spn.data == gold_data).all()
