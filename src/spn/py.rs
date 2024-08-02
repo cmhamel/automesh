@@ -14,9 +14,10 @@ pub struct Spn {
 
 #[pymethods]
 impl Spn {
-    pub fn as_exodus(&self) -> Exodus {
+    #[pyo3(signature = (scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
+    pub fn as_exodus(&self, scale: super::Scale, translate: super::Translate) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            super::exodus_data_from_npy_data(&self.data);
+            super::exodus_data_from_npy_data(&self.data, &scale, &translate);
         Exodus::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     #[getter]
@@ -29,8 +30,8 @@ impl Spn {
         Self { data }
     }
     #[new]
-    pub fn new(file_path: &str, nelz: usize, nely: usize, nelx: usize) -> Self {
-        let data = super::new(file_path, nelz, nely, nelx);
+    pub fn new(file_path: &str, nel: super::Nel) -> Self {
+        let data = super::new(file_path, nel);
         Self { data }
     }
 }

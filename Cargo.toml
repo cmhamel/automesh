@@ -1,7 +1,7 @@
 [package]
 authors = ["Chad B. Hovey <chovey@sandia.gov>", "Michael R. Buche <mrbuche@sandia.gov>"]
 categories = ["mathematics", "science"]
-description = "automesh"
+description = "Automatic mesh generation."
 documentation = "https://docs.rs/automesh"
 edition = "2021"
 homepage = "https://github.com/autotwin/automesh"
@@ -15,7 +15,7 @@ version = "0.1.3"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-clap = { version = "4.5.11", features = ["derive"] }
+clap = { version = "=4.5.13", features = ["derive"] }
 itertools = {version = "=0.13.0"}
 ndarray = {version = "=0.15"}
 ndarray-npy = {version = "=0.8"}

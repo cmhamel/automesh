@@ -1,8 +1,8 @@
 use automesh::Spn;
 use clap::Parser;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[derive(Parser)]
+#[command(about, arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the input file.
     #[arg(short, long)]
@@ -13,20 +13,51 @@ struct Args {
     output: String,
 
     /// Number of voxels in the x-direction.
-    #[arg(long, default_value_t = 0)]
+    #[arg(short = 'x', long, default_value_t = 0)]
     nelx: usize,
 
     /// Number of voxels in the y-direction.
-    #[arg(long, default_value_t = 0)]
+    #[arg(short = 'y', long, default_value_t = 0)]
     nely: usize,
 
     /// Number of voxels in the z-direction.
-    #[arg(long, default_value_t = 0)]
+    #[arg(short = 'z', long, default_value_t = 0)]
     nelz: usize,
+
+    /// Scale of coordinates in the x-direction.
+    #[arg(long, default_value_t = 1.0)]
+    xscale: f64,
+
+    /// Scale of coordinates in the y-direction.
+    #[arg(long, default_value_t = 1.0)]
+    yscale: f64,
+
+    /// Scale of coordinates in the z-direction.
+    #[arg(long, default_value_t = 1.0)]
+    zscale: f64,
+
+    /// Translation of coordinates in the x-direction.
+    #[arg(long, default_value_t = 0.0)]
+    xtranslate: f64,
+
+    /// Translation of coordinates in the y-direction.
+    #[arg(long, default_value_t = 0.0)]
+    ytranslate: f64,
+
+    /// Translation of coordinates in the z-direction.
+    #[arg(long, default_value_t = 0.0)]
+    ztranslate: f64,
 }
 
 fn main() {
     let args = Args::parse();
+    if args.xscale <= 0.0 {
+        panic!("Need to specify xscale > 0.")
+    } else if args.yscale <= 0.0 {
+        panic!("Need to specify yscale > 0.")
+    } else if args.zscale <= 0.0 {
+        panic!("Need to specify zscale > 0.")
+    }
     let input = if args.input.ends_with(".npy") {
         Spn::from_npy(&args.input)
     } else if args.input.ends_with(".spn") {
@@ -37,13 +68,16 @@ fn main() {
         } else if args.nelz < 1 {
             panic!("Need to specify nelz > 0.")
         } else {
-            Spn::new(&args.input, args.nelx, args.nely, args.nelz)
+            Spn::new(&args.input, [args.nelx, args.nely, args.nelz])
         }
     } else {
         panic!("Invalid input ({}) specified.", args.input)
     };
     let output = if args.output.ends_with(".exo") {
-        input.into_exodus()
+        input.into_exodus(
+            &[args.xscale, args.yscale, args.zscale],
+            &[args.xtranslate, args.ytranslate, args.ztranslate],
+        )
     } else {
         panic!("Invalid output ({}) specified.", args.output)
     };

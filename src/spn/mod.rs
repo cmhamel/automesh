@@ -15,7 +15,10 @@ use std::{
 
 const NODE_NUMBERING_OFFSET: usize = 1;
 
+type Nel = [usize; 3];
+type Scale = [f64; 3];
 type SpnData = Array3<u8>;
+type Translate = [f64; 3];
 type VoxelData<const N: usize> = Vec<[usize; N]>;
 
 /// The SPN type.
@@ -49,14 +52,14 @@ impl Spn {
     ///   1       2         -y
     /// ```
     )]
-    pub fn into_exodus(self) -> Exodus {
+    pub fn into_exodus(self, scale: &Scale, translate: &Translate) -> Exodus {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            exodus_data_from_npy_data(self.get_data());
+            exodus_data_from_npy_data(self.get_data(), scale, translate);
         Exodus::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     /// Constructs and returns a new SPN type from file.
-    pub fn new(file_path: &str, nelx: usize, nely: usize, nelz: usize) -> Self {
-        let data = new(file_path, nelx, nely, nelz);
+    pub fn new(file_path: &str, nel: Nel) -> Self {
+        let data = new(file_path, nel);
         Self { data }
     }
 }
@@ -81,10 +84,18 @@ fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConne
 
 fn exodus_data_from_npy_data(
     data: &SpnData,
+    scale: &Scale,
+    translate: &Translate,
 ) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
     let shape = data.shape();
     let nelzplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
+    let xscale = scale[0];
+    let yscale = scale[1];
+    let zscale = scale[2];
+    let xtranslate = translate[0];
+    let ytranslate = translate[1];
+    let ztranslate = translate[2];
     let (filtered_voxel_data, element_blocks) = filter_spn_data(data);
     let mut element_connectivity: ElementConnectivity = filtered_voxel_data
         .iter()
@@ -142,33 +153,45 @@ fn exodus_data_from_npy_data(
         .iter()
         .zip(element_connectivity.iter())
         .for_each(|(entry, connectivity)| {
-            nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] =
-                vec![entry[2] as f64, entry[1] as f64, entry[0] as f64 + 1.0];
-            nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] =
-                vec![entry[2] as f64, entry[1] as f64, entry[0] as f64];
-            nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] =
-                vec![entry[2] as f64, entry[1] as f64 + 1.0, entry[0] as f64];
+            nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = vec![
+                (entry[2] as f64) * xscale + xtranslate,
+                (entry[1] as f64) * yscale + ytranslate,
+                (entry[0] as f64 + 1.0) * zscale + ztranslate,
+            ];
+            nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = vec![
+                (entry[2] as f64) * xscale + xtranslate,
+                (entry[1] as f64) * yscale + ytranslate,
+                (entry[0] as f64) * zscale + ztranslate,
+            ];
+            nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = vec![
+                (entry[2] as f64) * xscale + xtranslate,
+                (entry[1] as f64 + 1.0) * yscale + ytranslate,
+                (entry[0] as f64) * zscale + ztranslate,
+            ];
             nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = vec![
-                entry[2] as f64,
-                entry[1] as f64 + 1.0,
-                entry[0] as f64 + 1.0,
+                (entry[2] as f64) * xscale + xtranslate,
+                (entry[1] as f64 + 1.0) * yscale + ytranslate,
+                (entry[0] as f64 + 1.0) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = vec![
-                entry[2] as f64 + 1.0,
-                entry[1] as f64,
-                entry[0] as f64 + 1.0,
+                (entry[2] as f64 + 1.0) * xscale + xtranslate,
+                (entry[1] as f64) * yscale + ytranslate,
+                (entry[0] as f64 + 1.0) * zscale + ztranslate,
             ];
-            nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] =
-                vec![entry[2] as f64 + 1.0, entry[1] as f64, entry[0] as f64];
+            nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = vec![
+                (entry[2] as f64 + 1.0) * xscale + xtranslate,
+                (entry[1] as f64) * yscale + ytranslate,
+                (entry[0] as f64) * zscale + ztranslate,
+            ];
             nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = vec![
-                entry[2] as f64 + 1.0,
-                entry[1] as f64 + 1.0,
-                entry[0] as f64,
+                (entry[2] as f64 + 1.0) * xscale + xtranslate,
+                (entry[1] as f64 + 1.0) * yscale + ytranslate,
+                (entry[0] as f64) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = vec![
-                entry[2] as f64 + 1.0,
-                entry[1] as f64 + 1.0,
-                entry[0] as f64 + 1.0,
+                (entry[2] as f64 + 1.0) * xscale + xtranslate,
+                (entry[1] as f64 + 1.0) * yscale + ytranslate,
+                (entry[0] as f64 + 1.0) * zscale + ztranslate,
             ];
         });
     (element_blocks, element_connectivity, nodal_coordinates)
@@ -208,12 +231,12 @@ fn filter_spn_data(data: &SpnData) -> (VoxelData<3>, ElementBlocks) {
     (filtered_voxel_data, element_blocks)
 }
 
-fn new(file_path: &str, nelz: usize, nely: usize, nelx: usize) -> SpnData {
+fn new(file_path: &str, nel: Nel) -> SpnData {
     let flat = BufReader::new(File::open(file_path).expect("File was not found."))
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
         .collect::<Vec<u8>>();
-    let mut data = SpnData::zeros((nelz, nely, nelx));
+    let mut data = SpnData::zeros((nel[2], nel[1], nel[0]));
     data.iter_mut()
         .zip(flat.iter())
         .for_each(|(data_entry, flat_entry)| *data_entry = *flat_entry);
