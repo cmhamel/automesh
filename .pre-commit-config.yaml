@@ -10,6 +10,7 @@ repos:
     rev: v1.1.0
     hooks:
     -   id: clippy
+        name: clippy
         args: ['--', '-D',  'warnings']
     -   id: clippy
         args: ['--features', 'python', '--', '-D',  'warnings']
