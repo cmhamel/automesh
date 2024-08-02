@@ -1,7 +1,6 @@
 use automesh::Spn;
 use clap::Parser;
 
-/// Automatic hexahedral finite element mesh generation from a voxelized segmentation.
 #[derive(Parser)]
 #[command(about, arg_required_else_help = true, long_about = None, version)]
 struct Args {
