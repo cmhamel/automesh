@@ -3,8 +3,10 @@ use automesh::Spn;
 const NELZ: usize = 4;
 const NELY: usize = 5;
 const NELX: usize = 3;
+const NEL: [usize; 3] = [NELX, NELY, NELZ];
 const NUM_ELEMENTS: usize = 39;
 const NUM_NODES: usize = 102;
+const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
 
 const GOLD_BLOCKS: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const GOLD_CONNECTIVITY: [[usize; 8]; NUM_ELEMENTS] = [
@@ -163,7 +165,7 @@ fn assert_data_eq_gold(spn: Spn) {
     let data = spn.get_data();
     data.shape()
         .iter()
-        .zip(vec![NELZ, NELY, NELX].iter())
+        .zip(NEL.iter().rev())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
     data.iter()
         .zip(GOLD_DATA.iter().flatten().flatten())
@@ -172,13 +174,13 @@ fn assert_data_eq_gold(spn: Spn) {
 
 #[test]
 fn from_npy() {
-    let spn = Spn::from_npy("tests/input/f.npy");
+    let spn = Spn::from_npy("tests/input/f.npy", SCALE);
     assert_data_eq_gold(spn);
 }
 
 #[test]
 fn into_exodus() {
-    let spn = Spn::from_npy("tests/input/f.npy");
+    let spn = Spn::from_npy("tests/input/f.npy", SCALE);
     let exo = spn.into_exodus();
     let blocks = exo.get_element_blocks();
     assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
@@ -198,15 +200,25 @@ fn into_exodus() {
     let coordinates = exo.get_nodal_coordinates();
     assert_eq!(GOLD_COORDINATES.len(), NUM_NODES);
     assert_eq!(coordinates.len(), NUM_NODES);
+    let gold_coordinates: Vec<Vec<f64>> = GOLD_COORDINATES
+        .iter()
+        .map(|coordinates| {
+            coordinates
+                .iter()
+                .zip(SCALE.iter())
+                .map(|(coordinate, scale)| coordinate * scale)
+                .collect()
+        })
+        .collect();
     coordinates
         .iter()
         .flatten()
-        .zip(GOLD_COORDINATES.iter().flatten())
+        .zip(gold_coordinates.iter().flatten())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
 
 #[test]
 fn new() {
-    let spn = Spn::new("tests/input/f.spn", NELZ, NELY, NELX);
+    let spn = Spn::new("tests/input/f.spn", NEL, SCALE);
     assert_data_eq_gold(spn);
 }
