@@ -1,15 +1,15 @@
 use automesh::Spn;
 use clap::Parser;
 
-/// Automatic hexahedral finite element mesh generation from a semantic segmentation.
+/// Automatic hexahedral finite element mesh generation from a voxelized segmentation.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the numpy input file.  Example: --input foo.npy
+    /// Name of the NumPy input file.  Example: --input <input_file>.npy   (TODO: work in progress <input_file>.spn)
     #[arg(short, long)]
     input: String,
 
-    /// Name of the Exodus output file. Example: --output foo.exo
+    /// Name of the Exodus output file. Example: --output <output_file>.exo
     #[arg(short, long)]
     output: String,
 }

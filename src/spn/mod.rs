@@ -191,20 +191,29 @@ fn spn_data_from_npy(file_path: &str) -> SpnData {
     // * If `File::open` fails, the value in `npy_file_result`` will be an
     //   instance of Err that contains more information about the kind of
     //   error that occurred.
+    if !file_path.ends_with(".npy") {
+        panic!("File type must be .npy")
+    }
+
     let npy_file_result = File::open(file_path);
 
     let npy_file = match npy_file_result {
         Ok(file) => file,
         Err(error) => match error.kind() {
             ErrorKind::NotFound => {
-                // panic!("File not found: {error:?}");
-                panic!(".npy file nonexistent")
+                panic!("Could not find the .npy file")
             }
             _ => {
-                panic!("Problem opening file: {error:?}");
+                // See https://doc.rust-lang.org/stable/std/fs/struct.OpenOptions.html#errors
+                // errors aside from NotFound error.  This match arm
+                // is difficult to test because it requires setting
+                // permissions and getting those permissions to exist
+                // in a valid setting for CI/CD.  Currently this
+                // match arm has no test.
+                panic!("Could not open the .npy file");
             }
         },
     };
 
-    SpnData::read_npy(npy_file).expect(".npy file unreadable")
+    SpnData::read_npy(npy_file).expect("Could not open the .npy file")
 }

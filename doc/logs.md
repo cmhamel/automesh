@@ -189,6 +189,17 @@ quit()
 * documentation
 * error handling
 
+### Continued discussion (2024-08-02)
+
+* Decisions:
+  * command line arguments (via clap) is prioritized; `.yml` file recipie is paused in favor of CLI interacion
+  * command line runs produce a `.log` file by default (optional is to have no logging, command line flag for no logging is to be determined), the `.log` file will
+    * echo the command issued to the CLI (support reproducibility)
+    * have a name `<output_file>.log` that matches the file name of the output Exodus file `<output_file>.exo`
+    * the contents of the `.log` file will also be echoed to the screen (stdout) during the run and capture any errors (stderr) if they are encountered
+  * command line interface to be expanded to specify `nelx`, `nely`, and `nelz` (and have error checking to assure that `nelx x nely x nelz = n_voxels`)
+  * CLI to be expanded to consume two types of input files: `.npy` and `.spn`.
+
 ## 2024-07-24
 
 * No pair programming today, MB at [WCCM](https://www.wccm2024.org).
