@@ -28,7 +28,7 @@ jobs:
       - name: clippy
         run: cargo clippy -- -D warnings
       - name: doc
-        run: cargo doc
+        run: cargo rustdoc --release -- --html-in-header .github/katex.html
       - name: fmt
         run: cargo fmt --all -- --check
       - name: test
