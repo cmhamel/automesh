@@ -1,8 +1,8 @@
 use automesh::Spn;
 use clap::Parser;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[derive(Parser)]
+#[command(about, arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the input file.
     #[arg(short, long)]
