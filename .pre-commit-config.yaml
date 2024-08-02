@@ -10,10 +10,9 @@ repos:
     rev: v1.1.0
     hooks:
     -   id: clippy
-        name: clippy
         args: ['--', '-D',  'warnings']
     -   id: clippy
-        name: clippy python
+        name: cargo clippy --features python
         args: ['--features', 'python', '--', '-D',  'warnings']
     -   id: fmt
 -   repo: local
