@@ -2,7 +2,12 @@ use automesh::Spn;
 use clap::Parser;
 
 #[derive(Parser)]
-#[command(about = "\nAutomatic mesh generation.\n\n\x1b[1;4mNotes:\x1b[0m\n  - Input/output file types are inferred.\n  - Scaling is applied before translation.", arg_required_else_help = true, long_about = None, version)]
+#[command(about = "
+Automatic mesh generation. \n
+\x1b[1;4mNotes:\x1b[0m
+  - Input/output file types are inferred.
+  - Scaling is applied before translation.",
+arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the input file.
     #[arg(short, long)]
