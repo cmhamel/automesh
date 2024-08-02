@@ -13,6 +13,8 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+const NODE_NUMBERING_OFFSET: usize = 1;
+
 type SpnData = Array3<u8>;
 type VoxelData<const N: usize> = Vec<[usize; N]>;
 
@@ -88,43 +90,87 @@ fn exodus_data_from_npy_data(
         .iter()
         .map(|entry| {
             vec![
-                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                entry[2] * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
-                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
-                entry[2] * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 2,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + entry[1] * nelzplus1 + entry[0] + 1,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 1,
-                (entry[2] + 1) * nelzplus1 * nelyplus1 + (entry[1] + 1) * nelzplus1 + entry[0] + 2,
+                entry[2] * nelzplus1 * nelyplus1
+                    + entry[1] * nelzplus1
+                    + entry[0]
+                    + 1
+                    + NODE_NUMBERING_OFFSET,
+                entry[2] * nelzplus1 * nelyplus1
+                    + entry[1] * nelzplus1
+                    + entry[0]
+                    + NODE_NUMBERING_OFFSET,
+                entry[2] * nelzplus1 * nelyplus1
+                    + (entry[1] + 1) * nelzplus1
+                    + entry[0]
+                    + NODE_NUMBERING_OFFSET,
+                entry[2] * nelzplus1 * nelyplus1
+                    + (entry[1] + 1) * nelzplus1
+                    + entry[0]
+                    + 1
+                    + NODE_NUMBERING_OFFSET,
+                (entry[2] + 1) * nelzplus1 * nelyplus1
+                    + entry[1] * nelzplus1
+                    + entry[0]
+                    + 1
+                    + NODE_NUMBERING_OFFSET,
+                (entry[2] + 1) * nelzplus1 * nelyplus1
+                    + entry[1] * nelzplus1
+                    + entry[0]
+                    + NODE_NUMBERING_OFFSET,
+                (entry[2] + 1) * nelzplus1 * nelyplus1
+                    + (entry[1] + 1) * nelzplus1
+                    + entry[0]
+                    + NODE_NUMBERING_OFFSET,
+                (entry[2] + 1) * nelzplus1 * nelyplus1
+                    + (entry[1] + 1) * nelzplus1
+                    + entry[0]
+                    + 1
+                    + NODE_NUMBERING_OFFSET,
             ]
         })
         .collect();
     element_connectivity_node_renumbering(&mut element_connectivity);
-    let nodal_coordinates = filtered_voxel_data
-        .iter()
-        .map(|entry| {
-            vec![
-                [entry[2], entry[1], entry[0] + 1],
-                [entry[2], entry[1], entry[0]],
-                [entry[2], entry[1] + 1, entry[0]],
-                [entry[2], entry[1] + 1, entry[0] + 1],
-                [entry[2] + 1, entry[1], entry[0] + 1],
-                [entry[2] + 1, entry[1], entry[0]],
-                [entry[2] + 1, entry[1] + 1, entry[0]],
-                [entry[2] + 1, entry[1] + 1, entry[0] + 1],
-            ]
-        })
-        .collect::<Vec<Vec<[usize; 3]>>>()
-        .iter()
+    let number_of_nodes = element_connectivity
+        .clone()
+        .into_iter()
         .flatten()
         .unique()
-        .map(|coordinates| {
-            coordinates
-                .iter()
-                .map(|coordinate| *coordinate as f64)
-                .collect()
-        })
-        .collect();
+        .collect::<Vec<usize>>()
+        .len();
+    let mut nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
+    filtered_voxel_data
+        .iter()
+        .zip(element_connectivity.iter())
+        .for_each(|(entry, connectivity)| {
+            nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] =
+                vec![entry[2] as f64, entry[1] as f64, entry[0] as f64 + 1.0];
+            nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] =
+                vec![entry[2] as f64, entry[1] as f64, entry[0] as f64];
+            nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] =
+                vec![entry[2] as f64, entry[1] as f64 + 1.0, entry[0] as f64];
+            nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = vec![
+                entry[2] as f64,
+                entry[1] as f64 + 1.0,
+                entry[0] as f64 + 1.0,
+            ];
+            nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = vec![
+                entry[2] as f64 + 1.0,
+                entry[1] as f64,
+                entry[0] as f64 + 1.0,
+            ];
+            nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] =
+                vec![entry[2] as f64 + 1.0, entry[1] as f64, entry[0] as f64];
+            nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = vec![
+                entry[2] as f64 + 1.0,
+                entry[1] as f64 + 1.0,
+                entry[0] as f64,
+            ];
+            nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = vec![
+                entry[2] as f64 + 1.0,
+                entry[1] as f64 + 1.0,
+                entry[0] as f64 + 1.0,
+            ];
+        });
     (element_blocks, element_connectivity, nodal_coordinates)
 }
 
