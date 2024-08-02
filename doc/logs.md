@@ -1,19 +1,33 @@
 # logs
 
+**Goal:** A command line Rust application that takes a command line argument, the path to a `.yml` file, and represents that yaml data as an internal yaml struct.
+
 *In order of most recent to least recent.*
 
 ## 2024-08-07
 
 ## 2024-07-31
 
-* Candice would like a Work Planning Agreement (WPA)
-* Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
-* Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
-* Tutorial: Outline of a complete [development workflow](dev_workflow.md)
+### For next week
+
+* CBH
+  * yaml input/ouput
+  * tilde bug
+* MRB
+  * clap
+  * exodus with node numbering (and numbering gaps)
+  * exodus connectivity
+
+### This week
+
+- [ ] CFC would like a Work Planning Agreement (WPA)
+- [x] Tutorial: How to update the exo branch, which is currently 12 commits behind and 10 commits ahead of the main branch.
+- [ ] Module load mechanism on HPC, via SMT > Utility > PythonModule > Deployer
+- [x] Tutorial: Outline of a complete [development workflow](dev_workflow.md)
   * Configuration - especially a Python virtual environment
-  * Is there a virtual environment equivalent for Rust?
+  * Q: Is there a virtual environment equivalent for Rust?  A: Nope, not necessary.
   * Check in and review
-* Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
+- [x] Code Review: Minimum working example: https://github.com/hovey/rustschool/tree/main/yml_io
   * can we have `main.rs` and `lib.rs` (???), so how to architect if we want both a library and a command line tool?
   * yamlio or ymlio be in `lib.rs` equivalent
   * `eprintln!`
@@ -36,12 +50,22 @@
       * uses serde_yaml and yaml_rust
     * yaml = "0.1"
       * downloads 24,016
-* clap: https://github.com/clap-rs/clap
+- [x] clap: https://github.com/clap-rs/clap
   * `cargo run - --help`, `cargo run recipe.yml`
-* clap alternatives: quicli, structopt
-* Code Review: continuation from last week, especially node numbering with gaps
-* [done] Questions for MRB
+- [x] * clap alternatives: quicli, structopt
+- [ ] Code Review: continuation from last week, especially node numbering with gaps
+- [x] Questions for MRB
   * in `/tests/` folder, the `test_utility.py` has the `test_` prefix so that it is picked up by the `pytest` module.  In that same folder, `npy.py` and `spn.py` have tests, and therein has function definitions with the leading `test_foo` format, but the filenames themselves do not have the `test_` prefix.
+- [x] Deployment
+  * [crates.io](https://crates.io)
+    * [rust binary](https://crates.io/crates/automesh)
+    * rust library
+  * [PyPI](https://pypi.org)
+    * [Python wheel](https://pypi.org/project/automesh/)
+- [x] Decisions
+  * not require `test_` prefix (as done with Python) for names of Rust test files
+  * tell python testing to look at `.py` files in the `tests/` folders, as shown below from the [`pyproject.toml`](../pyproject.toml)
+  * stop using `pip install -e .` and instead, use Maturin, which will build the Python wheel (`maturin develop --release --features python`) and then use code from the wheel
 
 ```bash
 [tool.pytest.ini_options]
@@ -102,7 +126,79 @@ Failed to build automesh
 ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (automesh)
 ```
 
-**Goal:** A command line Rust application that takes a command line argument, the path to a .yml file, and represents that yaml data as an internal yaml struct.
+### MRB accomplishments
+
+* I added clap as a dependency and set up a main.rs to run automesh as a binary, i.e.,
+`cargo run --release -- -i tests/input/f.npy -o foo.exo`
+it automatically changes methods based on IO file extensions, and it fails for now (we don’t have anything that writes exodus files yet)
+* I moved the functionality of the NPY type into the SPN type after realizing that the internal data was essentially the same. Meaning the methods in NPY that read `.npy` files just converted it into SPN equivalent data anyway. So now SPN types can be created from `.spn` or `.npy` files.
+* I added the functionality that renumbers the nodes to avoid gaps, I’m pretty sure it’s working. Itertools is now a dependency so I could use `.unique()`
+* Still no nodal coordinates yet, will work on next.
+
+### Where do the different editable installs originate?
+
+```bash
+cd ~/autotwin/mesh
+source .venv/bin/activate.fish
+
+pip list
+Package         Version     Editable project location
+--------------- ----------- ---------------------------
+atmesh          0.0.7       /Users/chovey/autotwin/mesh
+...
+numpy           1.26.4
+
+python
+
+import atmesh
+print(atmesh)
+<module 'atmesh' from '/Users/chovey/autotwin/mesh/src/atmesh/__init__.py'>
+
+import numpy
+print(numpy)
+<module 'numpy' from '/Users/chovey/autotwin/mesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+
+deactivate
+
+cd ~/autotwin/automesh
+source .venv/bin/activate.fish
+
+pip list
+Package      Version Editable project location
+------------ ------- -------------------------------
+automesh     0.1.3   /Users/chovey/autotwin/automesh
+...
+numpy        2.0.0
+
+python
+
+import automesh
+print(automesh)
+<module 'automesh' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/automesh/__init__.py'>
+
+print(numpy)
+module 'numpy' from '/Users/chovey/autotwin/automesh/.venv/lib/python3.11/site-packages/numpy/__init__.py'>
+
+quit()
+```
+
+### CBH accomplishments
+
+* documentation
+* error handling
+
+### Continued discussion (2024-08-02)
+
+* Decisions:
+  * command line arguments (via clap) is prioritized; `.yml` file recipie is paused in favor of CLI interacion
+  * command line runs produce a `.log` file by default (optional is to have no logging, command line flag for no logging is to be determined), the `.log` file will
+    * echo the command issued to the CLI (support reproducibility)
+    * have a name `<output_file>.log` that matches the file name of the output Exodus file `<output_file>.exo`
+    * the contents of the `.log` file will also be echoed to the screen (stdout) during the run and capture any errors (stderr) if they are encountered
+  * command line interface to be expanded to specify `nelx`, `nely`, and `nelz` (and have error checking to assure that `nelx x nely x nelz = n_voxels`)
+  * CLI to be expanded to consume two types of input files: `.npy` and `.spn`.
 
 ## 2024-07-24
 

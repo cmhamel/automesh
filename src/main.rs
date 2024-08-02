@@ -4,11 +4,11 @@ use clap::Parser;
 #[derive(Parser)]
 #[command(about, arg_required_else_help = true, long_about = None, version)]
 struct Args {
-    /// Name of the input file.
+    /// Name of the NumPy input file.  Example: --input <input_file>.npy   (TODO: work in progress <input_file>.spn)
     #[arg(short, long)]
     input: String,
 
-    /// Name of the output file.
+    /// Name of the Exodus output file. Example: --output <output_file>.exo
     #[arg(short, long)]
     output: String,
 
