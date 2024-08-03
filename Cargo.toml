@@ -26,6 +26,9 @@ svgbobdoc = { version = "=0.3.0", features = ["enable"] }
 [features]
 python = ["dep:numpy", "dep:pyo3"]
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", ".github/katex.html"]
+
 [profile.release]
 codegen-units = 1
 lto = false

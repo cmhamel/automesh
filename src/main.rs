@@ -2,7 +2,12 @@ use automesh::Spn;
 use clap::Parser;
 
 #[derive(Parser)]
-#[command(about, arg_required_else_help = true, long_about = None, version)]
+#[command(about = "
+Automatic mesh generation. \n
+\x1b[1;4mNotes:\x1b[0m
+  - Input/output file types are inferred.
+  - Scaling is applied before translation.",
+arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the NumPy input file.  Example: --input <input_file>.npy   (TODO: work in progress <input_file>.spn)
     #[arg(short, long)]

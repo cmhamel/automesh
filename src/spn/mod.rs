@@ -74,6 +74,12 @@ impl Spn {
     #[doc = svgbobdoc::transform!(
     /// Converts the SPN type into an Exodus type, consuming the SPN type.
     ///
+    /// The SPN data can be scaled and translated (in that order).
+    ///
+    /// ```math
+    /// x \mapsto s_x x + t_x\qquad y \mapsto s_y y + t_y\qquad z \mapsto s_z z + t_z
+    /// ```
+    ///
     /// ```svgbob
     ///     8       7
     ///      *-------*        +x
