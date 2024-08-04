@@ -13,7 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        toolchain:
+          - beta
+          - nightly
+          - stable
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
@@ -22,7 +25,7 @@ jobs:
         with:
           components: clippy, rustfmt
           default: true
-          toolchain: 1.79.0
+          toolchain: ${{ matrix.toolchain }}
       - name: build
         run: cargo build
       - name: clippy
