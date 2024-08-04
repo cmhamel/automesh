@@ -3,19 +3,19 @@
 //! This program converts a segmentation to a finite element mesh.
 //!
 //! * The segmentation is composed of non-negative integers of type `uint8`
-//! saved to a binary file in [NumPy](https://numpy.org) `.npy` format.
-//!  * The segmentation can be either a semantic segmentation or an instance
-//! segmentation.
+//!   saved to a binary file in [NumPy](https://numpy.org) `.npy` format.
+//! * The segmentation can be either a semantic segmentation or an instance
+//!   segmentation.
 //!     * A semantic segmentation classifies each pixel in an image
-//! to as belonging to a specific class (or category).  For example, an image
-//! containing three dogs will contain two classes: `dog` and `background`.
+//!       to as belonging to a specific class (or category).  For example, an image
+//!       containing three dogs will contain two classes: `dog` and `background`.
 //!     * An instance segmentation goes beyond semantic segmentation,
-//! classifying pixels not only by class, but also but instance.  Unlike
-//! semantic segmentation, image segmentation can classify individual instances
-//! of object of the same class.  For example, an image containing three dogs
-//! will contain four classes: `dog_1`, `dog_2`, `dog_3`, and `background`.
+//!       classifying pixels not only by class, but also but instance.  Unlike
+//!       semantic segmentation, image segmentation can classify individual instances
+//!       of object of the same class.  For example, an image containing three dogs
+//!       will contain four classes: `dog_1`, `dog_2`, `dog_3`, and `background`.
 //! * The finite element mesh is saved as an Exodus finite element mesh file
-//! in `.exo` format.
+//!   in `.exo` format.
 //!
 //! # Example:
 //!
