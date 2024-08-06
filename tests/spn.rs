@@ -173,41 +173,36 @@ fn assert_data_eq_gold(spn: Spn) {
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[test]
+fn from_npy() {
+    let spn = Spn::from_npy("tests/input/f.npy");
+    assert_data_eq_gold(spn);
+}
 
-    #[test]
-    fn from_npy() {
-        let _spn = Spn::from_npy("tests/input/f.npy");
-        assert_data_eq_gold(_spn);
-    }
+#[test]
+#[should_panic(expected = "File type must be .npy")]
+fn from_npy_file_unreadable() {
+    // Guard against case where file exists, but it cannot be read,
+    // for example, by specifying a text file, `f.txt`, which is not
+    // `.npy` file.
+    let _spn = Spn::from_npy("tests/input/f.txt");
+}
 
-    #[test]
-    #[should_panic(expected = "File type must be .npy")]
-    fn from_npy_file_unreadable() {
-        // Guard against case where file exists, but it cannot be read,
-        // for example, by specifying a text file, `f.txt`, which is not
-        // `.npy` file.
-        let _spn = Spn::from_npy("tests/input/f.txt");
-    }
+#[test]
+#[should_panic(expected = "Could not find the .npy file")]
+fn from_npy_file_nonexistent() {
+    // Guard against case where file does not exist.
+    // Precondition: `f_file_nonexistent.npy` actually does not exist.
+    let _spn = Spn::from_npy("tests/input/f_file_nonexistent.npy");
+}
 
-    #[test]
-    #[should_panic(expected = "Could not find the .npy file")]
-    fn from_npy_file_nonexistent() {
-        // Guard against case where file does not exist.
-        // Precondition: `f_file_nonexistent.npy` actually does not exist.
-        let _spn = Spn::from_npy("tests/input/f_file_nonexistent.npy");
-    }
-
-    #[test]
-    #[should_panic(expected = "Could not open the .npy file")]
-    fn from_npy_file_unopenable() {
-        // Guard against the case where the .npy file exists, but it
-        // cannot be opened. Here we have created an encrypted file
-        // contents contained `docs/encrypted.md`.
-        let _spn = Spn::from_npy("tests/input/encrypted.npy");
-    }
+#[test]
+#[should_panic(expected = "Could not open the .npy file")]
+fn from_npy_file_unopenable() {
+    // Guard against the case where the .npy file exists, but it
+    // cannot be opened. Here we have created an encrypted file
+    // contents contained `docs/encrypted.md`.
+    let _spn = Spn::from_npy("tests/input/encrypted.npy");
 }
 
 #[test]
@@ -252,5 +247,12 @@ fn into_exodus() {
 #[test]
 fn new() {
     let spn = Spn::new("tests/input/f.spn", NEL);
+    assert_data_eq_gold(spn);
+}
+
+#[test]
+fn write_npy() {
+    Spn::new("tests/input/f.spn", NEL).write_npy("target/f.npy");
+    let spn = Spn::from_npy("target/f.npy");
     assert_data_eq_gold(spn);
 }
