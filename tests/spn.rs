@@ -253,6 +253,6 @@ fn new() {
 #[test]
 fn write_npy() {
     Spn::new("tests/input/f.spn", NEL).write_npy("target/f.npy");
-    spn = Spn::from_npy("target/f.npy");
+    let spn = Spn::from_npy("target/f.npy");
     assert_data_eq_gold(spn);
 }
