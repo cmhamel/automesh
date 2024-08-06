@@ -34,4 +34,7 @@ impl Spn {
         let data = super::new(file_path, nel);
         Self { data }
     }
+    pub fn write_npy(&self, file_path: &str) {
+        super::write_spn_to_npy(&self.data, file_path);
+    }
 }

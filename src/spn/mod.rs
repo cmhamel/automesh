@@ -7,10 +7,10 @@ pub mod test;
 use super::{ElementBlocks, ElementConnectivity, Exodus, NodalCoordinates};
 use itertools::Itertools;
 use ndarray::Array3;
-use ndarray_npy::ReadNpyExt;
+use ndarray_npy::{ReadNpyExt, WriteNpyExt};
 use std::{
     fs::File,
-    io::{BufRead, BufReader, ErrorKind},
+    io::{BufRead, BufReader, BufWriter, ErrorKind},
 };
 
 const NODE_NUMBERING_OFFSET: usize = 1;
@@ -22,11 +22,6 @@ type Translate = [f64; 3];
 type VoxelData<const N: usize> = Vec<[usize; N]>;
 
 /// The SPN type.
-pub struct Spn {
-    data: SpnData,
-}
-
-/// Inherent implementation of the SPN type.
 ///
 /// # SPN file
 ///
@@ -61,6 +56,11 @@ pub struct Spn {
 ///  * [autotwin/mesh letter "F" unit test](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md)
 ///  * [Sculpt Input Microstructure SPN File](https://cubit.sandia.gov/files/cubit/16.10/help_manual/WebHelp/mesh_generation/meshing_schemes/parallel/sculpt_input.htm)
 ///
+pub struct Spn {
+    data: SpnData,
+}
+
+/// Inherent implementation of the SPN type.
 impl Spn {
     /// Constructs and returns a new SPN type from an NPY file.
     pub fn from_npy(file_path: &str) -> Self {
@@ -101,6 +101,10 @@ impl Spn {
     pub fn new(file_path: &str, nel: Nel) -> Self {
         let data = new(file_path, nel);
         Self { data }
+    }
+    /// Writes the internal SPN data to a NPY file.
+    pub fn write_npy(&self, file_path: &str) {
+        write_spn_to_npy(self.get_data(), file_path)
     }
 }
 
@@ -283,16 +287,16 @@ fn new(file_path: &str, nel: Nel) -> SpnData {
     data
 }
 
-/// Given a file path to a `.npy` file, creates a `SpnData` data type.
-///
-/// # Arguments
-///
-/// * `file_path` - The fully pathed name of the `.npy` file.
-///
-/// # Returns
-///
-/// * The data from the `.npy` file as a `SpnData` type.
-///
+// Given a file path to a `.npy` file, creates a `SpnData` data type.
+//
+// # Arguments
+//
+// * `file_path` - The fully pathed name of the `.npy` file.
+//
+// # Returns
+//
+// * The data from the `.npy` file as a `SpnData` type.
+//
 fn spn_data_from_npy(file_path: &str) -> SpnData {
     // https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
     // The return type of File::open is a Result<T, E> enum.
@@ -326,4 +330,9 @@ fn spn_data_from_npy(file_path: &str) -> SpnData {
     };
 
     SpnData::read_npy(npy_file).expect("Could not open the .npy file")
+}
+
+fn write_spn_to_npy(data: &SpnData, file_path: &str) {
+    data.write_npy(BufWriter::new(File::create(file_path).unwrap()))
+        .unwrap();
 }

@@ -179,3 +179,9 @@ def test_from_npy():
 def test_new():
     spn = Spn('tests/input/f.spn', nel)
     assert (spn.data == gold_data).all()
+
+
+def test_write_npy():
+    Spn('tests/input/f.spn', nel).write_npy('target/f.npy')
+    spn = Spn.from_npy('target/f.npy')
+    assert (spn.data == gold_data).all()
