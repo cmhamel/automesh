@@ -72,7 +72,7 @@ impl Spn {
         &self.data
     }
     #[doc = svgbobdoc::transform!(
-    /// Converts the SPN type into an Exodus type, consuming the SPN type.
+    /// Converts the SPN type into a finite element type, consuming the SPN type.
     ///
     /// The SPN data can be scaled and translated (in that order).
     ///
