@@ -42,6 +42,12 @@ impl FiniteElements {
     pub fn get_nodal_coordinates<'py>(&self, python: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         PyArray2::from_vec2_bound(python, &self.nodal_coordinates).unwrap()
     }
+    pub fn write_inp(&self, file_path: &str) {
+        super::Abaqus::write_inp(self, file_path)
+    }
+    pub fn write_exo(&self, file_path: &str) {
+        super::Exodus::write_exo(self, file_path)
+    }
 }
 
 impl super::Abaqus for FiniteElements {
