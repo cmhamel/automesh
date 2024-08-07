@@ -2,6 +2,10 @@
 pub mod py;
 
 use super::{abaqus::Abaqus, exodus::Exodus};
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+};
 
 pub type ElementBlocks = Vec<usize>;
 pub type ElementConnectivity = Vec<Vec<usize>>;
@@ -44,8 +48,9 @@ impl FiniteElements {
 
 /// Abaqus implementation of the finite element type.
 impl Abaqus for FiniteElements {
-    fn write_inp(&self, _file_path: &str) {
+    fn write_inp(&self, file_path: &str) {
         write_fem_to_inp(
+            file_path,
             self.get_element_blocks(),
             self.get_element_connectivity(),
             self.get_nodal_coordinates(),
@@ -61,9 +66,33 @@ impl Exodus for FiniteElements {
 }
 
 fn write_fem_to_inp(
+    file_path: &str,
     _element_blocks: &ElementBlocks,
-    _element_connectivity: &ElementConnectivity,
+    element_connectivity: &ElementConnectivity,
     _nodal_coordinates: &NodalCoordinates,
 ) {
+    let mut file = BufWriter::new(File::create(file_path).unwrap());
+    element_connectivity
+        .iter()
+        .enumerate()
+        .for_each(|(element, _connectivity)| {
+            file.write_all(element.to_string().as_bytes()).unwrap()
+        });
+
+    // let test_data = "\nhello\n";
+    // file.write(&test_data.as_bytes()).unwrap();
+    // file.write(&1_i32.to_string().as_bytes()).unwrap();
+    // file.write(&test_data.as_bytes()).unwrap();
+    // file.write(&1_i32.to_le_bytes()).unwrap();
+    // file.write(&test_data.as_bytes()).unwrap();
+    // file.write(&1_i32.to_be_bytes()).unwrap();
+
+    // let number: usize = 1234;
+    // let mut file = File::create(file_path).expect("create failed");
+    // file.write_all(&number.to_le_bytes()).expect("write failed");
+
+    // let data = "Some data!";
+    // std::fs::write("/tmp/foo", data).expect("Unable to write file");
+
     todo!("Writing Abaqus files has not yet been implemented.")
 }
