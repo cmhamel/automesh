@@ -1,4 +1,4 @@
-use automesh::Spn;
+use automesh::{Abaqus, Exodus, Spn};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -78,13 +78,15 @@ fn main() {
     } else {
         panic!("Invalid input ({}) specified.", args.input)
     };
-    let output = if args.output.ends_with(".exo") {
-        input.into_exodus(
-            &[args.xscale, args.yscale, args.zscale],
-            &[args.xtranslate, args.ytranslate, args.ztranslate],
-        )
+    let output = input.into_finite_elements(
+        &[args.xscale, args.yscale, args.zscale],
+        &[args.xtranslate, args.ytranslate, args.ztranslate],
+    );
+    if args.output.ends_with(".exo") {
+        output.write_exo(&args.output);
+    } else if args.output.ends_with(".inp") {
+        output.write_inp(&args.output);
     } else {
         panic!("Invalid output ({}) specified.", args.output)
     };
-    output.write(&args.output);
 }

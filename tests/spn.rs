@@ -206,17 +206,17 @@ fn from_npy_file_unopenable() {
 }
 
 #[test]
-fn into_exodus() {
+fn into_finite_elements() {
     let spn = Spn::from_npy("tests/input/f.npy");
-    let exo = spn.into_exodus(&SCALE, &TRANSLATE);
-    let blocks = exo.get_element_blocks();
+    let fem = spn.into_finite_elements(&SCALE, &TRANSLATE);
+    let blocks = fem.get_element_blocks();
     assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
     assert_eq!(blocks.len(), NUM_ELEMENTS);
     blocks
         .iter()
         .zip(GOLD_BLOCKS.iter())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
-    let connectivity = exo.get_element_connectivity();
+    let connectivity = fem.get_element_connectivity();
     assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
     assert_eq!(connectivity.len(), NUM_ELEMENTS);
     connectivity
@@ -224,7 +224,7 @@ fn into_exodus() {
         .flatten()
         .zip(GOLD_CONNECTIVITY.iter().flatten())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
-    let coordinates = exo.get_nodal_coordinates();
+    let coordinates = fem.get_nodal_coordinates();
     assert_eq!(GOLD_COORDINATES.len(), NUM_NODES);
     assert_eq!(coordinates.len(), NUM_NODES);
     let gold_coordinates: Vec<Vec<f64>> = GOLD_COORDINATES

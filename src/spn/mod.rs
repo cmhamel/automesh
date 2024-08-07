@@ -4,7 +4,7 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
-use super::{ElementBlocks, ElementConnectivity, Exodus, NodalCoordinates};
+use super::fem::{ElementBlocks, ElementConnectivity, FiniteElements, NodalCoordinates};
 use itertools::Itertools;
 use ndarray::Array3;
 use ndarray_npy::{ReadNpyExt, WriteNpyExt};
@@ -92,10 +92,10 @@ impl Spn {
     ///   1       2         -y
     /// ```
     )]
-    pub fn into_exodus(self, scale: &Scale, translate: &Translate) -> Exodus {
+    pub fn into_finite_elements(self, scale: &Scale, translate: &Translate) -> FiniteElements {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            exodus_data_from_npy_data(self.get_data(), scale, translate);
-        Exodus::from_data(element_blocks, element_connectivity, nodal_coordinates)
+            finite_element_data_from_npy_data(self.get_data(), scale, translate);
+        FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     /// Constructs and returns a new SPN type from file.
     pub fn new(file_path: &str, nel: Nel) -> Self {
@@ -126,7 +126,41 @@ fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConne
         });
 }
 
-fn exodus_data_from_npy_data(
+fn filter_spn_data(data: &SpnData) -> (VoxelData<3>, ElementBlocks) {
+    let filtered_voxel_data_combo: VoxelData<4> = data
+        .outer_iter()
+        .enumerate()
+        .map(|(k, data_k)| {
+            data_k
+                .outer_iter()
+                .enumerate()
+                .map(|(j, data_kj)| {
+                    data_kj
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, &data_kji)| data_kji > 0)
+                        .map(|(i, data_kji)| [k, j, i, *data_kji as usize])
+                        .collect()
+                })
+                .collect()
+        })
+        .collect::<Vec<Vec<Vec<[usize; 4]>>>>()
+        .into_iter()
+        .flatten()
+        .flatten()
+        .collect();
+    let element_blocks = filtered_voxel_data_combo
+        .iter()
+        .map(|entry| entry[3])
+        .collect();
+    let filtered_voxel_data = filtered_voxel_data_combo
+        .into_iter()
+        .map(|entry| [entry[0], entry[1], entry[2]])
+        .collect();
+    (filtered_voxel_data, element_blocks)
+}
+
+fn finite_element_data_from_npy_data(
     data: &SpnData,
     scale: &Scale,
     translate: &Translate,
@@ -239,40 +273,6 @@ fn exodus_data_from_npy_data(
             ];
         });
     (element_blocks, element_connectivity, nodal_coordinates)
-}
-
-fn filter_spn_data(data: &SpnData) -> (VoxelData<3>, ElementBlocks) {
-    let filtered_voxel_data_combo: VoxelData<4> = data
-        .outer_iter()
-        .enumerate()
-        .map(|(k, data_k)| {
-            data_k
-                .outer_iter()
-                .enumerate()
-                .map(|(j, data_kj)| {
-                    data_kj
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, &data_kji)| data_kji > 0)
-                        .map(|(i, data_kji)| [k, j, i, *data_kji as usize])
-                        .collect()
-                })
-                .collect()
-        })
-        .collect::<Vec<Vec<Vec<[usize; 4]>>>>()
-        .into_iter()
-        .flatten()
-        .flatten()
-        .collect();
-    let element_blocks = filtered_voxel_data_combo
-        .iter()
-        .map(|entry| entry[3])
-        .collect();
-    let filtered_voxel_data = filtered_voxel_data_combo
-        .into_iter()
-        .map(|entry| [entry[0], entry[1], entry[2]])
-        .collect();
-    (filtered_voxel_data, element_blocks)
 }
 
 fn new(file_path: &str, nel: Nel) -> SpnData {

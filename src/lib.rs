@@ -88,12 +88,12 @@
 #[cfg(feature = "python")]
 mod py;
 
+mod abaqus;
 mod exodus;
+mod fem;
 mod spn;
 
+pub use abaqus::Abaqus;
 pub use exodus::Exodus;
+pub use fem::FiniteElements;
 pub use spn::Spn;
-
-type ElementBlocks = Vec<usize>;
-type ElementConnectivity = Vec<Vec<usize>>;
-type NodalCoordinates = Vec<Vec<f64>>;
