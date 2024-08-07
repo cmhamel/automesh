@@ -112,5 +112,4 @@ fn write_fem_to_inp(
     });
     file.write_all(&[10, 42, 42, 10]).unwrap();
     file.flush().expect("Forgot to flush!");
-    todo!("Writing Abaqus files has not yet been implemented.")
 }
