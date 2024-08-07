@@ -45,8 +45,9 @@ impl FiniteElements {
 }
 
 impl super::Abaqus for FiniteElements {
-    fn write_inp(&self, _file_path: &str) {
+    fn write_inp(&self, file_path: &str) {
         super::write_fem_to_inp(
+            file_path,
             &self.element_blocks,
             &self.element_connectivity,
             &self.nodal_coordinates,
