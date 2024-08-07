@@ -73,3 +73,8 @@ fn filter() {
         .zip(filtered_voxel_data.iter().flatten())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
+
+#[test]
+fn todo() {
+    todo!("SPN is a file type, shouldn't the struct be Voxels or something?")
+}
