@@ -1,4 +1,3 @@
-use crate::{Abaqus, Exodus};
 use numpy::{PyArray1, PyArray2};
 use pyo3::prelude::*;
 
@@ -45,13 +44,17 @@ impl FiniteElements {
     }
 }
 
-impl Abaqus for FiniteElements {
+impl super::Abaqus for FiniteElements {
     fn write_inp(&self, _file_path: &str) {
-        todo!("Writing Abaqus files has not yet been implemented.")
+        super::write_fem_to_inp(
+            &self.element_blocks,
+            &self.element_connectivity,
+            &self.nodal_coordinates,
+        )
     }
 }
 
-impl Exodus for FiniteElements {
+impl super::Exodus for FiniteElements {
     fn write_exo(&self, _file_path: &str) {
         todo!("Writing Exodus files has not yet been implemented.")
     }
