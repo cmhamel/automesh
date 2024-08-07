@@ -1,4 +1,4 @@
-use crate::exodus::py::Exodus;
+use crate::fem::py::FiniteElements;
 use numpy::{PyArray3, ToPyArray};
 use pyo3::prelude::*;
 
@@ -15,10 +15,14 @@ pub struct Spn {
 #[pymethods]
 impl Spn {
     #[pyo3(signature = (scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
-    pub fn as_exodus(&self, scale: super::Scale, translate: super::Translate) -> Exodus {
+    pub fn as_finite_elements(
+        &self,
+        scale: super::Scale,
+        translate: super::Translate,
+    ) -> FiniteElements {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            super::exodus_data_from_npy_data(&self.data, &scale, &translate);
-        Exodus::from_data(element_blocks, element_connectivity, nodal_coordinates)
+            super::finite_element_data_from_npy_data(&self.data, &scale, &translate);
+        FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     #[getter]
     pub fn get_data<'py>(&self, python: Python<'py>) -> Bound<'py, PyArray3<u8>> {

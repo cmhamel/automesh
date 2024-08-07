@@ -163,12 +163,12 @@ for i in range(3):
     gold_coordinates[:, i] += translate[i]
 
 
-def test_as_exodus():
+def test_as_finite_elements():
     spn = Spn.from_npy('tests/input/f.npy')
-    exo = spn.as_exodus(scale, translate)
-    assert (exo.element_blocks == gold_blocks).all()
-    assert (exo.element_connectivity == gold_connectivity).all()
-    assert (exo.nodal_coordinates == gold_coordinates).all()
+    fem = spn.as_finite_elements(scale, translate)
+    assert (fem.element_blocks == gold_blocks).all()
+    assert (fem.element_connectivity == gold_connectivity).all()
+    assert (fem.nodal_coordinates == gold_coordinates).all()
 
 
 def test_from_npy():
