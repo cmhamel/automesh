@@ -45,7 +45,11 @@ impl FiniteElements {
 /// Abaqus implementation of the finite element type.
 impl Abaqus for FiniteElements {
     fn write_inp(&self, _file_path: &str) {
-        todo!("Writing Abaqus files has not yet been implemented.")
+        write_fem_to_inp(
+            self.get_element_blocks(),
+            self.get_element_connectivity(),
+            self.get_nodal_coordinates(),
+        )
     }
 }
 
@@ -54,4 +58,12 @@ impl Exodus for FiniteElements {
     fn write_exo(&self, _file_path: &str) {
         todo!("Writing Exodus files has not yet been implemented.")
     }
+}
+
+fn write_fem_to_inp(
+    _element_blocks: &ElementBlocks,
+    _element_connectivity: &ElementConnectivity,
+    _nodal_coordinates: &NodalCoordinates,
+) {
+    todo!("Writing Abaqus files has not yet been implemented.")
 }
