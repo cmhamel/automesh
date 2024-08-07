@@ -2,6 +2,7 @@
 pub mod py;
 
 use super::{abaqus::Abaqus, exodus::Exodus};
+use itertools::Itertools;
 use std::{
     fs::File,
     io::{BufWriter, Write},
@@ -67,32 +68,49 @@ impl Exodus for FiniteElements {
 
 fn write_fem_to_inp(
     file_path: &str,
-    _element_blocks: &ElementBlocks,
+    element_blocks: &ElementBlocks,
     element_connectivity: &ElementConnectivity,
-    _nodal_coordinates: &NodalCoordinates,
+    nodal_coordinates: &NodalCoordinates,
 ) {
     let mut file = BufWriter::new(File::create(file_path).unwrap());
-    element_connectivity
+    file.write_all(format!("*HEADING\nautomesh {}", env!("CARGO_PKG_VERSION")).as_bytes())
+        .unwrap();
+    file.write_all(&[10, 42, 42, 10]).unwrap();
+    file.write_all("*PART, NAME=Part-Default".as_bytes())
+        .unwrap();
+    file.write_all(&[10, 42, 42, 10]).unwrap();
+    file.write_all("*NODE, NSET=ALLNODES".as_bytes()).unwrap();
+    nodal_coordinates
         .iter()
         .enumerate()
-        .for_each(|(element, _connectivity)| {
-            file.write_all(element.to_string().as_bytes()).unwrap()
+        .for_each(|(node, coordinates)| {
+            file.write_all(&[10, 9]).unwrap();
+            file.write_all((node + 1).to_string().as_bytes()).unwrap();
+            coordinates.iter().for_each(|coordinate| {
+                file.write_all(&[44, 9]).unwrap();
+                file.write_all(format!("{:.6e}", coordinate).as_bytes())
+                    .unwrap();
+            });
         });
-
-    // let test_data = "\nhello\n";
-    // file.write(&test_data.as_bytes()).unwrap();
-    // file.write(&1_i32.to_string().as_bytes()).unwrap();
-    // file.write(&test_data.as_bytes()).unwrap();
-    // file.write(&1_i32.to_le_bytes()).unwrap();
-    // file.write(&test_data.as_bytes()).unwrap();
-    // file.write(&1_i32.to_be_bytes()).unwrap();
-
-    // let number: usize = 1234;
-    // let mut file = File::create(file_path).expect("create failed");
-    // file.write_all(&number.to_le_bytes()).expect("write failed");
-
-    // let data = "Some data!";
-    // std::fs::write("/tmp/foo", data).expect("Unable to write file");
-
+    file.write_all(&[10, 42, 42, 10]).unwrap();
+    element_blocks.iter().unique().for_each(|current_block| {
+        file.write_all(format!("*ELEMENT, TYPE=C3D8R, ELSET=EB{}", current_block).as_bytes())
+            .unwrap();
+        element_blocks
+            .iter()
+            .enumerate()
+            .filter(|(_, block)| block == &current_block)
+            .for_each(|(element, _)| {
+                file.write_all(&[10, 9]).unwrap();
+                file.write_all((element + 1).to_string().as_bytes())
+                    .unwrap();
+                element_connectivity[element].iter().for_each(|entry| {
+                    file.write_all(&[44, 9]).unwrap();
+                    file.write_all(entry.to_string().as_bytes()).unwrap();
+                });
+            });
+    });
+    file.write_all(&[10, 42, 42, 10]).unwrap();
+    file.flush().expect("Forgot to flush!");
     todo!("Writing Abaqus files has not yet been implemented.")
 }
