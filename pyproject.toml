@@ -24,7 +24,6 @@ description = 'automesh'
 dependencies = [
   'cffi',
   'numpy',
-  'pyyaml'
 ]
 name = 'automesh'
 requires-python = '>=3.8,<3.13'
