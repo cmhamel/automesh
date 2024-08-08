@@ -83,10 +83,10 @@ fn write_fem_to_inp(
 fn write_heading_to_inp(file: &mut BufWriter<File>) {
     file.write_all(format!("*HEADING\nautomesh {}", env!("CARGO_PKG_VERSION")).as_bytes())
         .unwrap();
-    write_end_of_section_to_inp(file);
+    end_section(file);
     file.write_all("*PART, NAME=Part-Default".as_bytes())
         .unwrap();
-    write_end_of_section_to_inp(file);
+    end_section(file);
 }
 
 fn write_nodal_coordinates_to_inp(
@@ -98,15 +98,15 @@ fn write_nodal_coordinates_to_inp(
         .iter()
         .enumerate()
         .for_each(|(node, coordinates)| {
-            file.write_all(&[10, 9]).unwrap();
+            indent(file);
             file.write_all((node + 1).to_string().as_bytes()).unwrap();
             coordinates.iter().for_each(|coordinate| {
-                file.write_all(&[44, 9]).unwrap();
+                delimiter(file);
                 file.write_all(format!("{:.6e}", coordinate).as_bytes())
                     .unwrap();
             });
         });
-    write_end_of_section_to_inp(file);
+    end_section(file);
 }
 
 fn write_element_connectivity_to_inp(
@@ -114,26 +114,37 @@ fn write_element_connectivity_to_inp(
     element_blocks: &ElementBlocks,
     element_connectivity: &ElementConnectivity,
 ) {
+    let element_type = "C3D8R";
     element_blocks.iter().unique().for_each(|current_block| {
-        file.write_all(format!("*ELEMENT, TYPE=C3D8R, ELSET=EB{}", current_block).as_bytes())
-            .unwrap();
+        file.write_all(
+            format!("*ELEMENT, TYPE={}, ELSET=EB{}", element_type, current_block).as_bytes(),
+        )
+        .unwrap();
         element_blocks
             .iter()
             .enumerate()
             .filter(|(_, block)| block == &current_block)
             .for_each(|(element, _)| {
-                file.write_all(&[10, 9]).unwrap();
+                indent(file);
                 file.write_all((element + 1).to_string().as_bytes())
                     .unwrap();
                 element_connectivity[element].iter().for_each(|entry| {
-                    file.write_all(&[44, 9]).unwrap();
+                    delimiter(file);
                     file.write_all(entry.to_string().as_bytes()).unwrap();
                 });
             });
     });
-    write_end_of_section_to_inp(file);
+    end_section(file);
 }
 
-fn write_end_of_section_to_inp(file: &mut BufWriter<File>) {
+fn delimiter(file: &mut BufWriter<File>) {
+    file.write_all(&[44, 9]).unwrap()
+}
+
+fn indent(file: &mut BufWriter<File>) {
+    file.write_all(&[10, 9]).unwrap()
+}
+
+fn end_section(file: &mut BufWriter<File>) {
     file.write_all(&[10, 42, 42, 10]).unwrap()
 }
