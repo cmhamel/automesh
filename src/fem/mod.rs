@@ -73,12 +73,25 @@ fn write_fem_to_inp(
     nodal_coordinates: &NodalCoordinates,
 ) {
     let mut file = BufWriter::new(File::create(file_path).unwrap());
+    write_heading_to_inp(&mut file);
+    write_nodal_coordinates_to_inp(&mut file, nodal_coordinates);
+    write_element_connectivity_to_inp(&mut file, element_blocks, element_connectivity);
+    file.flush().expect("Forgot to flush!");
+}
+
+fn write_heading_to_inp(file: &mut BufWriter<File>) {
     file.write_all(format!("*HEADING\nautomesh {}", env!("CARGO_PKG_VERSION")).as_bytes())
         .unwrap();
     file.write_all(&[10, 42, 42, 10]).unwrap();
     file.write_all("*PART, NAME=Part-Default".as_bytes())
         .unwrap();
     file.write_all(&[10, 42, 42, 10]).unwrap();
+}
+
+fn write_nodal_coordinates_to_inp(
+    file: &mut BufWriter<File>,
+    nodal_coordinates: &NodalCoordinates,
+) {
     file.write_all("*NODE, NSET=ALLNODES".as_bytes()).unwrap();
     nodal_coordinates
         .iter()
@@ -93,6 +106,13 @@ fn write_fem_to_inp(
             });
         });
     file.write_all(&[10, 42, 42, 10]).unwrap();
+}
+
+fn write_element_connectivity_to_inp(
+    file: &mut BufWriter<File>,
+    element_blocks: &ElementBlocks,
+    element_connectivity: &ElementConnectivity,
+) {
     element_blocks.iter().unique().for_each(|current_block| {
         file.write_all(format!("*ELEMENT, TYPE=C3D8R, ELSET=EB{}", current_block).as_bytes())
             .unwrap();
@@ -111,5 +131,4 @@ fn write_fem_to_inp(
             });
     });
     file.write_all(&[10, 42, 42, 10]).unwrap();
-    file.flush().expect("Forgot to flush!");
 }
