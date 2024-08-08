@@ -83,10 +83,10 @@ fn write_fem_to_inp(
 fn write_heading_to_inp(file: &mut BufWriter<File>) {
     file.write_all(format!("*HEADING\nautomesh {}", env!("CARGO_PKG_VERSION")).as_bytes())
         .unwrap();
-    file.write_all(&[10, 42, 42, 10]).unwrap();
+    write_end_of_section_to_inp(file);
     file.write_all("*PART, NAME=Part-Default".as_bytes())
         .unwrap();
-    file.write_all(&[10, 42, 42, 10]).unwrap();
+    write_end_of_section_to_inp(file);
 }
 
 fn write_nodal_coordinates_to_inp(
@@ -106,7 +106,7 @@ fn write_nodal_coordinates_to_inp(
                     .unwrap();
             });
         });
-    file.write_all(&[10, 42, 42, 10]).unwrap();
+    write_end_of_section_to_inp(file);
 }
 
 fn write_element_connectivity_to_inp(
@@ -131,5 +131,9 @@ fn write_element_connectivity_to_inp(
                 });
             });
     });
-    file.write_all(&[10, 42, 42, 10]).unwrap();
+    write_end_of_section_to_inp(file);
+}
+
+fn write_end_of_section_to_inp(file: &mut BufWriter<File>) {
+    file.write_all(&[10, 42, 42, 10]).unwrap()
 }
