@@ -36,6 +36,10 @@ develop = [
   'pytest',
   'pytest-cov'
 ]
+testing = [
+  'pycodestyle',
+  'pytest',
+]
 
 [project.urls]
 Documentation = 'https://github.com/autotwin/automesh'
