@@ -8,6 +8,8 @@ use std::{
     io::{BufWriter, Write},
 };
 
+const ELEMENT_TYPE: &str = "C3D8R";
+
 pub type ElementBlocks = Vec<usize>;
 pub type ElementConnectivity = Vec<Vec<usize>>;
 pub type NodalCoordinates = Vec<Vec<f64>>;
@@ -114,10 +116,9 @@ fn write_element_connectivity_to_inp(
     element_blocks: &ElementBlocks,
     element_connectivity: &ElementConnectivity,
 ) {
-    let element_type = "C3D8R";
     element_blocks.iter().unique().for_each(|current_block| {
         file.write_all(
-            format!("*ELEMENT, TYPE={}, ELSET=EB{}", element_type, current_block).as_bytes(),
+            format!("*ELEMENT, TYPE={}, ELSET=EB{}", ELEMENT_TYPE, current_block).as_bytes(),
         )
         .unwrap();
         element_blocks
