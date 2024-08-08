@@ -72,8 +72,8 @@ fn write_fem_to_inp(
     element_connectivity: &ElementConnectivity,
     nodal_coordinates: &NodalCoordinates,
 ) {
-    let mut file =
-        BufWriter::new(File::create(file_path).expect("Could not create the .inp file."));
+    let inp_file = File::create(file_path).expect("Could not create the .inp file.");
+    let mut file = BufWriter::new(inp_file);
     write_heading_to_inp(&mut file);
     write_nodal_coordinates_to_inp(&mut file, nodal_coordinates);
     write_element_connectivity_to_inp(&mut file, element_blocks, element_connectivity);
