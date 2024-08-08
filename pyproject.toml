@@ -22,7 +22,6 @@ classifiers = [
 ]
 description = 'automesh'
 dependencies = [
-  'cffi',
   'numpy',
 ]
 name = 'automesh'
