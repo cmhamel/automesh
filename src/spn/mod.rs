@@ -15,6 +15,9 @@ use std::{
 
 const NODE_NUMBERING_OFFSET: usize = 1;
 
+// TODO:
+// SPN is a file type, shouldn't the struct be Voxels or something?
+
 type Nel = [usize; 3];
 type Scale = [f64; 3];
 type SpnData = Array3<u8>;
