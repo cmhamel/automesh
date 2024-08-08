@@ -137,14 +137,14 @@ fn write_element_connectivity_to_inp(
     end_section(file);
 }
 
+fn end_section(file: &mut BufWriter<File>) {
+    file.write_all(&[10, 42, 42, 10]).unwrap()
+}
+
 fn delimiter(file: &mut BufWriter<File>) {
     file.write_all(&[44, 9]).unwrap()
 }
 
 fn indent(file: &mut BufWriter<File>) {
     file.write_all(&[10, 9]).unwrap()
-}
-
-fn end_section(file: &mut BufWriter<File>) {
-    file.write_all(&[10, 42, 42, 10]).unwrap()
 }
