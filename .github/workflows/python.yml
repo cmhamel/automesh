@@ -54,6 +54,8 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: pip
+      run: pip install --upgrade pip
     - name: maturin
       run: pip install maturin
     - name: build
@@ -67,12 +69,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
+    - name: pip
+      run: pip install --upgrade pip
+    - name: wheelhouse
+      run: mkdir -p wheelhouse/ && mv ./*-wheel*/*.whl wheelhouse/
+    - name: twine
+      run: pip install twine
     - name: check
-      run: |
-        mkdir -p wheelhouse/
-        mv ./*-wheel*/*.whl wheelhouse/
-        pip install twine
-        twine check wheelhouse/*.whl
+      run: twine check wheelhouse/*.whl
     - name: upload
       if: github.event_name == 'release'
       run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} wheelhouse/*.whl
