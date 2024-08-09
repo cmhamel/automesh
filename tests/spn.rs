@@ -201,7 +201,7 @@ fn from_npy_file_nonexistent() {
 fn from_npy_file_unopenable() {
     // Guard against the case where the .npy file exists, but it
     // cannot be opened. Here we have created an encrypted file
-    // contents contained `docs/encrypted.md`.
+    // contents contained `doc/encrypted.md`.
     let _spn = Spn::from_npy("tests/input/encrypted.npy");
 }
 

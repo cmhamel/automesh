@@ -1,4 +1,4 @@
-//! Automatic mesh generation.
+//! Automesh: Automatic mesh generation.
 //!
 //! This program converts a segmentation to a finite element mesh.
 //!
@@ -72,7 +72,7 @@
 //!
 //! ```bash
 //! # TODO: work in progress
-//! automesh --input letter_f.spn -nx 3 -ny 5 -nz 4 --output letter_f.exo
+//! automesh --input letter_f.spn -nelx 3 -nely 5 -nelz 4 --output letter_f.exo
 //! ```
 //!
 //! with the default `z`, `y`, `x` ordering.
