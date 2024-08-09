@@ -1,4 +1,4 @@
-//! Autotwin: Automatic mesh generation.
+//! Automesh: Automatic mesh generation.
 //!
 //! This program converts a segmentation to a finite element mesh.
 //!
