@@ -4,10 +4,18 @@ use std::path::Path;
 
 #[derive(Parser)]
 #[command(about = "
-Automesh: Automatic mesh generation. \n
-\x1b[1;4mNotes:\x1b[0m
-  - Input/output file types are inferred.
-  - Scaling is applied before translation.",
+
+     @@@@@@@@@@@@@@@@
+      @@@@  @@@@@@@@@@
+     @@@@  @@@@@@@@@@@
+    @@@@  @@@@@@@@@@@@
+      @@    @@    @@
+      @@    @@    @@      \x1b[1;4mAutomesh: Automatic mesh generation\x1b[0m
+    @@@@@@@@@@@@  @@@
+    @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
+    @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
+     @@@@@@@@@@@@@@@@     - Scaling is applied before translation.
+",
 arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the NumPy (.npy) or SPN (.spn) input file.
