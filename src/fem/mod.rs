@@ -74,11 +74,19 @@ fn write_fem_to_inp(
     element_connectivity: &ElementConnectivity,
     nodal_coordinates: &NodalCoordinates,
 ) {
+    let element_number_width = get_width(element_connectivity);
+    let node_number_width = get_width(nodal_coordinates);
     let inp_file = File::create(file_path).expect("Could not create the .inp file.");
     let mut file = BufWriter::new(inp_file);
     write_heading_to_inp(&mut file);
-    write_nodal_coordinates_to_inp(&mut file, nodal_coordinates);
-    write_element_connectivity_to_inp(&mut file, element_blocks, element_connectivity);
+    write_nodal_coordinates_to_inp(&mut file, nodal_coordinates, &node_number_width);
+    write_element_connectivity_to_inp(
+        &mut file,
+        element_blocks,
+        element_connectivity,
+        &element_number_width,
+        &node_number_width,
+    );
     file.flush().expect("Forgot to flush!");
 }
 
@@ -94,6 +102,7 @@ fn write_heading_to_inp(file: &mut BufWriter<File>) {
 fn write_nodal_coordinates_to_inp(
     file: &mut BufWriter<File>,
     nodal_coordinates: &NodalCoordinates,
+    node_number_width: &usize,
 ) {
     file.write_all("*NODE, NSET=ALLNODES".as_bytes()).unwrap();
     nodal_coordinates
@@ -101,10 +110,11 @@ fn write_nodal_coordinates_to_inp(
         .enumerate()
         .for_each(|(node, coordinates)| {
             indent(file);
-            file.write_all((node + 1).to_string().as_bytes()).unwrap();
+            file.write_all(format!("{:>width$}", node + 1, width = node_number_width).as_bytes())
+                .unwrap();
             coordinates.iter().for_each(|coordinate| {
                 delimiter(file);
-                file.write_all(format!("{:.6e}", coordinate).as_bytes())
+                file.write_all(format!("{:>12.6e}", coordinate).as_bytes())
                     .unwrap();
             });
         });
@@ -115,6 +125,8 @@ fn write_element_connectivity_to_inp(
     file: &mut BufWriter<File>,
     element_blocks: &ElementBlocks,
     element_connectivity: &ElementConnectivity,
+    element_number_width: &usize,
+    node_number_width: &usize,
 ) {
     element_blocks.iter().unique().for_each(|current_block| {
         file.write_all(
@@ -127,11 +139,16 @@ fn write_element_connectivity_to_inp(
             .filter(|(_, block)| block == &current_block)
             .for_each(|(element, _)| {
                 indent(file);
-                file.write_all((element + 1).to_string().as_bytes())
-                    .unwrap();
+                file.write_all(
+                    format!("{:>width$}", element + 1, width = element_number_width).as_bytes(),
+                )
+                .unwrap();
                 element_connectivity[element].iter().for_each(|entry| {
                     delimiter(file);
-                    file.write_all(entry.to_string().as_bytes()).unwrap();
+                    file.write_all(
+                        format!("{:>width$}", entry, width = node_number_width).as_bytes(),
+                    )
+                    .unwrap();
                 });
             });
     });
@@ -143,9 +160,13 @@ fn end_section(file: &mut BufWriter<File>) {
 }
 
 fn delimiter(file: &mut BufWriter<File>) {
-    file.write_all(&[44, 9]).unwrap()
+    file.write_all(&[44, 32]).unwrap()
 }
 
 fn indent(file: &mut BufWriter<File>) {
-    file.write_all(&[10, 9]).unwrap()
+    file.write_all(&[10, 32, 32, 32, 32]).unwrap()
+}
+
+fn get_width<T>(input: &[T]) -> usize {
+    input.len().to_string().chars().count()
 }
