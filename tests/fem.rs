@@ -13,4 +13,5 @@ fn write_inp() {
     let fem = spn.into_finite_elements(&SCALE, &TRANSLATE);
     fem.write_inp("target/f.inp");
     todo!("Need a gold tests/input/f.inp to compare against?")
+    // and get version from Cargo.toml or something?
 }
