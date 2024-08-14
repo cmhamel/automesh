@@ -4,7 +4,14 @@
 
 *In order of most recent to least recent.*
 
+## 2024-08-14
+
+* https://github.com/hovey/mwe/tree/main/python/cicd_release
+
+
 ## 2024-08-07
+
+* refactor some existing code from C-style to idiomatic Rust style
 
 ## 2024-07-31
 
