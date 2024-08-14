@@ -34,7 +34,7 @@ Enhanced mesh quality can improve solver convergence rates, decrease overhead (m
 
 ### Task 2: Injury-Risk Automation
 
-* **Globalized measures**.  Current workflows (e.g., MPS, MPSR, 95th percentile cloud maps) will be rewritten to become standardized and flexible, enabling automation.
+* **Globalized measures**.  Current workflows (e.g., MPS95, MPSR95, Cumulative Strain Damage) will be rewritten to become standardized and flexible, enabling automation.
 * **Localized measures**.  Current whole-brain visualization workflows will be formalized into repeatable and flexible software recipes, making manual “point-and-click” GUI steps unnecessary.
 
 ### Task 3: Open-Source Mesh Generation
@@ -56,12 +56,12 @@ A minimum working example (MWE) of the `letter F` model (see [https://github.com
   * Semantic segmentation
     * as a [`.npy`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_fiducial.npy) file,
     * as a [`.spn`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f.spn) file,
-  * Configuration recipe (as a [`.yml`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_autotwin.yml) file)
+  * Deprecated: ~~Configuration recipe (as a [`.yml`](https://github.com/autotwin/mesh/blob/main/tests/files/letter_f_autotwin.yml) file)~~ Instead of a `.yml` recipe, we use a command line interface as `automesh [OPTIONS] --input <INPUT> --output <OUTPUT>`
 * Create:
   * Rust command line application that outputs equivalent Sculpt outputs, without void as a mesh constituent, as
     * ABAQUS ascii mesh file (as a `.inp` file)
     * SSM-ready mesh file (as a `.e` file, Genesis/Exodus [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) binary format)
-    * ascii neutral mesh file (as a file type that is currently to be determined)
+    * ASCII neutral mesh file (as a file type that is currently to be determined)
 * Next steps:
   * Taubin smoothing (see [Taubin 1995](https://dl.acm.org/doi/pdf/10.1145/218380.218473) and [Chen 2010](https://link.springer.com/content/pdf/10.1007/s00707-009-0274-0.pdf))
   * Dualization
