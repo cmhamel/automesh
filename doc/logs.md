@@ -4,10 +4,44 @@
 
 *In order of most recent to least recent.*
 
+## 2024-08-28
+
+Resume pair programming.
+
+## 2024-08-21
+
+MB OOO.  No pair programming.
+
 ## 2024-08-14
 
+* PR from issue
 * https://github.com/hovey/mwe/tree/main/python/cicd_release
+* review CBH code
+  * refactor for *n* test cases
+  * isolate the IO testing in `spn.rs`
+* ask about test input file
+* formatting of input file (tabs, spaces, alignment)
+* refactor automesh connectivity and change test
+  * MB - refactor code
+  * CH - refactor documentation, and the Python scripts to generate `f.spn` and `f.npy`, with `.py` into `tests/input`
+    * `(x, y)` plane for pixels, `z` axis for stacked pixles into voxels, stack of two slices (`NELZ = 2`), `NELX = 3`, `NELY = 5`.
+  * CH to dry out code `spn.rs` and `spn_single.rs` (CH made the code WET with the duplicated tests)
+  * CH refactor `f_fiducial.inp`
 
+```bash
+
+    ^ y  (z out of page, right hand rule)
+    |
+    |
+    @@@
+    @
+    @@
+    @
+    @ ---------->  x
+
+
+
+```
 
 ## 2024-08-07
 
