@@ -6,11 +6,12 @@ const NELX: usize = 3;
 const NEL: [usize; 3] = [NELX, NELY, NELZ];
 const NUM_ELEMENTS: usize = 39;
 const NUM_NODES: usize = 102;
+const NUM_NODES_ELEMENT: usize = 8;
 const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
 const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
 
 const GOLD_BLOCKS: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
-const GOLD_CONNECTIVITY: [[usize; 8]; NUM_ELEMENTS] = [
+const GOLD_CONNECTIVITY: [[usize; NUM_NODES_ELEMENT]; NUM_ELEMENTS] = [
     [2, 1, 6, 7, 32, 31, 36, 37],
     [32, 31, 36, 37, 62, 61, 66, 67],
     [62, 61, 66, 67, 86, 85, 90, 91],
