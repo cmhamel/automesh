@@ -215,20 +215,20 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
 
     for vox in range(nel):
 
-        i, j, k = lattice_nodes[vox][1:4]
-        c = offset + np.array(
+        ix, iy, iz = lattice_nodes[vox][1:4]
+        cv = offset + np.array(
             [
-                k * (nxp * nyp) + i + 1,
-                k * (nxp * nyp) + i + 2,
-                k * (nxp * nyp) + (j + 1) * nxp + i + 2,
-                k * (nxp * nyp) + (j + 1) * nxp + i + 1,
-                (k + 1) * (nxp * nyp) + i + 1,
-                (k + 1) * (nxp * nyp) + i + 2,
-                (k + 1) * (nxp * nyp) + (j + 1) * nxp + i + 2,
-                (k + 1) * (nxp * nyp) + (j + 1) * nxp + i + 1,
+                iz * (nxp * nyp) + ix + 1,
+                iz * (nxp * nyp) + ix + 2,
+                iz * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+                iz * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+                (iz + 1) * (nxp * nyp) + ix + 1,
+                (iz + 1) * (nxp * nyp) + ix + 2,
+                (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+                (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
             ]
         )
-        # c = offset + np.array(
+        # cv = offset + np.array(
         #     [
         #         0 * nxp + 1,
         #         0 * nxp + 2,
@@ -240,9 +240,9 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
         #         3 * nxp + 1,
         #     ]
         # )
-        # cs = np.append(cs, c)
-        # cs = np.concatenate(cs, c)
-        cs.append(c)
+        # cs = np.append(cs, cv)
+        # cs = np.concatenate(cs, cv)
+        cs.append(cv)
         breakpoint()
 
     cs = np.vstack(cs)
