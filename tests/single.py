@@ -237,9 +237,6 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     offset = 0
     nz, ny, nx = ex.voxels.shape
     nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
-    # base = np.array([1, 2, 4, 3, 5, 6, 8, 7])
-
-    # nel = nx * ny * nz
 
     # Generate the lattice nodes
     lattice_nodes = []
