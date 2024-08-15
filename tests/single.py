@@ -218,16 +218,28 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
         ix, iy, iz = lattice_nodes[vox][1:4]
         cv = offset + np.array(
             [
-                iz * (nxp * nyp) + ix + 1,
-                iz * (nxp * nyp) + ix + 2,
-                iz * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
-                iz * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
-                (iz + 1) * (nxp * nyp) + ix + 1,
-                (iz + 1) * (nxp * nyp) + ix + 2,
+                (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
+                (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
+                (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+                (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+                (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
+                (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
                 (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
                 (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
             ]
         )
+        # cv = offset + np.array(
+        #     [
+        #         iz * (nxp * nyp) + ix + 1,
+        #         iz * (nxp * nyp) + ix + 2,
+        #         iz * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+        #         iz * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+        #         (iz + 1) * (nxp * nyp) + ix + 1,
+        #         (iz + 1) * (nxp * nyp) + ix + 2,
+        #         (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+        #         (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+        #     ]
+        # )
         # cv = offset + np.array(
         #     [
         #         0 * nxp + 1,
