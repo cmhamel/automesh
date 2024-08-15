@@ -3,7 +3,7 @@ use automesh::Spn;
 const NELZ: usize = 1;
 const NELY: usize = 1;
 const NELX: usize = 1;
-const NSD: usize = 3; // number of space dimensions R3
+const NSD: usize = 3;
 const NEL: [usize; NSD] = [NELX, NELY, NELZ];
 const NUM_ELEMENTS: usize = 1;
 const NUM_NODES_ELEMENT: usize = 8;
