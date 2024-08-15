@@ -3,12 +3,13 @@ use automesh::Spn;
 const NELZ: usize = 4;
 const NELY: usize = 5;
 const NELX: usize = 3;
-const NEL: [usize; 3] = [NELX, NELY, NELZ];
+const NSD: usize = 3;
+const NEL: [usize; NSD] = [NELX, NELY, NELZ];
 const NUM_ELEMENTS: usize = 39;
 const NUM_NODES: usize = 102;
 const NUM_NODES_ELEMENT: usize = 8;
-const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
-const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
+const SCALE: [f64; NSD] = [1.2, 2.3, 0.4];
+const TRANSLATE: [f64; NSD] = [-0.3, 1.1, 0.5];
 
 const GOLD_BLOCKS: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const GOLD_CONNECTIVITY: [[usize; NUM_NODES_ELEMENT]; NUM_ELEMENTS] = [

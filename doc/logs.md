@@ -38,10 +38,15 @@ MB OOO.  No pair programming.
     @@
     @
     @ ---------->  x
-
-
-
 ```
+
+### Docs
+
+Notes on creating documentation:
+
+* `cargo doc --verbose`
+* [The rustdoc book](https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html)
+
 
 ## 2024-08-07
 
