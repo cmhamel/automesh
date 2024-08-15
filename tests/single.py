@@ -23,6 +23,7 @@ from typing import Final, NamedTuple
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import numpy.typing as nt
 from PIL import Image
 
 # module library
@@ -75,6 +76,29 @@ class Double(Example):
     )
     gold_lattice = np.array(
         [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
+    )
+
+
+class DoubleY(Example):
+    """A specific example of a double voxel, coursed along the y-axis."""
+
+    figure_title: str = "Double Y Element Global Node Numbers and Coordinates"
+    file_stem: str = "double_y"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                ],
+                [
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
     )
 
 
@@ -164,7 +188,7 @@ class QuadrupleVoid(Example):
     )
 
 
-def lattice_connectivity(ex: Example):
+def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     """Given an Example, prints the lattice connectivity."""
     offset = 0
     nz, ny, nx = ex.voxels.shape
@@ -196,9 +220,12 @@ def lattice_connectivity(ex: Example):
         cs.append(c)
 
     cs = np.vstack(cs)
-    breakpoint()
 
-    aa = 4
+    # voxel by voxel comparison
+    vv = ex.gold_lattice == cs
+    breakpoint()
+    assert np.all(vv)
+    return cs
 
 
 def main():
@@ -207,7 +234,8 @@ def main():
     # Create an instance of a specific example
     # user input begin
     # ex = Single()
-    ex = Double()
+    # ex = Double()
+    ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
     # ex = QuadrupleVoid()
@@ -225,7 +253,10 @@ def main():
     output_png: Final[Path] = (
         Path(output_dir).expanduser().joinpath(ex.file_stem + ".png")
     )
-    el, az, roll = 25, -115, 0
+    # el, az, roll = 25, -115, 0
+    el, az, roll = 28, -115, 0
+    # el, az, roll = 60, -121, 0
+    # el, az, roll = 42, -120, 0
 
     # io: if the output directory does not already exist, create it
     output_path = Path(output_dir).expanduser()
@@ -236,7 +267,7 @@ def main():
         assert output_path.exists()
 
     nelz, nely, nelx = ex.voxels.shape
-    lattice_connectivity(ex=ex)
+    # lattice_connectivity(ex=ex)
 
     # save the numpy data as a .npy file
     np.save(output_npy, ex.voxels)
