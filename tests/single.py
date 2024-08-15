@@ -188,6 +188,50 @@ class QuadrupleVoid(Example):
     )
 
 
+class Cube(Example):
+    """A specific example of a (2 x 2 x 2) voxel cube."""
+
+    figure_title: str = "Cube Element Global Node Numbers and Coordinates"
+    file_stem: str = "cube"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                    1,
+                ],
+                [
+                    1,
+                    1,
+                ],
+            ],
+            [
+                [
+                    1,
+                    1,
+                ],
+                [
+                    1,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 5, 4, 10, 11, 14, 13],
+            [2, 3, 6, 5, 11, 12, 15, 14],
+            [4, 5, 8, 7, 13, 14, 17, 16],
+            [5, 6, 9, 8, 14, 15, 18, 17],
+            [10, 11, 14, 13, 19, 20, 23, 22],
+            [11, 12, 15, 14, 20, 21, 24, 23],
+            [13, 14, 17, 16, 22, 23, 26, 25],
+            [14, 15, 18, 17, 23, 24, 27, 26],
+        ]
+    )
+
+
 def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     """Given an Example, prints the lattice connectivity."""
     offset = 0
@@ -195,7 +239,7 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
     # base = np.array([1, 2, 4, 3, 5, 6, 8, 7])
 
-    nel = nx * ny * nz
+    # nel = nx * ny * nz
 
     # Generate the lattice nodes
     lattice_nodes = []
@@ -207,62 +251,34 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
                 lattice_node += 1
                 lattice_nodes.append([lattice_node, i, j, k])
 
-    # cs = np.array([[]], dtype=np.uint8)
-    # cs = np.array([], dtype=np.uint8)
-    cs = []
+    # connectivity for each voxel
+    cvs = []
 
     offset = 0
 
-    for vox in range(nel):
+    for iz in range(nz):
+        for iy in range(ny):
+            for ix in range(nx):
+                print(f"(ix, iy, iz) = ({ix}, {iy}, {iz})")
+                cv = offset + np.array(
+                    [
+                        (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
+                        (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
+                        (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+                        (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+                        (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
+                        (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
+                        (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
+                        (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
+                    ]
+                )
+                cvs.append(cv)
 
-        ix, iy, iz = lattice_nodes[vox][1:4]
-        cv = offset + np.array(
-            [
-                (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
-                (iz + 0) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
-                (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
-                (iz + 0) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
-                (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 1,
-                (iz + 1) * (nxp * nyp) + (iy + 0) * nxp + ix + 2,
-                (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
-                (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
-            ]
-        )
-        # cv = offset + np.array(
-        #     [
-        #         iz * (nxp * nyp) + ix + 1,
-        #         iz * (nxp * nyp) + ix + 2,
-        #         iz * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
-        #         iz * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
-        #         (iz + 1) * (nxp * nyp) + ix + 1,
-        #         (iz + 1) * (nxp * nyp) + ix + 2,
-        #         (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 2,
-        #         (iz + 1) * (nxp * nyp) + (iy + 1) * nxp + ix + 1,
-        #     ]
-        # )
-        # cv = offset + np.array(
-        #     [
-        #         0 * nxp + 1,
-        #         0 * nxp + 2,
-        #         1 * nxp + 2,
-        #         1 * nxp + 1,
-        #         2 * nxp + 1,
-        #         2 * nxp + 2,
-        #         3 * nxp + 2,
-        #         3 * nxp + 1,
-        #     ]
-        # )
-        # cs = np.append(cs, cv)
-        # cs = np.concatenate(cs, cv)
-        cs.append(cv)
-        breakpoint()
-
-    cs = np.vstack(cs)
+    cs = np.vstack(cvs)
 
     # voxel by voxel comparison
     vv = ex.gold_lattice == cs
-    breakpoint()
-    # assert np.all(vv)
+    assert np.all(vv)
     return cs
 
 
@@ -273,10 +289,11 @@ def main():
     # user input begin
     # ex = Single()
     # ex = Double()
-    ex = DoubleY()
+    # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
     # ex = QuadrupleVoid()
+    ex = Cube()
     # user input end
 
     # computation
