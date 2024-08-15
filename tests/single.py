@@ -166,8 +166,38 @@ class QuadrupleVoid(Example):
 
 def lattice_connectivity(ex: Example):
     """Given an Example, prints the lattice connectivity."""
-    nelz, nely, nelx = ex.voxels.shape
-    base = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+    offset = 0
+    nz, ny, nx = ex.voxels.shape
+    nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
+    # base = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+
+    nel = nx * ny * nz
+
+    # cs = np.array([[]], dtype=np.uint8)
+    # cs = np.array([], dtype=np.uint8)
+    cs = []
+
+    for offset in range(nel):
+
+        c = offset + np.array(
+            [
+                0 * nxp + 1,
+                0 * nxp + 2,
+                1 * nxp + 2,
+                1 * nxp + 1,
+                2 * nxp + 1,
+                2 * nxp + 2,
+                3 * nxp + 2,
+                3 * nxp + 1,
+            ]
+        )
+        # cs = np.append(cs, c)
+        # cs = np.concatenate(cs, c)
+        cs.append(c)
+
+    cs = np.vstack(cs)
+    breakpoint()
+
     aa = 4
 
 
@@ -177,9 +207,9 @@ def main():
     # Create an instance of a specific example
     # user input begin
     # ex = Single()
-    # ex = Double()
+    ex = Double()
     # ex = Triple()
-    ex = Quadruple()
+    # ex = Quadruple()
     # ex = QuadrupleVoid()
     # user input end
 
