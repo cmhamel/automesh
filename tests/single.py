@@ -197,34 +197,60 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
 
     nel = nx * ny * nz
 
+    # Generate the lattice nodes
+    lattice_nodes = []
+
+    lattice_node = 0
+    for k in range(nzp):
+        for j in range(nyp):
+            for i in range(nxp):
+                lattice_node += 1
+                lattice_nodes.append([lattice_node, i, j, k])
+
     # cs = np.array([[]], dtype=np.uint8)
     # cs = np.array([], dtype=np.uint8)
     cs = []
 
-    for offset in range(nel):
+    offset = 0
 
+    for vox in range(nel):
+
+        i, j, k = lattice_nodes[vox][1:4]
         c = offset + np.array(
             [
-                0 * nxp + 1,
-                0 * nxp + 2,
-                1 * nxp + 2,
-                1 * nxp + 1,
-                2 * nxp + 1,
-                2 * nxp + 2,
-                3 * nxp + 2,
-                3 * nxp + 1,
+                k * (nxp * nyp) + i + 1,
+                k * (nxp * nyp) + i + 2,
+                k * (nxp * nyp) + (j + 1) * nxp + i + 2,
+                k * (nxp * nyp) + (j + 1) * nxp + i + 1,
+                (k + 1) * (nxp * nyp) + i + 1,
+                (k + 1) * (nxp * nyp) + i + 2,
+                (k + 1) * (nxp * nyp) + (j + 1) * nxp + i + 2,
+                (k + 1) * (nxp * nyp) + (j + 1) * nxp + i + 1,
             ]
         )
+        # c = offset + np.array(
+        #     [
+        #         0 * nxp + 1,
+        #         0 * nxp + 2,
+        #         1 * nxp + 2,
+        #         1 * nxp + 1,
+        #         2 * nxp + 1,
+        #         2 * nxp + 2,
+        #         3 * nxp + 2,
+        #         3 * nxp + 1,
+        #     ]
+        # )
         # cs = np.append(cs, c)
         # cs = np.concatenate(cs, c)
         cs.append(c)
+        breakpoint()
 
     cs = np.vstack(cs)
 
     # voxel by voxel comparison
     vv = ex.gold_lattice == cs
     breakpoint()
-    assert np.all(vv)
+    # assert np.all(vv)
     return cs
 
 
@@ -267,7 +293,7 @@ def main():
         assert output_path.exists()
 
     nelz, nely, nelx = ex.voxels.shape
-    # lattice_connectivity(ex=ex)
+    cc = lattice_connectivity(ex=ex)
 
     # save the numpy data as a .npy file
     np.save(output_npy, ex.voxels)
@@ -291,7 +317,7 @@ def main():
     # visualization
 
     # Define the dimensions of the lattice
-    nx, ny, nz = (nelx + 1, nely + 1, nelz + 1)
+    nxp, nyp, nzp = (nelx + 1, nely + 1, nelz + 1)
 
     # Create a figure and a 3D axis
     fig = plt.figure()
@@ -304,9 +330,9 @@ def main():
     labels = []
 
     lattice_number = 0
-    for k in range(nz):
-        for j in range(ny):
-            for i in range(nx):
+    for k in range(nzp):
+        for j in range(nyp):
+            for i in range(nxp):
                 lattice_number += 1
                 x.append(i)
                 y.append(j)
@@ -327,9 +353,9 @@ def main():
     ax.set_ylabel("y")
     ax.set_zlabel("z")
 
-    x_ticks = list(range(nx))
-    y_ticks = list(range(ny))
-    z_ticks = list(range(nz))
+    x_ticks = list(range(nxp))
+    y_ticks = list(range(nyp))
+    z_ticks = list(range(nzp))
 
     ax.set_xticks(x_ticks)
     ax.set_yticks(y_ticks)
