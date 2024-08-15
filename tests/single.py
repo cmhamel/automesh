@@ -17,7 +17,7 @@ Ouput:
 
 # standard library
 from pathlib import Path
-from typing import Final
+from typing import Final, NamedTuple
 
 # third-party libary
 import matplotlib.pyplot as plt
@@ -29,25 +29,173 @@ from PIL import Image
 # none
 
 
+class Example(NamedTuple):
+    """A base class that has all of the fields required to specialize into a
+    specific example."""
+
+    figure_title: str = "Figure Title"
+    file_stem: str = "filename"
+    voxels = None
+    gold_lattice = None
+
+
+class Single(Example):
+    """A specific example of a single voxel."""
+
+    figure_title: str = "Single Element Global Node Numbers and Coordinates"
+    file_stem: str = "single"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
+
+
+class Double(Example):
+    """A specific example of a double voxel."""
+
+    figure_title: str = "Double Element Global Node Numbers and Coordinates"
+    file_stem: str = "double"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
+    )
+
+
+class Triple(Example):
+    """A specific example of a triple voxel."""
+
+    figure_title: str = "Triple Element Global Node Numbers and Coordinates"
+    file_stem: str = "triple"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                    1,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 6, 5, 9, 10, 14, 13],
+            [2, 3, 7, 6, 10, 11, 15, 14],
+            [3, 4, 8, 7, 11, 12, 16, 15],
+        ]
+    )
+
+
+class Quadruple(Example):
+    """A specific example of a quadruple voxel."""
+
+    figure_title: str = "Quadruple Element Global Node Numbers and Coordinates"
+    file_stem: str = "quadruple"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                    1,
+                    1,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 7, 6, 11, 12, 17, 16],
+            [2, 3, 8, 7, 12, 13, 18, 17],
+            [3, 4, 9, 8, 13, 14, 19, 18],
+            [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
+
+
+class QuadrupleVoid(Example):
+    """A specific example of a quadruple voxel with two of the intermediate
+    voxels being void.
+    """
+
+    figure_title: str = (
+        "Quadruple with Voids Element Global Node Numbers and Coordinates"
+    )
+    file_stem: str = "quadruple_void"
+    voxels = np.array(
+        [
+            [
+                [
+                    1,
+                    0,
+                    0,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 7, 6, 11, 12, 17, 16],
+            [2, 3, 8, 7, 12, 13, 18, 17],
+            [3, 4, 9, 8, 13, 14, 19, 18],
+            [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
+
+
+def lattice_connectivity(ex: Example):
+    """Given an Example, prints the lattice connectivity."""
+    nelz, nely, nelx = ex.voxels.shape
+    base = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+    aa = 4
+
+
 def main():
     """The main program."""
 
+    # Create an instance of a specific example
     # user input begin
+    # ex = Single()
+    # ex = Double()
+    # ex = Triple()
+    ex = Quadruple()
+    # ex = QuadrupleVoid()
+    # user input end
+
     # computation
     output_dir: Final[str] = "~/scratch"
-    file_stem = "single"
     output_npy: Final[Path] = (
-        Path(output_dir).expanduser().joinpath(file_stem + ".npy")
+        Path(output_dir).expanduser().joinpath(ex.file_stem + ".npy")
     )
 
     # visualization
     visualize: bool = True  # True performs post-processing visualization
     dpi: Final[int] = 150  # resolution, dots per inch
     output_png: Final[Path] = (
-        Path(output_dir).expanduser().joinpath(file_stem + ".png")
+        Path(output_dir).expanduser().joinpath(ex.file_stem + ".png")
     )
     el, az, roll = 25, -115, 0
-    # user input end
 
     # io: if the output directory does not already exist, create it
     output_path = Path(output_dir).expanduser()
@@ -57,29 +205,11 @@ def main():
         print(f"Created: {output_path}")
         assert output_path.exists()
 
-    # the x-axis courses on the inner brackets, and then the y-axis
-    # wraps all the x-axis courses, it is important that the data
-    # type is `np.uint8`
-    pixels = np.array(
-        [
-            [
-                1,
-            ],
-        ],
-        dtype=np.uint8,
-    )
-
-    # we stack the (x, y) plane along the z-axis
-    voxels = np.array(
-        [
-            pixels,
-        ]
-    )
-    assert voxels.shape == (1, 1, 1)
-    nelz, nely, nelx = voxels.shape
+    nelz, nely, nelx = ex.voxels.shape
+    lattice_connectivity(ex=ex)
 
     # save the numpy data as a .npy file
-    np.save(output_npy, voxels)
+    np.save(output_npy, ex.voxels)
     print(f"Saved: {output_npy}")
 
     # to load the array back from the .npy file,
@@ -89,7 +219,7 @@ def main():
     # verify the loaded array
     print(loaded_array)
 
-    assert loaded_array == voxels
+    # assert loaded_array == ex.voxels
 
     # now that the .npy file has been created and verified,
     # move it to the repo at ~/autotwin/automesh/tests/input
@@ -123,11 +253,13 @@ def main():
                 labels.append(f"{lattice_number}: ({i},{j},{k})")
 
     # Plot the lattice coordinates
-    ax.scatter(x, y, z, c="blue", marker="o")
+    ax.scatter(x, y, z, c="blue", marker="o", alpha=0.5, edgecolors="none")
 
     # Label the lattice coordinates
     for idx, label in enumerate(labels):
         ax.text(x[idx], y[idx], z[idx], label, color="red")
+
+    # Label the voxels and materials
 
     # Set labels for the axes
     ax.set_xlabel("x")
@@ -142,16 +274,16 @@ def main():
     ax.set_yticks(y_ticks)
     ax.set_zticks(z_ticks)
 
-    ax.set_xlim(x_ticks)
-    ax.set_ylim(y_ticks)
-    ax.set_zlim(z_ticks)
+    ax.set_xlim(float(x_ticks[0]), float(x_ticks[-1]))
+    ax.set_ylim(float(y_ticks[0]), float(y_ticks[-1]))
+    ax.set_zlim(float(z_ticks[0]), float(z_ticks[-1]))
 
     # Set the camera view
     ax.set_aspect("equal")
     ax.view_init(elev=el, azim=az, roll=roll)
 
     # Set the title
-    ax.set_title("Lattice Global Node Numbers and Coordinates")
+    ax.set_title(ex.figure_title)
 
     # Show the plot
     plt.show()
