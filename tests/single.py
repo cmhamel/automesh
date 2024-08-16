@@ -36,8 +36,22 @@ class Example(NamedTuple):
 
     figure_title: str = "Figure Title"
     file_stem: str = "filename"
-    voxels = None
+    segmentation = np.array(
+        [
+            [
+                [
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
     gold_lattice = None
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class Single(Example):
@@ -45,7 +59,7 @@ class Single(Example):
 
     figure_title: str = "Single Element Global Node Numbers and Coordinates"
     file_stem: str = "single"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -56,6 +70,11 @@ class Single(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class Double(Example):
@@ -63,7 +82,7 @@ class Double(Example):
 
     figure_title: str = "Double Element Global Node Numbers and Coordinates"
     file_stem: str = "double"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -77,6 +96,11 @@ class Double(Example):
     gold_lattice = np.array(
         [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
     )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class DoubleY(Example):
@@ -84,7 +108,7 @@ class DoubleY(Example):
 
     figure_title: str = "Double Y Element Global Node Numbers and Coordinates"
     file_stem: str = "double_y"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -100,6 +124,11 @@ class DoubleY(Example):
     gold_lattice = np.array(
         [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
     )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class Triple(Example):
@@ -107,7 +136,7 @@ class Triple(Example):
 
     figure_title: str = "Triple Element Global Node Numbers and Coordinates"
     file_stem: str = "triple"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -126,6 +155,11 @@ class Triple(Example):
             [3, 4, 8, 7, 11, 12, 16, 15],
         ]
     )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class Quadruple(Example):
@@ -133,7 +167,7 @@ class Quadruple(Example):
 
     figure_title: str = "Quadruple Element Global Node Numbers and Coordinates"
     file_stem: str = "quadruple"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -154,18 +188,23 @@ class Quadruple(Example):
             [4, 5, 10, 9, 14, 15, 20, 19],
         ]
     )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 class QuadrupleVoid(Example):
     """A specific example of a quadruple voxel with two of the intermediate
-    voxels being void.
+    segmentation being void.
     """
 
     figure_title: str = (
         "Quadruple with Voids Element Global Node Numbers and Coordinates"
     )
     file_stem: str = "quadruple_void"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -184,6 +223,11 @@ class QuadrupleVoid(Example):
             [2, 3, 8, 7, 12, 13, 18, 17],
             [3, 4, 9, 8, 13, 14, 19, 18],
             [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
+    included_ids = tuple(
+        [
+            1,
         ]
     )
 
@@ -193,7 +237,7 @@ class Cube(Example):
 
     figure_title: str = "Cube Element Global Node Numbers and Coordinates"
     file_stem: str = "cube"
-    voxels = np.array(
+    segmentation = np.array(
         [
             [
                 [
@@ -230,12 +274,17 @@ class Cube(Example):
             [14, 15, 18, 17, 23, 24, 27, 26],
         ]
     )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
 
 
 def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     """Given an Example, prints the lattice connectivity."""
     offset = 0
-    nz, ny, nx = ex.voxels.shape
+    nz, ny, nx = ex.segmentation.shape
     nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 
     # Generate the lattice nodes
@@ -279,6 +328,39 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
     return cs
 
 
+def element_connectivity(
+    ex: Example,
+    lattice: nt.ArrayLike,
+) -> nt.ArrayLike:
+    """Given an Example (in particular, the Example's voxel data structure,
+    a segmentation) and the `lattice_connectivity`, create the connectivity
+    for the finite element mesh.  A voxel with a segmentation id in the
+    Example's excluded ids tuple is excluded from becoming a finite element."""
+
+    segmentation = ex.segmentation.flatten().squeeze()
+    lc = lattice
+
+    # assert that the list of included ids is equal
+    included_set = set(ex.included_ids)
+    seg_set = set(segmentation)
+
+    for item in included_set:
+        assert (
+            item in seg_set
+        ), f"Error: `included_ids` item {item} is not in the segmentation"
+
+    # Create a list of finite elements from the lattice elements.  If the
+    # lattice element has a voxel id that is not in the excluded_ids,
+
+    breakpoint()
+
+    for i, element in enumerate(lc):
+        if segmentation[i] in ex_ids:
+            excluded_elements.append(element)
+
+    return segmentation
+
+
 def main():
     """The main program."""
 
@@ -289,8 +371,8 @@ def main():
     # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
-    # ex = QuadrupleVoid()
-    ex = Cube()
+    ex = QuadrupleVoid()
+    # ex = Cube()
     # user input end
 
     # computation
@@ -318,11 +400,13 @@ def main():
         print(f"Created: {output_path}")
         assert output_path.exists()
 
-    nelz, nely, nelx = ex.voxels.shape
-    cc = lattice_connectivity(ex=ex)
+    nelz, nely, nelx = ex.segmentation.shape
+    lc = lattice_connectivity(ex=ex)
+
+    ec = element_connectivity(ex=ex, lattice=lc)
 
     # save the numpy data as a .npy file
-    np.save(output_npy, ex.voxels)
+    np.save(output_npy, ex.segmentation)
     print(f"Saved: {output_npy}")
 
     # to load the array back from the .npy file,
@@ -332,7 +416,7 @@ def main():
     # verify the loaded array
     print(loaded_array)
 
-    # assert loaded_array == ex.voxels
+    # assert loaded_array == ex.segmentation
 
     # now that the .npy file has been created and verified,
     # move it to the repo at ~/autotwin/automesh/tests/input
@@ -372,7 +456,7 @@ def main():
     for idx, label in enumerate(labels):
         ax.text(x[idx], y[idx], z[idx], label, color="red")
 
-    # Label the voxels and materials
+    # Label the segmentation and materials
 
     # Set labels for the axes
     ax.set_xlabel("x")
