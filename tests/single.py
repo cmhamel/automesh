@@ -444,7 +444,6 @@ def main():
 
     ec = element_connectivity(ex=ex, lattice=lc)
 
-    breakpoint()
     assert np.all(
         ec == ex.gold_elements
     ), "Calculated element connectivity error."
@@ -460,7 +459,7 @@ def main():
     # verify the loaded array
     print(loaded_array)
 
-    # assert loaded_array == ex.segmentation
+    assert np.all(loaded_array == ex.segmentation)
 
     # now that the .npy file has been created and verified,
     # move it to the repo at ~/autotwin/automesh/tests/input
@@ -483,24 +482,50 @@ def main():
     z = []
     labels = []
 
-    lattice_number = 0
+    # Generate the element points
+    xel = []
+    yel = []
+    zel = []
+    # generate a set from the element connectivity
+    ec_set = set(ec.flatten())
+
+    lattice_ijk = 0
     for k in range(nzp):
         for j in range(nyp):
             for i in range(nxp):
-                lattice_number += 1
                 x.append(i)
                 y.append(j)
                 z.append(k)
-                labels.append(f"{lattice_number}: ({i},{j},{k})")
+                if lattice_ijk + 1 in ec_set:
+                    xel.append(i)
+                    yel.append(j)
+                    zel.append(k)
+                lattice_ijk += 1
+                labels.append(f"{lattice_ijk}: ({i},{j},{k})")
 
     # Plot the lattice coordinates
-    ax.scatter(x, y, z, c="blue", marker="o", alpha=0.5, edgecolors="none")
+    ax.scatter(
+        x,
+        y,
+        z,
+        s=10,
+        facecolors="blue",
+        edgecolors="none",
+    )
 
     # Label the lattice coordinates
     for idx, label in enumerate(labels):
         ax.text(x[idx], y[idx], z[idx], label, color="red")
 
-    # Label the segmentation and materials
+    # Plot the nodes included in the finite element connectivity
+    ax.scatter(
+        xel,
+        yel,
+        zel,
+        s=50,
+        facecolors="none",
+        edgecolors="blue",
+    )
 
     # Set labels for the axes
     ax.set_xlabel("x")
