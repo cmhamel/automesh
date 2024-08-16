@@ -23,7 +23,7 @@ from typing import Final, NamedTuple
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-import numpy.typing as nt
+from numpy.typing import NDArray
 from PIL import Image
 
 # module library
@@ -322,7 +322,7 @@ class Cube(Example):
     )
 
 
-def lattice_connectivity(ex: Example) -> nt.ArrayLike:
+def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
     """Given an Example, prints the lattice connectivity."""
     offset = 0
     nz, ny, nx = ex.segmentation.shape
@@ -371,15 +371,14 @@ def lattice_connectivity(ex: Example) -> nt.ArrayLike:
 
 def element_connectivity(
     ex: Example,
-    lattice: nt.ArrayLike,
-) -> nt.ArrayLike:
+    lattice: np.ndarray,
+) -> NDArray[np.uint8]:
     """Given an Example (in particular, the Example's voxel data structure,
     a segmentation) and the `lattice_connectivity`, create the connectivity
     for the finite element mesh.  A voxel with a segmentation id in the
     Example's excluded ids tuple is excluded from becoming a finite element."""
 
     segmentation = ex.segmentation.flatten().squeeze()
-    lc = lattice
 
     # assert that the list of included ids is equal
     included_set = set(ex.included_ids)
@@ -394,7 +393,7 @@ def element_connectivity(
     # exlude the voxel element from the collected list to create the finite
     # element list
     included_elements = []
-    for i, element in enumerate(lc):
+    for i, element in enumerate(lattice):
         if segmentation[i] in included_set:
             included_elements.append(element)
 
@@ -444,6 +443,11 @@ def main():
     lc = lattice_connectivity(ex=ex)
 
     ec = element_connectivity(ex=ex, lattice=lc)
+
+    breakpoint()
+    assert np.all(
+        ec == ex.gold_elements
+    ), "Calculated element connectivity error."
 
     # save the numpy data as a .npy file
     np.save(output_npy, ex.segmentation)
