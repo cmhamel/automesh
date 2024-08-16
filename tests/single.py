@@ -322,6 +322,88 @@ class Cube(Example):
     )
 
 
+class Letter_F(Example):
+    """A minimal letter F."""
+
+    figure_title: str = "Letter F minimal"
+    file_stem: str = "letter_f_minimal"
+    segmentation = np.array(
+        [
+            [
+                [
+                    1,
+                    0,
+                    0,
+                ],
+                [
+                    1,
+                    0,
+                    0,
+                ],
+                [
+                    1,
+                    1,
+                    0,
+                ],
+                [
+                    1,
+                    0,
+                    0,
+                ],
+                [
+                    1,
+                    1,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 6, 5, 25, 26, 30, 29],
+            [2, 3, 7, 6, 26, 27, 31, 30],
+            [3, 4, 8, 7, 27, 28, 32, 31],
+            [5, 6, 10, 9, 29, 30, 34, 33],
+            [6, 7, 11, 10, 30, 31, 35, 34],
+            [7, 8, 12, 11, 31, 32, 36, 35],
+            [9, 10, 14, 13, 33, 34, 38, 37],
+            [10, 11, 15, 14, 34, 35, 39, 38],
+            [11, 12, 16, 15, 35, 36, 40, 39],
+            [13, 14, 18, 17, 37, 38, 42, 41],
+            [14, 15, 19, 18, 38, 39, 43, 42],
+            [15, 16, 20, 19, 39, 40, 44, 43],
+            [17, 18, 22, 21, 41, 42, 46, 45],
+            [18, 19, 23, 22, 42, 43, 47, 46],
+            [19, 20, 24, 23, 43, 44, 48, 47],
+        ]
+    )
+    gold_elements = np.array(
+        [
+            [1, 2, 6, 5, 25, 26, 30, 29],
+            # [2, 3, 7, 6, 26, 27, 31, 30],
+            # [3, 4, 8, 7, 27, 28, 32, 31],
+            [5, 6, 10, 9, 29, 30, 34, 33],
+            # [6, 7, 11, 10, 30, 31, 35, 34],
+            # [7, 8, 12, 11, 31, 32, 36, 35],
+            [9, 10, 14, 13, 33, 34, 38, 37],
+            [10, 11, 15, 14, 34, 35, 39, 38],
+            # [11, 12, 16, 15, 35, 36, 40, 39],
+            [13, 14, 18, 17, 37, 38, 42, 41],
+            # [14, 15, 19, 18, 38, 39, 43, 42],
+            # [15, 16, 20, 19, 39, 40, 44, 43],
+            [17, 18, 22, 21, 41, 42, 46, 45],
+            [18, 19, 23, 22, 42, 43, 47, 46],
+            [19, 20, 24, 23, 43, 44, 48, 47],
+        ]
+    )
+    included_ids = tuple(
+        [
+            1,
+        ]
+    )
+
+
 def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
     """Given an Example, prints the lattice connectivity."""
     offset = 0
@@ -410,8 +492,9 @@ def main():
     # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
-    ex = QuadrupleVoid()
+    # ex = QuadrupleVoid()
     # ex = Cube()
+    ex = Letter_F()
     # user input end
 
     # computation
@@ -443,6 +526,8 @@ def main():
     lc = lattice_connectivity(ex=ex)
 
     ec = element_connectivity(ex=ex, lattice=lc)
+
+    breakpoint()
 
     assert np.all(
         ec == ex.gold_elements
