@@ -47,6 +47,7 @@ class Example(NamedTuple):
         dtype=np.uint8,
     )
     gold_lattice = None
+    gold_elements = None
     included_ids = tuple(
         [
             1,
@@ -70,6 +71,7 @@ class Single(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
+    gold_elements = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
     included_ids = tuple(
         [
             1,
@@ -94,6 +96,9 @@ class Double(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array(
+        [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
+    )
+    gold_elements = np.array(
         [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
     )
     included_ids = tuple(
@@ -122,6 +127,9 @@ class DoubleY(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array(
+        [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
+    )
+    gold_elements = np.array(
         [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
     )
     included_ids = tuple(
@@ -155,6 +163,13 @@ class Triple(Example):
             [3, 4, 8, 7, 11, 12, 16, 15],
         ]
     )
+    gold_elements = np.array(
+        [
+            [1, 2, 6, 5, 9, 10, 14, 13],
+            [2, 3, 7, 6, 10, 11, 15, 14],
+            [3, 4, 8, 7, 11, 12, 16, 15],
+        ]
+    )
     included_ids = tuple(
         [
             1,
@@ -181,6 +196,14 @@ class Quadruple(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array(
+        [
+            [1, 2, 7, 6, 11, 12, 17, 16],
+            [2, 3, 8, 7, 12, 13, 18, 17],
+            [3, 4, 9, 8, 13, 14, 19, 18],
+            [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
+    gold_elements = np.array(
         [
             [1, 2, 7, 6, 11, 12, 17, 16],
             [2, 3, 8, 7, 12, 13, 18, 17],
@@ -225,6 +248,12 @@ class QuadrupleVoid(Example):
             [4, 5, 10, 9, 14, 15, 20, 19],
         ]
     )
+    gold_elements = np.array(
+        [
+            [1, 2, 7, 6, 11, 12, 17, 16],
+            [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
     included_ids = tuple(
         [
             1,
@@ -263,6 +292,18 @@ class Cube(Example):
         dtype=np.uint8,
     )
     gold_lattice = np.array(
+        [
+            [1, 2, 5, 4, 10, 11, 14, 13],
+            [2, 3, 6, 5, 11, 12, 15, 14],
+            [4, 5, 8, 7, 13, 14, 17, 16],
+            [5, 6, 9, 8, 14, 15, 18, 17],
+            [10, 11, 14, 13, 19, 20, 23, 22],
+            [11, 12, 15, 14, 20, 21, 24, 23],
+            [13, 14, 17, 16, 22, 23, 26, 25],
+            [14, 15, 18, 17, 23, 24, 27, 26],
+        ]
+    )
+    gold_elements = np.array(
         [
             [1, 2, 5, 4, 10, 11, 14, 13],
             [2, 3, 6, 5, 11, 12, 15, 14],
@@ -343,22 +384,21 @@ def element_connectivity(
     # assert that the list of included ids is equal
     included_set = set(ex.included_ids)
     seg_set = set(segmentation)
-
     for item in included_set:
         assert (
             item in seg_set
         ), f"Error: `included_ids` item {item} is not in the segmentation"
 
     # Create a list of finite elements from the lattice elements.  If the
-    # lattice element has a voxel id that is not in the excluded_ids,
-
-    breakpoint()
-
+    # lattice element has a segmentation id that is not in the included_ids,
+    # exlude the voxel element from the collected list to create the finite
+    # element list
+    included_elements = []
     for i, element in enumerate(lc):
-        if segmentation[i] in ex_ids:
-            excluded_elements.append(element)
+        if segmentation[i] in included_set:
+            included_elements.append(element)
 
-    return segmentation
+    return np.array(included_elements)
 
 
 def main():
