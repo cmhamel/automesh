@@ -324,7 +324,7 @@ class Cube(Example):
 
 
 class Letter_F(Example):
-    """A minimal letter F."""
+    """A minimal letter F example."""
 
     figure_title: str = "Letter F minimal"
     file_stem: str = "letter_f_minimal"
