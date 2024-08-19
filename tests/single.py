@@ -16,8 +16,9 @@ Ouput:
 """
 
 # standard library
+from itertools import cycle, tee
 from pathlib import Path
-from typing import Final, NamedTuple
+from typing import Final, Iterable, NamedTuple
 
 # third-party libary
 import matplotlib.pyplot as plt
@@ -482,19 +483,78 @@ def element_connectivity(
     return np.array(included_elements)
 
 
+def element_edges(connectivity: np.ndarray):
+    """Given a single finite element connectivity, returns a tuple of the
+    eight edges of that element.  The li"""
+
+    cc = connectivity
+
+    # edges = [pairwise_circular(x) for x in connectivity]
+    # bottom edges
+    e1 = (cc[0], cc[1])
+    e2 = (cc[1], cc[2])
+    e3 = (cc[2], cc[3])
+    e4 = (cc[3], cc[0])
+    # top edges
+    e5 = (cc[4], cc[5])
+    e6 = (cc[5], cc[6])
+    e7 = (cc[6], cc[7])
+    e8 = (cc[7], cc[4])
+    # vertical edges
+    e9 = (cc[0], cc[4])
+    e10 = (cc[1], cc[5])
+    e11 = (cc[2], cc[6])
+    e12 = (cc[3], cc[7])
+
+    aa = tuple([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12])
+    return aa
+
+
+def test_element_edges(element: np.array):
+    """Tests the element edges functionality."""
+    element = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+
+    result = element_edges(element)
+
+    #     7-----8
+    #    /|    /|
+    #   5-----6 |
+    #   | |   | |
+    #   | 3---|-4
+    #   |/    |/
+    #   1-----2
+    #  (1, 2), (1, 3), (1, 5), (2, 4), (2, 6), (3, 4)
+    #  (3, 7), (4, 8), (5, 6), (5, 7), (6, 8), (7, 8)
+
+    assert result == (
+        (1, 2),  # e1
+        (1, 3),  # e4
+        (1, 5),  # e9
+        (2, 4),  # e2
+        (2, 6),  # e10
+        (3, 4),  # e3
+        (3, 7),  # e12
+        (4, 8),  # e11
+        (5, 6),  # e5
+        (5, 7),  # e8
+        (6, 8),  # e6
+        (7, 8),  # e7
+    )
+
+
 def main():
     """The main program."""
 
     # Create an instance of a specific example
     # user input begin
     # ex = Single()
-    # ex = Double()
+    ex = Double()
     # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
     # ex = QuadrupleVoid()
     # ex = Cube()
-    ex = Letter_F()
+    # ex = Letter_F()
     # user input end
 
     # computation
@@ -527,11 +587,11 @@ def main():
 
     ec = element_connectivity(ex=ex, lattice=lc)
 
-    breakpoint()
-
     assert np.all(
         ec == ex.gold_elements
     ), "Calculated element connectivity error."
+
+    edges = [element_edges(connectivity=x) for x in ec]
 
     # save the numpy data as a .npy file
     np.save(output_npy, ex.segmentation)
