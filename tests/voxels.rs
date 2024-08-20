@@ -213,6 +213,7 @@ fn letter_f() {
 }
 
 /// Adds two numbers together.  Why doesn't this appear in the documentation?
+/// To be discussed.
 ///
 /// # Examples
 ///
