@@ -3,20 +3,9 @@
 //! This module tests convertion from a segmentation to a lattice and a mesh.
 //!
 
-use ndarray::Array3;
 use voxels_data::{Cube, Double, DoubleY, Quadruple, QuadrupleVoid, Single, Triple};
 
 mod voxels_data;
-
-#[test]
-fn user() {
-    let uu = voxels_data::User::new();
-    assert!(uu.active);
-    assert_eq!(uu.nsd, 3);
-    assert_eq!(uu.nen, 8);
-    assert_eq!(uu.username, "someone123");
-    assert_eq!(uu.email, "someone@example.com");
-}
 
 #[test]
 fn single() {
@@ -137,7 +126,7 @@ fn quadruple_void() {
 #[test]
 fn cube() {
     let ii = Cube::new();
-    assert_eq!(ii.segmentation, Array3::from_elem((1, 2, 2), 1));
+    assert_eq!(ii.segmentation, [[[1, 1], [1, 1]], [[1, 1], [1, 1]]]);
     assert_eq!(ii.scale, [1.0, 1.0, 1.0]);
     assert_eq!(ii.translate, [0.0, 0.0, 0.0]);
     let ll = Cube::gold_lattice();
