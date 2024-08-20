@@ -8,8 +8,9 @@ Example:
 
     cd ~/autotwin/automesh
     source .venv/bin/activate
-    python tests/voxels.py
+    # python tests/voxels.py
     # python src/tests/voxels.py
+    python doc/voxels.py
 
 Ouput:
     The `output_npy` file data structure
@@ -668,10 +669,8 @@ def main():
         )
 
         # Label the lattice coordinates
-        for idx, label in enumerate(labels):
-            # ax.text(x[idx], y[idx], z[idx], label, color="darkgray",
-            # fontsize=8)
-            ax.text(x[idx], y[idx], z[idx], label, color="darkgray")
+        for n, label in enumerate(labels):
+            ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
 
         # Plot the nodes included in the finite element connectivity
         ax.scatter(
