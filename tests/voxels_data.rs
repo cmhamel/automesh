@@ -259,3 +259,59 @@ impl Cube {
         ]
     }
 }
+
+/// The LetterF lattice and element example.
+/// ![Figure](../doc/fig/letter_f.png)
+#[derive(Debug)]
+pub struct LetterF {
+    pub segmentation: [[[u8; 3]; 5]; 1], // [[[u8; NELX]; NELY]; NELZ]
+    pub scale: [f64; NSD],
+    pub translate: [f64; NSD],
+}
+
+impl LetterF {
+    // Constructor function to create a new LetterF instance.
+    pub fn new() -> Self {
+        LetterF {
+            segmentation: [[[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]]],
+            scale: [1.0, 1.0, 1.0],
+            translate: [0.0, 0.0, 0.0],
+        }
+    }
+
+    const NUM_VOXELS: usize = 15;
+    const NUM_ELEMENTS: usize = 8;
+
+    pub fn gold_lattice() -> [[usize; NUM_NODES_ELEMENT]; Self::NUM_VOXELS] {
+        [
+            [1, 2, 6, 5, 25, 26, 30, 29],
+            [2, 3, 7, 6, 26, 27, 31, 30],
+            [3, 4, 8, 7, 27, 28, 32, 31],
+            [5, 6, 10, 9, 29, 30, 34, 33],
+            [6, 7, 11, 10, 30, 31, 35, 34],
+            [7, 8, 12, 11, 31, 32, 36, 35],
+            [9, 10, 14, 13, 33, 34, 38, 37],
+            [10, 11, 15, 14, 34, 35, 39, 38],
+            [11, 12, 16, 15, 35, 36, 40, 39],
+            [13, 14, 18, 17, 37, 38, 42, 41],
+            [14, 15, 19, 18, 38, 39, 43, 42],
+            [15, 16, 20, 19, 39, 40, 44, 43],
+            [17, 18, 22, 21, 41, 42, 46, 45],
+            [18, 19, 23, 22, 42, 43, 47, 46],
+            [19, 20, 24, 23, 43, 44, 48, 47],
+        ]
+    }
+
+    pub fn gold_elements() -> [[usize; NUM_NODES_ELEMENT]; Self::NUM_ELEMENTS] {
+        [
+            [1, 2, 6, 5, 25, 26, 30, 29],
+            [5, 6, 10, 9, 29, 30, 34, 33],
+            [9, 10, 14, 13, 33, 34, 38, 37],
+            [10, 11, 15, 14, 34, 35, 39, 38],
+            [13, 14, 18, 17, 37, 38, 42, 41],
+            [17, 18, 22, 21, 41, 42, 46, 45],
+            [18, 19, 23, 22, 42, 43, 47, 46],
+            [19, 20, 24, 23, 43, 44, 48, 47],
+        ]
+    }
+}
