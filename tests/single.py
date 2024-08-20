@@ -16,7 +16,6 @@ Ouput:
 """
 
 # standard library
-from itertools import cycle, tee
 from pathlib import Path
 from typing import Final, Iterable, NamedTuple
 
@@ -548,13 +547,13 @@ def main():
     # Create an instance of a specific example
     # user input begin
     # ex = Single()
-    ex = Double()
+    # ex = Double()
     # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
     # ex = QuadrupleVoid()
     # ex = Cube()
-    # ex = Letter_F()
+    ex = Letter_F()
     # user input end
 
     # computation

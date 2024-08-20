@@ -27,6 +27,8 @@ MB OOO.  No pair programming.
     * `(x, y)` plane for pixels, `z` axis for stacked pixles into voxels, stack of two slices (`NELZ = 2`), `NELX = 3`, `NELY = 5`.
   * CH to dry out code `spn.rs` and `spn_single.rs` (CH made the code WET with the duplicated tests)
   * CH refactor `f_fiducial.inp`
+* Change from `spn` type to `voxel` type.
+
 
 ```bash
 
