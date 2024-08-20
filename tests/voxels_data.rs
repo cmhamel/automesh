@@ -34,6 +34,11 @@ pub struct Single {
     pub translate: [f64; NSD],
 }
 
+/// The single lattice and single element example.
+/// ![Figure](../doc/fig/single.png)
+///
+/// Why doesn't this comment appear in the documentation?
+///
 impl Single {
     // Constructor function to create a new Single instance.
     pub fn new() -> Self {

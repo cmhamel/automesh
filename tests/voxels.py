@@ -1,6 +1,6 @@
 """This module demonstrates creating a pixel slice in the (x, y)
-plane, and a single layer in the z axis, to create a single
-voxel, as a precursor for a single hexahedral finite element.
+plane, and then appending layers in the z axis, to create a 3D
+voxel lattice, as a precursor for a hexahedral finite element mesh.
 
 This module assumes the virtual environment has been loaded.
 
@@ -8,7 +8,8 @@ Example:
 
     cd ~/autotwin/automesh
     source .venv/bin/activate
-    python tests/single.py
+    python tests/voxels.py
+    # python src/tests/voxels.py
 
 Ouput:
     The `output_npy` file data structure
@@ -16,6 +17,7 @@ Ouput:
 """
 
 # standard library
+import datetime
 from pathlib import Path
 from typing import Final, Iterable, NamedTuple
 
@@ -55,10 +57,13 @@ class Example(NamedTuple):
     )
 
 
+COMMON_TITLE: Final[str] = "Lattice Index and Coordinates: "
+
+
 class Single(Example):
     """A specific example of a single voxel."""
 
-    figure_title: str = "Single Element Global Node Numbers and Coordinates"
+    figure_title: str = COMMON_TITLE + "Single"
     file_stem: str = "single"
     segmentation = np.array(
         [
@@ -82,7 +87,7 @@ class Single(Example):
 class Double(Example):
     """A specific example of a double voxel."""
 
-    figure_title: str = "Double Element Global Node Numbers and Coordinates"
+    figure_title: str = COMMON_TITLE + "Double"
     file_stem: str = "double"
     segmentation = np.array(
         [
@@ -322,7 +327,7 @@ class Cube(Example):
     )
 
 
-class Letter_F(Example):
+class LetterF(Example):
     """A minimal letter F example."""
 
     figure_title: str = "Letter F minimal"
@@ -460,7 +465,8 @@ def element_connectivity(
     for the finite element mesh.  A voxel with a segmentation id in the
     Example's excluded ids tuple is excluded from becoming a finite element."""
 
-    segmentation = ex.segmentation.flatten().squeeze()
+    # segmentation = ex.segmentation.flatten().squeeze()
+    segmentation = ex.segmentation.flatten()
 
     # assert that the list of included ids is equal
     included_set = set(ex.included_ids)
@@ -547,13 +553,13 @@ def main():
     # Create an instance of a specific example
     # user input begin
     # ex = Single()
-    # ex = Double()
+    ex = Double()
     # ex = DoubleY()
     # ex = Triple()
     # ex = Quadruple()
     # ex = QuadrupleVoid()
     # ex = Cube()
-    ex = Letter_F()
+    # ex = LetterF()
     # user input end
 
     # computation
@@ -564,7 +570,7 @@ def main():
 
     # visualization
     visualize: bool = True  # True performs post-processing visualization
-    dpi: Final[int] = 150  # resolution, dots per inch
+    dpi: Final[int] = 300  # resolution, dots per inch
     output_png: Final[Path] = (
         Path(output_dir).expanduser().joinpath(ex.file_stem + ".png")
     )
@@ -590,7 +596,9 @@ def main():
         ec == ex.gold_elements
     ), "Calculated element connectivity error."
 
-    edges = [element_edges(connectivity=x) for x in ec]
+    # TODO: Optimization: construct edges and draw each edge only
+    # once.
+    # edges = [element_edges(connectivity=x) for x in ec]
 
     # save the numpy data as a .npy file
     np.save(output_npy, ex.segmentation)
@@ -694,6 +702,14 @@ def main():
 
     # Set the title
     ax.set_title(ex.figure_title)
+
+    # Add a footnote
+    # Get the current date and time in UTC
+    now_utc = datetime.datetime.now(datetime.UTC)
+    # Format the date and time as a string
+    timestamp_utc = now_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
+    fn = f"Created with {__file__}\non {timestamp_utc}."
+    fig.text(0.5, 0.01, fn, ha="center", fontsize=8)
 
     # Show the plot
     plt.show()
