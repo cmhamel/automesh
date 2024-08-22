@@ -58,6 +58,11 @@ impl Spn {
         let data = spn_data_from_npy(file_path);
         Self { data }
     }
+    /// Constructs and returns a new SPN type from an SPN file.
+    pub fn from_spn(file_path: &str, nel: Nel) -> Self {
+        let data = spn_data_from_spn(file_path, nel);
+        Self { data }
+    }
     /// Returns a reference to the internal SPN data.
     pub fn get_data(&self) -> &SpnData {
         &self.data
@@ -87,11 +92,6 @@ impl Spn {
         let (element_blocks, element_connectivity, nodal_coordinates) =
             finite_element_data_from_npy_data(self.get_data(), scale, translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
-    }
-    /// Constructs and returns a new SPN type from file.
-    pub fn new(file_path: &str, nel: Nel) -> Self {
-        let data = new(file_path, nel);
-        Self { data }
     }
     /// Writes the internal SPN data to a NPY file.
     pub fn write_npy(&self, file_path: &str) {
@@ -266,28 +266,6 @@ fn finite_element_data_from_npy_data(
     (element_blocks, element_connectivity, nodal_coordinates)
 }
 
-fn new(file_path: &str, nel: Nel) -> SpnData {
-    let flat = BufReader::new(File::open(file_path).expect("File was not found."))
-        .lines()
-        .map(|line| line.unwrap().parse().unwrap())
-        .collect::<Vec<u8>>();
-    let mut data = SpnData::zeros((nel[2], nel[1], nel[0]));
-    data.iter_mut()
-        .zip(flat.iter())
-        .for_each(|(data_entry, flat_entry)| *data_entry = *flat_entry);
-    data
-}
-
-// Given a file path to a `.npy` file, creates a `SpnData` data type.
-//
-// # Arguments
-//
-// * `file_path` - The fully pathed name of the `.npy` file.
-//
-// # Returns
-//
-// * The data from the `.npy` file as a `SpnData` type.
-//
 fn spn_data_from_npy(file_path: &str) -> SpnData {
     // https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html
     // The return type of File::open is a Result<T, E> enum.
@@ -321,6 +299,18 @@ fn spn_data_from_npy(file_path: &str) -> SpnData {
     };
 
     SpnData::read_npy(npy_file).expect("Could not open the .npy file")
+}
+
+fn spn_data_from_spn(file_path: &str, nel: Nel) -> SpnData {
+    let flat = BufReader::new(File::open(file_path).expect("File was not found."))
+        .lines()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect::<Vec<u8>>();
+    let mut data = SpnData::zeros((nel[2], nel[1], nel[0]));
+    data.iter_mut()
+        .zip(flat.iter())
+        .for_each(|(data_entry, flat_entry)| *data_entry = *flat_entry);
+    data
 }
 
 fn write_spn_to_npy(data: &SpnData, file_path: &str) {

@@ -1,6 +1,6 @@
 use super::{
-    finite_element_data_from_npy_data, new, spn_data_from_npy, write_spn_to_npy, Nel, Scale,
-    SpnData, Translate,
+    finite_element_data_from_npy_data, spn_data_from_npy, spn_data_from_spn, write_spn_to_npy, Nel,
+    Scale, SpnData, Translate,
 };
 use crate::fem::py::FiniteElements;
 use numpy::{PyArray3, ToPyArray};
@@ -33,9 +33,9 @@ impl Spn {
         let data = spn_data_from_npy(file_path);
         Self { data }
     }
-    #[new]
-    pub fn new(file_path: &str, nel: Nel) -> Self {
-        let data = new(file_path, nel);
+    #[staticmethod]
+    pub fn from_spn(file_path: &str, nel: Nel) -> Self {
+        let data = spn_data_from_spn(file_path, nel);
         Self { data }
     }
     pub fn write_npy(&self, file_path: &str) {

@@ -214,7 +214,7 @@ fn main() {
         .and_then(|ext| ext.to_str())
     {
         Some("npy") => Spn::from_npy(&args.input),
-        Some("spn") => Spn::new(&args.input, [args.nelx, args.nely, args.nelz]),
+        Some("spn") => Spn::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
 

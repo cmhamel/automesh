@@ -62,5 +62,6 @@ fn write_inp() {
     let time_prefix_line = str::from_utf8(&line.as_bytes()[0..17]).unwrap();
     assert_eq!(time_prefix_gold, time_prefix_line);
     read_both_files(&mut gold, &mut gold_reader, &mut line, &mut line_reader);
-    assert_eq!(gold, line);
+    // assert_eq!(gold, line);
+    assert!(false);
 }
