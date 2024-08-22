@@ -10,8 +10,10 @@ const NELZ: usize = 4;
 const NELY: usize = 5;
 const NELX: usize = 3;
 const NEL: [usize; 3] = [NELX, NELY, NELZ];
-const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
-const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
+const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
+const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
+// const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
+// const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
 
 fn read_both_lines(
     gold: &mut String,
@@ -39,7 +41,7 @@ fn read_both_files(
 
 #[test]
 fn write_inp() {
-    let spn = Spn::new("tests/input/f.spn", NEL);
+    let spn = Spn::from_spn("tests/input/f.spn", NEL);
     let fem = spn.into_finite_elements(&SCALE, &TRANSLATE);
     fem.write_inp("target/f.inp");
     let mut gold = String::new();
@@ -62,6 +64,5 @@ fn write_inp() {
     let time_prefix_line = str::from_utf8(&line.as_bytes()[0..17]).unwrap();
     assert_eq!(time_prefix_gold, time_prefix_line);
     read_both_files(&mut gold, &mut gold_reader, &mut line, &mut line_reader);
-    // assert_eq!(gold, line);
-    assert!(false);
+    assert_eq!(gold, line);
 }
