@@ -1,4 +1,4 @@
-use automesh::Spn;
+use automesh::Voxels;
 
 const NELX: usize = 4;
 const NELY: usize = 5;
@@ -163,7 +163,7 @@ const GOLD_DATA: [[[u8; NELZ]; NELY]; NELX] = [
     [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
 ];
 
-fn assert_data_eq_gold(spn: Spn) {
+fn assert_data_eq_gold(spn: Voxels) {
     let data = spn.get_data();
     data.shape()
         .iter()
@@ -176,12 +176,12 @@ fn assert_data_eq_gold(spn: Spn) {
 
 #[test]
 fn from_spn() {
-    assert_data_eq_gold(Spn::from_spn("tests/input/f.spn", NEL));
+    assert_data_eq_gold(Voxels::from_spn("tests/input/f.spn", NEL));
 }
 
 #[test]
 fn into_finite_elements() {
-    let spn = Spn::from_npy("tests/input/f.npy");
+    let spn = Voxels::from_npy("tests/input/f.npy");
     let fem = spn.into_finite_elements(&SCALE, &TRANSLATE);
     let blocks = fem.get_element_blocks();
     assert_eq!(GOLD_BLOCKS.len(), NUM_ELEMENTS);
@@ -220,8 +220,8 @@ fn into_finite_elements() {
 
 #[test]
 fn write_npy() {
-    Spn::from_spn("tests/input/f.spn", NEL).write_npy("target/f.npy");
-    let spn = Spn::from_npy("target/f.npy");
+    Voxels::from_spn("tests/input/f.spn", NEL).write_npy("target/f.npy");
+    let spn = Voxels::from_npy("target/f.npy");
     assert_data_eq_gold(spn);
 }
 
@@ -231,23 +231,23 @@ mod from_npy {
     #[test]
     #[should_panic(expected = "File type must be .npy")]
     fn file_unreadable() {
-        let _ = Spn::from_npy("tests/input/f.txt");
+        let _ = Voxels::from_npy("tests/input/f.txt");
     }
 
     #[test]
     #[should_panic(expected = "Could not find the .npy file")]
     fn file_nonexistent() {
-        let _ = Spn::from_npy("tests/input/f_file_nonexistent.npy");
+        let _ = Voxels::from_npy("tests/input/f_file_nonexistent.npy");
     }
 
     #[test]
     #[should_panic(expected = "Could not open the .npy file")]
     fn file_unopenable() {
-        let _ = Spn::from_npy("tests/input/encrypted.npy");
+        let _ = Voxels::from_npy("tests/input/encrypted.npy");
     }
 
     #[test]
     fn success() {
-        assert_data_eq_gold(Spn::from_npy("tests/input/f.npy"));
+        assert_data_eq_gold(Voxels::from_npy("tests/input/f.npy"));
     }
 }

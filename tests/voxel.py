@@ -1,5 +1,5 @@
 import numpy as np
-from automesh import Spn
+from automesh import Voxels
 
 nel = [4, 5, 3]
 number_of_elements = 39
@@ -164,7 +164,7 @@ for i in range(3):
 
 
 def test_as_finite_elements():
-    spn = Spn.from_npy('tests/input/f.npy')
+    spn = Voxels.from_npy('tests/input/f.npy')
     fem = spn.as_finite_elements(scale, translate)
     assert (fem.element_blocks == gold_blocks).all()
     assert (fem.element_connectivity == gold_connectivity).all()
@@ -172,16 +172,16 @@ def test_as_finite_elements():
 
 
 def test_from_npy():
-    spn = Spn.from_npy('tests/input/f.npy')
+    spn = Voxels.from_npy('tests/input/f.npy')
     assert (spn.data == gold_data).all()
 
 
 def test_new():
-    spn = Spn.from_spn('tests/input/f.spn', nel)
+    spn = Voxels.from_spn('tests/input/f.spn', nel)
     assert (spn.data == gold_data).all()
 
 
 def test_write_npy():
-    Spn.from_spn('tests/input/f.spn', nel).write_npy('target/f.npy')
-    spn = Spn.from_npy('target/f.npy')
+    Voxels.from_spn('tests/input/f.spn', nel).write_npy('target/f.npy')
+    spn = Voxels.from_npy('target/f.npy')
     assert (spn.data == gold_data).all()

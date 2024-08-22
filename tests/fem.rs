@@ -1,4 +1,4 @@
-use automesh::{Abaqus, Spn};
+use automesh::{Abaqus, Voxels};
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},
@@ -39,7 +39,7 @@ fn read_both_files(
 
 #[test]
 fn write_inp() {
-    let spn = Spn::from_spn("tests/input/f.spn", NEL);
+    let spn = Voxels::from_spn("tests/input/f.spn", NEL);
     let fem = spn.into_finite_elements(&SCALE, &TRANSLATE);
     fem.write_inp("target/f.inp");
     let mut gold = String::new();

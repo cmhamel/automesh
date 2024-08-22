@@ -1,4 +1,4 @@
-from automesh import Spn
+from automesh import Voxels
 
 nel = [4, 5, 3]
 scale = [1, 1, 1]
@@ -6,7 +6,7 @@ translate = [0, 0, 0]
 
 
 def test_write_inp():
-    spn = Spn.from_spn('tests/input/f.spn', nel)
+    spn = Voxels.from_spn('tests/input/f.spn', nel)
     fem = spn.as_finite_elements(scale, translate)
     fem.write_inp('target/f.inp')
     with open('tests/input/f.inp') as gold, open('target/f.inp') as file:

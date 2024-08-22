@@ -1,4 +1,4 @@
-use super::{element_connectivity_node_renumbering, filter_spn_data, Spn};
+use super::{element_connectivity_node_renumbering, filter_voxel_data, Voxels};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -59,8 +59,8 @@ fn connectivity_node_renumbering() {
 
 #[test]
 fn filter() {
-    let spn = Spn::from_npy("tests/input/f.npy");
-    let (filtered_voxel_data, element_blocks) = filter_spn_data(spn.get_data());
+    let spn = Voxels::from_npy("tests/input/f.npy");
+    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data());
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD
         .iter()

@@ -1,4 +1,4 @@
-use automesh::{Abaqus, Exodus, Spn};
+use automesh::{Abaqus, Exodus, Voxels};
 use clap::Parser;
 use std::path::Path;
 
@@ -215,8 +215,8 @@ fn main() {
         .extension()
         .and_then(|ext| ext.to_str())
     {
-        Some("npy") => Spn::from_npy(&args.input),
-        Some("spn") => Spn::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
+        Some("npy") => Voxels::from_npy(&args.input),
+        Some("spn") => Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
 
