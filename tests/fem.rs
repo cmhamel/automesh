@@ -6,14 +6,12 @@ use std::{
 };
 // use std::io::prelude::*;
 
-const NELZ: usize = 4;
+const NELX: usize = 4;
 const NELY: usize = 5;
-const NELX: usize = 3;
+const NELZ: usize = 3;
 const NEL: [usize; 3] = [NELX, NELY, NELZ];
 const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
 const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
-// const SCALE: [f64; 3] = [1.2, 2.3, 0.4];
-// const TRANSLATE: [f64; 3] = [-0.3, 1.1, 0.5];
 
 fn read_both_lines(
     gold: &mut String,
