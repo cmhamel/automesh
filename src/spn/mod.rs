@@ -47,18 +47,6 @@ type VoxelData<const N: usize> = Vec<[usize; N]>;
 /// needed to uniquely interpret the pixel tiling and voxel stacking order
 /// of the data in the SPN file.
 ///
-/// # Examples:
-/// The [letter "F" unit test file](../../../tests/input/f.spn), consists of 60 lines, one line
-/// for each of the voxels in the `(slice, column, row) -> (z, y, x) -> (4, 5, 3)`  voxel volume.  The interpretation
-/// of this data is shown below:
-///
-/// ![letter F spn file contents annotated](../../../doc/fig/letter_f_spn_annotated.png)
-///
-/// # See Also:
-///
-///  * [autotwin/mesh letter "F" unit test](https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md)
-///  * [Sculpt Input Microstructure SPN File](https://cubit.sandia.gov/files/cubit/16.10/help_manual/WebHelp/mesh_generation/meshing_schemes/parallel/sculpt_input.htm)
-///
 pub struct Spn {
     data: SpnData,
 }
@@ -85,14 +73,14 @@ impl Spn {
     ///
     /// ```svgbob
     ///     8       7
-    ///      *-------*        +x
+    ///      *-------*         z
     ///   5 /|    6 /|          ^
     ///    *-+-----* |          |
     ///    | |4    | |3         |
-    ///    | *-----|-*          +-----> -z
+    ///    | *-----|-*          +-----> x
     ///    |/      |/          /
     ///    *-------*          v
-    ///   1       2         -y
+    ///   1       2          y
     /// ```
     )]
     pub fn into_finite_elements(self, scale: &Scale, translate: &Translate) -> FiniteElements {
