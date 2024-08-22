@@ -180,11 +180,11 @@ fn finite_element_data_from_npy_data(
                 entry[0]
                     + (entry[1] + 1) * nelxplus1
                     + entry[2] * nelxplus1 * nelyplus1
+                    + 1
                     + NODE_NUMBERING_OFFSET,
                 entry[0]
                     + (entry[1] + 1) * nelxplus1
                     + entry[2] * nelxplus1 * nelyplus1
-                    + 1
                     + NODE_NUMBERING_OFFSET,
                 entry[0]
                     + entry[1] * nelxplus1
@@ -198,11 +198,11 @@ fn finite_element_data_from_npy_data(
                 entry[0]
                     + (entry[1] + 1) * nelxplus1
                     + (entry[2] + 1) * nelxplus1 * nelyplus1
+                    + 1
                     + NODE_NUMBERING_OFFSET,
                 entry[0]
                     + (entry[1] + 1) * nelxplus1
                     + (entry[2] + 1) * nelxplus1 * nelyplus1
-                    + 1
                     + NODE_NUMBERING_OFFSET,
             ]
         })
@@ -231,12 +231,12 @@ fn finite_element_data_from_npy_data(
                 (entry[2] as f64) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = vec![
-                (entry[0] as f64) * xscale + xtranslate,
+                (entry[0] as f64 + 1.0) * xscale + xtranslate,
                 (entry[1] as f64 + 1.0) * yscale + ytranslate,
                 (entry[2] as f64) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = vec![
-                (entry[0] as f64 + 1.0) * xscale + xtranslate,
+                (entry[0] as f64) * xscale + xtranslate,
                 (entry[1] as f64 + 1.0) * yscale + ytranslate,
                 (entry[2] as f64) * zscale + ztranslate,
             ];
@@ -251,12 +251,12 @@ fn finite_element_data_from_npy_data(
                 (entry[2] as f64 + 1.0) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = vec![
-                (entry[0] as f64) * xscale + xtranslate,
+                (entry[0] as f64 + 1.0) * xscale + xtranslate,
                 (entry[1] as f64 + 1.0) * yscale + ytranslate,
                 (entry[2] as f64 + 1.0) * zscale + ztranslate,
             ];
             nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = vec![
-                (entry[0] as f64 + 1.0) * xscale + xtranslate,
+                (entry[0] as f64) * xscale + xtranslate,
                 (entry[1] as f64 + 1.0) * yscale + ytranslate,
                 (entry[2] as f64 + 1.0) * zscale + ztranslate,
             ];
@@ -275,12 +275,6 @@ fn spn_data_from_npy(file_path: &str) -> SpnData {
                 panic!("Could not find the .npy file.")
             }
             _ => {
-                // See https://doc.rust-lang.org/stable/std/fs/struct.OpenOptions.html#errors
-                // errors aside from NotFound error. This match arm
-                // is difficult to test because it requires setting
-                // permissions and getting those permissions to exist
-                // in a valid setting for CI/CD. Currently this
-                // match arm has no test.
                 panic!("Could not open the .npy file.");
             }
         },
