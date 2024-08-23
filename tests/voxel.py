@@ -164,24 +164,24 @@ for i in range(3):
 
 
 def test_as_finite_elements():
-    spn = Voxels.from_npy('tests/input/f.npy')
-    fem = spn.as_finite_elements(scale, translate)
+    voxels = Voxels.from_npy('tests/input/f.npy')
+    fem = voxels.as_finite_elements(scale, translate)
     assert (fem.element_blocks == gold_blocks).all()
     assert (fem.element_connectivity == gold_connectivity).all()
     assert (fem.nodal_coordinates == gold_coordinates).all()
 
 
 def test_from_npy():
-    spn = Voxels.from_npy('tests/input/f.npy')
-    assert (spn.data == gold_data).all()
+    voxels = Voxels.from_npy('tests/input/f.npy')
+    assert (voxels.data == gold_data).all()
 
 
 def test_new():
-    spn = Voxels.from_spn('tests/input/f.spn', nel)
-    assert (spn.data == gold_data).all()
+    voxels = Voxels.from_spn('tests/input/f.spn', nel)
+    assert (voxels.data == gold_data).all()
 
 
 def test_write_npy():
     Voxels.from_spn('tests/input/f.spn', nel).write_npy('target/f.npy')
-    spn = Voxels.from_npy('target/f.npy')
-    assert (spn.data == gold_data).all()
+    voxels = Voxels.from_npy('target/f.npy')
+    assert (voxels.data == gold_data).all()

@@ -6,8 +6,8 @@ translate = [0, 0, 0]
 
 
 def test_write_inp():
-    spn = Voxels.from_spn('tests/input/f.spn', nel)
-    fem = spn.as_finite_elements(scale, translate)
+    voxels = Voxels.from_spn('tests/input/f.spn', nel)
+    fem = voxels.as_finite_elements(scale, translate)
     fem.write_inp('target/f.inp')
     with open('tests/input/f.inp') as gold, open('target/f.inp') as file:
         for _ in range(2):
