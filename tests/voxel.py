@@ -163,6 +163,11 @@ for i in range(3):
     gold_coordinates[:, i] += translate[i]
 
 
+def test_todo():
+    print("need to replicate tests")
+    assert False
+
+
 def test_as_finite_elements():
     voxels = Voxels.from_npy('tests/input/f.npy')
     fem = voxels.as_finite_elements(scale, translate)
