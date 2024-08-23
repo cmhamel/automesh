@@ -198,12 +198,15 @@ where
         .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry));
 }
 
-fn assert_fem_data_eq_gold(
-    fem: &FiniteElements,
+fn assert_fem_data_from_spn_eq_gold(
+    file_path: &str,
     gold_blocks: &[usize],
     gold_connectivity: &[[usize; 8]],
     gold_coordinates: &[[f64; 3]],
+    nel: [usize; 3],
 ) {
+    let voxels = Voxels::from_spn(file_path, nel);
+    let fem = voxels.into_finite_elements(&SCALE_NONE, &TRANSLATE_NONE);
     assert_data_eq_gold_1d(fem.get_element_blocks(), gold_blocks);
     assert_data_eq_gold_2d(fem.get_element_connectivity(), gold_connectivity);
     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), gold_coordinates);
@@ -219,9 +222,10 @@ mod into_finite_elements {
     use super::*;
     #[test]
     fn single() {
-        const BLOCK_CONNECTIVITY: [usize; 1] = [1];
-        const ELEMENT_CONNECTIVITY: [[usize; 8]; 1] = [[1, 2, 4, 3, 5, 6, 8, 7]];
-        const NODAL_COORDINATES: [[f64; 3]; 8] = [
+        let file_path = "tests/input/single.spn";
+        let gold_blocks = [1];
+        let gold_connectivity = [[1, 2, 4, 3, 5, 6, 8, 7]];
+        let gold_coordinates = [
             [0.0, 0.0, 0.0],
             [1.0, 0.0, 0.0],
             [0.0, 1.0, 0.0],
@@ -231,13 +235,13 @@ mod into_finite_elements {
             [0.0, 1.0, 1.0],
             [1.0, 1.0, 1.0],
         ];
-        let voxels = Voxels::from_spn("tests/input/single.spn", [1, 1, 1]);
-        let fem = voxels.into_finite_elements(&SCALE_NONE, &TRANSLATE_NONE);
-        assert_fem_data_eq_gold(
-            &fem,
-            &BLOCK_CONNECTIVITY,
-            &ELEMENT_CONNECTIVITY,
-            &NODAL_COORDINATES,
+        let nel = [1, 1, 1];
+        assert_fem_data_from_spn_eq_gold(
+            file_path,
+            &gold_blocks,
+            &gold_connectivity,
+            &gold_coordinates,
+            nel,
         );
     }
     #[test]
