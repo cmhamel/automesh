@@ -659,65 +659,6 @@ def flatten_tuple(t):
     return tuple(flat_list)
 
 
-# def element_edges(connectivity: np.ndarray):
-#     """Given a single finite element connectivity, returns a tuple of the
-#     eight edges of that element."""
-#
-#     cc = connectivity
-#
-#     # edges = [pairwise_circular(x) for x in connectivity]
-#     # bottom edges
-#     e1 = (cc[0], cc[1])
-#     e2 = (cc[1], cc[2])
-#     e3 = (cc[2], cc[3])
-#     e4 = (cc[3], cc[0])
-#     # top edges
-#     e5 = (cc[4], cc[5])
-#     e6 = (cc[5], cc[6])
-#     e7 = (cc[6], cc[7])
-#     e8 = (cc[7], cc[4])
-#     # vertical edges
-#     e9 = (cc[0], cc[4])
-#     e10 = (cc[1], cc[5])
-#     e11 = (cc[2], cc[6])
-#     e12 = (cc[3], cc[7])
-#
-#     aa = tuple([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12])
-#     return aa
-
-
-# def test_element_edges():
-#     """Tests the element edges functionality."""
-#     element = np.array([1, 2, 4, 3, 5, 6, 8, 7])
-#
-#     result = element_edges(element)
-#
-#     #     7-----8
-#     #    /|    /|
-#     #   5-----6 |
-#     #   | |   | |
-#     #   | 3---|-4
-#     #   |/    |/
-#     #   1-----2
-#     #  (1, 2), (1, 3), (1, 5), (2, 4), (2, 6), (3, 4)
-#     #  (3, 7), (4, 8), (5, 6), (5, 7), (6, 8), (7, 8)
-#
-#     assert result == (
-#         (1, 2),  # e1
-#         (2, 4),  # e2
-#         (3, 4),  # e3
-#         (1, 3),  # e4
-#         (5, 6),  # e5
-#         (6, 8),  # e6
-#         (7, 8),  # e7
-#         (5, 7),  # e8
-#         (1, 5),  # e9
-#         (2, 6),  # e10
-#         (4, 8),  # e11
-#         (3, 7),  # e12
-#     )
-
-
 def main():
     """The main program."""
 
@@ -781,10 +722,6 @@ def main():
 
         # breakpoint()
         assert ec == ex.gold_elements, "Calculated element connectivity error."
-
-        # TODO: Optimization: construct edges and draw each edge only
-        # once.
-        # edges = [element_edges(connectivity=x) for x in ec]
 
         # save the numpy data as a .npy file
         np.save(output_npy, ex.segmentation)
