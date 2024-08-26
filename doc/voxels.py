@@ -66,15 +66,20 @@ class Single(Example):
         [
             [
                 [
-                    1,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = ((1, 2, 4, 3, 5, 6, 8, 7),)
-    gold_elements = (((1, 2, 4, 3, 5, 6, 8, 7),),)
+    gold_elements = (
+        (
+            11,
+            (1, 2, 4, 3, 5, 6, 8, 7),
+        ),
+    )
 
 
 class Double(Example):
@@ -86,20 +91,21 @@ class Double(Example):
         [
             [
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 5, 4, 7, 8, 11, 10),
         (2, 3, 6, 5, 8, 9, 12, 11),
     )
     gold_elements = (
         (
+            11,
             (1, 2, 5, 4, 7, 8, 11, 10),
             (2, 3, 6, 5, 8, 9, 12, 11),
         ),
@@ -115,22 +121,23 @@ class DoubleY(Example):
         [
             [
                 [
-                    1,
+                    11,
                 ],
                 [
-                    1,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 4, 3, 7, 8, 10, 9),
         (3, 4, 6, 5, 9, 10, 12, 11),
     )
     gold_elements = (
         (
+            11,
             (1, 2, 4, 3, 7, 8, 10, 9),
             (3, 4, 6, 5, 9, 10, 12, 11),
         ),
@@ -146,15 +153,15 @@ class Triple(Example):
         [
             [
                 [
-                    1,
-                    1,
-                    1,
+                    11,
+                    11,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 6, 5, 9, 10, 14, 13),
         (2, 3, 7, 6, 10, 11, 15, 14),
@@ -162,6 +169,7 @@ class Triple(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 6, 5, 9, 10, 14, 13),
             (2, 3, 7, 6, 10, 11, 15, 14),
             (3, 4, 8, 7, 11, 12, 16, 15),
@@ -178,16 +186,16 @@ class Quadruple(Example):
         [
             [
                 [
-                    1,
-                    1,
-                    1,
-                    1,
+                    11,
+                    11,
+                    11,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
         (2, 3, 8, 7, 12, 13, 18, 17),
@@ -196,6 +204,7 @@ class Quadruple(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (2, 3, 8, 7, 12, 13, 18, 17),
             (3, 4, 9, 8, 13, 14, 19, 18),
@@ -215,16 +224,16 @@ class QuadrupleVoid(Example):
         [
             [
                 [
-                    1,
+                    11,
                     0,
                     0,
-                    1,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
         (2, 3, 8, 7, 12, 13, 18, 17),
@@ -233,6 +242,7 @@ class QuadrupleVoid(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
@@ -250,18 +260,18 @@ class QuadrupleTwoBlocks(Example):
         [
             [
                 [
-                    1,
-                    2,
-                    2,
-                    1,
+                    11,
+                    21,
+                    21,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        1,
-        2,
+        11,
+        21,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -271,10 +281,12 @@ class QuadrupleTwoBlocks(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
         (
+            21,
             (2, 3, 8, 7, 12, 13, 18, 17),
             (3, 4, 9, 8, 13, 14, 19, 18),
         ),
@@ -293,18 +305,18 @@ class QuadrupleTwoBlocksVoid(Example):
         [
             [
                 [
-                    1,
-                    2,
+                    11,
+                    21,
                     0,
-                    1,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        1,
-        2,
+        11,
+        21,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -314,10 +326,14 @@ class QuadrupleTwoBlocksVoid(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
-        ((2, 3, 8, 7, 12, 13, 18, 17),),
+        (
+            21,
+            (2, 3, 8, 7, 12, 13, 18, 17),
+        ),
     )
 
 
@@ -330,28 +346,28 @@ class Cube(Example):
         [
             [
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                 ],
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                 ],
             ],
             [
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                 ],
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 5, 4, 10, 11, 14, 13),
         (2, 3, 6, 5, 11, 12, 15, 14),
@@ -364,6 +380,7 @@ class Cube(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 5, 4, 10, 11, 14, 13),
             (2, 3, 6, 5, 11, 12, 15, 14),
             (4, 5, 8, 7, 13, 14, 17, 16),
@@ -372,6 +389,82 @@ class Cube(Example):
             (11, 12, 15, 14, 20, 21, 24, 23),
             (13, 14, 17, 16, 22, 23, 26, 25),
             (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
+    )
+
+
+class CubeMultiBlocks(Example):
+    """A specific example of a (2 x 2 x 2) voxel cube with a void and
+    seven blocks."""
+
+    figure_title: str = COMMON_TITLE + "CubeMultiBlocks"
+    file_stem: str = "cube_multi_blocks"
+    segmentation = np.array(
+        [
+            [
+                [
+                    82,
+                    2,
+                ],
+                [
+                    2,
+                    2,
+                ],
+            ],
+            [
+                [
+                    0,
+                    31,
+                ],
+                [
+                    0,
+                    44,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    included_ids = (
+        82,
+        2,
+        31,
+        44,
+    )
+    gold_lattice = (
+        (1, 2, 5, 4, 10, 11, 14, 13),
+        (2, 3, 6, 5, 11, 12, 15, 14),
+        (4, 5, 8, 7, 13, 14, 17, 16),
+        (5, 6, 9, 8, 14, 15, 18, 17),
+        (10, 11, 14, 13, 19, 20, 23, 22),
+        (11, 12, 15, 14, 20, 21, 24, 23),
+        (13, 14, 17, 16, 22, 23, 26, 25),
+        (14, 15, 18, 17, 23, 24, 27, 26),
+    )
+    gold_elements = (
+        # (
+        #   0,
+        #   (10, 11, 14, 13, 19, 20, 23, 22),
+        # ),
+        # (
+        #   0,
+        #   (13, 14, 17, 16, 22, 23, 26, 25),
+        (
+            2,
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+        ),
+        (
+            31,
+            (11, 12, 15, 14, 20, 21, 24, 23),
+        ),
+        (
+            44,
+            (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
+        (
+            82,
+            (1, 2, 5, 4, 10, 11, 14, 13),
         ),
     )
 
@@ -385,35 +478,35 @@ class LetterF(Example):
         [
             [
                 [
-                    1,
+                    11,
                     0,
                     0,
                 ],
                 [
-                    1,
+                    11,
                     0,
                     0,
                 ],
                 [
-                    1,
-                    1,
+                    11,
+                    11,
                     0,
                 ],
                 [
-                    1,
+                    11,
                     0,
                     0,
                 ],
                 [
-                    1,
-                    1,
-                    1,
+                    11,
+                    11,
+                    11,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (1,)
+    included_ids = (11,)
     gold_lattice = (
         (1, 2, 6, 5, 25, 26, 30, 29),
         (2, 3, 7, 6, 26, 27, 31, 30),
@@ -433,6 +526,7 @@ class LetterF(Example):
     )
     gold_elements = (
         (
+            11,
             (1, 2, 6, 5, 25, 26, 30, 29),
             # (2, 3, 7, 6, 26, 27, 31, 30),
             # (3, 4, 8, 7, 27, 28, 32, 31),
@@ -512,10 +606,14 @@ def element_connectivity(
     # segmentation = ex.segmentation.flatten().squeeze()
     segmentation = ex.segmentation.flatten()
 
+    # breakpoint()
+
     # assert that the list of included ids is equal
-    included_set = set(ex.included_ids)
+    included_set_unordered = set(ex.included_ids)
+    included_list_ordered = sorted(included_set_unordered)
+    # breakpoint()
     seg_set = set(segmentation)
-    for item in included_set:
+    for item in included_list_ordered:
         assert (
             item in seg_set
         ), f"Error: `included_ids` item {item} is not in the segmentation"
@@ -525,9 +623,11 @@ def element_connectivity(
     # exlude the voxel element from the collected list to create the finite
     # element list
     blocks = ()  # empty tuple
-    for bb in included_set:
+    # breakpoint()
+    for bb in included_list_ordered:
         # included_elements = []
         elements = ()  # empty tuple
+        elements = elements + (bb,)  # insert the block number
         for i, element in enumerate(lattice):
             if bb == segmentation[i]:
                 # breakpoint()
@@ -633,6 +733,7 @@ def main():
         QuadrupleTwoBlocks(),
         QuadrupleTwoBlocksVoid(),
         Cube(),
+        CubeMultiBlocks(),
         LetterF(),
     ]
     for ex in examples:
@@ -723,7 +824,13 @@ def main():
             # breakpoint()
             solid = vox == block_id
             # ax.voxels(solid, facecolors=voxel_color, alpha=voxel_alpha)
-            ax.voxels(solid, facecolors=colors[i], alpha=voxel_alpha)
+            # ax.voxels(solid, facecolors=colors[i], alpha=voxel_alpha)
+            ax.voxels(
+                solid,
+                facecolors=colors[i],
+                edgecolor=colors[i],
+                alpha=voxel_alpha,
+            )
 
         # breakpoint()
 
