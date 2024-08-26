@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Final, Iterable, NamedTuple
 
 # third-party libary
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -582,6 +583,11 @@ def main():
         # el, az, roll = 60, -121, 0
         # el, az, roll = 42, -120, 0
         voxel_color: Final[str] = "yellow"
+        cmap = cm.get_cmap("viridis")  # viridis colormap
+        # number of discrete colors
+        num_colors = len(ex.included_ids)
+        colors = cmap(np.linspace(0, 1, num_colors))
+        # breakpoint()
         voxel_alpha: Final[float] = 0.2
 
         # io: if the output directory does not already exist, create it
@@ -638,8 +644,12 @@ def main():
         # are numbered (0, 1, 2).  We want new exists as (x, y, z) and thus
         # with numbering (2, 1, 0).
         vox = np.transpose(ex.segmentation, (2, 1, 0))
-        solid = vox == 1
-        ax.voxels(solid, facecolors=voxel_color, alpha=voxel_alpha)
+        # add voxels for each of the included materials
+        for i, id in enumerate(ex.included_ids):
+            breakpoint()
+            solid = vox == id
+            # ax.voxels(solid, facecolors=voxel_color, alpha=voxel_alpha)
+            ax.voxels(solid, facecolors=colors[i], alpha=voxel_alpha)
 
         # breakpoint()
 
