@@ -266,6 +266,54 @@ class QuadrupleVoid(Example):
     )
 
 
+class QuadrupleTwoMaterial(Example):
+    """A specific example of a quadruple voxel with two of the intermediate
+    segmentation being the second material.
+    """
+
+    figure_title: str = COMMON_TITLE + "QuadrupleTwoMaterial"
+    file_stem: str = "quadruple_two_material"
+    segmentation = np.array(
+        [
+            [
+                [
+                    1,
+                    2,
+                    2,
+                    1,
+                ],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    gold_lattice = np.array(
+        [
+            [1, 2, 7, 6, 11, 12, 17, 16],
+            [2, 3, 8, 7, 12, 13, 18, 17],
+            [3, 4, 9, 8, 13, 14, 19, 18],
+            [4, 5, 10, 9, 14, 15, 20, 19],
+        ]
+    )
+    gold_elements = np.array(
+        [
+            [
+                [1, 2, 7, 6, 11, 12, 17, 16],
+                [4, 5, 10, 9, 14, 15, 20, 19],
+            ],
+            [
+                [2, 3, 8, 7, 12, 13, 18, 17],
+                [3, 4, 9, 8, 13, 14, 19, 18],
+            ],
+        ]
+    )
+    included_ids = tuple(
+        [
+            1,
+            2,
+        ]
+    )
+
+
 class Cube(Example):
     """A specific example of a (2 x 2 x 2) voxel cube."""
 
@@ -533,17 +581,17 @@ def test_element_edges():
 
     assert result == (
         (1, 2),  # e1
-        (1, 3),  # e4
-        (1, 5),  # e9
         (2, 4),  # e2
-        (2, 6),  # e10
         (3, 4),  # e3
-        (3, 7),  # e12
-        (4, 8),  # e11
+        (1, 3),  # e4
         (5, 6),  # e5
-        (5, 7),  # e8
         (6, 8),  # e6
         (7, 8),  # e7
+        (5, 7),  # e8
+        (1, 5),  # e9
+        (2, 6),  # e10
+        (4, 8),  # e11
+        (3, 7),  # e12
     )
 
 
@@ -553,6 +601,7 @@ def main():
     # Create an instance of a specific example
     # user input begin
     examples = [
+        QuadrupleTwoMaterial(),
         Single(),
         Double(),
         DoubleY(),
@@ -582,7 +631,8 @@ def main():
         el, az, roll = 63, -110, 0
         # el, az, roll = 60, -121, 0
         # el, az, roll = 42, -120, 0
-        voxel_color: Final[str] = "yellow"
+        #
+        # colors
         cmap = cm.get_cmap("viridis")  # viridis colormap
         # number of discrete colors
         num_colors = len(ex.included_ids)
