@@ -515,7 +515,7 @@ def element_edges(connectivity: np.ndarray):
     return aa
 
 
-def test_element_edges(element: np.array):
+def test_element_edges():
     """Tests the element edges functionality."""
     element = np.array([1, 2, 4, 3, 5, 6, 8, 7])
 
