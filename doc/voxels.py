@@ -20,10 +20,9 @@ Ouput:
 # standard library
 import datetime
 from pathlib import Path
-from typing import Final, Iterable, NamedTuple
+from typing import Final, NamedTuple
 
 # third-party libary
-import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -50,13 +49,9 @@ class Example(NamedTuple):
         ],
         dtype=np.uint8,
     )
+    included_ids = (1,)
     gold_lattice = None
     gold_elements = None
-    included_ids = tuple(
-        [
-            1,
-        ]
-    )
 
 
 COMMON_TITLE: Final[str] = "Lattice Index and Coordinates: "
@@ -77,13 +72,9 @@ class Single(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
-    gold_elements = np.array([[1, 2, 4, 3, 5, 6, 8, 7]])
-    included_ids = tuple(
-        [
-            1,
-        ]
-    )
+    included_ids = (1,)
+    gold_lattice = ((1, 2, 4, 3, 5, 6, 8, 7),)
+    gold_elements = (((1, 2, 4, 3, 5, 6, 8, 7),),)
 
 
 class Double(Example):
@@ -102,16 +93,16 @@ class Double(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 5, 4, 7, 8, 11, 10),
+        (2, 3, 6, 5, 8, 9, 12, 11),
     )
-    gold_elements = np.array(
-        [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 5, 4, 7, 8, 11, 10),
+            (2, 3, 6, 5, 8, 9, 12, 11),
+        ),
     )
 
 
@@ -133,16 +124,16 @@ class DoubleY(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 4, 3, 7, 8, 10, 9),
+        (3, 4, 6, 5, 9, 10, 12, 11),
     )
-    gold_elements = np.array(
-        [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 4, 3, 7, 8, 10, 9),
+            (3, 4, 6, 5, 9, 10, 12, 11),
+        ),
     )
 
 
@@ -163,24 +154,18 @@ class Triple(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 6, 5, 9, 10, 14, 13],
-            [2, 3, 7, 6, 10, 11, 15, 14],
-            [3, 4, 8, 7, 11, 12, 16, 15],
-        ]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 6, 5, 9, 10, 14, 13),
+        (2, 3, 7, 6, 10, 11, 15, 14),
+        (3, 4, 8, 7, 11, 12, 16, 15),
     )
-    gold_elements = np.array(
-        [
-            [1, 2, 6, 5, 9, 10, 14, 13],
-            [2, 3, 7, 6, 10, 11, 15, 14],
-            [3, 4, 8, 7, 11, 12, 16, 15],
-        ]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 6, 5, 9, 10, 14, 13),
+            (2, 3, 7, 6, 10, 11, 15, 14),
+            (3, 4, 8, 7, 11, 12, 16, 15),
+        ),
     )
 
 
@@ -202,26 +187,20 @@ class Quadruple(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 7, 6, 11, 12, 17, 16],
-            [2, 3, 8, 7, 12, 13, 18, 17],
-            [3, 4, 9, 8, 13, 14, 19, 18],
-            [4, 5, 10, 9, 14, 15, 20, 19],
-        ]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = np.array(
-        [
-            [1, 2, 7, 6, 11, 12, 17, 16],
-            [2, 3, 8, 7, 12, 13, 18, 17],
-            [3, 4, 9, 8, 13, 14, 19, 18],
-            [4, 5, 10, 9, 14, 15, 20, 19],
-        ]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
     )
 
 
@@ -245,34 +224,28 @@ class QuadrupleVoid(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 7, 6, 11, 12, 17, 16],
-            [2, 3, 8, 7, 12, 13, 18, 17],
-            [3, 4, 9, 8, 13, 14, 19, 18],
-            [4, 5, 10, 9, 14, 15, 20, 19],
-        ]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = np.array(
-        [
-            [1, 2, 7, 6, 11, 12, 17, 16],
-            [4, 5, 10, 9, 14, 15, 20, 19],
-        ]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
     )
 
 
-class QuadrupleTwoMaterial(Example):
+class QuadrupleTwoBlocks(Example):
     """A specific example of a quadruple voxel with two of the intermediate
     segmentation being the second material.
     """
 
-    figure_title: str = COMMON_TITLE + "QuadrupleTwoMaterial"
-    file_stem: str = "quadruple_two_material"
+    figure_title: str = COMMON_TITLE + "QuadrupleTwoBlocks"
+    file_stem: str = "quadruple_two_blocks"
     segmentation = np.array(
         [
             [
@@ -286,31 +259,65 @@ class QuadrupleTwoMaterial(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 7, 6, 11, 12, 17, 16],
-            [2, 3, 8, 7, 12, 13, 18, 17],
-            [3, 4, 9, 8, 13, 14, 19, 18],
-            [4, 5, 10, 9, 14, 15, 20, 19],
-        ]
+    included_ids = (
+        1,
+        2,
     )
-    gold_elements = np.array(
+    gold_lattice = (
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
+    )
+    gold_elements = (
+        (
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        (
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+        ),
+    )
+
+
+class QuadrupleTwoBlocksVoid(Example):
+    """A specific example of a quadruple voxel with the first intermediate
+    segmentation being the second material and the second intermediate
+    segmentation being void.
+    """
+
+    figure_title: str = COMMON_TITLE + "QuadrupleTwoBlocksVoid"
+    file_stem: str = "quadruple_two_blocks_void"
+    segmentation = np.array(
         [
             [
-                [1, 2, 7, 6, 11, 12, 17, 16],
-                [4, 5, 10, 9, 14, 15, 20, 19],
+                [
+                    1,
+                    2,
+                    0,
+                    1,
+                ],
             ],
-            [
-                [2, 3, 8, 7, 12, 13, 18, 17],
-                [3, 4, 9, 8, 13, 14, 19, 18],
-            ],
-        ]
+        ],
+        dtype=np.uint8,
     )
-    included_ids = tuple(
-        [
-            1,
-            2,
-        ]
+    included_ids = (
+        1,
+        2,
+    )
+    gold_lattice = (
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
+    )
+    gold_elements = (
+        (
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        ((2, 3, 8, 7, 12, 13, 18, 17),),
     )
 
 
@@ -344,34 +351,28 @@ class Cube(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 5, 4, 10, 11, 14, 13],
-            [2, 3, 6, 5, 11, 12, 15, 14],
-            [4, 5, 8, 7, 13, 14, 17, 16],
-            [5, 6, 9, 8, 14, 15, 18, 17],
-            [10, 11, 14, 13, 19, 20, 23, 22],
-            [11, 12, 15, 14, 20, 21, 24, 23],
-            [13, 14, 17, 16, 22, 23, 26, 25],
-            [14, 15, 18, 17, 23, 24, 27, 26],
-        ]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 5, 4, 10, 11, 14, 13),
+        (2, 3, 6, 5, 11, 12, 15, 14),
+        (4, 5, 8, 7, 13, 14, 17, 16),
+        (5, 6, 9, 8, 14, 15, 18, 17),
+        (10, 11, 14, 13, 19, 20, 23, 22),
+        (11, 12, 15, 14, 20, 21, 24, 23),
+        (13, 14, 17, 16, 22, 23, 26, 25),
+        (14, 15, 18, 17, 23, 24, 27, 26),
     )
-    gold_elements = np.array(
-        [
-            [1, 2, 5, 4, 10, 11, 14, 13],
-            [2, 3, 6, 5, 11, 12, 15, 14],
-            [4, 5, 8, 7, 13, 14, 17, 16],
-            [5, 6, 9, 8, 14, 15, 18, 17],
-            [10, 11, 14, 13, 19, 20, 23, 22],
-            [11, 12, 15, 14, 20, 21, 24, 23],
-            [13, 14, 17, 16, 22, 23, 26, 25],
-            [14, 15, 18, 17, 23, 24, 27, 26],
-        ]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 5, 4, 10, 11, 14, 13),
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+            (10, 11, 14, 13, 19, 20, 23, 22),
+            (11, 12, 15, 14, 20, 21, 24, 23),
+            (13, 14, 17, 16, 22, 23, 26, 25),
+            (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
     )
 
 
@@ -412,48 +413,42 @@ class LetterF(Example):
         ],
         dtype=np.uint8,
     )
-    gold_lattice = np.array(
-        [
-            [1, 2, 6, 5, 25, 26, 30, 29],
-            [2, 3, 7, 6, 26, 27, 31, 30],
-            [3, 4, 8, 7, 27, 28, 32, 31],
-            [5, 6, 10, 9, 29, 30, 34, 33],
-            [6, 7, 11, 10, 30, 31, 35, 34],
-            [7, 8, 12, 11, 31, 32, 36, 35],
-            [9, 10, 14, 13, 33, 34, 38, 37],
-            [10, 11, 15, 14, 34, 35, 39, 38],
-            [11, 12, 16, 15, 35, 36, 40, 39],
-            [13, 14, 18, 17, 37, 38, 42, 41],
-            [14, 15, 19, 18, 38, 39, 43, 42],
-            [15, 16, 20, 19, 39, 40, 44, 43],
-            [17, 18, 22, 21, 41, 42, 46, 45],
-            [18, 19, 23, 22, 42, 43, 47, 46],
-            [19, 20, 24, 23, 43, 44, 48, 47],
-        ]
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 6, 5, 25, 26, 30, 29),
+        (2, 3, 7, 6, 26, 27, 31, 30),
+        (3, 4, 8, 7, 27, 28, 32, 31),
+        (5, 6, 10, 9, 29, 30, 34, 33),
+        (6, 7, 11, 10, 30, 31, 35, 34),
+        (7, 8, 12, 11, 31, 32, 36, 35),
+        (9, 10, 14, 13, 33, 34, 38, 37),
+        (10, 11, 15, 14, 34, 35, 39, 38),
+        (11, 12, 16, 15, 35, 36, 40, 39),
+        (13, 14, 18, 17, 37, 38, 42, 41),
+        (14, 15, 19, 18, 38, 39, 43, 42),
+        (15, 16, 20, 19, 39, 40, 44, 43),
+        (17, 18, 22, 21, 41, 42, 46, 45),
+        (18, 19, 23, 22, 42, 43, 47, 46),
+        (19, 20, 24, 23, 43, 44, 48, 47),
     )
-    gold_elements = np.array(
-        [
-            [1, 2, 6, 5, 25, 26, 30, 29],
-            # [2, 3, 7, 6, 26, 27, 31, 30],
-            # [3, 4, 8, 7, 27, 28, 32, 31],
-            [5, 6, 10, 9, 29, 30, 34, 33],
-            # [6, 7, 11, 10, 30, 31, 35, 34],
-            # [7, 8, 12, 11, 31, 32, 36, 35],
-            [9, 10, 14, 13, 33, 34, 38, 37],
-            [10, 11, 15, 14, 34, 35, 39, 38],
-            # [11, 12, 16, 15, 35, 36, 40, 39],
-            [13, 14, 18, 17, 37, 38, 42, 41],
-            # [14, 15, 19, 18, 38, 39, 43, 42],
-            # [15, 16, 20, 19, 39, 40, 44, 43],
-            [17, 18, 22, 21, 41, 42, 46, 45],
-            [18, 19, 23, 22, 42, 43, 47, 46],
-            [19, 20, 24, 23, 43, 44, 48, 47],
-        ]
-    )
-    included_ids = tuple(
-        [
-            1,
-        ]
+    gold_elements = (
+        (
+            (1, 2, 6, 5, 25, 26, 30, 29),
+            # (2, 3, 7, 6, 26, 27, 31, 30),
+            # (3, 4, 8, 7, 27, 28, 32, 31),
+            (5, 6, 10, 9, 29, 30, 34, 33),
+            # (6, 7, 11, 10, 30, 31, 35, 34),
+            # (7, 8, 12, 11, 31, 32, 36, 35),
+            (9, 10, 14, 13, 33, 34, 38, 37),
+            (10, 11, 15, 14, 34, 35, 39, 38),
+            # (11, 12, 16, 15, 35, 36, 40, 39),
+            (13, 14, 18, 17, 37, 38, 42, 41),
+            # (14, 15, 19, 18, 38, 39, 43, 42),
+            # (15, 16, 20, 19, 39, 40, 44, 43),
+            (17, 18, 22, 21, 41, 42, 46, 45),
+            (18, 19, 23, 22, 42, 43, 47, 46),
+            (19, 20, 24, 23, 43, 44, 48, 47),
+        ),
     )
 
 
@@ -478,6 +473,7 @@ def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
 
     offset = 0
 
+    print("processing indices...")
     for iz in range(nz):
         for iy in range(ny):
             for ix in range(nx):
@@ -507,7 +503,7 @@ def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
 def element_connectivity(
     ex: Example,
     lattice: np.ndarray,
-) -> NDArray[np.uint8]:
+) -> tuple:
     """Given an Example (in particular, the Example's voxel data structure,
     a segmentation) and the `lattice_connectivity`, create the connectivity
     for the finite element mesh.  A voxel with a segmentation id in the
@@ -528,71 +524,98 @@ def element_connectivity(
     # lattice element has a segmentation id that is not in the included_ids,
     # exlude the voxel element from the collected list to create the finite
     # element list
-    included_elements = []
-    for i, element in enumerate(lattice):
-        if segmentation[i] in included_set:
-            included_elements.append(element)
+    blocks = ()  # empty tuple
+    for bb in included_set:
+        # included_elements = []
+        elements = ()  # empty tuple
+        for i, element in enumerate(lattice):
+            if bb == segmentation[i]:
+                # breakpoint()
+                elements = elements + (tuple(element.tolist()),)  # overwrite
 
-    return np.array(included_elements)
+        blocks = blocks + (elements,)  # overwrite
 
+    # breakpoint()
 
-def element_edges(connectivity: np.ndarray):
-    """Given a single finite element connectivity, returns a tuple of the
-    eight edges of that element.  The li"""
-
-    cc = connectivity
-
-    # edges = [pairwise_circular(x) for x in connectivity]
-    # bottom edges
-    e1 = (cc[0], cc[1])
-    e2 = (cc[1], cc[2])
-    e3 = (cc[2], cc[3])
-    e4 = (cc[3], cc[0])
-    # top edges
-    e5 = (cc[4], cc[5])
-    e6 = (cc[5], cc[6])
-    e7 = (cc[6], cc[7])
-    e8 = (cc[7], cc[4])
-    # vertical edges
-    e9 = (cc[0], cc[4])
-    e10 = (cc[1], cc[5])
-    e11 = (cc[2], cc[6])
-    e12 = (cc[3], cc[7])
-
-    aa = tuple([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12])
-    return aa
+    # return np.array(blocks)
+    return blocks
 
 
-def test_element_edges():
-    """Tests the element edges functionality."""
-    element = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+def flatten_tuple(t):
+    """Uses recursion to convert nested tuples into a single-sevel tuple.
 
-    result = element_edges(element)
+    Example:
+        nested_tuple = (1, (2, 3), (4, (5, 6)), 7)
+        flattened_tuple = flatten_tuple(nested_tuple)
+        print(flattened_tuple)  # Output: (1, 2, 3, 4, 5, 6, 7)
+    """
+    flat_list = []
+    for item in t:
+        if isinstance(item, tuple):
+            flat_list.extend(flatten_tuple(item))
+        else:
+            flat_list.append(item)
+    # breakpoint()
+    return tuple(flat_list)
 
-    #     7-----8
-    #    /|    /|
-    #   5-----6 |
-    #   | |   | |
-    #   | 3---|-4
-    #   |/    |/
-    #   1-----2
-    #  (1, 2), (1, 3), (1, 5), (2, 4), (2, 6), (3, 4)
-    #  (3, 7), (4, 8), (5, 6), (5, 7), (6, 8), (7, 8)
 
-    assert result == (
-        (1, 2),  # e1
-        (2, 4),  # e2
-        (3, 4),  # e3
-        (1, 3),  # e4
-        (5, 6),  # e5
-        (6, 8),  # e6
-        (7, 8),  # e7
-        (5, 7),  # e8
-        (1, 5),  # e9
-        (2, 6),  # e10
-        (4, 8),  # e11
-        (3, 7),  # e12
-    )
+# def element_edges(connectivity: np.ndarray):
+#     """Given a single finite element connectivity, returns a tuple of the
+#     eight edges of that element."""
+#
+#     cc = connectivity
+#
+#     # edges = [pairwise_circular(x) for x in connectivity]
+#     # bottom edges
+#     e1 = (cc[0], cc[1])
+#     e2 = (cc[1], cc[2])
+#     e3 = (cc[2], cc[3])
+#     e4 = (cc[3], cc[0])
+#     # top edges
+#     e5 = (cc[4], cc[5])
+#     e6 = (cc[5], cc[6])
+#     e7 = (cc[6], cc[7])
+#     e8 = (cc[7], cc[4])
+#     # vertical edges
+#     e9 = (cc[0], cc[4])
+#     e10 = (cc[1], cc[5])
+#     e11 = (cc[2], cc[6])
+#     e12 = (cc[3], cc[7])
+#
+#     aa = tuple([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12])
+#     return aa
+
+
+# def test_element_edges():
+#     """Tests the element edges functionality."""
+#     element = np.array([1, 2, 4, 3, 5, 6, 8, 7])
+#
+#     result = element_edges(element)
+#
+#     #     7-----8
+#     #    /|    /|
+#     #   5-----6 |
+#     #   | |   | |
+#     #   | 3---|-4
+#     #   |/    |/
+#     #   1-----2
+#     #  (1, 2), (1, 3), (1, 5), (2, 4), (2, 6), (3, 4)
+#     #  (3, 7), (4, 8), (5, 6), (5, 7), (6, 8), (7, 8)
+#
+#     assert result == (
+#         (1, 2),  # e1
+#         (2, 4),  # e2
+#         (3, 4),  # e3
+#         (1, 3),  # e4
+#         (5, 6),  # e5
+#         (6, 8),  # e6
+#         (7, 8),  # e7
+#         (5, 7),  # e8
+#         (1, 5),  # e9
+#         (2, 6),  # e10
+#         (4, 8),  # e11
+#         (3, 7),  # e12
+#     )
 
 
 def main():
@@ -601,13 +624,14 @@ def main():
     # Create an instance of a specific example
     # user input begin
     examples = [
-        QuadrupleTwoMaterial(),
         Single(),
         Double(),
         DoubleY(),
         Triple(),
         Quadruple(),
         QuadrupleVoid(),
+        QuadrupleTwoBlocks(),
+        QuadrupleTwoBlocksVoid(),
         Cube(),
         LetterF(),
     ]
@@ -633,12 +657,13 @@ def main():
         # el, az, roll = 42, -120, 0
         #
         # colors
-        cmap = cm.get_cmap("viridis")  # viridis colormap
+        # cmap = cm.get_cmap("viridis")  # viridis colormap
+        cmap = plt.get_cmap(name="viridis")
         # number of discrete colors
         num_colors = len(ex.included_ids)
         colors = cmap(np.linspace(0, 1, num_colors))
         # breakpoint()
-        voxel_alpha: Final[float] = 0.2
+        voxel_alpha: Final[float] = 0.1
 
         # io: if the output directory does not already exist, create it
         output_path = Path(output_dir).expanduser()
@@ -653,9 +678,8 @@ def main():
 
         ec = element_connectivity(ex=ex, lattice=lc)
 
-        assert np.all(
-            ec == ex.gold_elements
-        ), "Calculated element connectivity error."
+        # breakpoint()
+        assert ec == ex.gold_elements, "Calculated element connectivity error."
 
         # TODO: Optimization: construct edges and draw each edge only
         # once.
@@ -670,7 +694,7 @@ def main():
         loaded_array = np.load(output_npy)
 
         # verify the loaded array
-        print(loaded_array)
+        print(f"segmentation loaded from saved file: {loaded_array}")
 
         assert np.all(loaded_array == ex.segmentation)
 
@@ -695,9 +719,9 @@ def main():
         # with numbering (2, 1, 0).
         vox = np.transpose(ex.segmentation, (2, 1, 0))
         # add voxels for each of the included materials
-        for i, id in enumerate(ex.included_ids):
-            breakpoint()
-            solid = vox == id
+        for i, block_id in enumerate(ex.included_ids):
+            # breakpoint()
+            solid = vox == block_id
             # ax.voxels(solid, facecolors=voxel_color, alpha=voxel_alpha)
             ax.voxels(solid, facecolors=colors[i], alpha=voxel_alpha)
 
@@ -714,7 +738,8 @@ def main():
         yel = []
         zel = []
         # generate a set from the element connectivity
-        ec_set = set(ec.flatten())
+        # breakpoint()
+        ec_set = set(flatten_tuple(ec))
 
         lattice_ijk = 0
         for k in range(nzp):
