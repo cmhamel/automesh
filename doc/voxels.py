@@ -581,6 +581,8 @@ def main():
         el, az, roll = 63, -110, 0
         # el, az, roll = 60, -121, 0
         # el, az, roll = 42, -120, 0
+        voxel_color: Final[str] = "yellow"
+        voxel_alpha: Final[float] = 0.2
 
         # io: if the output directory does not already exist, create it
         output_path = Path(output_dir).expanduser()
@@ -630,6 +632,16 @@ def main():
         # Create a figure and a 3D axis
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
+
+        # For 3D plotting of voxels in matplotlib, we must swap the 'x' and the
+        # 'z' axes.  The original axes in the segmentation are (z, y, x) and
+        # are numbered (0, 1, 2).  We want new exists as (x, y, z) and thus
+        # with numbering (2, 1, 0).
+        vox = np.transpose(ex.segmentation, (2, 1, 0))
+        solid = vox == 1
+        ax.voxels(solid, facecolors=voxel_color, alpha=voxel_alpha)
+
+        # breakpoint()
 
         # Generate the lattice points
         x = []
