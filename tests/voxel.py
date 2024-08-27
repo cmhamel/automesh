@@ -420,7 +420,7 @@ def test_letter_f():
         [4.0, 5.0, 3.0],
     ])
     nel = [4, 5, 3]
-    voxels = Voxels.from_spn('tests/input/f.spn', nel)
+    voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', nel)
     fem = voxels.as_finite_elements(scale_none, translate_none)
     assert (fem.element_blocks == gold_blocks).all()
     assert (fem.element_connectivity == gold_connectivity).all()
@@ -428,11 +428,13 @@ def test_letter_f():
 
 
 def test_from_npy():
-    voxels = Voxels.from_npy('tests/input/f.npy')
+    voxels = Voxels.from_npy('tests/input/letter_f_3d.npy')
     assert (voxels.data == gold_data).all()
 
 
 def test_write_npy():
-    Voxels.from_npy('tests/input/f.npy').write_npy('target/f.npy')
-    voxels = Voxels.from_npy('target/f.npy')
+    Voxels.from_npy(
+        'tests/input/letter_f_3d.npy'
+    ).write_npy('target/letter_f_3d.npy')
+    voxels = Voxels.from_npy('target/letter_f_3d.npy')
     assert (voxels.data == gold_data).all()

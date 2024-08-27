@@ -40,13 +40,13 @@ mod write_inp {
     use super::*;
     #[test]
     fn letter_f() {
-        let voxels = Voxels::from_spn("tests/input/f.spn", NEL);
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
         let fem = voxels.into_finite_elements(&SCALE, &TRANSLATE);
-        fem.write_inp("target/f.inp");
+        fem.write_inp("target/letter_f_3d.inp");
         let mut gold = String::new();
         let mut line = String::new();
-        let mut gold_reader = BufReader::new(File::open("tests/input/f.inp").unwrap());
-        let mut line_reader = BufReader::new(File::open("target/f.inp").unwrap());
+        let mut gold_reader = BufReader::new(File::open("tests/input/letter_f_3d.inp").unwrap());
+        let mut line_reader = BufReader::new(File::open("target/letter_f_3d.inp").unwrap());
         for _ in 0..2 {
             read_both_lines(&mut gold, &mut gold_reader, &mut line, &mut line_reader);
             assert_eq!(gold, line);

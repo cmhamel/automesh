@@ -6,10 +6,11 @@ translate = [0, 0, 0]
 
 
 def test_write_inp():
-    voxels = Voxels.from_spn('tests/input/f.spn', nel)
+    voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', nel)
     fem = voxels.as_finite_elements(scale, translate)
-    fem.write_inp('target/f.inp')
-    with open('tests/input/f.inp') as gold, open('target/f.inp') as file:
+    inp = 'target/letter_f_3d.inp'
+    fem.write_inp(inp)
+    with open('tests/input/letter_f_3d.inp') as gold, open(inp) as file:
         for _ in range(2):
             assert gold.readline() == file.readline()
         gold.readline()

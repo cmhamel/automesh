@@ -63,7 +63,7 @@ fn assert_fem_data_from_spn_eq_gold(
 
 #[test]
 fn from_spn() {
-    let voxels = Voxels::from_spn("tests/input/f.spn", NEL);
+    let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
     assert_data_eq_gold(voxels);
 }
 
@@ -311,8 +311,8 @@ mod into_finite_elements {
         );
     }
     #[test]
-    fn letter_f() {
-        let file_path = "tests/input/f.spn";
+    fn letter_f_3d() {
+        let file_path = "tests/input/letter_f_3d.spn";
         let gold_blocks = [1; 39];
         let gold_connectivity = [
             [1, 2, 7, 6, 31, 32, 37, 36],
@@ -472,8 +472,8 @@ mod into_finite_elements {
 
 #[test]
 fn write_npy() {
-    Voxels::from_spn("tests/input/f.spn", NEL).write_npy("target/f.npy");
-    let voxels = Voxels::from_npy("target/f.npy");
+    Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).write_npy("target/letter_f_3d.npy");
+    let voxels = Voxels::from_npy("target/letter_f_3d.npy");
     assert_data_eq_gold(voxels);
 }
 
@@ -482,7 +482,7 @@ mod from_npy {
     #[test]
     #[should_panic(expected = "File type must be .npy")]
     fn file_unreadable() {
-        let _ = Voxels::from_npy("tests/input/f.txt");
+        let _ = Voxels::from_npy("tests/input/letter_f_3d.txt");
     }
     #[test]
     #[should_panic(expected = "Could not find the .npy file")]
@@ -496,7 +496,7 @@ mod from_npy {
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_npy("tests/input/f.npy");
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy");
         assert_data_eq_gold(voxels);
     }
 }
