@@ -115,16 +115,16 @@ fn filter_voxel_data(data: &VoxelData) -> (VoxelDataSized<3>, ElementBlocks) {
     let filtered_voxel_data_combo: VoxelDataSized<4> = data
         .axis_iter(Axis(2))
         .enumerate()
-        .map(|(i, data_i)| {
-            data_i
+        .map(|(k, data_k)| {
+            data_k
                 .axis_iter(Axis(1))
                 .enumerate()
-                .map(|(j, data_ij)| {
-                    data_ij
+                .map(|(j, data_kj)| {
+                    data_kj
                         .iter()
                         .enumerate()
-                        .filter(|(_, &data_ijk)| data_ijk > 0)
-                        .map(|(k, data_ijk)| [i, j, k, *data_ijk as usize])
+                        .filter(|(_, &data_kji)| data_kji > 0)
+                        .map(|(i, data_kji)| [i, j, k, *data_kji as usize])
                         .collect()
                 })
                 .collect()
@@ -140,7 +140,7 @@ fn filter_voxel_data(data: &VoxelData) -> (VoxelDataSized<3>, ElementBlocks) {
         .collect();
     let filtered_voxel_data = filtered_voxel_data_combo
         .into_iter()
-        .map(|entry| [entry[2], entry[1], entry[0]])
+        .map(|entry| [entry[0], entry[1], entry[2]])
         .collect();
     (filtered_voxel_data, element_blocks)
 }
@@ -275,7 +275,6 @@ fn voxel_data_from_npy(file_path: &str) -> VoxelData {
             }
         },
     };
-
     VoxelData::read_npy(npy_file).expect("Could not open the .npy file")
 }
 
@@ -285,9 +284,18 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> VoxelData {
         .map(|line| line.unwrap().parse().unwrap())
         .collect::<Vec<u8>>();
     let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
-    data.iter_mut()
-        .zip(flat.iter())
-        .for_each(|(data_entry, flat_entry)| *data_entry = *flat_entry);
+    data.axis_iter_mut(Axis(2))
+        .enumerate()
+        .for_each(|(k, mut data_k)| {
+            data_k
+                .axis_iter_mut(Axis(1))
+                .enumerate()
+                .for_each(|(j, mut data_jk)| {
+                    data_jk.iter_mut().enumerate().for_each(|(i, data_ijk)| {
+                        *data_ijk = flat[i + nel[0] * j + nel[0] * nel[1] * k]
+                    })
+                })
+        });
     data
 }
 

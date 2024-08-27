@@ -39,7 +39,7 @@ fn read_both_files(
 mod write_inp {
     use super::*;
     #[test]
-    fn letter_f() {
+    fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
         let fem = voxels.into_finite_elements(&SCALE, &TRANSLATE);
         fem.write_inp("target/letter_f_3d.inp");
