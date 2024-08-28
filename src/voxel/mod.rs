@@ -21,19 +21,19 @@ type VoxelData = Array3<u8>;
 type Translate = [f64; 3];
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
-/// The Voxels type.
+/// The voxels type.
 pub struct Voxels {
     data: VoxelData,
 }
 
-/// Inherent implementation of the Voxels type.
+/// Inherent implementation of the voxels type.
 impl Voxels {
-    /// Constructs and returns a new Voxels type from an NPY file.
+    /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Self {
         let data = voxel_data_from_npy(file_path);
         Self { data }
     }
-    /// Constructs and returns a new Voxels type from an SPN file.
+    /// Constructs and returns a new voxels type from an SPN file.
     ///
     /// A SPN file is a text (human-readable) file
     /// that contains a single a column of non-negative integer values.  Each
@@ -62,7 +62,7 @@ impl Voxels {
         &self.data
     }
     #[doc = svgbobdoc::transform!(
-    /// Converts the Voxels type into a finite element type, consuming the Voxels type.
+    /// Converts the voxels type into a finite element type, consuming the voxels type.
     ///
     /// The voxel data can be scaled and translated (in that order).
     ///
@@ -71,15 +71,15 @@ impl Voxels {
     /// ```
     ///
     /// ```svgbob
-    ///     8       7
-    ///      *-------*         z
-    ///   5 /|    6 /|          ^
-    ///    *-+-----* |          |
-    ///    | |4    | |3         |
-    ///    | *-----|-*          +-----> x
-    ///    |/      |/          /
-    ///    *-------*          v
-    ///   1       2         -y
+    ///                     8       7
+    ///                      *-------*
+    ///                   5 /|    6 /|
+    ///  z                 *-+-----* |
+    ///   ^  y             | |4    | |3
+    ///   | ^              | *-----|-*
+    ///   |/               |/      |/
+    ///   +-----> x        *-------*
+    ///                    1       2
     /// ```
     )]
     pub fn into_finite_elements(self, scale: &Scale, translate: &Translate) -> FiniteElements {
@@ -87,7 +87,7 @@ impl Voxels {
             finite_element_data_from_npy_data(self.get_data(), scale, translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
-    /// Writes the internal Voxels data to a NPY file.
+    /// Writes the internal voxels data to a NPY file.
     pub fn write_npy(&self, file_path: &str) {
         write_voxels_to_npy(self.get_data(), file_path)
     }
