@@ -7,7 +7,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
 jobs:
-  build:
+  mdbook:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -16,6 +16,8 @@ jobs:
         with:
           default: true
           toolchain: stable
+      - name: install
+        run: cargo install mdbook mdbook-katex
       - name: build
         run: mdbook build
       - name: move
@@ -26,7 +28,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: mdbook
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
