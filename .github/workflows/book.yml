@@ -22,6 +22,8 @@ jobs:
         run: mdbook build
       - name: move
         run: mkdir -p _site/ && cp -r book/build/* _site/
+      - name: upload
+        uses: actions/upload-pages-artifact@v3
   deploy:
     if: github.event_name != 'pull_request'
     environment:
