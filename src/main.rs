@@ -38,15 +38,15 @@ struct Args {
     #[arg(short = 'z', long, default_value_t = 0)]
     nelz: usize,
 
-    /// Scale of coordinates in the x-direction.
+    /// Scaling in the x-direction.
     #[arg(long, default_value_t = 1.0)]
     xscale: f64,
 
-    /// Scale of coordinates in the y-direction.
+    /// Scaling in the y-direction.
     #[arg(long, default_value_t = 1.0)]
     yscale: f64,
 
-    /// Scale of coordinates in the z-direction.
+    /// Scaling in the z-direction.
     #[arg(long, default_value_t = 1.0)]
     zscale: f64,
 
