@@ -4,9 +4,30 @@
 
 *In order of most recent to least recent.*
 
+## 2024-09-18
+
+CH OOO.  No pair programming.
+
 ## 2024-08-28
 
-Resume pair programming.
+* Merge the `inp` into `main` and the `docs` into `main`
+  * CH to finish out the tests `.rs` and `.py`
+  * MB merge `inp` into `main`
+* MD
+  * Random/crazy test, connectivity gaps, voids
+  * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
+    * plug out Sculpt
+    * plug in Automesh
+  * mdBook documentation - seed this as part of the build process on GitHub
+* CH
+  * How to capture the `.png`
+  * expand tests to include randomized OFF/ON of various blocks.
+  * update the 3D letter F
+  * update documentation Python side to include the Python-generated figures
+  * mdBook documentation
+* Review funding doc
+* CH: Move mtg on 04 Sept to later time
+* CH OOO 18 Sept
 
 ## 2024-08-21
 
