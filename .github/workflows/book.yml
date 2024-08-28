@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: main
   push:
-    branches: mdbook
+    branches: main
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -18,6 +18,8 @@ jobs:
           toolchain: stable
       - name: install
         run: cargo install mdbook mdbook-katex
+      - name: test
+        run: mdbook test
       - name: build
         run: mdbook build
       - name: move
