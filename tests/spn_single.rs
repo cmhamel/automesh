@@ -38,6 +38,9 @@ fn assert_data_eq_gold(spn: Spn) {
 
 #[test]
 fn from_npy() {
+    // Test that a Spn data structure can be created from a .npy composed
+    // of a single voxel.  The `single.npy` file was created with
+    // the `tests/single.py` script.
     let spn = Spn::from_npy("tests/input/single.npy");
     assert_data_eq_gold(spn);
 }
