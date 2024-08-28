@@ -1,6 +1,6 @@
 use automesh::Voxels;
 
-const NSD: usize = 3;
+const NSD: usize = 3; // number of space dimensions
 
 const NELX: usize = 4;
 const NELY: usize = 5;
@@ -73,16 +73,37 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
 }
 
+/// A Gold struct is a so-called gold standard, taken as a trusted result,
+/// used for testing purposes.
 struct Gold<const D: usize, const E: usize, const N: usize> {
+    /// The block id for each element.
     element_blocks: [usize; E],
+
+    /// The connectivity matrix of a finite element mesh, with E rows of
+    /// elements, and with each element composed of local element node numbers
+    /// in columns.
     element_connectivity: [[usize; N]; E],
+
+    /// The matrix of nodal points, with D rows of nodal points, and with each
+    /// nodal point composed of (x, y, z) floats in columns.
     element_coordinates: [[f64; NSD]; D],
+
+    /// The fully pathed file input string.
     file_path: String,
+
+    /// The number of voxels that compose the segmentation lattice domain in
+    /// the [x, y, z] directions.
     nel: [usize; NSD],
+
+    /// The scaling in the [x, y, z] directions to be applied to the domain.
     scale: [f64; NSD],
+
+    /// The translation in the [x, y, z] directions to be applied to the domain.
     translate: [f64; NSD],
 }
 
+/// The default implementation of the `Gold` struct, which is abstract since
+/// the fields need to be overwriten with concrete data at time of instantiation.
 impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
     fn default() -> Self {
         Self {
@@ -105,6 +126,7 @@ fn from_spn() {
 
 mod into_finite_elements {
     use super::*;
+    /// A single voxel lattice.
     #[test]
     fn single() {
         assert_fem_data_from_spn_eq_gold(Gold {
@@ -125,61 +147,55 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
+    /// A double voxel lattice, coursed along the x-axis.
     #[test]
     fn double_x() {
-        let file_path = "tests/input/double.spn";
-        let gold_blocks = [1, 1];
-        let gold_connectivity = [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]];
-        let gold_coordinates = [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [2.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-            [1.0, 0.0, 1.0],
-            [2.0, 0.0, 1.0],
-            [0.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [2.0, 1.0, 1.0],
-        ];
-        let nel = [2, 1, 1];
-        OLD_assert_fem_data_from_spn_eq_gold(
-            file_path,
-            &gold_blocks,
-            &gold_connectivity,
-            &gold_coordinates,
-            nel,
-        );
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [1, 1],
+            element_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+            ],
+            file_path: "tests/input/double.spn".to_string(),
+            nel: [2, 1, 1],
+            ..Default::default()
+        });
     }
+    /// A double voxel lattice, coursed along the y-axis.
     #[test]
     fn double_y() {
-        let file_path = "tests/input/double.spn";
-        let gold_blocks = [1, 1];
-        let gold_connectivity = [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]];
-        let gold_coordinates = [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 2.0, 0.0],
-            [1.0, 2.0, 0.0],
-            [0.0, 0.0, 1.0],
-            [1.0, 0.0, 1.0],
-            [0.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [0.0, 2.0, 1.0],
-            [1.0, 2.0, 1.0],
-        ];
-        let nel = [1, 2, 1];
-        OLD_assert_fem_data_from_spn_eq_gold(
-            file_path,
-            &gold_blocks,
-            &gold_connectivity,
-            &gold_coordinates,
-            nel,
-        );
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [1, 1],
+            element_connectivity: [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 2.0, 0.0],
+                [1.0, 2.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [0.0, 2.0, 1.0],
+                [1.0, 2.0, 1.0],
+            ],
+            file_path: "tests/input/double.spn".to_string(),
+            nel: [1, 2, 1],
+            ..Default::default()
+        });
     }
     #[test]
     fn triple_x() {
