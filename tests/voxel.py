@@ -1,5 +1,7 @@
 import numpy as np
 from automesh import Voxels
+from typing import NamedTuple
+
 
 scale_none = [1, 1, 1]
 translate_none = [0, 0, 0]
@@ -12,7 +14,7 @@ gold_data = np.array([
 ])
 
 
-def assert_fem_data_from_spn_eq_gold(
+def old_assert_fem_data_from_spn_eq_gold(
     file_path, gold_blocks, gold_connectivity, gold_coordinates, nel
 ):
     voxels = Voxels.from_spn(file_path, nel)
@@ -22,27 +24,47 @@ def assert_fem_data_from_spn_eq_gold(
     assert (fem.nodal_coordinates == gold_coordinates).all()
 
 
+def assert_fem_data_from_spn_eq_gold(gold):
+    voxels = Voxels.from_spn(gold.file_path, gold.nel)
+    fem = voxels.as_finite_elements(gold.scale, gold.translate)
+    assert (fem.element_blocks == gold.element_blocks).all()
+    assert (fem.element_connectivity == gold.element_connectivity).all()
+    assert (fem.nodal_coordinates == gold.element_coordinates).all()
+
+
+class Gold:
+    translate = [0.0, 0.0, 0.0]
+    scale = [1.0, 1.0, 1.0]
+
+    def __init__(
+        self, element_blocks=None, element_connectivity=None,
+        element_coordinates=None, file_path=None, nel=None
+    ):
+        self.element_blocks = element_blocks
+        self.element_connectivity = element_connectivity
+        self.element_coordinates = element_coordinates
+        self.file_path = file_path
+        self.nel = nel
+
+
 def test_single():
-    file_path = 'tests/input/single.spn'
-    gold_blocks = [1]
-    gold_connectivity = [[1, 2, 4, 3, 5, 6, 8, 7]]
-    gold_coordinates = [
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        [1.0, 0.0, 1.0],
-        [0.0, 1.0, 1.0],
-        [1.0, 1.0, 1.0],
-    ]
-    nel = [1, 1, 1]
     assert_fem_data_from_spn_eq_gold(
-        file_path,
-        gold_blocks,
-        gold_connectivity,
-        gold_coordinates,
-        nel,
+        Gold(
+            element_blocks=[1],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+            ],
+            file_path='tests/input/single.spn',
+            nel=[1, 1, 1]
+        )
     )
 
 
@@ -68,7 +90,7 @@ def test_double_x():
         [2.0, 1.0, 1.0],
     ]
     nel = [2, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -99,7 +121,7 @@ def test_double_y():
         [1.0, 2.0, 1.0],
     ]
     nel = [1, 2, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -135,7 +157,7 @@ def test_triple_x():
         [3.0, 1.0, 1.0],
     ]
     nel = [3, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -176,7 +198,7 @@ def test_quadruple_x():
         [4.0, 1.0, 1.0],
     ]
     nel = [4, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -211,7 +233,7 @@ def test_quadruple_2_voids_x():
         [4.0, 1.0, 1.0],
     ]
     nel = [4, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -252,7 +274,7 @@ def test_quadruple_2_blocks():
         [4.0, 1.0, 1.0],
     ]
     nel = [4, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -292,7 +314,7 @@ def test_quadruple_2_blocks_void():
         [4.0, 1.0, 1.0],
     ]
     nel = [4, 1, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -344,7 +366,7 @@ def test_cube():
         [2.0, 2.0, 2.0],
     ]
     nel = [2, 2, 2]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,
@@ -405,7 +427,7 @@ def test_letter_f():
             [3.0, 5.0, 1.0],
     ]
     nel = [3, 5, 1]
-    assert_fem_data_from_spn_eq_gold(
+    old_assert_fem_data_from_spn_eq_gold(
         file_path,
         gold_blocks,
         gold_connectivity,

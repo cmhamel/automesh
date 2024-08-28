@@ -1,5 +1,7 @@
 use automesh::Voxels;
 
+const NSD: usize = 3;
+
 const NELX: usize = 4;
 const NELY: usize = 5;
 const NELZ: usize = 3;
@@ -47,18 +49,52 @@ where
         .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry));
 }
 
-fn assert_fem_data_from_spn_eq_gold(
+fn OLD_assert_fem_data_from_spn_eq_gold(
     file_path: &str,
     gold_blocks: &[usize],
     gold_connectivity: &[[usize; 8]],
-    gold_coordinates: &[[f64; 3]],
-    nel: [usize; 3],
+    gold_coordinates: &[[f64; NSD]],
+    nel: [usize; NSD],
 ) {
     let voxels = Voxels::from_spn(file_path, nel);
     let fem = voxels.into_finite_elements(&SCALE_NONE, &TRANSLATE_NONE);
     assert_data_eq_gold_1d(fem.get_element_blocks(), gold_blocks);
     assert_data_eq_gold_2d(fem.get_element_connectivity(), gold_connectivity);
     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), gold_coordinates);
+}
+
+fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usize>(
+    gold: Gold<D, E, N>,
+) {
+    let voxels = Voxels::from_spn(&gold.file_path, gold.nel);
+    let fem = voxels.into_finite_elements(&gold.scale, &gold.translate);
+    assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
+    assert_data_eq_gold_2d(fem.get_element_connectivity(), &gold.element_connectivity);
+    assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
+}
+
+struct Gold<const D: usize, const E: usize, const N: usize> {
+    element_blocks: [usize; E],
+    element_connectivity: [[usize; N]; E],
+    element_coordinates: [[f64; NSD]; D],
+    file_path: String,
+    nel: [usize; NSD],
+    scale: [f64; NSD],
+    translate: [f64; NSD],
+}
+
+impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
+    fn default() -> Self {
+        Self {
+            element_blocks: [0; E],
+            element_connectivity: [[0; N]; E],
+            element_coordinates: [[0.0; NSD]; D],
+            file_path: "".to_string(),
+            nel: [0; NSD],
+            scale: [1.0; NSD],
+            translate: [0.0; NSD],
+        }
+    }
 }
 
 #[test]
@@ -71,27 +107,23 @@ mod into_finite_elements {
     use super::*;
     #[test]
     fn single() {
-        let file_path = "tests/input/single.spn";
-        let gold_blocks = [1];
-        let gold_connectivity = [[1, 2, 4, 3, 5, 6, 8, 7]];
-        let gold_coordinates = [
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-            [1.0, 0.0, 1.0],
-            [0.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-        ];
-        let nel = [1, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
-            file_path,
-            &gold_blocks,
-            &gold_connectivity,
-            &gold_coordinates,
-            nel,
-        );
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [1],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+            ],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            ..Default::default()
+        });
     }
     #[test]
     fn double_x() {
@@ -113,7 +145,7 @@ mod into_finite_elements {
             [2.0, 1.0, 1.0],
         ];
         let nel = [2, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -141,7 +173,7 @@ mod into_finite_elements {
             [1.0, 2.0, 1.0],
         ];
         let nel = [1, 2, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -177,7 +209,7 @@ mod into_finite_elements {
             [3.0, 1.0, 1.0],
         ];
         let nel = [3, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -218,7 +250,7 @@ mod into_finite_elements {
             [4.0, 1.0, 1.0],
         ];
         let nel = [4, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -250,7 +282,7 @@ mod into_finite_elements {
             [4.0, 1.0, 1.0],
         ];
         let nel = [4, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -291,7 +323,7 @@ mod into_finite_elements {
             [4.0, 1.0, 1.0],
         ];
         let nel = [4, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -331,7 +363,7 @@ mod into_finite_elements {
             [4.0, 1.0, 1.0],
         ];
         let nel = [4, 1, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -383,7 +415,7 @@ mod into_finite_elements {
             [2.0, 2.0, 2.0],
         ];
         let nel = [2, 2, 2];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -430,7 +462,7 @@ mod into_finite_elements {
             [2.0, 2.0, 2.0],
         ];
         let nel = [2, 2, 2];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -491,7 +523,7 @@ mod into_finite_elements {
             [3.0, 5.0, 1.0],
         ];
         let nel = [3, 5, 1];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
@@ -649,7 +681,7 @@ mod into_finite_elements {
             [4.0, 5.0, 3.0],
         ];
         let nel = [4, 5, 3];
-        assert_fem_data_from_spn_eq_gold(
+        OLD_assert_fem_data_from_spn_eq_gold(
             file_path,
             &gold_blocks,
             &gold_connectivity,
