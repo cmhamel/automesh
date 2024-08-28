@@ -15,6 +15,7 @@ classifiers = [
 ]
 description = 'automesh'
 dependencies = [
+  'matplotlib',
   'numpy',
 ]
 name = 'automesh'
