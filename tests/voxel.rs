@@ -6,8 +6,8 @@ const NELX: usize = 4;
 const NELY: usize = 5;
 const NELZ: usize = 3;
 const NEL: [usize; 3] = [NELX, NELY, NELZ];
-const SCALE_NONE: [f64; 3] = [1.0, 1.0, 1.0];
-const TRANSLATE_NONE: [f64; 3] = [0.0, 0.0, 0.0];
+// const SCALE_NONE: [f64; 3] = [1.0, 1.0, 1.0]; // no longer used
+// const TRANSLATE_NONE: [f64; 3] = [0.0, 0.0, 0.0]; // no longer used
 
 const GOLD_DATA: [[[u8; NELZ]; NELY]; NELX] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
@@ -16,6 +16,8 @@ const GOLD_DATA: [[[u8; NELZ]; NELY]; NELX] = [
     [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
 ];
 
+// TODO: Ask MRB if this function (and the related constants NELX, NELY, NELZ,
+// NEL, and GOLD_DATA) can be deleted.
 fn assert_data_eq_gold(spn: Voxels) {
     let data = spn.get_data();
     data.shape()
@@ -49,19 +51,19 @@ where
         .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry));
 }
 
-fn OLD_assert_fem_data_from_spn_eq_gold(
-    file_path: &str,
-    gold_blocks: &[usize],
-    gold_connectivity: &[[usize; 8]],
-    gold_coordinates: &[[f64; NSD]],
-    nel: [usize; NSD],
-) {
-    let voxels = Voxels::from_spn(file_path, nel);
-    let fem = voxels.into_finite_elements(&SCALE_NONE, &TRANSLATE_NONE);
-    assert_data_eq_gold_1d(fem.get_element_blocks(), gold_blocks);
-    assert_data_eq_gold_2d(fem.get_element_connectivity(), gold_connectivity);
-    assert_data_eq_gold_2d(fem.get_nodal_coordinates(), gold_coordinates);
-}
+// fn OLD_assert_fem_data_from_spn_eq_gold(
+//     file_path: &str,
+//     gold_blocks: &[usize],
+//     gold_connectivity: &[[usize; 8]],
+//     gold_coordinates: &[[f64; NSD]],
+//     nel: [usize; NSD],
+// ) {
+//     let voxels = Voxels::from_spn(file_path, nel);
+//     let fem = voxels.into_finite_elements(&SCALE_NONE, &TRANSLATE_NONE);
+//     assert_data_eq_gold_1d(fem.get_element_blocks(), gold_blocks);
+//     assert_data_eq_gold_2d(fem.get_element_connectivity(), gold_connectivity);
+//     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), gold_coordinates);
+// }
 
 fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usize>(
     gold: Gold<D, E, N>,
