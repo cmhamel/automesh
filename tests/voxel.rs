@@ -13,8 +13,6 @@ const GOLD_DATA: [[[u8; NELZ]; NELY]; NELX] = [
     [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
 ];
 
-// TODO: Ask MRB if this function (and the related constants NELX, NELY, NELZ,
-// NEL, and GOLD_DATA) can be deleted.
 fn assert_data_eq_gold(spn: Voxels) {
     let data = spn.get_data();
     data.shape()
