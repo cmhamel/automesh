@@ -8,5 +8,4 @@ build:
     - pip install maturin
     - maturin build --features python --release
     - pip install --find-links=target/wheels/ automesh
-    - mkdir _readthedocs/
-    - mv docs/index.html _readthedocs/
+    - mv docs/index.html $READTHEDOCS_OUTPUT/html/
