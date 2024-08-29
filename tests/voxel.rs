@@ -270,8 +270,8 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
-    /// A quadruple voxel lattice, coursed along the x-axis, with two intermediate
-    /// voxels in the segmentation being void.
+    /// A quadruple voxel lattice, coursed along the x-axis, with two
+    /// intermediate voxels in the segmentation being void.
     #[test]
     fn quadruple_2_voids_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
@@ -300,8 +300,8 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
-    /// A quadruple voxel lattice, with the two intermediate voxels in the segmentation
-    /// being a second block.
+    /// A quadruple voxel lattice, with the two intermediate voxels in the
+    /// segmentation being a second block.
     #[test]
     fn quadruple_2_blocks() {
         assert_fem_data_from_spn_eq_gold(Gold {
@@ -528,7 +528,8 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
-    /// A three dimensional variation of the letter F, in a non-standard orientation.
+    /// A three dimensional variation of the letter F, in a non-standard
+    /// orientation.
     #[test]
     fn letter_f_3d() {
         assert_fem_data_from_spn_eq_gold(Gold {
