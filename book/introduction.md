@@ -93,7 +93,7 @@ a single block composed of two finite elements.  We test propagation in
 both the `x` and `y` directions.  The figures below show these two
 meshes.
 
-![double_x.png](fig/double_x.png)] ![double_y.png](fig/double_y.png)
+![double_x.png](fig/double_x.png) ![double_y.png](fig/double_y.png)
 > Figure: Meshes composed of a single block with two elements, propagating
 along the `x-axis` and `y-axis`, respectively.
 
