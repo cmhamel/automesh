@@ -20,7 +20,7 @@ The range of integer values is not limited, but a practical example of a
 range could be `[0, 1, 2, 3, 4]`.  The integers do not need to be sequential,
 so a range, for example, of `[4, 501, 2]` is valid, but not conventional.
 The number of rows that compose the SPN file equals the number of voxels
-used to construct a 3D semantic segmentation.  Axis order (for example,
+used to construct a 3D segmentation.  Axis order (for example,
 `x`, `y`, then `z`; or, `z`, `y`, `x`, etc.) is not implied by the SPN structure;
 so additional data, typically provided through a configuration file, is
 needed to uniquely interpret the pixel tile and voxel stack order
@@ -93,7 +93,7 @@ a single block composed of two finite elements.  We test propagation in
 both the `x` and `y` directions.  The figures below show these two
 meshes.
 
-![double_x.png](fig/double_x.png)] ![double_y.png](fig/double_x.png)
+![double_x.png](fig/double_x.png)] ![double_y.png](fig/double_y.png)
 > Figure: Meshes composed of a single block with two elements, propagating
 along the `x-axis` and `y-axis`, respectively.
 
