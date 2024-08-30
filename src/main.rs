@@ -1,22 +1,24 @@
-use automesh::{Abaqus, Exodus, Spn};
+use automesh::{Abaqus, Exodus, Voxels};
 use clap::Parser;
 use std::path::Path;
 
 #[derive(Parser)]
-#[command(about = "
+#[command(about = format!("
 
      @@@@@@@@@@@@@@@@
       @@@@  @@@@@@@@@@
      @@@@  @@@@@@@@@@@
-    @@@@  @@@@@@@@@@@@
-      @@    @@    @@
-      @@    @@    @@      \x1b[1;4mAutomesh: Automatic mesh generation\x1b[0m
+    @@@@  @@@@@@@@@@@@    \x1b[1;4mAutomesh: Automatic mesh generation\x1b[0m
+      @@    @@    @@      {}
+      @@    @@    @@      {}
     @@@@@@@@@@@@  @@@
     @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
     @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
      @@@@@@@@@@@@@@@@     - Scaling is applied before translation.
 ",
-arg_required_else_help = true, long_about = None, version)]
+env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
+env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
+), arg_required_else_help = true, long_about = None, version)]
 struct Args {
     /// Name of the NumPy (.npy) or SPN (.spn) input file.
     #[arg(short, long)]
@@ -213,8 +215,8 @@ fn main() {
         .extension()
         .and_then(|ext| ext.to_str())
     {
-        Some("npy") => Spn::from_npy(&args.input),
-        Some("spn") => Spn::new(&args.input, [args.nelx, args.nely, args.nelz]),
+        Some("npy") => Voxels::from_npy(&args.input),
+        Some("spn") => Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
 

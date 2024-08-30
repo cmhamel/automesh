@@ -1,27 +1,27 @@
+use super::{
+    finite_element_data_from_npy_data, voxel_data_from_npy, voxel_data_from_spn,
+    write_voxels_to_npy, Nel, Scale, Translate, VoxelData,
+};
 use crate::fem::py::FiniteElements;
 use numpy::{PyArray3, ToPyArray};
 use pyo3::prelude::*;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    parent_module.add_class::<Spn>()?;
+    parent_module.add_class::<Voxels>()?;
     Ok(())
 }
 
 #[pyclass]
-pub struct Spn {
-    data: super::SpnData,
+pub struct Voxels {
+    data: VoxelData,
 }
 
 #[pymethods]
-impl Spn {
+impl Voxels {
     #[pyo3(signature = (scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
-    pub fn as_finite_elements(
-        &self,
-        scale: super::Scale,
-        translate: super::Translate,
-    ) -> FiniteElements {
+    pub fn as_finite_elements(&self, scale: Scale, translate: Translate) -> FiniteElements {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            super::finite_element_data_from_npy_data(&self.data, &scale, &translate);
+            finite_element_data_from_npy_data(&self.data, &scale, &translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     #[getter]
@@ -30,15 +30,15 @@ impl Spn {
     }
     #[staticmethod]
     pub fn from_npy(file_path: &str) -> Self {
-        let data = super::spn_data_from_npy(file_path);
+        let data = voxel_data_from_npy(file_path);
         Self { data }
     }
-    #[new]
-    pub fn new(file_path: &str, nel: super::Nel) -> Self {
-        let data = super::new(file_path, nel);
+    #[staticmethod]
+    pub fn from_spn(file_path: &str, nel: Nel) -> Self {
+        let data = voxel_data_from_spn(file_path, nel);
         Self { data }
     }
     pub fn write_npy(&self, file_path: &str) {
-        super::write_spn_to_npy(&self.data, file_path);
+        write_voxels_to_npy(&self.data, file_path);
     }
 }

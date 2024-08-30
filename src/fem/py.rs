@@ -1,4 +1,6 @@
-use crate::{Abaqus, Exodus};
+use super::{
+    write_fem_to_inp, Abaqus, ElementBlocks, ElementConnectivity, Exodus, NodalCoordinates,
+};
 use numpy::{PyArray1, PyArray2};
 use pyo3::prelude::*;
 
@@ -9,18 +11,18 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 
 #[pyclass]
 pub struct FiniteElements {
-    element_blocks: super::ElementBlocks,
-    element_connectivity: super::ElementConnectivity,
-    nodal_coordinates: super::NodalCoordinates,
+    element_blocks: ElementBlocks,
+    element_connectivity: ElementConnectivity,
+    nodal_coordinates: NodalCoordinates,
 }
 
 #[pymethods]
 impl FiniteElements {
     #[new]
     pub fn from_data(
-        element_blocks: super::ElementBlocks,
-        element_connectivity: super::ElementConnectivity,
-        nodal_coordinates: super::NodalCoordinates,
+        element_blocks: ElementBlocks,
+        element_connectivity: ElementConnectivity,
+        nodal_coordinates: NodalCoordinates,
     ) -> Self {
         Self {
             element_blocks,
@@ -43,11 +45,22 @@ impl FiniteElements {
     pub fn get_nodal_coordinates<'py>(&self, python: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         PyArray2::from_vec2_bound(python, &self.nodal_coordinates).unwrap()
     }
+    pub fn write_inp(&self, file_path: &str) {
+        Abaqus::write_inp(self, file_path)
+    }
+    pub fn write_exo(&self, file_path: &str) {
+        Exodus::write_exo(self, file_path)
+    }
 }
 
 impl Abaqus for FiniteElements {
-    fn write_inp(&self, _file_path: &str) {
-        todo!("Writing Abaqus files has not yet been implemented.")
+    fn write_inp(&self, file_path: &str) {
+        write_fem_to_inp(
+            file_path,
+            &self.element_blocks,
+            &self.element_connectivity,
+            &self.nodal_coordinates,
+        )
     }
 }
 

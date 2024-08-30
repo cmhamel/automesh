@@ -91,9 +91,9 @@ mod py;
 mod abaqus;
 mod exodus;
 mod fem;
-mod spn;
+mod voxel;
 
 pub use abaqus::Abaqus;
 pub use exodus::Exodus;
 pub use fem::FiniteElements;
-pub use spn::Spn;
+pub use voxel::Voxels;

@@ -1,48 +1,48 @@
-use super::{element_connectivity_node_renumbering, filter_spn_data, Spn};
+use super::{element_connectivity_node_renumbering, filter_voxel_data, Voxels};
 
 const NUM_ELEMENTS: usize = 39;
 
 const BLOCKS_GOLD: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
     [0, 0, 0],
-    [0, 0, 1],
-    [0, 0, 2],
-    [0, 1, 0],
-    [0, 1, 1],
-    [0, 1, 2],
-    [0, 2, 0],
-    [0, 2, 1],
-    [0, 2, 2],
-    [0, 3, 0],
-    [0, 3, 1],
-    [0, 3, 2],
-    [0, 4, 0],
-    [0, 4, 1],
-    [0, 4, 2],
     [1, 0, 0],
-    [1, 0, 1],
-    [1, 0, 2],
-    [1, 1, 0],
-    [1, 2, 0],
-    [1, 2, 1],
-    [1, 3, 0],
-    [1, 4, 0],
     [2, 0, 0],
-    [2, 0, 1],
-    [2, 0, 2],
-    [2, 1, 0],
-    [2, 2, 0],
-    [2, 2, 1],
-    [2, 3, 0],
-    [2, 4, 0],
     [3, 0, 0],
-    [3, 0, 1],
-    [3, 0, 2],
+    [0, 1, 0],
+    [1, 1, 0],
+    [2, 1, 0],
     [3, 1, 0],
+    [0, 2, 0],
+    [1, 2, 0],
+    [2, 2, 0],
     [3, 2, 0],
-    [3, 2, 1],
+    [0, 3, 0],
+    [1, 3, 0],
+    [2, 3, 0],
     [3, 3, 0],
+    [0, 4, 0],
+    [1, 4, 0],
+    [2, 4, 0],
     [3, 4, 0],
+    [0, 0, 1],
+    [0, 1, 1],
+    [0, 2, 1],
+    [1, 2, 1],
+    [2, 2, 1],
+    [3, 2, 1],
+    [0, 3, 1],
+    [0, 4, 1],
+    [1, 4, 1],
+    [2, 4, 1],
+    [3, 4, 1],
+    [0, 0, 2],
+    [0, 1, 2],
+    [0, 2, 2],
+    [0, 3, 2],
+    [0, 4, 2],
+    [1, 4, 2],
+    [2, 4, 2],
+    [3, 4, 2],
 ];
 
 #[test]
@@ -59,8 +59,8 @@ fn connectivity_node_renumbering() {
 
 #[test]
 fn filter() {
-    let spn = Spn::from_npy("tests/input/f.npy");
-    let (filtered_voxel_data, element_blocks) = filter_spn_data(spn.get_data());
+    let spn = Voxels::from_npy("tests/input/letter_f_3d.npy");
+    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data());
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD
         .iter()
