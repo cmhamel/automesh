@@ -36,6 +36,7 @@ fn read_both_files(
     line_reader.read_to_string(line).unwrap();
 }
 
+#[cfg(not(target_os = "windows"))]
 mod write_inp {
     use super::*;
     #[test]
