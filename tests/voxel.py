@@ -2,34 +2,14 @@ import numpy as np
 from automesh import Voxels
 
 
-# TODO: Delete this data once we are assured it is not needed.
-# this data was placed as local data in two functions at the bottom of the
-# module:
-# TODO: Discuss with MRB if those two functions are necessary or not, or should
-# be moved to the io.py once the merge to main is completed.
-#
-# scale_none = [1, 1, 1]
-# translate_none = [0, 0, 0]
-#
-# gold_data = np.array(
-#     [
-#         [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
-#         [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
-#         [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
-#         [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
-#     ]
-# )
-
-
-# TODO: Delete this function once we are assured it is not needed.
-# def old_assert_fem_data_from_spn_eq_gold(
-#     file_path, gold_blocks, gold_connectivity, gold_coordinates, nel
-# ):
-#     voxels = Voxels.from_spn(file_path, nel)
-#     fem = voxels.as_finite_elements(scale_none, translate_none)
-#     assert (fem.element_blocks == gold_blocks).all()
-#     assert (fem.element_connectivity == gold_connectivity).all()
-#     assert (fem.nodal_coordinates == gold_coordinates).all()
+gold_data = np.array(
+    [
+        [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
+        [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
+        [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
+        [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
+    ]
+)
 
 
 def assert_fem_data_from_spn_eq_gold(gold):
@@ -395,7 +375,7 @@ def test_cube():
     """A (2 x 2 x 2) voxel cube."""
     assert_fem_data_from_spn_eq_gold(
         Gold(
-            element_blocks=[1, 11, 11, 11, 11, 11, 11, 11],
+            element_blocks=[11, 11, 11, 11, 11, 11, 11, 11],
             element_connectivity=[
                 [1, 2, 5, 4, 10, 11, 14, 13],
                 [2, 3, 6, 5, 11, 12, 15, 14],
