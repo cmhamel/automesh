@@ -34,25 +34,6 @@ impl Voxels {
         Self { data }
     }
     /// Constructs and returns a new voxels type from an SPN file.
-    ///
-    /// A SPN file is a text (human-readable) file
-    /// that contains a single a column of non-negative integer values.  Each
-    /// integer value defines a unique category of a semantic segmentation.
-    /// A category is typically used to defined a material (such as void, solid,
-    /// air, or precipitate) in a 3D computed tomography (CT) scan of a part or
-    /// assembly.  A 3D scan is composed of a stack of 2D images.
-    /// Each image is composed of pixels.
-    /// A stack of images composes a 3D voxel representation.
-    ///
-    /// The range of integer values is not limited, but a practical example of a
-    /// range could be `[0, 1, 2, 3, 4]`.  The integers do not need to be sequential,
-    /// so a range, for example, of `[4, 501, 2]` is valid, but not conventional.
-    /// The number of rows that compose the SPN file equals the number of voxels
-    /// used to construct a 3D semantic segmentation.  Axis order (for example,
-    /// `x`, `y`, then `z`; or, `z`, `y`, `x`, etc.) is not implied by the SPN structure;
-    /// so additional data, typically provided through a configuration file, is
-    /// needed to uniquely interpret the pixel tiling and voxel stacking order
-    /// of the data in the SPN file.
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
         let data = voxel_data_from_spn(file_path, nel);
         Self { data }

@@ -27,7 +27,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy.typing import NDArray
-from PIL import Image
 
 # module library
 # none
@@ -82,11 +81,11 @@ class Single(Example):
     )
 
 
-class Double(Example):
-    """A specific example of a double voxel."""
+class DoubleX(Example):
+    """A specific example of a double voxel, coursed along the x-axis."""
 
-    figure_title: str = COMMON_TITLE + "Double"
-    file_stem: str = "double"
+    figure_title: str = COMMON_TITLE + "DoubleX"
+    file_stem: str = "double_x"
     segmentation = np.array(
         [
             [
@@ -666,16 +665,16 @@ def main():
     # user input begin
     examples = [
         Single(),
-        Double(),
+        DoubleX(),
         DoubleY(),
-        Triple(),
-        Quadruple(),
-        QuadrupleVoid(),
-        QuadrupleTwoBlocks(),
-        QuadrupleTwoBlocksVoid(),
-        Cube(),
-        CubeMultiBlocks(),
-        LetterF(),
+        # Triple(),
+        # Quadruple(),
+        # QuadrupleVoid(),
+        # QuadrupleTwoBlocks(),
+        # QuadrupleTwoBlocksVoid(),
+        # Cube(),
+        # CubeMultiBlocks(),
+        # LetterF(),
     ]
     for ex in examples:
 
@@ -844,8 +843,14 @@ def main():
         ax.set_aspect("equal")
         ax.view_init(elev=el, azim=az, roll=roll)
 
+        # Adjust the distance of the camera.  The default value is 10.
+        # Increasing/decreasing this value will zoom in/out, respectively.
+        # ax.dist = 5  # Change the distance of the camera
+        # Doesn't seem to work, and the title is clipping the uppermost node
+        # and lattice numbers, so suppress the titles for now.
+
         # Set the title
-        ax.set_title(ex.figure_title)
+        # ax.set_title(ex.figure_title)
 
         # Add a footnote
         # Get the current date and time in UTC
