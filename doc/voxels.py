@@ -143,11 +143,11 @@ class DoubleY(Example):
     )
 
 
-class Triple(Example):
-    """A specific example of a triple voxel."""
+class TripleX(Example):
+    """A triple voxel lattice, coursed along the x-axis."""
 
     figure_title: str = COMMON_TITLE + "Triple"
-    file_stem: str = "triple"
+    file_stem: str = "triple_x"
     segmentation = np.array(
         [
             [
@@ -176,11 +176,11 @@ class Triple(Example):
     )
 
 
-class Quadruple(Example):
-    """A specific example of a quadruple voxel."""
+class QuadrupleX(Example):
+    """A quadruple voxel lattice, coursed along the x-axis."""
 
     figure_title: str = COMMON_TITLE + "Quadruple"
-    file_stem: str = "quadruple"
+    file_stem: str = "quadruple_x"
     segmentation = np.array(
         [
             [
@@ -667,8 +667,8 @@ def main():
         Single(),
         DoubleX(),
         DoubleY(),
-        # Triple(),
-        # Quadruple(),
+        TripleX(),
+        QuadrupleX(),
         # QuadrupleVoid(),
         # QuadrupleTwoBlocks(),
         # QuadrupleTwoBlocksVoid(),

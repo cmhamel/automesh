@@ -32,9 +32,11 @@ We use the Exodus II convention for a hexahedral element
 local node numbering:
 
 ![exodus_hex_numbering_scheme](fig/exodus_hex_numbering_scheme.png)
-> Figure: Exodus II numbering scheme, taken from Schoof[^Schoof-1994].
+> Figure: Exodus II hexahedral local finite element numbering scheme, from Schoof *et al.*[^Schoof-1994].
 
 ## Testing
+
+Following is documentation for tests used to validate code implementation.
 
 ### Single
 
@@ -94,6 +96,14 @@ meshes.
 ![double_x.png](fig/double_x.png)] ![double_y.png](fig/double_x.png)
 > Figure: Meshes composed of a single block with two elements, propagating
 along the `x-axis` and `y-axis`, respectively.
+
+## Triple
+
+![triple_x](fig/triple_x.png)
+
+## Quadruple
+
+![quadruple_x](fig/quadruple_x.png)
 
 ## References
 
