@@ -4,7 +4,76 @@
 
 *In order of most recent to least recent.*
 
+## 2024-09-18
+
+CH OOO.  No pair programming.
+
+## 2024-08-28
+
+* Merge the `inp` into `main` and the `docs` into `main`
+  * CH to finish out the tests `.rs` and `.py`
+  * MB merge `inp` into `main`
+* MD
+  * Random/crazy test, connectivity gaps, voids
+  * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
+    * plug out Sculpt
+    * plug in Automesh
+  * mdBook documentation - seed this as part of the build process on GitHub
+* CH
+  * How to capture the `.png`
+  * expand tests to include randomized OFF/ON of various blocks.
+  * update the 3D letter F
+  * update documentation Python side to include the Python-generated figures
+  * mdBook documentation
+* Review funding doc
+* CH: Move mtg on 04 Sept to later time
+* CH OOO 18 Sept
+
+## 2024-08-21
+
+MB OOO.  No pair programming.
+
+## 2024-08-14
+
+* PR from issue
+* https://github.com/hovey/mwe/tree/main/python/cicd_release
+* review CBH code
+  * refactor for *n* test cases
+  * isolate the IO testing in `spn.rs`
+* ask about test input file
+* formatting of input file (tabs, spaces, alignment)
+* refactor automesh connectivity and change test
+  * MB - refactor code
+  * CH - refactor documentation, and the Python scripts to generate `f.spn` and `f.npy`, with `.py` into `tests/input`
+    * `(x, y)` plane for pixels, `z` axis for stacked pixles into voxels, stack of two slices (`NELZ = 2`), `NELX = 3`, `NELY = 5`.
+  * CH to dry out code `spn.rs` and `spn_single.rs` (CH made the code WET with the duplicated tests)
+  * CH refactor `f_fiducial.inp`
+* Change from `spn` type to `voxel` type.
+
+
+```bash
+
+    ^ y  (z out of page, right hand rule)
+    |
+    |
+    @@@
+    @
+    @@
+    @
+    @ ---------->  x
+```
+
+### Docs
+
+Notes on creating documentation:
+
+* `cargo doc --verbose`
+* [The rustdoc book](https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html)
+
+
 ## 2024-08-07
+
+* refactor some existing code from C-style to idiomatic Rust style
 
 ## 2024-07-31
 
