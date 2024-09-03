@@ -3,31 +3,69 @@
 `Automesh` is an automatic mesh generation tool that converts a segmentation
 into a finite element mesh.
 
-Segmentations can be represented as either a Numpy (`.npy`) file
+## Segmentation
+
+Segmentation is the process of categorizing pixels that compose a digital image
+into a *class* that represents some subject of interest.  For example, in the
+image below, the image pixels are classified into classes of sky, trees, cat,
+grass, and cow.
+
+![cs231n_sementic_segmentation](fig/cs231n_semantic_segmentation.jpg)
+> Figure: Example of semantic segmentation, from Li *et al.*[^Li-2017].
+
+* **Semantic segmentation** does not differentiate between objects of the same class.
+* **Instance segmentation** does differentiate between objects of the same class.
+
+These two concepts are shown below:
+
+![semantic_vs_instance](fig/semantic_vs_instance.png)
+> Figure: Distinction between semantic segmentation and instance segmentation, from Lin *et al.*[^Lin-2014].
+
+Both  segmentation types, semantic and instance, can be used with `Automesh`.  However, `Automesh` operates on a 3D segmentation, not a 2D segmentation, as present in a digital image.  To arrive at a 3D segmentation, two or more images are stacked to compose a volume.
+
+The structured volume of stacks of pixels compose a volumetric unit called a voxel.  A voxel, in the context of this work, will have the same dimensionality in the `x` and `y` dimension as the pixel in the image space, and will have the `z` dimensionality that is stacked distance between each image slice.
+
+The figure below illustrates the concept of stacked images:
+
+![stack_reconstruction](fig/stack_reconstruction.jpg)
+> Figure: Example of stacking several images to create a 3D representation, from Bit *et al.*[^Bit-2017].
+
+The digital image sources are frequently medical images, obtained by CT or MR, though `Autotwin` can be used for any subject that can be represented as a stacked segmentation.  Anatomical regions are classified into categories, for example, to represent scale, bone, gray matter, white matter, and cerebral spinal fluid.
+
+Given a 3D segmentation, for any image slice that composes it, the pixels have been classified
+into categories that are designated with unique integers.
+The range of integer values is not limited, but a practical example of a
+range could be `[0, 1, 2, 3, 4]`.  The integers do not need to be sequential,
+so a range, for example, of `[4, 501, 2]` is valid, but not conventional.
+
+For example, in the image below, ten unique integers have been used to designate anatomical structure of
+bone, disc, vasculature, airway/sinus, membrane, cerebral spinal fluid, white matter, gray matter, muscle, and skin.
+
+![sibl_bob_mid-sagittal](fig/sibl_bob_mid-sagittal.png)
+> Figure: Example of medical images used to create 3D voxel model, segmented into 10 categories, from Terpsma *et al.*[^Terpsma-2020].
+
+Segmentations are frequently serialzed (saved to disc) as either a Numpy (`.npy`) file
 or a SPN (`.spn`) file.
 
 A SPN file is a text (human-readable) file that contains a single a
 column of non-negative integer values.  Each integer value defines a
 unique category of a segmentation.
 
-A category is typically used to defined a material (such as void, solid,
-air, or precipitate) in a 3D computed tomography (CT) scan of a part or
-assembly.  A 3D scan is composed of a stack of 2D images.
-Each image is composed of pixels.  A stack of images composes a
-3D voxel representation.
-
-The range of integer values is not limited, but a practical example of a
-range could be `[0, 1, 2, 3, 4]`.  The integers do not need to be sequential,
-so a range, for example, of `[4, 501, 2]` is valid, but not conventional.
-The number of rows that compose the SPN file equals the number of voxels
-used to construct a 3D segmentation.  Axis order (for example,
+Axis order (for example,
 `x`, `y`, then `z`; or, `z`, `y`, `x`, etc.) is not implied by the SPN structure;
 so additional data, typically provided through a configuration file, is
 needed to uniquely interpret the pixel tile and voxel stack order
 of the data in the SPN file.
 
-## Conventions
+For subjects that the human anatomy, we use the *Patient Coordinate System* (PCS), which directs the
+`x`, `y`, and `z` axes to the `left`, `posterior`, and `superior`, as shown below:
 
+| Terpsma *et al.* [^Terpsma_2020] | Sharma [^Sharma_2021]
+| :--: | :--:
+| ![Terpsma_2020_Figure_C-4](fig/Terpsma_2020_Figure_C-4.jpg) | ![patient_coordinate_system](fig/patient_coordinate_system.png)
+> Figure: Illustration of the patient coordinate system.
+
+## Finite Element Mesh
 We use the Exodus II convention for a hexahedral element
 local node numbering:
 
@@ -107,4 +145,12 @@ along the `x-axis` and `y-axis`, respectively.
 
 ## References
 
+[^Bit-2017]: Bit A, Ghagare D, Rizvanov AA, Chattopadhyay H. Assessment of influences of stenoses in right carotid artery on left carotid artery using wall stress marker. BioMed research international. 2017;2017(1):2935195. [link](https://onlinelibrary.wiley.com/doi/pdf/10.1155/2017/2935195) accessed 2024-09-03.
+
+[^Li-2017]: Li FF, Johnson J, Yeung S.  Lecture 11: Dection and Segmentation, CS 231n, Stanford Unveristy, 2017.  [link](https://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture11.pdf) accessed 2024-09-03.
+
+[^Lin-2014]: Lin TY, Maire M, Belongie S, Hays J, Perona P, Ramanan D, Dollár P, Zitnick CL. Microsoft coco: Common objects in context. InComputer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 2014 (pp. 740-755). Springer International Publishing. [link](https://arxiv.org/pdf/1405.0312v3) accessed 2024-09-03.
+
 [^Schoof-1994]: Schoof LA, Yarberry VR. EXODUS II: a finite element data model. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 1994 Sep 1. [link](https://www.osti.gov/biblio/10102115)
+
+[^Terpsma-2020]: Terpsma RJ, Hovey CB. Blunt impact brain injury using cellular injury criterion. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 2020 Oct 1. [link](https://www.osti.gov/servlets/purl/1716577) accessed 2024-09-03.
