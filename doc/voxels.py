@@ -212,13 +212,13 @@ class QuadrupleX(Example):
     )
 
 
-class QuadrupleVoid(Example):
-    """A specific example of a quadruple voxel with two of the intermediate
-    segmentation being void.
+class Quadruple2VoidsX(Example):
+    """A quadruple voxel lattice, coursed along the x-axis, with two
+    intermediate voxels in the segmentation being void.
     """
 
-    figure_title: str = COMMON_TITLE + "QuadrupleVoid"
-    file_stem: str = "quadruple_void"
+    figure_title: str = COMMON_TITLE + "Quadruple2VoidsX"
+    file_stem: str = "quadruple_2_voids_x"
     segmentation = np.array(
         [
             [
@@ -248,13 +248,13 @@ class QuadrupleVoid(Example):
     )
 
 
-class QuadrupleTwoBlocks(Example):
-    """A specific example of a quadruple voxel with two of the intermediate
-    segmentation being the second material.
+class Quadruple2Blocks(Example):
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void.
     """
 
-    figure_title: str = COMMON_TITLE + "QuadrupleTwoBlocks"
-    file_stem: str = "quadruple_two_blocks"
+    figure_title: str = COMMON_TITLE + "Quadruple2Blocks"
+    file_stem: str = "quadruple_2_blocks"
     segmentation = np.array(
         [
             [
@@ -292,14 +292,13 @@ class QuadrupleTwoBlocks(Example):
     )
 
 
-class QuadrupleTwoBlocksVoid(Example):
-    """A specific example of a quadruple voxel with the first intermediate
-    segmentation being the second material and the second intermediate
-    segmentation being void.
+class Quadruple2BlocksVoid(Example):
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void.
     """
 
-    figure_title: str = COMMON_TITLE + "QuadrupleTwoBlocksVoid"
-    file_stem: str = "quadruple_two_blocks_void"
+    figure_title: str = COMMON_TITLE + "Quadruple2BlocksVoid"
+    file_stem: str = "quadruple_2_blocks_void"
     segmentation = np.array(
         [
             [
@@ -337,7 +336,7 @@ class QuadrupleTwoBlocksVoid(Example):
 
 
 class Cube(Example):
-    """A specific example of a (2 x 2 x 2) voxel cube."""
+    """A (2 x 2 x 2) voxel cube."""
 
     figure_title: str = COMMON_TITLE + "Cube"
     file_stem: str = "cube"
@@ -392,12 +391,11 @@ class Cube(Example):
     )
 
 
-class CubeMultiBlocks(Example):
-    """A specific example of a (2 x 2 x 2) voxel cube with a void and
-    seven blocks."""
+class CubeMulti(Example):
+    """A (2 x 2 x 2) voxel cube with two voids and six elements."""
 
-    figure_title: str = COMMON_TITLE + "CubeMultiBlocks"
-    file_stem: str = "cube_multi_blocks"
+    figure_title: str = COMMON_TITLE + "CubeMulti"
+    file_stem: str = "cube_multi"
     segmentation = np.array(
         [
             [
@@ -640,6 +638,10 @@ def element_connectivity(
     return blocks
 
 
+def renumber():
+    """Work in progress."""
+
+
 def flatten_tuple(t):
     """Uses recursion to convert nested tuples into a single-sevel tuple.
 
@@ -669,12 +671,12 @@ def main():
         DoubleY(),
         TripleX(),
         QuadrupleX(),
-        # QuadrupleVoid(),
-        # QuadrupleTwoBlocks(),
-        # QuadrupleTwoBlocksVoid(),
-        # Cube(),
-        # CubeMultiBlocks(),
-        # LetterF(),
+        Quadruple2VoidsX(),
+        Quadruple2Blocks(),
+        Quadruple2BlocksVoid(),
+        Cube(),
+        CubeMulti(),
+        LetterF(),
     ]
     for ex in examples:
 
