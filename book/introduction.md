@@ -12,7 +12,7 @@ grass, and cow.
 
 ![cs231n_sementic_segmentation](fig/cs231n_semantic_segmentation.jpg)
 
-Figure: Example of semantic segmentation, from Li *et al.*[^Li-2017]
+Figure: Example of semantic segmentation, from Li *et al.*[^Li_2017]
 
 * **Semantic segmentation** does not differentiate between objects of the same class.
 * **Instance segmentation** does differentiate between objects of the same class.
@@ -21,7 +21,7 @@ These two concepts are shown below:
 
 ![semantic_vs_instance](fig/semantic_vs_instance.png)
 
-Figure: Distinction between semantic segmentation and instance segmentation, from Lin *et al.*[^Lin-2014]
+Figure: Distinction between semantic segmentation and instance segmentation, from Lin *et al.*[^Lin_2014]
 
 Both  segmentation types, semantic and instance, can be used with `Automesh`.  However, `Automesh` operates on a 3D segmentation, not a 2D segmentation, as present in a digital image.  To arrive at a 3D segmentation, two or more images are stacked to compose a volume.
 
@@ -31,7 +31,7 @@ The figure below illustrates the concept of stacked images:
 
 ![stack_reconstruction](fig/stack_reconstruction.jpg)
 
-Figure: Example of stacking several images to create a 3D representation, from Bit *et al.*[^Bit-2017]
+Figure: Example of stacking several images to create a 3D representation, from Bit *et al.*[^Bit_2017]
 
 The digital image sources are frequently medical images, obtained by CT or MR, though `Autotwin` can be used for any subject that can be represented as a stacked segmentation.  Anatomical regions are classified into categories, for example, to represent scale, bone, gray matter, white matter, and cerebral spinal fluid.
 
@@ -46,7 +46,7 @@ bone, disc, vasculature, airway/sinus, membrane, cerebral spinal fluid, white ma
 
 ![sibl_bob_mid-sagittal](fig/sibl_bob_mid-sagittal.png)
 
-Figure: Example of medical images used to create 3D voxel model, segmented into 10 categories, from Terpsma *et al.*[^Terpsma-2020]
+Figure: Example of medical images used to create 3D voxel model, segmented into 10 categories, from Terpsma *et al.*[^Terpsma_2020]
 
 Segmentations are frequently serialzed (saved to disc) as either a Numpy (`.npy`) file
 or a SPN (`.spn`) file.
@@ -68,7 +68,7 @@ For subjects that the human anatomy, we use the *Patient Coordinate System* (PCS
 | :--: | :--:
 | ![Terpsma_2020_Figure_C-4](fig/Terpsma_2020_Figure_C-4.jpg) | ![patient_coordinate_system](fig/patient_coordinate_system.png)
 
-Figure: Illustration of the patient coordinate system, left figure[^Terpsma_2020] and right figure.[^Sharma_201]
+Figure: Illustration of the patient coordinate system, left figure[^Terpsma_2020] and right figure.[^Sharma_2021]
 
 ## Finite Element Mesh
 We use the Exodus II convention for a hexahedral element
@@ -76,7 +76,7 @@ local node numbering:
 
 ![exodus_hex_numbering_scheme](fig/exodus_hex_numbering_scheme.png)
 
-Figure: Exodus II hexahedral local finite element numbering scheme, from Schoof *et al.*[^Schoof-1994]
+Figure: Exodus II hexahedral local finite element numbering scheme, from Schoof *et al.*[^Schoof_1994]
 
 ## Testing
 
@@ -153,12 +153,14 @@ along the `x-axis` and `y-axis`, respectively.
 
 ## References
 
-[^Li-2017]: Li FF, Johnson J, Yeung S.  Lecture 11: Dection and Segmentation, CS 231n, Stanford Unveristy, 2017.  [link](https://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture11.pdf)
+[^Li_2017]: Li FF, Johnson J, Yeung S.  Lecture 11: Dection and Segmentation, CS 231n, Stanford Unveristy, 2017.  [link](https://cs231n.stanford.edu/slides/2017/cs231n_2017_lecture11.pdf)
 
-[^Lin-2014]: Lin TY, Maire M, Belongie S, Hays J, Perona P, Ramanan D, Dollár P, Zitnick CL. Microsoft coco: Common objects in context. InComputer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 2014 (pp. 740-755). Springer International Publishing. [link](https://arxiv.org/pdf/1405.0312v3)
+[^Lin_2014]: Lin TY, Maire M, Belongie S, Hays J, Perona P, Ramanan D, Dollár P, Zitnick CL. Microsoft coco: Common objects in context. InComputer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 2014 (pp. 740-755). Springer International Publishing. [link](https://arxiv.org/pdf/1405.0312v3)
 
-[^Bit-2017]: Bit A, Ghagare D, Rizvanov AA, Chattopadhyay H. Assessment of influences of stenoses in right carotid artery on left carotid artery using wall stress marker. BioMed research international. 2017;2017(1):2935195. [link](https://onlinelibrary.wiley.com/doi/pdf/10.1155/2017/2935195)
+[^Bit_2017]: Bit A, Ghagare D, Rizvanov AA, Chattopadhyay H. Assessment of influences of stenoses in right carotid artery on left carotid artery using wall stress marker. BioMed research international. 2017;2017(1):2935195. [link](https://onlinelibrary.wiley.com/doi/pdf/10.1155/2017/2935195)
 
-[^Terpsma-2020]: Terpsma RJ, Hovey CB. Blunt impact brain injury using cellular injury criterion. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 2020 Oct 1. [link](https://www.osti.gov/servlets/purl/1716577)
+[^Terpsma_2020]: Terpsma RJ, Hovey CB. Blunt impact brain injury using cellular injury criterion. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 2020 Oct 1. [link](https://www.osti.gov/servlets/purl/1716577)
 
-[^Schoof-1994]: Schoof LA, Yarberry VR. EXODUS II: a finite element data model. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 1994 Sep 1. [link](https://www.osti.gov/biblio/10102115)
+[^Sharma_2021]: DICOM Coordinate Systems — 3D DICOM for computer vision engineers, Medium, 2021-12-22. [link](https://medium.com/redbrick-ai/dicom-coordinate-systems-3d-dicom-for-computer-vision-engineers-pt-1-61341d87485f)
+
+[^Schoof_1994]: Schoof LA, Yarberry VR. EXODUS II: a finite element data model. Sandia National Lab.(SNL-NM), Albuquerque, NM (United States); 1994 Sep 1. [link](https://www.osti.gov/biblio/10102115)
