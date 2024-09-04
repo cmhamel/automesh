@@ -50,7 +50,7 @@ class Example(NamedTuple):
     )
     included_ids = (1,)
     gold_lattice = None
-    gold_elements = None
+    gold_mesh_lattice_connectivity = None
 
 
 COMMON_TITLE: Final[str] = "Lattice Index and Coordinates: "
@@ -73,7 +73,7 @@ class Single(Example):
     )
     included_ids = (11,)
     gold_lattice = ((1, 2, 4, 3, 5, 6, 8, 7),)
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 4, 3, 5, 6, 8, 7),
@@ -102,7 +102,7 @@ class DoubleX(Example):
         (1, 2, 5, 4, 7, 8, 11, 10),
         (2, 3, 6, 5, 8, 9, 12, 11),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 5, 4, 7, 8, 11, 10),
@@ -134,7 +134,7 @@ class DoubleY(Example):
         (1, 2, 4, 3, 7, 8, 10, 9),
         (3, 4, 6, 5, 9, 10, 12, 11),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 4, 3, 7, 8, 10, 9),
@@ -166,7 +166,7 @@ class TripleX(Example):
         (2, 3, 7, 6, 10, 11, 15, 14),
         (3, 4, 8, 7, 11, 12, 16, 15),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 6, 5, 9, 10, 14, 13),
@@ -201,7 +201,7 @@ class QuadrupleX(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -239,7 +239,7 @@ class Quadruple2VoidsX(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -278,7 +278,7 @@ class Quadruple2Blocks(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -322,7 +322,7 @@ class Quadruple2BlocksVoid(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -376,7 +376,7 @@ class Cube(Example):
         (13, 14, 17, 16, 22, 23, 26, 25),
         (14, 15, 18, 17, 23, 24, 27, 26),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 5, 4, 10, 11, 14, 13),
@@ -437,7 +437,7 @@ class CubeMulti(Example):
         (13, 14, 17, 16, 22, 23, 26, 25),
         (14, 15, 18, 17, 23, 24, 27, 26),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         # (
         #   0,
         #   (10, 11, 14, 13, 19, 20, 23, 22),
@@ -521,7 +521,7 @@ class LetterF(Example):
         (18, 19, 23, 22, 42, 43, 47, 46),
         (19, 20, 24, 23, 43, 44, 48, 47),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 6, 5, 25, 26, 30, 29),
@@ -591,14 +591,15 @@ def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
     return cs
 
 
-def element_connectivity(
+def mesh_lattice_connectivity(
     ex: Example,
     lattice: np.ndarray,
 ) -> tuple:
     """Given an Example (in particular, the Example's voxel data structure,
     a segmentation) and the `lattice_connectivity`, create the connectivity
-    for the finite element mesh.  A voxel with a segmentation id in the
-    Example's excluded ids tuple is excluded from becoming a finite element."""
+    for the mesh with lattice node numbers.  A voxel with a segmentation id not
+    in the Example's included ids tuple is excluded from the mesh.
+    """
 
     # segmentation = ex.segmentation.flatten().squeeze()
     segmentation = ex.segmentation.flatten()
@@ -636,10 +637,6 @@ def element_connectivity(
 
     # return np.array(blocks)
     return blocks
-
-
-def renumber():
-    """Work in progress."""
 
 
 def flatten_tuple(t):
@@ -719,10 +716,10 @@ def main():
         nelz, nely, nelx = ex.segmentation.shape
         lc = lattice_connectivity(ex=ex)
 
-        ec = element_connectivity(ex=ex, lattice=lc)
+        mesh_w_lattice_conn = mesh_lattice_connectivity(ex=ex, lattice=lc)
 
         # breakpoint()
-        assert ec == ex.gold_elements, "Calculated element connectivity error."
+        assert mesh_w_lattice_conn == ex.gold_mesh_lattice_connectivity, "Calculated element connectivity error."
 
         # save the numpy data as a .npy file
         np.save(output_npy, ex.segmentation)
@@ -784,7 +781,7 @@ def main():
         zel = []
         # generate a set from the element connectivity
         # breakpoint()
-        ec_set = set(flatten_tuple(ec))
+        ec_set = set(flatten_tuple(mesh_w_lattice_conn))
 
         lattice_ijk = 0
         for k in range(nzp):
