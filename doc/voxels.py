@@ -223,16 +223,16 @@ class Quadruple2VoidsX(Example):
         [
             [
                 [
-                    11,
+                    99,
                     0,
                     0,
-                    11,
+                    99,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (11,)
+    included_ids = (99,)
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
         (2, 3, 8, 7, 12, 13, 18, 17),
@@ -241,7 +241,7 @@ class Quadruple2VoidsX(Example):
     )
     gold_mesh_lattice_connectivity = (
         (
-            11,
+            99,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
@@ -259,18 +259,18 @@ class Quadruple2Blocks(Example):
         [
             [
                 [
-                    11,
-                    21,
-                    21,
-                    11,
+                    100,
+                    101,
+                    101,
+                    100,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        11,
-        21,
+        100,
+        101,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -280,12 +280,12 @@ class Quadruple2Blocks(Example):
     )
     gold_mesh_lattice_connectivity = (
         (
-            11,
+            100,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
         (
-            21,
+            101,
             (2, 3, 8, 7, 12, 13, 18, 17),
             (3, 4, 9, 8, 13, 14, 19, 18),
         ),
@@ -303,18 +303,18 @@ class Quadruple2BlocksVoid(Example):
         [
             [
                 [
-                    11,
-                    21,
+                    102,
+                    103,
                     0,
-                    11,
+                    102,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        11,
-        21,
+        102,
+        103,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -324,12 +324,12 @@ class Quadruple2BlocksVoid(Example):
     )
     gold_mesh_lattice_connectivity = (
         (
-            11,
+            102,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
         (
-            21,
+            103,
             (2, 3, 8, 7, 12, 13, 18, 17),
         ),
     )
@@ -746,8 +746,12 @@ def main():
         nxp, nyp, nzp = (nelx + 1, nely + 1, nelz + 1)
 
         # Create a figure and a 3D axis
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
+        # fig = plt.figure()
+        fig = plt.figure(figsize=(10, 5))  # Adjust the figure size
+        # ax = fig.add_subplot(111, projection="3d")
+        # figure with 1 row, 2 columns
+        ax = fig.add_subplot(1, 2, 1, projection="3d")  # r1, c2, 1st subplot
+        ax2 = fig.add_subplot(1, 2, 2, projection="3d")  # r1, c2, 2nd subplot
 
         # For 3D plotting of voxels in matplotlib, we must swap the 'x' and the
         # 'z' axes.  The original axes in the segmentation are (z, y, x) and
@@ -766,6 +770,14 @@ def main():
                 edgecolor=colors[i],
                 alpha=voxel_alpha,
             )
+            # plot the same voxels on the 2nd axis
+            ax2.voxels(
+                solid,
+                facecolors=colors[i],
+                edgecolor=colors[i],
+                alpha=voxel_alpha,
+            )
+
 
         # breakpoint()
 
@@ -782,6 +794,8 @@ def main():
         # generate a set from the element connectivity
         # breakpoint()
         ec_set = set(flatten_tuple(mesh_w_lattice_conn))
+
+        # breakpoint()
 
         lattice_ijk = 0
         for k in range(nzp):
@@ -802,8 +816,8 @@ def main():
             x,
             y,
             z,
-            s=10,
-            facecolors="blue",
+            s=20,
+            facecolors="red",
             edgecolors="none",
         )
 
@@ -812,12 +826,12 @@ def main():
             ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
 
         # Plot the nodes included in the finite element connectivity
-        ax.scatter(
+        ax2.scatter(
             xel,
             yel,
             zel,
-            s=50,
-            facecolors="none",
+            s=30,
+            facecolors="blue",
             edgecolors="blue",
         )
 
@@ -825,6 +839,10 @@ def main():
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("z")
+        # repeat for the 2nd axis
+        ax2.set_xlabel("x")
+        ax2.set_ylabel("y")
+        ax2.set_zlabel("z")
 
         x_ticks = list(range(nxp))
         y_ticks = list(range(nyp))
@@ -833,14 +851,25 @@ def main():
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
         ax.set_zticks(z_ticks)
+        # repeat for the 2nd axis
+        ax2.set_xticks(x_ticks)
+        ax2.set_yticks(y_ticks)
+        ax2.set_zticks(z_ticks)
 
         ax.set_xlim(float(x_ticks[0]), float(x_ticks[-1]))
         ax.set_ylim(float(y_ticks[0]), float(y_ticks[-1]))
         ax.set_zlim(float(z_ticks[0]), float(z_ticks[-1]))
+        # repeat for the 2nd axis
+        ax2.set_xlim(float(x_ticks[0]), float(x_ticks[-1]))
+        ax2.set_ylim(float(y_ticks[0]), float(y_ticks[-1]))
+        ax2.set_zlim(float(z_ticks[0]), float(z_ticks[-1]))
 
         # Set the camera view
         ax.set_aspect("equal")
         ax.view_init(elev=el, azim=az, roll=roll)
+        # repeat for the 2nd axis
+        ax2.set_aspect("equal")
+        ax2.view_init(elev=el, azim=az, roll=roll)
 
         # Adjust the distance of the camera.  The default value is 10.
         # Increasing/decreasing this value will zoom in/out, respectively.
