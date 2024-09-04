@@ -10,7 +10,7 @@ into a *class* that represents some subject of interest.  For example, in the
 image below, the image pixels are classified into classes of sky, trees, cat,
 grass, and cow.
 
-![cs231n_sementic_segmentation](fig/cs231n_semantic_segmentation.jpg)
+![fig/cs231n_semantic_segmentation.png](fig/cs231n_semantic_segmentation.png)
 
 Figure: Example of semantic segmentation, from Li *et al.*[^Li_2017]
 
@@ -19,7 +19,7 @@ Figure: Example of semantic segmentation, from Li *et al.*[^Li_2017]
 
 These two concepts are shown below:
 
-![semantic_vs_instance](fig/semantic_vs_instance.png)
+![fig/semantic_vs_instance.png](fig/semantic_vs_instance.png)
 
 Figure: Distinction between semantic segmentation and instance segmentation, from Lin *et al.*[^Lin_2014]
 
@@ -29,14 +29,14 @@ The structured volume of a stacked of pixel composes a volumetric unit called a 
 
 The figure below illustrates the concept of stacked images:
 
-![stack_reconstruction](fig/stack_reconstruction.jpg)
+![fig/stack_reconstruction.png](fig/stack_reconstruction.png)
 
 Figure: Example of stacking several images to create a 3D representation, from Bit *et al.*[^Bit_2017]
 
 The digital image sources are frequently medical images, obtained by CT or MR, though `Automesh` can be used for any subject that can be represented as a stacked segmentation.  Anatomical regions are classified into categories.  For example, in the image below, ten unique integers have been used to represent
 bone, disc, vasculature, airway/sinus, membrane, cerebral spinal fluid, white matter, gray matter, muscle, and skin.
 
-![sibl_bob_mid-sagittal](fig/sibl_bob_mid-sagittal.png)
+![fig/sibl_bob_mid-sagittal.png](fig/sibl_bob_mid-sagittal.png)
 
 Figure: Example of a 3D voxel model, segmented into 10 categories, from Terpsma *et al.*[^Terpsma_2020]
 
@@ -64,7 +64,7 @@ For subjects that the human anatomy, we use the *Patient Coordinate System* (PCS
 
 | Patient Coordinate System: | Left, Posterior, Superior $\mapsto$ (x, y, z)
 | :--: | :--:
-| ![Terpsma_2020_Figure_C-4](fig/Terpsma_2020_Figure_C-4.jpg) | ![patient_coordinate_system](fig/patient_coordinate_system.png)
+| ![fig/erpsma_2020_Figure_C-4.png](fig/Terpsma_2020_Figure_C-4.png) | ![fig/patient_coordinate_system.png](fig/patient_coordinate_system.png)
 
 Figure: Illustration of the patient coordinate system, left figure from Terpsma *et al.*[^Terpsma_2020] and right figure from Sharma.[^Sharma_2021]
 
@@ -72,7 +72,7 @@ Figure: Illustration of the patient coordinate system, left figure from Terpsma 
 We use the Exodus II convention for a hexahedral element
 local node numbering:
 
-![exodus_hex_numbering_scheme](fig/exodus_hex_numbering_scheme.png)
+![fig/exodus_hex_numbering_scheme.png](fig/exodus_hex_numbering_scheme.png)
 
 Figure: Exodus II hexahedral local finite element numbering scheme, from Schoof *et al.*[^Schoof_1994]
 
@@ -117,7 +117,7 @@ single integer:
 The resulting finite element mesh is visualized is shown in the following
 figure:
 
-![single.png](fig/single.png)
+![fig/single.png](fig/single.png)
 
 Figure: The `single.png` visualization.  Blue dots designate lattice points.
 Blue circles designate element nodes.  Global node numbers appear in gray, with
@@ -138,34 +138,34 @@ a single block composed of two finite elements.  We test propagation in
 both the `x` and `y` directions.  The figures below show these two
 meshes.
 
-![double_x.png](fig/double_x.png) ![double_y.png](fig/double_y.png)
+![fig/double_x.png](fig/double_x.png) ![fig/double_y.png](fig/double_y.png)
 
 Figure: Meshes composed of a single block with two elements, propagating
 along the `x-axis` and `y-axis`, respectively.
 
 ## Triple
 
-![triple_x](fig/triple_x.png)
+![fig/triple_x.png](fig/triple_x.png)
 
 ## Quadruple
 
-![quadruple_x](fig/quadruple_x.png)
+![fig/quadruple_x.png](fig/quadruple_x.png)
 
 ## Quadruple with Voids
 
-![quadruple_2_voids_x](fig/quadruple_2_voids_x.png)
+![fig/quadruple_2_voids_x.png](fig/quadruple_2_voids_x.png)
 
 ## Quadruple with Two Blocks and Void
 
-![quadruple_2_blocks_void](fig/quadruple_2_blocks_void.png)
+![fig/quadruple_2_blocks_void.png](fig/quadruple_2_blocks_void.png)
 
 ## Cube
 
-![cube](fig/cube.png)
+![fig/cube.png](fig/cube.png)
 
 ## Cube with Multi Blocks and Void
 
-![cube](fig/cube_multi.png)
+![fig/cube_multi.png](fig/cube_multi.png)
 
 ## Sparse
 
@@ -173,7 +173,7 @@ To come.
 
 ## Letter F
 
-![letter_f](fig/letter_f.png)
+![fig/letter_f.png](fig/letter_f.png)
 
 ## Letter F in 3D
 
