@@ -1,37 +1,66 @@
 # logs
 
-**Goal:** A command line Rust application that takes a command line argument, the path to a `.yml` file, and represents that yaml data as an internal yaml struct.
+**Goal:** A command line Rust application to produce ABAQUS and Exodus outputs.
 
 *In order of most recent to least recent.*
 
+## 2024-09-25
+
 ## 2024-09-18
 
-CH OOO.  No pair programming.
+CBH OOO.  No pair programming.
+
+## 2024-09-11
+
+## 2024-09-04
+
+* CBH
+  * Review new documentation, moved figures, and possible deprecation of `doc` folder
+  * Migrate `.md` files from `doc` folder to `book`
+  * How to build MDBook without a full pull request into `main`?
+  * Python implementation of `voxels.py` to produce element connectivity without gaps, match MRB results
+  * Standardize on `.png`, and recast the `.jpg` as `.png`
+  * MDBook
+    * How to get MDBook to run and test the Python API
+    * Python documentation in MDBook (so ReadTheDocs is an option, and not Sphinx)
+* MRB
+  * Currently the figures are static build, but we want to eventually migrate to building the images on checkin, done with `.yml` CI/CD, makes sure the source script still works.  Preprocessor command that runs prior to mdbook.
+  * `Command Line Interface` update from static to dynamic reflection of the CLI.
+  * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
+    * plug out Sculpt
+    * plug in Automesh
+  * `Sparse` example.
+
+```bash
+cargo install mdbook mdbook-katex
+mdbook build
+mdbook serve
+```
 
 ## 2024-08-28
 
 * Merge the `inp` into `main` and the `docs` into `main`
-  * CH to finish out the tests `.rs` and `.py`
-  * MB merge `inp` into `main`
-* MD
-  * Random/crazy test, connectivity gaps, voids
+  * CBH to finish out the tests `.rs` and `.py`
+  * MRB merge `inp` into `main`
+* MRB
+  * Random/crazy test, connectivity gaps, voids (called `Sparse`)
   * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
     * plug out Sculpt
     * plug in Automesh
   * mdBook documentation - seed this as part of the build process on GitHub
-* CH
+* CBH
   * How to capture the `.png`
   * expand tests to include randomized OFF/ON of various blocks.
   * update the 3D letter F
   * update documentation Python side to include the Python-generated figures
   * mdBook documentation
-* Review funding doc
-* CH: Move mtg on 04 Sept to later time
-* CH OOO 18 Sept
+  * Review funding doc
+  * Move mtg on 04 Sept to later time - no longer relevant/needed
+  * OOO 18 Sept
 
 ## 2024-08-21
 
-MB OOO.  No pair programming.
+MRB OOO.  No pair programming.
 
 ## 2024-08-14
 
@@ -43,11 +72,11 @@ MB OOO.  No pair programming.
 * ask about test input file
 * formatting of input file (tabs, spaces, alignment)
 * refactor automesh connectivity and change test
-  * MB - refactor code
-  * CH - refactor documentation, and the Python scripts to generate `f.spn` and `f.npy`, with `.py` into `tests/input`
+  * MRB - refactor code
+  * CBH - refactor documentation, and the Python scripts to generate `f.spn` and `f.npy`, with `.py` into `tests/input`
     * `(x, y)` plane for pixels, `z` axis for stacked pixles into voxels, stack of two slices (`NELZ = 2`), `NELX = 3`, `NELY = 5`.
-  * CH to dry out code `spn.rs` and `spn_single.rs` (CH made the code WET with the duplicated tests)
-  * CH refactor `f_fiducial.inp`
+  * CBH to dry out code `spn.rs` and `spn_single.rs` (CH made the code WET with the duplicated tests)
+  * CBH refactor `f_fiducial.inp`
 * Change from `spn` type to `voxel` type.
 
 
@@ -261,7 +290,7 @@ quit()
 ### Continued discussion (2024-08-02)
 
 * Decisions:
-  * command line arguments (via clap) is prioritized; `.yml` file recipie is paused in favor of CLI interacion
+  * command line arguments (via clap) is prioritized; `.yml` file recipe is paused in favor of CLI interacion
   * command line runs produce a `.log` file by default (optional is to have no logging, command line flag for no logging is to be determined), the `.log` file will
     * echo the command issued to the CLI (support reproducibility)
     * have a name `<output_file>.log` that matches the file name of the output Exodus file `<output_file>.exo`
