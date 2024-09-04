@@ -51,6 +51,7 @@ class Example(NamedTuple):
     included_ids = (1,)
     gold_lattice = None
     gold_mesh_lattice_connectivity = None
+    gold_mesh_element_connectivity = None
 
 
 COMMON_TITLE: Final[str] = "Lattice Index and Coordinates: "
@@ -74,6 +75,12 @@ class Single(Example):
     included_ids = (11,)
     gold_lattice = ((1, 2, 4, 3, 5, 6, 8, 7),)
     gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 5, 6, 8, 7),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 4, 3, 5, 6, 8, 7),
@@ -109,6 +116,13 @@ class DoubleX(Example):
             (2, 3, 6, 5, 8, 9, 12, 11),
         ),
     )
+    gold_mesh_element_connectivity = (
+        (
+            11,
+            (1, 2, 5, 4, 7, 8, 11, 10),
+            (2, 3, 6, 5, 8, 9, 12, 11),
+        ),
+    )
 
 
 class DoubleY(Example):
@@ -135,6 +149,13 @@ class DoubleY(Example):
         (3, 4, 6, 5, 9, 10, 12, 11),
     )
     gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 7, 8, 10, 9),
+            (3, 4, 6, 5, 9, 10, 12, 11),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 4, 3, 7, 8, 10, 9),
@@ -174,6 +195,14 @@ class TripleX(Example):
             (3, 4, 8, 7, 11, 12, 16, 15),
         ),
     )
+    gold_mesh_element_connectivity = (
+        (
+            11,
+            (1, 2, 6, 5, 9, 10, 14, 13),
+            (2, 3, 7, 6, 10, 11, 15, 14),
+            (3, 4, 8, 7, 11, 12, 16, 15),
+        ),
+    )
 
 
 class QuadrupleX(Example):
@@ -202,6 +231,15 @@ class QuadrupleX(Example):
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
     gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -246,6 +284,13 @@ class Quadruple2VoidsX(Example):
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
     )
+    gold_mesh_element_connectivity = (
+        (
+            99,
+            (1, 2, 6, 5, 9, 10, 14, 13),
+            (3, 4, 8, 7, 11, 12, 16, 15),
+        ),
+    )
 
 
 class Quadruple2Blocks(Example):
@@ -279,6 +324,18 @@ class Quadruple2Blocks(Example):
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
     gold_mesh_lattice_connectivity = (
+        (
+            100,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        (
+            101,
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             100,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -333,6 +390,17 @@ class Quadruple2BlocksVoid(Example):
             (2, 3, 8, 7, 12, 13, 18, 17),
         ),
     )
+    gold_mesh_element_connectivity = (
+        (
+            102,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        (
+            103,
+            (2, 3, 8, 7, 12, 13, 18, 17),
+        ),
+    )
 
 
 class Cube(Example):
@@ -377,6 +445,19 @@ class Cube(Example):
         (14, 15, 18, 17, 23, 24, 27, 26),
     )
     gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 5, 4, 10, 11, 14, 13),
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+            (10, 11, 14, 13, 19, 20, 23, 22),
+            (11, 12, 15, 14, 20, 21, 24, 23),
+            (13, 14, 17, 16, 22, 23, 26, 25),
+            (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 5, 4, 10, 11, 14, 13),
@@ -464,6 +545,26 @@ class CubeMulti(Example):
             (1, 2, 5, 4, 10, 11, 14, 13),
         ),
     )
+    gold_mesh_element_connectivity = (
+        (
+            2,
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+        ),
+        (
+            31,
+            (11, 12, 15, 14, 19, 20, 22, 21),
+        ),
+        (
+            44,
+            (14, 15, 18, 17, 21, 22, 24, 23),
+        ),
+        (
+            82,
+            (1, 2, 5, 4, 10, 11, 14, 13),
+        ),
+    )
 
 
 class LetterF(Example):
@@ -539,6 +640,26 @@ class LetterF(Example):
             (17, 18, 22, 21, 41, 42, 46, 45),
             (18, 19, 23, 22, 42, 43, 47, 46),
             (19, 20, 24, 23, 43, 44, 48, 47),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 19, 20, 22, 21),
+            #
+            #
+            (3, 4, 6, 5, 21, 22, 24, 23),
+            #
+            #
+            (5, 6, 9, 8, 23, 24, 27, 26),
+            (6, 7, 10, 9, 24, 25, 28, 27),
+            #
+            (8, 9, 12, 11, 26, 27, 30, 29),
+            #
+            #
+            (11, 12, 16, 15, 29, 30, 34, 33),
+            (12, 13, 17, 16, 30, 31, 35, 34),
+            (13, 14, 18, 17, 31, 32, 36, 35),
         ),
     )
 
@@ -639,6 +760,59 @@ def mesh_lattice_connectivity(
     return blocks
 
 
+def renumber(source: tuple, old: tuple, new: tuple) -> tuple:
+    """Given a source tuple, composed of a list of positive integers,
+    a tuple of `old` numbers that maps into `new` numbers, return the
+    source tuple with the `new` numbers."""
+    result = ()
+    for item in source:
+        idx = old.index(item)
+        new_value = new[idx]
+        result = result + (new_value,)
+
+    return result
+
+
+def mesh_element_connectivity(mesh_with_lattice_connectivity: tuple):
+    """Given a mesh with lattice connectivity, return a mesh with finite
+    element connectivity.
+    """
+    # create a list of unordered lattice node numbers
+    ln = []
+    for item in mesh_with_lattice_connectivity:
+        print(f"item is {item}")
+        # The first item is the block number
+        # block = item[0]
+        # The second and onward items are the elements
+        elements = item[1:]
+        for element in elements:
+            ln += list(element)
+
+    ln_set = set(ln)  # sets are not necessarily ordered
+    ln_ordered = tuple(sorted(ln_set))  # now these unique integers are ordered
+
+    # and they will map into the new compressed unique interger list `mapsto`
+    mapsto = tuple(range(1, len(ln_ordered)+1))
+
+    # now build a mesh_with_element_connectivity
+    mesh = ()  # empty tuple
+    # breakpoint()
+    for item in mesh_with_lattice_connectivity:
+        # The first item is the block number
+        block_number = item[0]
+        block_and_elements = ()  # empty tuple
+        # insert the block number
+        block_and_elements = block_and_elements + (block_number,)
+        for element in item[1:]:
+            new_element = renumber(source=element, old=ln_ordered, new=mapsto)
+            # overwrite
+            block_and_elements = block_and_elements + (new_element,)
+
+        mesh = mesh + (block_and_elements,)  # overwrite
+
+    return mesh
+
+
 def flatten_tuple(t):
     """Uses recursion to convert nested tuples into a single-sevel tuple.
 
@@ -655,6 +829,19 @@ def flatten_tuple(t):
             flat_list.append(item)
     # breakpoint()
     return tuple(flat_list)
+
+
+def elements_without_block_ids(mesh: tuple) -> tuple:
+    """Given a mesh, removes the block ids and returns only just the
+    element connectivities.
+    """
+
+    aa = ()
+    for item in mesh:
+        bb = item[1:]
+        aa = aa + bb
+
+    return aa
 
 
 def main():
@@ -717,9 +904,13 @@ def main():
         lc = lattice_connectivity(ex=ex)
 
         mesh_w_lattice_conn = mesh_lattice_connectivity(ex=ex, lattice=lc)
-
         # breakpoint()
-        assert mesh_w_lattice_conn == ex.gold_mesh_lattice_connectivity, "Calculated element connectivity error."
+        err = "Calculated lattice connectivity error."
+        assert mesh_w_lattice_conn == ex.gold_mesh_lattice_connectivity, err
+
+        mesh_w_element_conn = mesh_element_connectivity(mesh_w_lattice_conn)
+        err = "Calcualted element connectivity error."  # overwrite
+        assert mesh_w_element_conn == ex.gold_mesh_element_connectivity, err
 
         # save the numpy data as a .npy file
         np.save(output_npy, ex.segmentation)
@@ -748,6 +939,7 @@ def main():
         # Create a figure and a 3D axis
         # fig = plt.figure()
         fig = plt.figure(figsize=(10, 5))  # Adjust the figure size
+        # fig = plt.figure(figsize=(8, 4))  # Adjust the figure size
         # ax = fig.add_subplot(111, projection="3d")
         # figure with 1 row, 2 columns
         ax = fig.add_subplot(1, 2, 1, projection="3d")  # r1, c2, 1st subplot
@@ -793,11 +985,21 @@ def main():
         zel = []
         # generate a set from the element connectivity
         # breakpoint()
-        ec_set = set(flatten_tuple(mesh_w_lattice_conn))
+        # ec_set = set(flatten_tuple(mesh_w_lattice_conn))  # bug!
+        # bug fix:
+        ec_set = set(
+            flatten_tuple(
+                elements_without_block_ids(mesh_w_lattice_conn)
+            )
+        )
 
         # breakpoint()
 
         lattice_ijk = 0
+        # gnn = global node number
+        gnn = 0
+        gnn_labels = []
+
         for k in range(nzp):
             for j in range(nyp):
                 for i in range(nxp):
@@ -805,9 +1007,11 @@ def main():
                     y.append(j)
                     z.append(k)
                     if lattice_ijk + 1 in ec_set:
+                        gnn += 1
                         xel.append(i)
                         yel.append(j)
                         zel.append(k)
+                        gnn_labels.append(f" {gnn}")
                     lattice_ijk += 1
                     labels.append(f" {lattice_ijk}: ({i},{j},{k})")
 
@@ -834,6 +1038,10 @@ def main():
             facecolors="blue",
             edgecolors="blue",
         )
+
+        # Label the global node numbers
+        for n, label in enumerate(gnn_labels):
+            ax2.text(xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8)
 
         # Set labels for the axes
         ax.set_xlabel("x")
