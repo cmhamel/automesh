@@ -10,3 +10,5 @@
 # Reference Guide
 
 - [Command Line Interface](cli.md)
+- [Python Interface](python.md)
+- [Rust Interface](rust.md)
