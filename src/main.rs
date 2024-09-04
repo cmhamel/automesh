@@ -65,35 +65,25 @@ struct Args {
     ztranslate: f64,
 }
 
-// Validate that the x, y, and z scaling operations are greater
-// than zero, that the nelx, nely, and nelz are unity or greater,
-// and input and output extensions are of known type.
 fn validate(args: &Args) {
     assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
     assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
     assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
-
-    assert!(args.nelx >= 1, "Need to specify nelx > 0");
-    assert!(args.nely >= 1, "Need to specify nely > 0");
-    assert!(args.nelz >= 1, "Need to specify nelz > 0");
-
     let input_path = Path::new(&args.input);
     let extension = input_path.extension().and_then(|ext| ext.to_str());
-
     match extension {
-        Some("npy") | Some("spn") => {
-            // valid input extension, continue
+        Some("npy") => {}
+        Some("spn") => {
+            assert!(args.nelx >= 1, "Need to specify nelx > 0");
+            assert!(args.nely >= 1, "Need to specify nely > 0");
+            assert!(args.nelz >= 1, "Need to specify nelz > 0");
         }
         _ => panic!("Input must be of type .npy or .spn"),
     }
-
     let output_path = Path::new(&args.output);
-    let extension = output_path.extension().and_then(|exo| exo.to_str()); // overwrite extension
-
+    let extension = output_path.extension().and_then(|exo| exo.to_str());
     match extension {
-        Some("exo") | Some("inp") => {
-            // valid output extension, continue
-        }
+        Some("exo") | Some("inp") => {}
         _ => panic!("Output must be of type .exo or .inp"),
     }
 }
@@ -104,7 +94,7 @@ mod tests {
 
     fn default_args() -> Args {
         Args {
-            input: "foo.npy".to_string(),
+            input: "foo.spn".to_string(),
             output: "bar.exo".to_string(),
             nelx: 1,
             nely: 1,
@@ -210,7 +200,6 @@ mod tests {
 fn main() {
     let args = Args::parse();
     validate(&args);
-
     let input = match Path::new(&args.input)
         .extension()
         .and_then(|ext| ext.to_str())
@@ -219,12 +208,10 @@ fn main() {
         Some("spn") => Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
-
     let fea = input.into_finite_elements(
         &[args.xscale, args.yscale, args.zscale],
         &[args.xtranslate, args.ytranslate, args.ztranslate],
     );
-
     match Path::new(&args.output)
         .extension()
         .and_then(|ext| ext.to_str())

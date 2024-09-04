@@ -2,33 +2,22 @@
 
 ```sh
 automesh --help
+<!-- cmdrun automesh --help -->
+```
 
-     @@@@@@@@@@@@@@@@
-      @@@@  @@@@@@@@@@
-     @@@@  @@@@@@@@@@@
-    @@@@  @@@@@@@@@@@@    Automesh: Automatic mesh generation
-      @@    @@    @@      Chad B. Hovey <chovey@sandia.gov>
-      @@    @@    @@      Michael R. Buche <mrbuche@sandia.gov>
-    @@@@@@@@@@@@  @@@
-    @@@@@@@@@@@  @@@@     Notes:
-    @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
-     @@@@@@@@@@@@@@@@     - Scaling is applied before translation.
+## Example
 
+Convert a Numpy segmentation file to an Abaqus input file:
 
-Usage: automesh [OPTIONS] --input <INPUT> --output <OUTPUT>
+```sh
+automesh --input single.npy --output single.inp
+```
 
-Options:
-  -i, --input <INPUT>            Name of the NumPy (.npy) or SPN (.spn) input file
-  -o, --output <OUTPUT>          Name of the Exodus (.exo) or Abaqus (.inp) output file
-  -x, --nelx <NELX>              Number of voxels in the x-direction [default: 0]
-  -y, --nely <NELY>              Number of voxels in the y-direction [default: 0]
-  -z, --nelz <NELZ>              Number of voxels in the z-direction [default: 0]
-      --xscale <XSCALE>          Scaling in the x-direction [default: 1]
-      --yscale <YSCALE>          Scaling in the y-direction [default: 1]
-      --zscale <ZSCALE>          Scaling in the z-direction [default: 1]
-      --xtranslate <XTRANSLATE>  Translation in the x-direction [default: 0]
-      --ytranslate <YTRANSLATE>  Translation in the y-direction [default: 0]
-      --ztranslate <ZTRANSLATE>  Translation in the z-direction [default: 0]
-  -h, --help                     Print help
-  -V, --version                  Print version
+<!-- cmdrun wget https://github.com/autotwin/automesh/raw/main/tests/input/single.npy -O ../target/single_for_cli.npy -->
+<!-- cmdrun automesh --input ../target/single_for_cli.npy --output ../target/single_from_cli.inp -->
+
+The resulting Abaqus input file:
+
+```sh
+<!-- cmdrun cat ../target/single_from_cli.inp -->
 ```

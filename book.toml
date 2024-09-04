@@ -12,5 +12,7 @@ create-missing = false
 [rust]
 edition = "2018"
 
+[preprocessor.cmdrun]
+
 [preprocessor.katex]
 after = ["links"]
