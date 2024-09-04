@@ -86,8 +86,10 @@ Following is documentation for tests used to validate code implementation.
 
 The minimum working example (MWE) is a single voxel, used to create a single
 mesh consisting of one block consisting of a single element.  The NumPy
-input [single.npy](../tests/input/single.npy) contains the following
+input [single.npy](https://github.com/autotwin/automesh/raw/main/tests/input/single.npy) contains the following
 segmentation:
+
+> *Remark: binary file, how to open in Python.*
 
 ```bash
 segmentation = np.array(
@@ -105,7 +107,7 @@ segmentation = np.array(
 where the segmenetation ID, `11`, will denote block `11` in the finite element
 mesh.
 
-Equivalently, the [single.spn](../tests/input/single.spn) contains a
+Equivalently, the [single.spn](https://raw.githubusercontent.com/autotwin/automesh/main/tests/input/single.spn) contains a
 single integer:
 
 ```bash
@@ -164,6 +166,10 @@ along the `x-axis` and `y-axis`, respectively.
 ## Cube with Multi Blocks and Void
 
 ![cube](fig/cube_multi.png)
+
+## Sparse
+
+To come.
 
 ## Letter F
 
