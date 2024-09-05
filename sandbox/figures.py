@@ -1200,7 +1200,9 @@ def main():
         # breakpoint()
         # ec_set = set(flatten_tuple(mesh_w_lattice_conn))  # bug!
         # bug fix:
-        ec_set = set(flatten_tuple(elements_without_block_ids(mesh_w_lattice_conn)))
+        ec_set = set(
+            flatten_tuple(elements_without_block_ids(mesh_w_lattice_conn))
+        )
 
         # breakpoint()
 
@@ -1251,7 +1253,9 @@ def main():
 
             # Label the global node numbers
             for n, label in enumerate(gnn_labels):
-                ax2.text(xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8)
+                ax2.text(
+                    xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8
+                )
 
         # Set labels for the axes
         ax.set_xlabel("x")
