@@ -153,8 +153,18 @@ fn write_element_connectivity_to_inp(
                     .unwrap();
                 });
             });
+        end_section(file);
     });
-    end_section(file);
+    element_blocks.iter().unique().for_each(|block| {
+        file.write_all(
+            format!(
+                "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",
+                block
+            )
+            .as_bytes(),
+        )
+        .unwrap()
+    });
 }
 
 fn end_section(file: &mut BufWriter<File>) {
