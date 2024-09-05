@@ -29,7 +29,7 @@ Create and update the `automesh/sandbox/pyproject.toml` file as necessary.
 
 ```bash
 # install as editable
-pip install -e ./sandbox/
+python -m pip install -e ./sandbox/
 ```
 
 Run the test:

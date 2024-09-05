@@ -18,6 +18,11 @@ import pytest
 import sandbox.figures as ff
 
 
+def test_hello():
+    """This is a minimum working example (MWE) test."""
+    assert ff.hello_world() == "Hello world!"
+
+
 def test_renumber():
     """Tests that the renumber function works as expected."""
     source = (300, 22, 1)
