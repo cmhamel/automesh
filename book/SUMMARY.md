@@ -10,3 +10,7 @@
 # Reference Guide
 
 - [Command Line Interface](cli.md)
+
+# Appendices
+
+- [Sandbox](sandbox.md)
