@@ -764,6 +764,11 @@ def renumber(source: tuple, old: tuple, new: tuple) -> tuple:
     """Given a source tuple, composed of a list of positive integers,
     a tuple of `old` numbers that maps into `new` numbers, return the
     source tuple with the `new` numbers."""
+
+    # the old and the new tuples musts have the same length
+    err = "Tuples `old` and `new` must have equal length."
+    assert len(old) == len(new), err
+
     result = ()
     for item in source:
         idx = old.index(item)
@@ -780,7 +785,7 @@ def mesh_element_connectivity(mesh_with_lattice_connectivity: tuple):
     # create a list of unordered lattice node numbers
     ln = []
     for item in mesh_with_lattice_connectivity:
-        print(f"item is {item}")
+        # print(f"item is {item}")
         # The first item is the block number
         # block = item[0]
         # The second and onward items are the elements
