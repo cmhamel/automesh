@@ -17,3 +17,5 @@
 - [Rust Interface](rust.md)
 - [Sandbox](sandbox.md)
 - [Encrypted](encrypted.md)
+- [Python Interface](python.md)
+- [Rust Interface](rust.md)

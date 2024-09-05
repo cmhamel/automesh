@@ -16,10 +16,20 @@ jobs:
         with:
           default: true
           toolchain: stable
+      - name: automesh
+        run: cargo install --path .
+      - name: mdbook
+        run: cargo install mdbook mdbook-cmdrun mdbook-katex
+      - name: rust
+        run: cargo build --release
+      - name: maturin
+        run: pip install maturin
       - name: install
-        run: cargo install mdbook mdbook-katex
+        run: maturin build --release --features python
+      - name: python
+        run: pip install --find-links=target/wheels/ automesh
       - name: test
-        run: mdbook test
+        run: mdbook test --library-path target/release/deps/
       - name: build
         run: mdbook build
       - name: move
