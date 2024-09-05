@@ -22,6 +22,7 @@ from typing import Final, NamedTuple
 
 # third-party libary
 import matplotlib.pyplot as plt
+from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy.typing import NDArray
@@ -1049,17 +1050,17 @@ def main():
     # Create an instance of a specific example
     # user input begin
     examples = [
-        # Single(),
-        # DoubleX(),
-        # DoubleY(),
-        # TripleX(),
-        # QuadrupleX(),
-        # Quadruple2VoidsX(),
-        # Quadruple2Blocks(),
-        # Quadruple2BlocksVoid(),
-        # Cube(),
-        # CubeMulti(),
-        # LetterF(),
+        Single(),
+        DoubleX(),
+        DoubleY(),
+        TripleX(),
+        QuadrupleX(),
+        Quadruple2VoidsX(),
+        Quadruple2Blocks(),
+        Quadruple2BlocksVoid(),
+        Cube(),
+        CubeMulti(),
+        LetterF(),
         LetterF3D(),
     ]
     for ex in examples:
@@ -1085,12 +1086,23 @@ def main():
         #
         # colors
         # cmap = cm.get_cmap("viridis")  # viridis colormap
-        cmap = plt.get_cmap(name="viridis")
+        # cmap = plt.get_cmap(name="viridis")
+        cmap = plt.get_cmap(name="tab10")
         # number of discrete colors
         num_colors = len(ex.included_ids)
         colors = cmap(np.linspace(0, 1, num_colors))
         # breakpoint()
         voxel_alpha: Final[float] = 0.1
+        # voxel_alpha: Final[float] = 0.7
+        # azimuth (deg):
+        #   0 is east  (from +y-axis looking back toward origin)
+        #  90 is north (from +x-axis looking back toward origin)
+        # 180 is west  (from -y-axis looking back toward origin)
+        # 270 is south (from -x-axis looking back toward origin)
+        # elevation (deg): 0 is horizontal, 90 is vertical (+z-axis up)
+        lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
+        nodes_shown: Final[bool] = True
+        # nodes_shown: Final[bool] = False
 
         # io: if the output directory does not already exist, create it
         output_path = Path(output_dir).expanduser()
@@ -1161,6 +1173,7 @@ def main():
                 facecolors=colors[i],
                 edgecolor=colors[i],
                 alpha=voxel_alpha,
+                lightsource=lightsource,
             )
             # plot the same voxels on the 2nd axis
             ax2.voxels(
@@ -1168,6 +1181,7 @@ def main():
                 facecolors=colors[i],
                 edgecolor=colors[i],
                 alpha=voxel_alpha,
+                lightsource=lightsource,
             )
 
         # breakpoint()
@@ -1210,33 +1224,34 @@ def main():
                     lattice_ijk += 1
                     labels.append(f" {lattice_ijk}: ({i},{j},{k})")
 
-        # Plot the lattice coordinates
-        ax.scatter(
-            x,
-            y,
-            z,
-            s=20,
-            facecolors="red",
-            edgecolors="none",
-        )
+        if nodes_shown:
+            # Plot the lattice coordinates
+            ax.scatter(
+                x,
+                y,
+                z,
+                s=20,
+                facecolors="red",
+                edgecolors="none",
+            )
 
-        # Label the lattice coordinates
-        for n, label in enumerate(labels):
-            ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
+            # Label the lattice coordinates
+            for n, label in enumerate(labels):
+                ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
 
-        # Plot the nodes included in the finite element connectivity
-        ax2.scatter(
-            xel,
-            yel,
-            zel,
-            s=30,
-            facecolors="blue",
-            edgecolors="blue",
-        )
+            # Plot the nodes included in the finite element connectivity
+            ax2.scatter(
+                xel,
+                yel,
+                zel,
+                s=30,
+                facecolors="blue",
+                edgecolors="blue",
+            )
 
-        # Label the global node numbers
-        for n, label in enumerate(gnn_labels):
-            ax2.text(xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8)
+            # Label the global node numbers
+            for n, label in enumerate(gnn_labels):
+                ax2.text(xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8)
 
         # Set labels for the axes
         ax.set_xlabel("x")
