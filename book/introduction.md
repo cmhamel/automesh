@@ -177,7 +177,7 @@ To come.
 
 ## Letter F in 3D
 
-To come.
+![fig/letter_f_3d.png](fig/letter_f_3d.png)
 
 ## References
 
