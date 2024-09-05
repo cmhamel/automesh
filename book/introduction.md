@@ -69,6 +69,40 @@ For subjects that the human anatomy, we use the *Patient Coordinate System* (PCS
 Figure: Illustration of the patient coordinate system, left figure from Terpsma *et al.*[^Terpsma_2020] and right figure from Sharma.[^Sharma_2021]
 
 ## Finite Element Mesh
+
+### ABAQUS
+
+To come.
+
+### EXODUS II
+
+> EXODUS II is a model developed to store and retrieve data for finite element analyses.  It is used for preprocesing (problem definition), postprocessing (results visualization), as well as code to code data transfer.  An EXODUS II data file is a random access, machine independent binary file.[^Schoof_1994]
+
+EXODUS II depends on the Network Common Data Form ([NetCDF](https://www.unidata.ucar.edu/software/netcdf/)) library.
+
+NetCDF is a public domain database library that provides low-level data storage.  The NetCDF library stores data in eXternal Data Representation (XDR) format, which provides machine independency.
+
+EXODUS II library functions provide a map between finite element data objects and NetCDF dimensions, attributes, and variables.
+
+EXODUS II data objects:
+
+* Initialization Data
+  * Number of nodes
+  * Number of elements
+  * *optional* informational text
+  * et cetera
+* Model - static objects (i.e., objects that do not change over time)
+  * Nodal coordinates
+  * Element connectivity
+  * Node sets
+  * Side sets
+* *optional* Results
+  * Nodal results
+  * Element results
+  * Global results
+
+> Note: `automesh` will use Initialization Data and Model sections; it will not use the Results section.
+
 We use the Exodus II convention for a hexahedral element
 local node numbering:
 
@@ -80,18 +114,20 @@ Figure: Exodus II hexahedral local finite element numbering scheme, from Schoof 
 
 Following is documentation for tests used to validate code implementation.
 
-### Single
+**Remark:** We use the convention `np` when importing `numpy` as follows:
 
-*The First Minimum Working Example*
+```python
+import numpy as np
+```
+
+### Single
 
 The minimum working example (MWE) is a single voxel, used to create a single
 mesh consisting of one block consisting of a single element.  The NumPy
 input [single.npy](https://github.com/autotwin/automesh/raw/main/tests/input/single.npy) contains the following
 segmentation:
 
-> *Remark: binary file, how to open in Python.*
-
-```bash
+```python
 segmentation = np.array(
     [
         [
@@ -104,8 +140,14 @@ segmentation = np.array(
 )
 ```
 
-where the segmenetation ID, `11`, will denote block `11` in the finite element
-mesh.
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
+**Remark:** Serialization (write and read)
+
+| Write | Read |
+|----------|----------|
+| Use the [np.save](https://numpy.org/doc/stable/reference/generated/numpy.save.html) command to serialize the segmentation a `.npy` file  | Use the [np.load](https://numpy.org/doc/stable/reference/generated/numpy.load.html) command to deserialize the segmentation from a `.npy` file  |
+*Example: Write the data in `segmentation` to a file called `seg.npy`*</br></br>`np.save("seg.npy", segmentation)` | *Example: Read the data from the file `seg.npy` to a variable called `loaded_array`*</br></br>`loaded_array = np.load("seg.npy")`
 
 Equivalently, the [single.spn](https://raw.githubusercontent.com/autotwin/automesh/main/tests/input/single.spn) contains a
 single integer:
@@ -119,17 +161,18 @@ figure:
 
 ![fig/single.png](fig/single.png)
 
-Figure: The `single.png` visualization.  Blue dots designate lattice points.
-Blue circles designate element nodes.  Global node numbers appear in gray, with
-lattice `(x, y, z)` coordinates in parenthesis.  The right-hand rule is used.
+Figure: The `single.png` visualization, (left) lattice node numbers, (right) mesh node numbers.
+Lattice node numbers appear in gray, with `(x, y, z)` indices in parenthesis.  The right-hand rule is used.
 Lattice coordinates start at `(0, 0, 0)`, and proceed along the `x-axis`, then
-`y-axis`, then `z-axis`.
+the `y-axis`, and then the `z-axis`.
 
-The local node numbering map to the following global node numbers:
+The finite element mesh local node numbering map to the following global node numbers:
 
 ```bash
-[1, 2, 4, 3, 5, 6, 8, 7]
+[1, 2, 4, 3, 5, 6, 8, 7] -> [1, 2, 5, 3, 5, 6, 8, 7]
 ```
+
+which is a special case not typically observed, as shown in more complex examples below.
 
 ## Double
 
@@ -138,34 +181,241 @@ a single block composed of two finite elements.  We test propagation in
 both the `x` and `y` directions.  The figures below show these two
 meshes.
 
-![fig/double_x.png](fig/double_x.png) ![fig/double_y.png](fig/double_y.png)
+### Double X
 
-Figure: Meshes composed of a single block with two elements, propagating
-along the `x-axis` and `y-axis`, respectively.
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11, 11
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
+![fig/double_x.png](fig/double_x.png)
+
+Figure: Mesh composed of a single block with two elements, propagating along the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
+
+### Double Y
+
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11,
+            ],
+            [
+                11,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
+![fig/double_y.png](fig/double_y.png)
+
+Figure: Mesh composed of a single block with two elements, propagating along the `y-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Triple
 
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11,
+                11,
+                11,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
 ![fig/triple_x.png](fig/triple_x.png)
+
+Figure: Mesh composed of a single block with three elements, propagating along the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Quadruple
 
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11,
+                11,
+                11,
+                11,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
 ![fig/quadruple_x.png](fig/quadruple_x.png)
+
+Figure: Mesh composed of a single block with four elements, propagating along the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Quadruple with Voids
 
+```python
+egmentation = np.array(
+    [
+        [
+            [
+                99,
+                0,
+                0,
+                99,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `99` denotes block `99` in the finite element mesh, and segmentation `0` is excluded from the mesh.
+
 ![fig/quadruple_2_voids_x.png](fig/quadruple_2_voids_x.png)
+
+Figure: Mesh composed of a single block with two elements, propagating along the `x-axis` and two voids, (left) lattice node numbers, (right) mesh node numbers.
+
+## Quadruple with Two Blocks
+
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                100,
+                101,
+                101,
+                100,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `100` and `101` denotes block `100` and `101`, respectively in the finite element mesh.
+
+![fig/quadruple_2_blocks.png](fig/quadruple_2_blocks.png)
+
+Figure: Mesh composed of two blocks with two elements elements each, propagating along the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Quadruple with Two Blocks and Void
 
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                102,
+                103,
+                0,
+                102,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `102` and `103` denotes block `102` and `103`, respectively, in the finite element mesh, and segmentation `0` will be included from the finite element mesh.
+
 ![fig/quadruple_2_blocks_void.png](fig/quadruple_2_blocks_void.png)
+
+Figure: Mesh composed of one block with two elements, a second block with one element, and a void, propagating along the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Cube
 
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11,
+                11,
+            ],
+            [
+                11,
+                11,
+            ],
+        ],
+        [
+            [
+                11,
+                11,
+            ],
+            [
+                11,
+                11,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
 ![fig/cube.png](fig/cube.png)
+
+Figure: Mesh composed of one block with eight elements, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Cube with Multi Blocks and Void
 
+```python
+segmentation = np.array(
+[
+    [
+        [
+            82,
+            2,
+        ],
+        [
+            2,
+            2,
+        ],
+    ],
+    [
+        [
+            0,
+            31,
+        ],
+        [
+            0,
+            44,
+        ],
+    ],
+],
+dtype=np.uint8,
+)
+```
+
+where the segmentation `82`, `2`, `31` and `44` denotes block `82`, `2`, `31` and `44`, respectively, in the finite element mesh, and segmentation `0` will be included from the finite element mesh.
+
 ![fig/cube_multi.png](fig/cube_multi.png)
+
+Figure: Mesh composed of four blocks (block `82` has one element, block `2` has three elements, block `31` has one element, and block `44` has one element), (left) lattice node numbers, (right) mesh node numbers.
 
 ## Sparse
 
@@ -173,11 +423,89 @@ To come.
 
 ## Letter F
 
+```python
+segmentation = np.array(
+    [
+        [
+            [
+                11,
+                0,
+                0,
+            ],
+            [
+                11,
+                0,
+                0,
+            ],
+            [
+                11,
+                11,
+                0,
+            ],
+            [
+                11,
+                0,
+                0,
+            ],
+            [
+                11,
+                11,
+                11,
+            ],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `11` denotes block `11` in the finite element mesh.
+
 ![fig/letter_f.png](fig/letter_f.png)
+
+Figure: Mesh composed of a single block with eight elements, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Letter F in 3D
 
+```python
+segmentation = np.array(
+    [
+        [
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+        ],
+        [
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 1, 1, 1],
+            [1, 0, 0, 0],
+            [1, 1, 1, 1],
+        ],
+        [
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 1, 1, 1],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `1` denotes block `1` in the finite element mesh.
+
 ![fig/letter_f_3d.png](fig/letter_f_3d.png)
+
+Figure: Mesh composed of a single block with thirty-nine elements, (left) lattice node numbers, (right) mesh node numbers.
+
+The shape of the solid segmentation is more easily seen without the lattice and element nodes, and with decreased opacity, as shown below:
+
+![fig/letter_f_3d_alt.png](fig/letter_f_3d_alt.png)
+
+Figure: Mesh composed of a single block with thirty-nine elements, shown with decreased opacity and without lattice and element node numbers.
 
 ## References
 

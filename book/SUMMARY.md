@@ -14,3 +14,4 @@
 # Appendices
 
 - [Sandbox](sandbox.md)
+- [Encrypted](encrypted.md)

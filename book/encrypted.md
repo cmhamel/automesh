@@ -2,7 +2,7 @@
 
 We create an encrypted `.npy` file for the sake of testing.  We wish to test the case where the `.npy` file exists, it can be found, but it cannot be opened.
 
-```bash
+```python
 from cryptography.fernet import Fernet
 import numpy as np
 
