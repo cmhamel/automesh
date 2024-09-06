@@ -8,9 +8,7 @@ Example:
 
     cd ~/autotwin/automesh
     source .venv/bin/activate
-    # python tests/voxels.py
-    # python src/tests/voxels.py
-    python doc/voxels.py
+    python sandbox/figures.py
 
 Ouput:
     The `output_npy` file data structure
@@ -24,12 +22,23 @@ from typing import Final, NamedTuple
 
 # third-party libary
 import matplotlib.pyplot as plt
+from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy.typing import NDArray
 
 # module library
-# none
+# import sandbox.figures_data as fd  # why doesn't this work?
+
+
+def hello_world() -> str:
+    """Simple example of a function hooked to a command line entry point.
+
+    Returns:
+        The canonical "Hello world!" string.
+    """
+
+    return "Hello world!"
 
 
 class Example(NamedTuple):
@@ -50,7 +59,8 @@ class Example(NamedTuple):
     )
     included_ids = (1,)
     gold_lattice = None
-    gold_elements = None
+    gold_mesh_lattice_connectivity = None
+    gold_mesh_element_connectivity = None
 
 
 COMMON_TITLE: Final[str] = "Lattice Index and Coordinates: "
@@ -73,7 +83,13 @@ class Single(Example):
     )
     included_ids = (11,)
     gold_lattice = ((1, 2, 4, 3, 5, 6, 8, 7),)
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 5, 6, 8, 7),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 4, 3, 5, 6, 8, 7),
@@ -102,7 +118,14 @@ class DoubleX(Example):
         (1, 2, 5, 4, 7, 8, 11, 10),
         (2, 3, 6, 5, 8, 9, 12, 11),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 5, 4, 7, 8, 11, 10),
+            (2, 3, 6, 5, 8, 9, 12, 11),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 5, 4, 7, 8, 11, 10),
@@ -134,7 +157,14 @@ class DoubleY(Example):
         (1, 2, 4, 3, 7, 8, 10, 9),
         (3, 4, 6, 5, 9, 10, 12, 11),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 7, 8, 10, 9),
+            (3, 4, 6, 5, 9, 10, 12, 11),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 4, 3, 7, 8, 10, 9),
@@ -166,7 +196,15 @@ class TripleX(Example):
         (2, 3, 7, 6, 10, 11, 15, 14),
         (3, 4, 8, 7, 11, 12, 16, 15),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 6, 5, 9, 10, 14, 13),
+            (2, 3, 7, 6, 10, 11, 15, 14),
+            (3, 4, 8, 7, 11, 12, 16, 15),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 6, 5, 9, 10, 14, 13),
@@ -201,7 +239,16 @@ class QuadrupleX(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 7, 6, 11, 12, 17, 16),
@@ -223,27 +270,34 @@ class Quadruple2VoidsX(Example):
         [
             [
                 [
-                    11,
+                    99,
                     0,
                     0,
-                    11,
+                    99,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
-    included_ids = (11,)
+    included_ids = (99,)
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
         (2, 3, 8, 7, 12, 13, 18, 17),
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
-            11,
+            99,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            99,
+            (1, 2, 6, 5, 9, 10, 14, 13),
+            (3, 4, 8, 7, 11, 12, 16, 15),
         ),
     )
 
@@ -259,18 +313,18 @@ class Quadruple2Blocks(Example):
         [
             [
                 [
-                    11,
-                    21,
-                    21,
-                    11,
+                    100,
+                    101,
+                    101,
+                    100,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        11,
-        21,
+        100,
+        101,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -278,14 +332,26 @@ class Quadruple2Blocks(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
-            11,
+            100,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
         (
-            21,
+            101,
+            (2, 3, 8, 7, 12, 13, 18, 17),
+            (3, 4, 9, 8, 13, 14, 19, 18),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            100,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        (
+            101,
             (2, 3, 8, 7, 12, 13, 18, 17),
             (3, 4, 9, 8, 13, 14, 19, 18),
         ),
@@ -303,18 +369,18 @@ class Quadruple2BlocksVoid(Example):
         [
             [
                 [
-                    11,
-                    21,
+                    102,
+                    103,
                     0,
-                    11,
+                    102,
                 ],
             ],
         ],
         dtype=np.uint8,
     )
     included_ids = (
-        11,
-        21,
+        102,
+        103,
     )
     gold_lattice = (
         (1, 2, 7, 6, 11, 12, 17, 16),
@@ -322,14 +388,25 @@ class Quadruple2BlocksVoid(Example):
         (3, 4, 9, 8, 13, 14, 19, 18),
         (4, 5, 10, 9, 14, 15, 20, 19),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
-            11,
+            102,
             (1, 2, 7, 6, 11, 12, 17, 16),
             (4, 5, 10, 9, 14, 15, 20, 19),
         ),
         (
-            21,
+            103,
+            (2, 3, 8, 7, 12, 13, 18, 17),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            102,
+            (1, 2, 7, 6, 11, 12, 17, 16),
+            (4, 5, 10, 9, 14, 15, 20, 19),
+        ),
+        (
+            103,
             (2, 3, 8, 7, 12, 13, 18, 17),
         ),
     )
@@ -376,7 +453,20 @@ class Cube(Example):
         (13, 14, 17, 16, 22, 23, 26, 25),
         (14, 15, 18, 17, 23, 24, 27, 26),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
+        (
+            11,
+            (1, 2, 5, 4, 10, 11, 14, 13),
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+            (10, 11, 14, 13, 19, 20, 23, 22),
+            (11, 12, 15, 14, 20, 21, 24, 23),
+            (13, 14, 17, 16, 22, 23, 26, 25),
+            (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
+    )
+    gold_mesh_element_connectivity = (
         (
             11,
             (1, 2, 5, 4, 10, 11, 14, 13),
@@ -437,7 +527,7 @@ class CubeMulti(Example):
         (13, 14, 17, 16, 22, 23, 26, 25),
         (14, 15, 18, 17, 23, 24, 27, 26),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         # (
         #   0,
         #   (10, 11, 14, 13, 19, 20, 23, 22),
@@ -458,6 +548,26 @@ class CubeMulti(Example):
         (
             44,
             (14, 15, 18, 17, 23, 24, 27, 26),
+        ),
+        (
+            82,
+            (1, 2, 5, 4, 10, 11, 14, 13),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            2,
+            (2, 3, 6, 5, 11, 12, 15, 14),
+            (4, 5, 8, 7, 13, 14, 17, 16),
+            (5, 6, 9, 8, 14, 15, 18, 17),
+        ),
+        (
+            31,
+            (11, 12, 15, 14, 19, 20, 22, 21),
+        ),
+        (
+            44,
+            (14, 15, 18, 17, 21, 22, 24, 23),
         ),
         (
             82,
@@ -521,7 +631,7 @@ class LetterF(Example):
         (18, 19, 23, 22, 42, 43, 47, 46),
         (19, 20, 24, 23, 43, 44, 48, 47),
     )
-    gold_elements = (
+    gold_mesh_lattice_connectivity = (
         (
             11,
             (1, 2, 6, 5, 25, 26, 30, 29),
@@ -539,6 +649,212 @@ class LetterF(Example):
             (17, 18, 22, 21, 41, 42, 46, 45),
             (18, 19, 23, 22, 42, 43, 47, 46),
             (19, 20, 24, 23, 43, 44, 48, 47),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            11,
+            (1, 2, 4, 3, 19, 20, 22, 21),
+            #
+            #
+            (3, 4, 6, 5, 21, 22, 24, 23),
+            #
+            #
+            (5, 6, 9, 8, 23, 24, 27, 26),
+            (6, 7, 10, 9, 24, 25, 28, 27),
+            #
+            (8, 9, 12, 11, 26, 27, 30, 29),
+            #
+            #
+            (11, 12, 16, 15, 29, 30, 34, 33),
+            (12, 13, 17, 16, 30, 31, 35, 34),
+            (13, 14, 18, 17, 31, 32, 36, 35),
+        ),
+    )
+
+
+class LetterF3D(Example):
+    """A three dimensional variation of the letter F, in a non-standard
+    orientation.
+    """
+
+    figure_title: str = COMMON_TITLE + "LetterF3D"
+    file_stem: str = "letter_f_3d"
+    segmentation = np.array(
+        [
+            [
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+            ],
+            [
+                [1, 0, 0, 0],
+                [1, 0, 0, 0],
+                [1, 1, 1, 1],
+                [1, 0, 0, 0],
+                [1, 1, 1, 1],
+            ],
+            [
+                [1, 0, 0, 0],
+                [1, 0, 0, 0],
+                [1, 0, 0, 0],
+                [1, 0, 0, 0],
+                [1, 1, 1, 1],
+            ],
+        ],
+        dtype=np.uint8,
+    )
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 7, 6, 31, 32, 37, 36),
+        (2, 3, 8, 7, 32, 33, 38, 37),
+        (3, 4, 9, 8, 33, 34, 39, 38),
+        (4, 5, 10, 9, 34, 35, 40, 39),
+        (6, 7, 12, 11, 36, 37, 42, 41),
+        (7, 8, 13, 12, 37, 38, 43, 42),
+        (8, 9, 14, 13, 38, 39, 44, 43),
+        (9, 10, 15, 14, 39, 40, 45, 44),
+        (11, 12, 17, 16, 41, 42, 47, 46),
+        (12, 13, 18, 17, 42, 43, 48, 47),
+        (13, 14, 19, 18, 43, 44, 49, 48),
+        (14, 15, 20, 19, 44, 45, 50, 49),
+        (16, 17, 22, 21, 46, 47, 52, 51),
+        (17, 18, 23, 22, 47, 48, 53, 52),
+        (18, 19, 24, 23, 48, 49, 54, 53),
+        (19, 20, 25, 24, 49, 50, 55, 54),
+        (21, 22, 27, 26, 51, 52, 57, 56),
+        (22, 23, 28, 27, 52, 53, 58, 57),
+        (23, 24, 29, 28, 53, 54, 59, 58),
+        (24, 25, 30, 29, 54, 55, 60, 59),
+        (31, 32, 37, 36, 61, 62, 67, 66),
+        (32, 33, 38, 37, 62, 63, 68, 67),
+        (33, 34, 39, 38, 63, 64, 69, 68),
+        (34, 35, 40, 39, 64, 65, 70, 69),
+        (36, 37, 42, 41, 66, 67, 72, 71),
+        (37, 38, 43, 42, 67, 68, 73, 72),
+        (38, 39, 44, 43, 68, 69, 74, 73),
+        (39, 40, 45, 44, 69, 70, 75, 74),
+        (41, 42, 47, 46, 71, 72, 77, 76),
+        (42, 43, 48, 47, 72, 73, 78, 77),
+        (43, 44, 49, 48, 73, 74, 79, 78),
+        (44, 45, 50, 49, 74, 75, 80, 79),
+        (46, 47, 52, 51, 76, 77, 82, 81),
+        (47, 48, 53, 52, 77, 78, 83, 82),
+        (48, 49, 54, 53, 78, 79, 84, 83),
+        (49, 50, 55, 54, 79, 80, 85, 84),
+        (51, 52, 57, 56, 81, 82, 87, 86),
+        (52, 53, 58, 57, 82, 83, 88, 87),
+        (53, 54, 59, 58, 83, 84, 89, 88),
+        (54, 55, 60, 59, 84, 85, 90, 89),
+        (61, 62, 67, 66, 91, 92, 97, 96),
+        (62, 63, 68, 67, 92, 93, 98, 97),
+        (63, 64, 69, 68, 93, 94, 99, 98),
+        (64, 65, 70, 69, 94, 95, 100, 99),
+        (66, 67, 72, 71, 96, 97, 102, 101),
+        (67, 68, 73, 72, 97, 98, 103, 102),
+        (68, 69, 74, 73, 98, 99, 104, 103),
+        (69, 70, 75, 74, 99, 100, 105, 104),
+        (71, 72, 77, 76, 101, 102, 107, 106),
+        (72, 73, 78, 77, 102, 103, 108, 107),
+        (73, 74, 79, 78, 103, 104, 109, 108),
+        (74, 75, 80, 79, 104, 105, 110, 109),
+        (76, 77, 82, 81, 106, 107, 112, 111),
+        (77, 78, 83, 82, 107, 108, 113, 112),
+        (78, 79, 84, 83, 108, 109, 114, 113),
+        (79, 80, 85, 84, 109, 110, 115, 114),
+        (81, 82, 87, 86, 111, 112, 117, 116),
+        (82, 83, 88, 87, 112, 113, 118, 117),
+        (83, 84, 89, 88, 113, 114, 119, 118),
+        (84, 85, 90, 89, 114, 115, 120, 119),
+    )
+    gold_mesh_lattice_connectivity = (
+        (
+            1,
+            (1, 2, 7, 6, 31, 32, 37, 36),
+            (2, 3, 8, 7, 32, 33, 38, 37),
+            (3, 4, 9, 8, 33, 34, 39, 38),
+            (4, 5, 10, 9, 34, 35, 40, 39),
+            (6, 7, 12, 11, 36, 37, 42, 41),
+            (7, 8, 13, 12, 37, 38, 43, 42),
+            (8, 9, 14, 13, 38, 39, 44, 43),
+            (9, 10, 15, 14, 39, 40, 45, 44),
+            (11, 12, 17, 16, 41, 42, 47, 46),
+            (12, 13, 18, 17, 42, 43, 48, 47),
+            (13, 14, 19, 18, 43, 44, 49, 48),
+            (14, 15, 20, 19, 44, 45, 50, 49),
+            (16, 17, 22, 21, 46, 47, 52, 51),
+            (17, 18, 23, 22, 47, 48, 53, 52),
+            (18, 19, 24, 23, 48, 49, 54, 53),
+            (19, 20, 25, 24, 49, 50, 55, 54),
+            (21, 22, 27, 26, 51, 52, 57, 56),
+            (22, 23, 28, 27, 52, 53, 58, 57),
+            (23, 24, 29, 28, 53, 54, 59, 58),
+            (24, 25, 30, 29, 54, 55, 60, 59),
+            (31, 32, 37, 36, 61, 62, 67, 66),
+            (36, 37, 42, 41, 66, 67, 72, 71),
+            (41, 42, 47, 46, 71, 72, 77, 76),
+            (42, 43, 48, 47, 72, 73, 78, 77),
+            (43, 44, 49, 48, 73, 74, 79, 78),
+            (44, 45, 50, 49, 74, 75, 80, 79),
+            (46, 47, 52, 51, 76, 77, 82, 81),
+            (51, 52, 57, 56, 81, 82, 87, 86),
+            (52, 53, 58, 57, 82, 83, 88, 87),
+            (53, 54, 59, 58, 83, 84, 89, 88),
+            (54, 55, 60, 59, 84, 85, 90, 89),
+            (61, 62, 67, 66, 91, 92, 97, 96),
+            (66, 67, 72, 71, 96, 97, 102, 101),
+            (71, 72, 77, 76, 101, 102, 107, 106),
+            (76, 77, 82, 81, 106, 107, 112, 111),
+            (81, 82, 87, 86, 111, 112, 117, 116),
+            (82, 83, 88, 87, 112, 113, 118, 117),
+            (83, 84, 89, 88, 113, 114, 119, 118),
+            (84, 85, 90, 89, 114, 115, 120, 119),
+        ),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            1,
+            (1, 2, 7, 6, 31, 32, 37, 36),
+            (2, 3, 8, 7, 32, 33, 38, 37),
+            (3, 4, 9, 8, 33, 34, 39, 38),
+            (4, 5, 10, 9, 34, 35, 40, 39),
+            (6, 7, 12, 11, 36, 37, 42, 41),
+            (7, 8, 13, 12, 37, 38, 43, 42),
+            (8, 9, 14, 13, 38, 39, 44, 43),
+            (9, 10, 15, 14, 39, 40, 45, 44),
+            (11, 12, 17, 16, 41, 42, 47, 46),
+            (12, 13, 18, 17, 42, 43, 48, 47),
+            (13, 14, 19, 18, 43, 44, 49, 48),
+            (14, 15, 20, 19, 44, 45, 50, 49),
+            (16, 17, 22, 21, 46, 47, 52, 51),
+            (17, 18, 23, 22, 47, 48, 53, 52),
+            (18, 19, 24, 23, 48, 49, 54, 53),
+            (19, 20, 25, 24, 49, 50, 55, 54),
+            (21, 22, 27, 26, 51, 52, 57, 56),
+            (22, 23, 28, 27, 52, 53, 58, 57),
+            (23, 24, 29, 28, 53, 54, 59, 58),
+            (24, 25, 30, 29, 54, 55, 60, 59),
+            (31, 32, 37, 36, 61, 62, 64, 63),
+            (36, 37, 42, 41, 63, 64, 66, 65),
+            (41, 42, 47, 46, 65, 66, 71, 70),
+            (42, 43, 48, 47, 66, 67, 72, 71),
+            (43, 44, 49, 48, 67, 68, 73, 72),
+            (44, 45, 50, 49, 68, 69, 74, 73),
+            (46, 47, 52, 51, 70, 71, 76, 75),
+            (51, 52, 57, 56, 75, 76, 81, 80),
+            (52, 53, 58, 57, 76, 77, 82, 81),
+            (53, 54, 59, 58, 77, 78, 83, 82),
+            (54, 55, 60, 59, 78, 79, 84, 83),
+            (61, 62, 64, 63, 85, 86, 88, 87),
+            (63, 64, 66, 65, 87, 88, 90, 89),
+            (65, 66, 71, 70, 89, 90, 92, 91),
+            (70, 71, 76, 75, 91, 92, 94, 93),
+            (75, 76, 81, 80, 93, 94, 99, 98),
+            (76, 77, 82, 81, 94, 95, 100, 99),
+            (77, 78, 83, 82, 95, 96, 101, 100),
+            (78, 79, 84, 83, 96, 97, 102, 101),
         ),
     )
 
@@ -591,14 +907,15 @@ def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
     return cs
 
 
-def element_connectivity(
+def mesh_lattice_connectivity(
     ex: Example,
     lattice: np.ndarray,
 ) -> tuple:
     """Given an Example (in particular, the Example's voxel data structure,
     a segmentation) and the `lattice_connectivity`, create the connectivity
-    for the finite element mesh.  A voxel with a segmentation id in the
-    Example's excluded ids tuple is excluded from becoming a finite element."""
+    for the mesh with lattice node numbers.  A voxel with a segmentation id not
+    in the Example's included ids tuple is excluded from the mesh.
+    """
 
     # segmentation = ex.segmentation.flatten().squeeze()
     segmentation = ex.segmentation.flatten()
@@ -638,8 +955,62 @@ def element_connectivity(
     return blocks
 
 
-def renumber():
-    """Work in progress."""
+def renumber(source: tuple, old: tuple, new: tuple) -> tuple:
+    """Given a source tuple, composed of a list of positive integers,
+    a tuple of `old` numbers that maps into `new` numbers, return the
+    source tuple with the `new` numbers."""
+
+    # the old and the new tuples musts have the same length
+    err = "Tuples `old` and `new` must have equal length."
+    assert len(old) == len(new), err
+
+    result = ()
+    for item in source:
+        idx = old.index(item)
+        new_value = new[idx]
+        result = result + (new_value,)
+
+    return result
+
+
+def mesh_element_connectivity(mesh_with_lattice_connectivity: tuple):
+    """Given a mesh with lattice connectivity, return a mesh with finite
+    element connectivity.
+    """
+    # create a list of unordered lattice node numbers
+    ln = []
+    for item in mesh_with_lattice_connectivity:
+        # print(f"item is {item}")
+        # The first item is the block number
+        # block = item[0]
+        # The second and onward items are the elements
+        elements = item[1:]
+        for element in elements:
+            ln += list(element)
+
+    ln_set = set(ln)  # sets are not necessarily ordered
+    ln_ordered = tuple(sorted(ln_set))  # now these unique integers are ordered
+
+    # and they will map into the new compressed unique interger list `mapsto`
+    mapsto = tuple(range(1, len(ln_ordered) + 1))
+
+    # now build a mesh_with_element_connectivity
+    mesh = ()  # empty tuple
+    # breakpoint()
+    for item in mesh_with_lattice_connectivity:
+        # The first item is the block number
+        block_number = item[0]
+        block_and_elements = ()  # empty tuple
+        # insert the block number
+        block_and_elements = block_and_elements + (block_number,)
+        for element in item[1:]:
+            new_element = renumber(source=element, old=ln_ordered, new=mapsto)
+            # overwrite
+            block_and_elements = block_and_elements + (new_element,)
+
+        mesh = mesh + (block_and_elements,)  # overwrite
+
+    return mesh
 
 
 def flatten_tuple(t):
@@ -660,6 +1031,19 @@ def flatten_tuple(t):
     return tuple(flat_list)
 
 
+def elements_without_block_ids(mesh: tuple) -> tuple:
+    """Given a mesh, removes the block ids and returns only just the
+    element connectivities.
+    """
+
+    aa = ()
+    for item in mesh:
+        bb = item[1:]
+        aa = aa + bb
+
+    return aa
+
+
 def main():
     """The main program."""
 
@@ -677,6 +1061,7 @@ def main():
         Cube(),
         CubeMulti(),
         LetterF(),
+        LetterF3D(),
     ]
     for ex in examples:
 
@@ -701,12 +1086,23 @@ def main():
         #
         # colors
         # cmap = cm.get_cmap("viridis")  # viridis colormap
-        cmap = plt.get_cmap(name="viridis")
+        # cmap = plt.get_cmap(name="viridis")
+        cmap = plt.get_cmap(name="tab10")
         # number of discrete colors
         num_colors = len(ex.included_ids)
         colors = cmap(np.linspace(0, 1, num_colors))
         # breakpoint()
         voxel_alpha: Final[float] = 0.1
+        # voxel_alpha: Final[float] = 0.7
+        # azimuth (deg):
+        #   0 is east  (from +y-axis looking back toward origin)
+        #  90 is north (from +x-axis looking back toward origin)
+        # 180 is west  (from -y-axis looking back toward origin)
+        # 270 is south (from -x-axis looking back toward origin)
+        # elevation (deg): 0 is horizontal, 90 is vertical (+z-axis up)
+        lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
+        nodes_shown: Final[bool] = True
+        # nodes_shown: Final[bool] = False
 
         # io: if the output directory does not already exist, create it
         output_path = Path(output_dir).expanduser()
@@ -719,10 +1115,14 @@ def main():
         nelz, nely, nelx = ex.segmentation.shape
         lc = lattice_connectivity(ex=ex)
 
-        ec = element_connectivity(ex=ex, lattice=lc)
-
+        mesh_w_lattice_conn = mesh_lattice_connectivity(ex=ex, lattice=lc)
         # breakpoint()
-        assert ec == ex.gold_elements, "Calculated element connectivity error."
+        err = "Calculated lattice connectivity error."
+        assert mesh_w_lattice_conn == ex.gold_mesh_lattice_connectivity, err
+
+        mesh_w_element_conn = mesh_element_connectivity(mesh_w_lattice_conn)
+        err = "Calcualted element connectivity error."  # overwrite
+        assert mesh_w_element_conn == ex.gold_mesh_element_connectivity, err
 
         # save the numpy data as a .npy file
         np.save(output_npy, ex.segmentation)
@@ -749,8 +1149,13 @@ def main():
         nxp, nyp, nzp = (nelx + 1, nely + 1, nelz + 1)
 
         # Create a figure and a 3D axis
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
+        # fig = plt.figure()
+        fig = plt.figure(figsize=(10, 5))  # Adjust the figure size
+        # fig = plt.figure(figsize=(8, 4))  # Adjust the figure size
+        # ax = fig.add_subplot(111, projection="3d")
+        # figure with 1 row, 2 columns
+        ax = fig.add_subplot(1, 2, 1, projection="3d")  # r1, c2, 1st subplot
+        ax2 = fig.add_subplot(1, 2, 2, projection="3d")  # r1, c2, 2nd subplot
 
         # For 3D plotting of voxels in matplotlib, we must swap the 'x' and the
         # 'z' axes.  The original axes in the segmentation are (z, y, x) and
@@ -768,6 +1173,15 @@ def main():
                 facecolors=colors[i],
                 edgecolor=colors[i],
                 alpha=voxel_alpha,
+                lightsource=lightsource,
+            )
+            # plot the same voxels on the 2nd axis
+            ax2.voxels(
+                solid,
+                facecolors=colors[i],
+                edgecolor=colors[i],
+                alpha=voxel_alpha,
+                lightsource=lightsource,
             )
 
         # breakpoint()
@@ -784,9 +1198,19 @@ def main():
         zel = []
         # generate a set from the element connectivity
         # breakpoint()
-        ec_set = set(flatten_tuple(ec))
+        # ec_set = set(flatten_tuple(mesh_w_lattice_conn))  # bug!
+        # bug fix:
+        ec_set = set(
+            flatten_tuple(elements_without_block_ids(mesh_w_lattice_conn))
+        )
+
+        # breakpoint()
 
         lattice_ijk = 0
+        # gnn = global node number
+        gnn = 0
+        gnn_labels = []
+
         for k in range(nzp):
             for j in range(nyp):
                 for i in range(nxp):
@@ -794,40 +1218,53 @@ def main():
                     y.append(j)
                     z.append(k)
                     if lattice_ijk + 1 in ec_set:
+                        gnn += 1
                         xel.append(i)
                         yel.append(j)
                         zel.append(k)
+                        gnn_labels.append(f" {gnn}")
                     lattice_ijk += 1
                     labels.append(f" {lattice_ijk}: ({i},{j},{k})")
 
-        # Plot the lattice coordinates
-        ax.scatter(
-            x,
-            y,
-            z,
-            s=10,
-            facecolors="blue",
-            edgecolors="none",
-        )
+        if nodes_shown:
+            # Plot the lattice coordinates
+            ax.scatter(
+                x,
+                y,
+                z,
+                s=20,
+                facecolors="red",
+                edgecolors="none",
+            )
 
-        # Label the lattice coordinates
-        for n, label in enumerate(labels):
-            ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
+            # Label the lattice coordinates
+            for n, label in enumerate(labels):
+                ax.text(x[n], y[n], z[n], label, color="darkgray", fontsize=8)
 
-        # Plot the nodes included in the finite element connectivity
-        ax.scatter(
-            xel,
-            yel,
-            zel,
-            s=50,
-            facecolors="none",
-            edgecolors="blue",
-        )
+            # Plot the nodes included in the finite element connectivity
+            ax2.scatter(
+                xel,
+                yel,
+                zel,
+                s=30,
+                facecolors="blue",
+                edgecolors="blue",
+            )
+
+            # Label the global node numbers
+            for n, label in enumerate(gnn_labels):
+                ax2.text(
+                    xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8
+                )
 
         # Set labels for the axes
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("z")
+        # repeat for the 2nd axis
+        ax2.set_xlabel("x")
+        ax2.set_ylabel("y")
+        ax2.set_zlabel("z")
 
         x_ticks = list(range(nxp))
         y_ticks = list(range(nyp))
@@ -836,14 +1273,25 @@ def main():
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
         ax.set_zticks(z_ticks)
+        # repeat for the 2nd axis
+        ax2.set_xticks(x_ticks)
+        ax2.set_yticks(y_ticks)
+        ax2.set_zticks(z_ticks)
 
         ax.set_xlim(float(x_ticks[0]), float(x_ticks[-1]))
         ax.set_ylim(float(y_ticks[0]), float(y_ticks[-1]))
         ax.set_zlim(float(z_ticks[0]), float(z_ticks[-1]))
+        # repeat for the 2nd axis
+        ax2.set_xlim(float(x_ticks[0]), float(x_ticks[-1]))
+        ax2.set_ylim(float(y_ticks[0]), float(y_ticks[-1]))
+        ax2.set_zlim(float(z_ticks[0]), float(z_ticks[-1]))
 
         # Set the camera view
         ax.set_aspect("equal")
         ax.view_init(elev=el, azim=az, roll=roll)
+        # repeat for the 2nd axis
+        ax2.set_aspect("equal")
+        ax2.view_init(elev=el, azim=az, roll=roll)
 
         # Adjust the distance of the camera.  The default value is 10.
         # Increasing/decreasing this value will zoom in/out, respectively.

@@ -1,0 +1,63 @@
+[project]
+authors = [
+  {email = 'chovey@sandia.gov'},
+  {name = 'Chad B. Hovey'},
+  {email = 'mrbuche@sandia.gov'},
+  {name = 'Michael R. Buche'},
+]
+classifiers = [
+  'License :: OSI Approved :: BSD License',
+  'Development Status :: 5 - Production/Stable',
+  'Intended Audience :: Science/Research',
+  'Topic :: Scientific/Engineering',
+  'Programming Language :: Python',
+  'Programming Language :: Rust',
+]
+description = 'sandbox'
+dependencies = [
+  'matplotlib',
+  'numpy',
+  'pre-commit',
+  'pycodestyle',
+  'pytest',
+  'pytest-cov'
+]
+name = 'sandbox'
+version = "0.0.1"
+requires-python = '>=3.8,<3.13'
+
+# [project.optional-dependencies]
+# develop = [
+#   'pre-commit',
+#   'pycodestyle',
+#   'pytest',
+#   'pytest-cov'
+# ]
+# testing = [
+#   'pycodestyle',
+#   'pytest',
+# ]
+
+[project.urls]
+Documentation = 'https://github.com/autotwin/automesh'
+Homepage = 'https://github.com/autotwin/automesh'
+Repository = 'https://github.com/autotwin/automesh'
+
+[tool.pytest.ini_options]
+python_files = [
+  '*.py'
+]
+testpaths = [
+  'tests/'
+]
+
+# [build-system]
+# build-backend = 'maturin'
+# requires = [
+#   'maturin==1.7.0'
+# ]
+#
+# [tool.maturin]
+# features = [
+#   'pyo3/extension-module'
+# ]
