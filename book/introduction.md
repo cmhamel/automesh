@@ -497,6 +497,15 @@ segmentation = np.array(
 
 where the segmentation `1` denotes block `1` in the finite element mesh.
 
+For concreteness, we note the shape of the `segmentation`
+
+```python
+segmentation.shape
+(3, 5, 4)
+```
+
+which corresponds to `--nelz 3`, `--nely 5`, and `--nelx  4` in the [command line interface](cli.md).
+
 ![fig/letter_f_3d.png](fig/letter_f_3d.png)
 
 Figure: Mesh composed of a single block with thirty-nine elements, (left) lattice node numbers, (right) mesh node numbers.
