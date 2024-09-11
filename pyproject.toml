@@ -22,16 +22,11 @@ name = 'automesh'
 requires-python = '>=3.8,<3.13'
 
 [project.optional-dependencies]
-develop = [
-  'pdbp',
+dev = [
   'pre-commit',
   'pycodestyle',
   'pytest',
   'pytest-cov'
-]
-testing = [
-  'pycodestyle',
-  'pytest',
 ]
 
 [project.urls]
@@ -50,7 +45,7 @@ testpaths = [
 [build-system]
 build-backend = 'maturin'
 requires = [
-  'maturin==1.7.0'
+  'maturin==1.7.1'
 ]
 
 [tool.maturin]

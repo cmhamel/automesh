@@ -12,24 +12,34 @@ CBH OOO.  No pair programming.
 
 ## 2024-09-11
 
+* Reproduce *Voxelated* spheres (4 resolutions) with `Automesh`
+  * Reference https://github.com/autotwin/basis/blob/main/README_three_material_spheres.md#voxelated
+  * Create `.py` file, to live currently in `automesh/sandbox/`
+  * Command line example, input as `.npy` file, output as `.inp` file.
+  * Anu: test the `.inp` files.
+
 ## 2024-09-04
 
 * CBH
-  * Review new documentation, moved figures, and possible deprecation of `doc` folder
-  * Migrate `.md` files from `doc` folder to `book`
-  * How to build MDBook without a full pull request into `main`?
-  * Python implementation of `voxels.py` to produce element connectivity without gaps, match MRB results
-  * Standardize on `.png`, and recast the `.jpg` as `.png`
+  * done - Review new documentation, moved figures, and possible deprecation of `doc` folder
+    * pending - make figure colors consistent
+  * pending - Migrate `.md` files from `doc` folder to `book`
+    * remaining: `dev_workflow.md`
+  * done - How to build MDBook without a full pull request into `main`?
+  * done - Python implementation of `figures.py` (formerly `voxels.py`) to produce element connectivity without gaps, match MRB results
+  * done - Standardize on `.png`, and recast the `.jpg` as `.png`
   * MDBook
     * How to get MDBook to run and test the Python API
     * Python documentation in MDBook (so ReadTheDocs is an option, and not Sphinx)
+    * Small rust examples can "play" in the mdbook
 * MRB
-  * Currently the figures are static build, but we want to eventually migrate to building the images on checkin, done with `.yml` CI/CD, makes sure the source script still works.  Preprocessor command that runs prior to mdbook.
-  * `Command Line Interface` update from static to dynamic reflection of the CLI.
-  * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
+  * pending - `Sparse` example.
+    * bug - swap first in last out for block 1 to be set 1, block 2 to be set 2 in .inp
+  * done - `Command Line Interface` update from static to dynamic reflection of the CLI.
+  * pending - Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
     * plug out Sculpt
     * plug in Automesh
-  * `Sparse` example.
+  * pending - Currently the figures are static build, but we want to eventually migrate to building the images on checkin, done with `.yml` CI/CD, makes sure the source script still works.  Preprocessor command that runs prior to mdbook.
 
 ```bash
 cargo install mdbook mdbook-katex

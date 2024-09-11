@@ -7,11 +7,6 @@
 * GitHub CLI https://cli.github.com
 * VS Code
   * TODO Rust Analyzer extension
-* Install Python
-  * TODO Python color debugger: https://github.com/mdmintz/pdbp
-* Install Rust
-* Python virtual environment
-* Code check out
 
 ## Development Cycle
 
