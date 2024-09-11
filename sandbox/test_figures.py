@@ -1,10 +1,13 @@
 """This module tests functionality of the included module.
 
 Example:
-    To run
     cd ~/autotwin/automesh
-    activate the virutal environment, for example:
-    source .venv/bin/activate.fish
+
+    Activate the venv with one of the following:
+    source .venv/bin/activate       # for bash shell
+    source .venv/bin/activate.csh   # for c shell
+    source .venv/bin/activate.fish  # for fish shell
+    .\.venv\Scripts\activate        # for powershell
 
     python -m pytest sandbox/test_figures.py -v  # -v is for verbose
 
