@@ -22,16 +22,12 @@ name = 'automesh'
 requires-python = '>=3.8,<3.13'
 
 [project.optional-dependencies]
-develop = [
-  'pdbp',
+dev = [
+  'pdoc',
   'pre-commit',
   'pycodestyle',
   'pytest',
   'pytest-cov'
-]
-testing = [
-  'pycodestyle',
-  'pytest',
 ]
 
 [project.urls]
