@@ -5,8 +5,10 @@ build:
     python: "latest"
     rust: "latest"
   commands:
-    - pip install maturin
+    - pip install maturin pdoc
     - maturin build --features python --release
     - pip install --find-links=target/wheels/ automesh
     - mkdir -p $READTHEDOCS_OUTPUT/html/
-    - mv docs/index.html $READTHEDOCS_OUTPUT/html/
+    - pdoc automesh --html --output-dir temporary/
+    - mv temporary/automesh/index.html $READTHEDOCS_OUTPUT/html/
+    - rm -r temporary/
