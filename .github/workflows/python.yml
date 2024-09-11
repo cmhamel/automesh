@@ -26,6 +26,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: clippy
       run: cargo clippy --features python -- -D warnings
+    - name: test
+      run: cargo test --release --features python
     - name: maturin
       run: pip install maturin
     - name: build
