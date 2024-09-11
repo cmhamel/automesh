@@ -25,9 +25,11 @@ pyo3 = {version = "=0.21", features = ["extension-module"], optional = true}
 svgbobdoc = { version = "=0.3.0", features = ["enable"] }
 
 [features]
+docs = []
 python = ["dep:numpy", "dep:pyo3"]
 
 [package.metadata.docs.rs]
+features = ["docs"]
 rustdoc-args = ["--html-in-header", ".github/katex.html"]
 
 [profile.release]
