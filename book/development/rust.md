@@ -23,6 +23,7 @@ git clone git@github.com:autotwin/automesh.git
 ## Build and Test the Source Code
 
 ```sh
+cd automesh
 cargo test
 ```
 

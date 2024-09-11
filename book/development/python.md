@@ -11,8 +11,9 @@
 Note: If a virtual environment folder `automesh/.venv` already exists from previous installs, then remove it as follows:
 
 ```sh
+cd automesh                     # from the automesh directory
 (.venv) deactivate              # if the virtual environment is currently active
-rm -rf automesh/.venv           # remove the virtual environment folder
+rm -rf .venv                    # remove the virtual environment folder
                                 # with `rm -rf .venv/`.
 
 python -m venv .venv            # create the virtual environment
@@ -26,14 +27,12 @@ source .venv/bin/activate.fish  # for fish shell
 pip install --upgrade pip
 
 pip install maturin
-
-maturin develop --features python --extras dev
 ```
 
 ## Build and Test the Source Code
 
 ```sh
-maturin develop --features python
+maturin develop --features python --extras dev
 
 pytest
 ```
@@ -43,7 +42,7 @@ pytest
 ```sh
 cargo clippy --features python
 
-pycodestyle .
+pycodestyle --exclude=.venv,book,docs .
 ```
 
 ## Build and Open the API Documentation
