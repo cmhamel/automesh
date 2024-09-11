@@ -85,6 +85,8 @@
 //! automesh --help
 //! ```
 
+#![doc(html_logo_url = "../logo.png")]
+
 #[cfg(feature = "python")]
 mod py;
 
