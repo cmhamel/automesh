@@ -35,8 +35,6 @@ maturin develop --features python --extras dev
 ```sh
 maturin develop --features python
 
-cargo test --features python
-
 pytest
 ```
 
