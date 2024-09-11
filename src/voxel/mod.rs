@@ -38,7 +38,7 @@ impl Voxels {
         let data = voxel_data_from_spn(file_path, nel);
         Self { data }
     }
-    /// Returns a reference to the internal voxel data.
+    /// Returns a reference to the internal voxels data.
     pub fn get_data(&self) -> &VoxelData {
         &self.data
     }
