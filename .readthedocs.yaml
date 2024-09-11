@@ -10,4 +10,4 @@ build:
     - pip install --find-links=target/wheels/ automesh
     - mkdir -p $READTHEDOCS_OUTPUT/html/
     - cp docs/logo.png $READTHEDOCS_OUTPUT/html/
-    - pdoc automesh --logo logo.png --output-dir $READTHEDOCS_OUTPUT/html/ --template-directory docs/
+    - pdoc automesh --logo logo.png --math --no-show-source --output-dir $READTHEDOCS_OUTPUT/html/ --template-directory docs/
