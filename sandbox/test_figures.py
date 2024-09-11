@@ -1,4 +1,4 @@
-"""This module tests functionality of the included module.
+r"""This module tests functionality of the included module.
 
 Example:
     cd ~/autotwin/automesh

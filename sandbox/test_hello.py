@@ -1,4 +1,4 @@
-"""This module shows how testing works in the sandbox.
+r"""This module shows how testing works in the sandbox.
 
 Example:
     cd ~/autotwin/automesh

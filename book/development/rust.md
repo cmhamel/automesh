@@ -1,27 +1,39 @@
 # Rust Development
 
-## Rust Installation 
+## Rust Installation
 
 Install Rust using rustup with the default standard installation:
 
-```bash
+```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Rust updates occur every six week.  To update Rust:
+Rust updates occur every six week. To update Rust:
 
-```bash
+```sh
 rustup update
 ```
 
 ## Clone Repository
 
-```bash
+```sh
 git clone git@github.com:autotwin/automesh.git
 ```
 
 ## Build and Test the Source Code
 
-```bash
+```sh
 cargo test
+```
+
+## Lint the Source Code
+
+```sh
+cargo clippy
+```
+
+## Build and Open the API Documentation
+
+```sh
+cargo rustdoc --open -- --html-in-header .github/katex.html
 ```
