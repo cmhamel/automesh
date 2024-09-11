@@ -1,19 +1,18 @@
 # Development
 
-# Dev Workflow
+## Prerequisites
 
-*Work in progress.*
+* [Git](https://git-scm.com/)
 
-## Configuration
+## Optional
 
-* GitHub CLI https://cli.github.com
-* VS Code
-  * TODO Rust Analyzer extension
-* Install Python
-  * TODO Python color debugger: https://github.com/mdmintz/pdbp
-* Python virtual environment
+* [VS Code](https://code.visualstudio.com/) with the following extensions
+  * [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
+  * [Python Debugger](https://marketplace.visualstudio.com/items?itemName=ms-python.debugpy)
+  * [Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+* [GitHub CLI](https://cli.github.com)
 
-## Development Cycle
+## Development Cycle (to be refactored soon)
 
 * Branch
 * Develop

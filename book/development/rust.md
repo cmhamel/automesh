@@ -1,8 +1,8 @@
 # Rust Development
 
-## Rust Installation
+## Install Rust
 
-Install Rust using rustup with the default standard installation:
+Install Rust using `rustup` with the default standard installation:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh

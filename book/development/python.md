@@ -1,8 +1,8 @@
 # Python Development
 
-Prior to completing items below, [install Rust](rust.md).
+[Install Rust](rust.md) prior to completing items below.
 
-## Python Installation
+## Install Python
 
 [Install](https://www.python.org/downloads/) a Python version [supported](https://github.com/autotwin/automesh/blob/main/pyproject.toml) by `automesh`.
 
