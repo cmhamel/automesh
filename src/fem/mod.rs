@@ -15,14 +15,14 @@ pub type ElementBlocks = Vec<usize>;
 pub type ElementConnectivity = Vec<Vec<usize>>;
 pub type NodalCoordinates = Vec<Vec<f64>>;
 
-/// The finite element type.
+/// The finite elements type.
 pub struct FiniteElements {
     element_blocks: ElementBlocks,
     element_connectivity: ElementConnectivity,
     nodal_coordinates: NodalCoordinates,
 }
 
-/// Inherent implementation of the finite element type.
+/// Inherent implementation of the finite elements type.
 impl FiniteElements {
     /// Constructs and returns a new Exodus type from data.
     pub fn from_data(
@@ -50,7 +50,7 @@ impl FiniteElements {
     }
 }
 
-/// Abaqus implementation of the finite element type.
+/// Abaqus implementation of the finite elements type.
 impl Abaqus for FiniteElements {
     fn write_inp(&self, file_path: &str) {
         write_fem_to_inp(
@@ -62,7 +62,7 @@ impl Abaqus for FiniteElements {
     }
 }
 
-/// Exodus implementation of the finite element type.
+/// Exodus implementation of the finite elements type.
 impl Exodus for FiniteElements {
     fn write_exo(&self, _file_path: &str) {
         todo!("Writing Exodus files has not yet been implemented.")
