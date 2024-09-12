@@ -18,15 +18,16 @@ jobs:
           PATCH=$(echo $VERSION | rev | cut -d "." -f 1)
           BUMP=$(( $PATCH + 1))
           BUMPED_VERSION=$(echo $MAJOR_MINOR"."$BUMP)
-          echo "bumped_version=$BUMPED_VERSION" >> $GITHUB_OUTPUT
+          BUMP_BRANCH=$(echo "bump-$VERSION-to-$BUMPED_VERSION")
+          echo "bump_branch=$BUMP_BRANCH" >> $GITHUB_OUTPUT
           sed -i "s/version = \"$VERSION\"/version = \"$BUMPED_VERSION\"/" Cargo.toml
           git config --global user.email "bump"
           git config --global user.name "bump"
           git add Cargo.toml
           git commit -m "Bumping version from $VERSION to $BUMPED_VERSION."
-          git branch "bump-$VERSION-to-$BUMPED_VERSION"
-          git checkout "bump-$VERSION-to-$BUMPED_VERSION"
-          git push --set-upstream origin "bump-$VERSION-to-$BUMPED_VERSION"
+          git branch $BUMP_BRANCH
+          git checkout $BUMP_BRANCH
+          git push --set-upstream origin $BUMP_BRANCH
       - name: pr
         uses: rematocorp/open-pull-request-action@v1
         with:
