@@ -15,7 +15,7 @@ jobs:
           VERSION=$(cargo tree | grep automesh | cut -d " " -f 2 | cut -d "v" -f 2)
           MAJOR_MINOR=$(echo $VERSION | rev | cut -d "." -f 2- | rev)
           PATCH=$(echo $VERSION | rev | cut -d "." -f 1)
-          BUMP=$(( $PATCH + 1)
+          BUMP=$(( $PATCH + 1))
           BUMPED_VERSION=$(echo $MAJOR_MINOR"."$BUMP)
           sed -i "s/version = \"$VERSION\"/version = \"$BUMPED_VERSION\"/" Cargo.toml
           git add Cargo.toml
