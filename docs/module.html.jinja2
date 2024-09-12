@@ -2,6 +2,12 @@
 {% block title %}
     automesh - Python
 {% endblock %}
+{% block nav_members %}
+    {% if module.members %}
+        <h2>automesh latest</h2>
+        {{ nav_members(module.members.values()) }}
+    {% endif %}
+{% endblock %}
 {% block nav_title %}
     {% if logo %}
         {% if logo_link %}<a href="{{ logo_link }}">{% endif %}

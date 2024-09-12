@@ -47,4 +47,6 @@ pycodestyle --exclude=.venv,book,docs .
 
 ## Build and Open the API Documentation
 
-TODO
+```sh
+pdoc automesh --math --no-show-source --template-directory docs/
+```

@@ -11,3 +11,5 @@ build:
     - mkdir -p $READTHEDOCS_OUTPUT/html/
     - cp docs/logo.png $READTHEDOCS_OUTPUT/html/
     - pdoc automesh --logo logo.png --math --no-show-source --output-dir $READTHEDOCS_OUTPUT/html/ --template-directory docs/
+    - VERSION=$(cargo tree | grep automesh | cut -d ' ' -f 2 | cut -d 'v' -f 2)
+    - sed -i "s/automesh latest/automesh $VERSION/" $READTHEDOCS_OUTPUT/html/automesh.html
