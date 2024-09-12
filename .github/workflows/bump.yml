@@ -1,7 +1,5 @@
 name: Bump
 on:
-  push:
-    branches: bump
   release:
     types: published
 jobs:
