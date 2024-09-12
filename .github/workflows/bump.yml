@@ -32,7 +32,7 @@ jobs:
         uses: rematocorp/open-pull-request-action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          from-branch: ${{ steps.bump.outputs.bumped_version }}
+          from-branch: ${{ steps.bump.outputs.bump_branch }}
           to-branch: main
           repository-owner: autotwin
           repository: automesh
