@@ -27,7 +27,8 @@ dev = [
   'pre-commit',
   'pycodestyle',
   'pytest',
-  'pytest-cov'
+  'pytest-cov',
+  'scikit-image',
 ]
 
 [project.urls]
