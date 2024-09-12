@@ -6,7 +6,7 @@
 //!
 //! Automatic mesh generation.
 
-#![doc(html_logo_url = "../logo.png")]
+#![doc(html_logo_url = "https://github.com/autotwin/automesh/blob/main/docs/logo.png?raw=true")]
 
 #[cfg(feature = "python")]
 mod py;
