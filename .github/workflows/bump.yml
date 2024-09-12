@@ -18,6 +18,8 @@ jobs:
           BUMP=$(( $PATCH + 1))
           BUMPED_VERSION=$(echo $MAJOR_MINOR"."$BUMP)
           sed -i "s/version = \"$VERSION\"/version = \"$BUMPED_VERSION\"/" Cargo.toml
+          git config --global user.email "bump"
+          git config --global user.name "bump"
           git add Cargo.toml
           git commit -m "Bumping version from $VERSION to $BUMPED_VERSION."
           git branch "bump-$VERSION-to-$BUMPED_VERSION"
