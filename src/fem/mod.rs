@@ -130,32 +130,35 @@ fn write_element_connectivity_to_inp(
     element_number_width: &usize,
     node_number_width: &usize,
 ) {
-    element_blocks.iter().unique().for_each(|current_block| {
-        file.write_all(
-            format!("*ELEMENT, TYPE={}, ELSET=EB{}", ELEMENT_TYPE, current_block).as_bytes(),
-        )
-        .unwrap();
-        element_blocks
-            .iter()
-            .enumerate()
-            .filter(|(_, block)| block == &current_block)
-            .for_each(|(element, _)| {
-                indent(file);
-                file.write_all(
-                    format!("{:>width$}", element + 1, width = element_number_width).as_bytes(),
-                )
-                .unwrap();
-                element_connectivity[element].iter().for_each(|entry| {
-                    delimiter(file);
+    let unique_element_blocks_iter = element_blocks.iter().unique().sorted();
+    unique_element_blocks_iter
+        .clone()
+        .for_each(|current_block| {
+            file.write_all(
+                format!("*ELEMENT, TYPE={}, ELSET=EB{}", ELEMENT_TYPE, current_block).as_bytes(),
+            )
+            .unwrap();
+            element_blocks
+                .iter()
+                .enumerate()
+                .filter(|(_, block)| block == &current_block)
+                .for_each(|(element, _)| {
+                    indent(file);
                     file.write_all(
-                        format!("{:>width$}", entry, width = node_number_width + 3).as_bytes(),
+                        format!("{:>width$}", element + 1, width = element_number_width).as_bytes(),
                     )
                     .unwrap();
+                    element_connectivity[element].iter().for_each(|entry| {
+                        delimiter(file);
+                        file.write_all(
+                            format!("{:>width$}", entry, width = node_number_width + 3).as_bytes(),
+                        )
+                        .unwrap();
+                    });
                 });
-            });
-        end_section(file);
-    });
-    element_blocks.iter().unique().for_each(|block| {
+            end_section(file);
+        });
+    unique_element_blocks_iter.for_each(|block| {
         file.write_all(
             format!(
                 "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",
