@@ -6,6 +6,11 @@
 
 ## 2024-09-25
 
+* Versioning
+  * And maybe we should version the RTD page as well, instead of just showing the latest build from merging into main? And then there is versioning of the book...
+* Zenodo
+  * Citation example BibTeX and markdown
+
 ## 2024-09-18
 
 CBH OOO.  No pair programming.

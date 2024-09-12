@@ -17,6 +17,7 @@ description = 'automesh'
 dependencies = [
   'matplotlib',
   'numpy',
+  'skimage',
 ]
 name = 'automesh'
 requires-python = '>=3.8,<3.13'
