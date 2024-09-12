@@ -36,5 +36,5 @@ cargo clippy
 ## Build and Open the API Documentation
 
 ```sh
-cargo rustdoc --features docs --open -- --html-in-header .github/katex.html
+cargo rustdoc --open -- --html-in-header docs/katex.html
 ```

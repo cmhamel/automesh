@@ -27,9 +27,9 @@ jobs:
           default: true
           toolchain: ${{ matrix.toolchain }}
       - name: build
-        run: cargo build
+        run: cargo build --release
       - name: clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --release -- -D warnings
       - name: doc
         run: cargo rustdoc --release -- --html-in-header docs/katex.html
       - name: fmt
