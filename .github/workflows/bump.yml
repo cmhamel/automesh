@@ -11,12 +11,14 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: bump
+        id: bump
         run: |
           VERSION=$(cargo tree | grep automesh | cut -d " " -f 2 | cut -d "v" -f 2)
           MAJOR_MINOR=$(echo $VERSION | rev | cut -d "." -f 2- | rev)
           PATCH=$(echo $VERSION | rev | cut -d "." -f 1)
           BUMP=$(( $PATCH + 1))
           BUMPED_VERSION=$(echo $MAJOR_MINOR"."$BUMP)
+          echo "bumped_version=$BUMPED_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/version = \"$VERSION\"/version = \"$BUMPED_VERSION\"/" Cargo.toml
           git config --global user.email "bump"
           git config --global user.name "bump"
@@ -25,3 +27,11 @@ jobs:
           git branch "bump-$VERSION-to-$BUMPED_VERSION"
           git checkout "bump-$VERSION-to-$BUMPED_VERSION"
           git push --set-upstream origin "bump-$VERSION-to-$BUMPED_VERSION"
+      - name: pr
+        uses: rematocorp/open-pull-request-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          from-branch: ${{ steps.bump.outputs.bumped_version }}
+          to-branch: ${{ github.event.repository.default_branch }}
+          repository-owner: ${{ github.event.repository.owner }}
+          repository: ${{ github.event.repository.name }}
