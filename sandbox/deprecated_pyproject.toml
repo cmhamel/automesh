@@ -20,7 +20,8 @@ dependencies = [
   'pre-commit',
   'pycodestyle',
   'pytest',
-  'pytest-cov'
+  'pytest-cov',
+  'scikit-image',
 ]
 name = 'sandbox'
 version = "0.0.1"

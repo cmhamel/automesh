@@ -9,7 +9,7 @@
 deactivate
 
 # remove any preexisting virtual environment
-cd ~/autotwin/automesh
+cd ~/autotwin/automesh/sandbox/
 rm -rf .venv/
 
 # install a new virtual environment
@@ -29,13 +29,13 @@ Create and update the `automesh/sandbox/pyproject.toml` file as necessary.
 
 ```bash
 # install as editable
-python -m pip install -e ./sandbox/
+python -m pip install -e .
 ```
 
 Run the test:
 
 ```bash
-python -m pytest sandbox/test_hello.py
+python -m pytest test_hello.py
 ```
 
 ## Workflow

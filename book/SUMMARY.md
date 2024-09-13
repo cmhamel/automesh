@@ -6,6 +6,8 @@
 
 - [Installation](installation.md)
 - [Mathematics](mathematics.md)
+- [Examples](examples/README.md)
+  - [Spheres](examples/spheres/README.md)
 
 # Reference Guide
 
