@@ -14,6 +14,10 @@ from pathlib import Path
 from typing import Final
 
 from skimage.morphology import ball
+
+
+# User input begin
+
 spheres = {
     "ball_1": ball(radius=1),
     "ball_3": ball(radius=3),
@@ -38,6 +42,9 @@ colors = cmap(np.linspace(0, 1, num_colors))
 lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 dpi: Final[int] = 300  # resolution, dots per inch
+serialize: Final[bool] = False  # turn to True to save .png and .npy files
+# User input end
+
 
 idx = 1
 for title, struc in spheres.items():
@@ -60,15 +67,16 @@ for title, struc in spheres.items():
     ax.set_aspect("equal")
     ax.view_init(elev=el, azim=az, roll=roll)
 
-    cc = aa.with_stem("spheres_" + title + "_")
-    dd = cc.with_suffix(".npy")
-    # Save the data in .npy format
-    np.save(dd, struc)
-    print(f"Saved: {dd}")
+    if serialize:
+        cc = aa.with_stem("spheres_" + title + "_")
+        dd = cc.with_suffix(".npy")
+        # Save the data in .npy format
+        np.save(dd, struc)
+        print(f"Saved: {dd}")
 
 fig.tight_layout()
 plt.show()
 
-# plt.show()
-fig.savefig(bb, dpi=dpi)
-print(f"Saved: {bb}")
+if serialize:
+    fig.savefig(bb, dpi=dpi)
+    print(f"Saved: {bb}")
