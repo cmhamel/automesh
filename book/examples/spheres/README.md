@@ -2,7 +2,13 @@
 
 ## Segmentation
 
-Using [spheres.py](spheres.py), create very coarse spheres of varying
+Using [spheres.py](spheres.py), 
+
+```python
+<!-- cmdrun cat spheres.py -->
+```
+
+create very coarse spheres of varying
 resolution (`radius=1`, `radius=3`, and `radius=5`), as shown below:
 
 ![spheres.png](spheres.png)
