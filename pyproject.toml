@@ -28,7 +28,6 @@ dev = [
   'pycodestyle',
   'pytest',
   'pytest-cov',
-  'scikit-image',
 ]
 
 [project.urls]
