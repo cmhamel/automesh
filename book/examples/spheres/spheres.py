@@ -11,23 +11,31 @@ from typing import Final
 
 
 def sphere(radius: int, dtype=np.uint8) -> np.ndarray:
-    """Returns a 3D representation of a sphere.
+    """Generate a 3D voxelized representation of a sphere.
 
     Parameters
     ----------
     radius: int
         The radius of the sphere.  Minimum value is 1.
 
-    dtype: data-type (optional)
-        The data type of the sphere.
+    dtype: data-type, optional
+        The data type of the output array.  Default is np.uint8.
 
     Returns
     -------
-    The voxelized 3D representation of a sphere.
+    np.ndarray
+        A 3D numpy array of shape (2*radius+1, 2*radius+1, 2*radius+1)
+        representing the voxelized sphere.  Voxels within the sphere are
+        set to 1, and those outside are set to 0.
+
+    Raises
+    ------
+    ValueError
+        If the radius is less than 1.
 
     Example
     -------
-    sphere(radius=1) returns
+    >>> sphere(radius=1) returns
         array(
             [
                 [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
@@ -37,7 +45,9 @@ def sphere(radius: int, dtype=np.uint8) -> np.ndarray:
             dtype=uint8
         )
 
-    Reference:
+    Reference
+    ---------
+    Adapted from:
     https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/morphology/footprints.py#L763-L833
     """
     if radius < 1:
@@ -80,8 +90,8 @@ colors = cmap(np.linspace(0, 1, num_colors))
 lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 dpi: Final[int] = 300  # resolution, dots per inch
-visualize: Final[bool] = True  # turn to True to show the figure on screen
-serialize: Final[bool] = True  # turn to True to save .png and .npy files
+visualize: Final[bool] = False  # turn to True to show the figure on screen
+serialize: Final[bool] = False  # turn to True to save .png and .npy files
 # User input end
 
 
