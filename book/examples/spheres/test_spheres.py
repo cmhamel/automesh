@@ -1,9 +1,16 @@
-"""This module performs point testing of the sphere module."""
+"""This module performs point testing of the sphere module.
+
+Example
+-------
+
+> python -m pytest book/examples/spheres/test_spheres.py
+
+"""
 
 import numpy as np
 import pytest
 
-import book.examples.spheres.spheres as sph
+import spheres as sph
 
 
 def test_sphere():
