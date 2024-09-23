@@ -18,7 +18,7 @@ resolution (`radius=1`, `radius=3`, and `radius=5`), as shown below:
 For the `radius=1` case, the underyling data structure appears as:
 
 ```python
-spheres["sphere_1"]
+spheres["radius_1"]
 
 array([[[0, 0, 0],
         [0, 1, 0],
@@ -36,7 +36,7 @@ array([[[0, 0, 0],
 For the `radius=3` case, the underyling data structure appears as:
 
 ```python
-spheres["sphere_3"]
+spheres["sradius_3"]
 
 array([[[0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
@@ -98,42 +98,41 @@ array([[[0, 0, 0, 0, 0, 0, 0],
 Because of the large size of `sphere_5`, its data structure is not shown
 here.
 
-These data structures are saved to
+These segmentations are saved to
 
-* [spheres_sphere_1.npy](spheres_sphere_1.npy)
-* [spheres_sphere_3.npy](spheres_sphere_3.npy)
-* [spheres_sphere_5.npy](spheres_sphere_5.npy)
+* [spheres_radius_1.npy](spheres_radius_1.npy)
+* [spheres_radius_3.npy](spheres_radius_3.npy)
+* [spheres_radius_5.npy](spheres_radius_5.npy)
 
 ## Autotwin
 
+`Autotwin` is used to convert the `.npy` segmentations into `.inp` meshes.
+
 ```sh
-cargo run -- -i book/examples/spheres/spheres_sphere_1.npy -o book/examples/spheres/spheres_sphere_1.inp -x 3 -y 3 -z 3
+automesh -i spheres_radius_1.npy -o spheres_radius_1.inp -x 3 -y 3 -z 3
 ```
 
 ```sh
-cargo run -- -i book/examples/spheres/spheres_sphere_3.npy -o book/examples/spheres/spheres_sphere_3.inp -x 7 -y 7 -z 7
+automesh -i spheres_radius_3.npy -o spheres_radius_3.inp -x 7 -y 7 -z 7
 ```
 
 ```sh
-cargo run -- -i book/examples/spheres/spheres_sphere_5.npy -o book/examples/spheres/spheres_sphere_5_.inp -x 11 -y 11 -z 11
+automesh -i spheres_radius_5.npy -o spheres_radius_5_.inp -x 11 -y 11 -z 11
 ```
 
 ## Mesh
 
-The `spheres_sphere_1.inp` file:
+The `spheres_radius_1.inp` file:
 
 ```sh
-<!-- cmdrun cat spheres_sphere_1.inp -->
+<!-- cmdrun cat spheres_radius_1.inp -->
 ```
 
-The `spheres_sphere_3.inp` file:
+The `spheres_radius_3.inp` file:
 
 ```sh
-<!-- cmdrun cat spheres_sphere_3.inp -->
+<!-- cmdrun cat spheres_radius_3.inp -->
 ```
 
-The `spheres_sphere_5.inp` file:
-
-```sh
-<!-- cmdrun cat spheres_sphere_5.inp -->
-```
+Because of the large size of `sphere_5`, its mesh structure is not shown
+here.
