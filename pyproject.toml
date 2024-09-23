@@ -23,6 +23,7 @@ requires-python = '>=3.9,<3.13'
 
 [project.optional-dependencies]
 dev = [
+  'black',
   'pdoc',
   'pre-commit',
   'pycodestyle',

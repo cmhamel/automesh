@@ -1384,12 +1384,16 @@ def main():
     for ex in examples:
 
         # computation
-        output_npy: Path = Path(output_dir).expanduser().joinpath(ex.file_stem + ".npy")
+        output_npy: Path = (
+            Path(output_dir).expanduser().joinpath(ex.file_stem + ".npy")
+        )
 
         # visualization
         visualize: bool = True  # True performs post-processing visualization
         output_png_short = ex.file_stem + ".png"
-        output_png: Path = Path(output_dir).expanduser().joinpath(output_png_short)
+        output_png: Path = (
+            Path(output_dir).expanduser().joinpath(output_png_short)
+        )
         # el, az, roll = 25, -115, 0
         # el, az, roll = 28, -115, 0
         el, az, roll = 63, -110, 0
@@ -1512,7 +1516,9 @@ def main():
         # breakpoint()
         # ec_set = set(flatten_tuple(mesh_w_lattice_conn))  # bug!
         # bug fix:
-        ec_set = set(flatten_tuple(elements_without_block_ids(mesh_w_lattice_conn)))
+        ec_set = set(
+            flatten_tuple(elements_without_block_ids(mesh_w_lattice_conn))
+        )
 
         # breakpoint()
 
@@ -1563,7 +1569,9 @@ def main():
 
             # Label the global node numbers
             for n, label in enumerate(gnn_labels):
-                ax2.text(xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8)
+                ax2.text(
+                    xel[n], yel[n], zel[n], label, color="darkblue", fontsize=8
+                )
 
         # Set labels for the axes
         ax.set_xlabel("x")
