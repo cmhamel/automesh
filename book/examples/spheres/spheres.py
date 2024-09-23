@@ -1,13 +1,13 @@
-"""This module demonstrates how to create a voxelized sphere and export
-it as a .npy file.
+"""This module creates a voxelized sphere and exports it as a .npy file.
 """
 
-import matplotlib.pyplot as plt
-from matplotlib.colors import LightSource
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 from pathlib import Path
 from typing import Final
+
+from matplotlib.colors import LightSource
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 
 def sphere(radius: int, dtype=np.uint8) -> np.ndarray:
@@ -67,9 +67,9 @@ def sphere(radius: int, dtype=np.uint8) -> np.ndarray:
 # User input begin
 
 spheres = {
-    "sphere_1": sphere(radius=1),
-    "sphere_3": sphere(radius=3),
-    "sphere_5": sphere(radius=5),
+    "radius_1": sphere(radius=1),
+    "radius_3": sphere(radius=3),
+    "radius_5": sphere(radius=5),
 }
 
 aa = Path(__file__)
@@ -95,18 +95,18 @@ serialize: Final[bool] = False  # turn to True to save .png and .npy files
 # User input end
 
 
-idx = 1
+IDX = 1
 for title, struc in spheres.items():
     # for index (key, value) in enumerate(spheres.items()):
-    ax = fig.add_subplot(1, 3, idx, projection=Axes3D.name)
+    ax = fig.add_subplot(1, 3, IDX, projection=Axes3D.name)
     ax.voxels(
         struc,
-        facecolors=colors[idx-1],
-        edgecolor=colors[idx-1],
+        facecolors=colors[IDX-1],
+        edgecolor=colors[IDX-1],
         alpha=voxel_alpha,
         lightsource=lightsource)
     ax.set_title(title)
-    idx += 1
+    IDX += 1
 
     # Set labels for the axes
     ax.set_xlabel("x")
