@@ -7,7 +7,7 @@
 - [Installation](installation.md)
 - [Mathematics](mathematics.md)
 - [Examples](examples/README.md)
-  - [Tests](examples/tests/README.md)
+  - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
 
 # Reference Guide
