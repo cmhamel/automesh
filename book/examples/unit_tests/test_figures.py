@@ -1,6 +1,7 @@
 r"""This module tests functionality of the included module.
 
 Example:
+
     cd ~/autotwin/automesh
 
     Activate the venv with one of the following:
@@ -9,16 +10,16 @@ Example:
     source .venv/bin/activate.fish  # for fish shell
     .\.venv\Scripts\activate        # for powershell
 
-    python -m pytest sandbox/test_figures.py -v  # -v is for verbose
+    cd book/examples/unit_tests
+    python -m pytest test_figures.py -v  # -v is for verbose
 
-    to run just a single test in this module, for example
-    python -m pytest sandbox/test_figures.py::some_function -v
+    to run a single test in this module, for example `test_hello` function:
+    python -m pytest test_figures.py::test_hello -v
 """
 
 import pytest
 
-# from sandbox import figures as vv
-import sandbox.figures as ff
+import figures as ff
 
 
 def test_hello():

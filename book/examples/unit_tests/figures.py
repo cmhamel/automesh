@@ -8,7 +8,9 @@ Example:
 
     cd ~/autotwin/automesh
     source .venv/bin/activate
-    python sandbox/figures.py
+
+    cd book/examples/unit_tests
+    python figures.py
 
 Ouput:
     The `output_npy` file data structure
@@ -23,7 +25,7 @@ from typing import Final, NamedTuple
 # third-party libary
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource
-from mpl_toolkits.mplot3d import Axes3D
+# from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from numpy.typing import NDArray
 
@@ -1063,19 +1065,22 @@ def main():
         LetterF(),
         LetterF3D(),
     ]
+
+    # output_dir: Final[str] = "~/scratch"
+    output_dir: Final[Path] = Path(__file__).parent
+    dpi: Final[int] = 300  # resolution, dots per inch
+
     for ex in examples:
 
         # computation
-        output_dir: Final[str] = "~/scratch"
-        output_npy: Final[Path] = (
+        output_npy: Path = (
             Path(output_dir).expanduser().joinpath(ex.file_stem + ".npy")
         )
 
         # visualization
         visualize: bool = True  # True performs post-processing visualization
-        dpi: Final[int] = 300  # resolution, dots per inch
         output_png_short = ex.file_stem + ".png"
-        output_png: Final[Path] = (
+        output_png: Path = (
             Path(output_dir).expanduser().joinpath(output_png_short)
         )
         # el, az, roll = 25, -115, 0
@@ -1092,8 +1097,8 @@ def main():
         num_colors = len(ex.included_ids)
         colors = cmap(np.linspace(0, 1, num_colors))
         # breakpoint()
-        voxel_alpha: Final[float] = 0.1
-        # voxel_alpha: Final[float] = 0.7
+        voxel_alpha: float = 0.1
+        # voxel_alpha: float = 0.7
         # azimuth (deg):
         #   0 is east  (from +y-axis looking back toward origin)
         #  90 is north (from +x-axis looking back toward origin)
@@ -1101,8 +1106,8 @@ def main():
         # 270 is south (from -x-axis looking back toward origin)
         # elevation (deg): 0 is horizontal, 90 is vertical (+z-axis up)
         lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
-        nodes_shown: Final[bool] = True
-        # nodes_shown: Final[bool] = False
+        nodes_shown: bool = True
+        # nodes_shown: bool = False
 
         # io: if the output directory does not already exist, create it
         output_path = Path(output_dir).expanduser()
