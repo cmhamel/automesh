@@ -57,10 +57,13 @@ start at `(0, 0, 0)`, and proceed along the `x-axis`, then
 the `y-axis`, and then the `z-axis`.
 
 The finite element mesh local node numbering map to the following global node
-numbers:
+numbers identically,
+$S_{\rm{local}} = \{1, 2, 4, 3, 5, 6, 8, 7\}$ and $S_{\rm{local}} = S_{\rm{global}}$:
 
 ```bash
-[1, 2, 4, 3, 5, 6, 8, 7] -> [1, 2, 5, 3, 5, 6, 8, 7]
+[1, 2, 4, 3, 5, 6, 8, 7]
+->
+[1, 2, 4, 3, 5, 6, 8, 7]
 ```
 
 which is a special case not typically observed, as shown in more complex
@@ -327,10 +330,6 @@ Figure: Mesh composed of four blocks (block `82` has one element, block `2`
 has three elements, block `31` has one element, and block `44` has one
 element), (left) lattice node numbers, (right) mesh node numbers.
 
-## Sparse
-
-To come.
-
 ## Letter F
 
 ```python
@@ -406,7 +405,7 @@ segmentation = np.array(
 )
 ```
 
-where the segmentation `1` denotes block `1` in the finite element mesh.
+where the segmentation `1` denotes block `1` in the finite element mesh (with segmentation `0` excluded).
 
 For concreteness, we note the shape of the `segmentation`
 
@@ -430,6 +429,61 @@ lattice and element nodes, and with decreased opacity, as shown below:
 
 Figure: Mesh composed of a single block with thirty-nine elements, shown
 with decreased opacity and without lattice and element node numbers.
+
+## Sparse
+
+```python
+segmentation = np.array(
+    [
+        [
+            [0, 0, 0, 0, 2],
+            [0, 1, 0, 0, 2],
+            [1, 2, 0, 2, 0],
+            [0, 1, 0, 2, 0],
+            [1, 0, 0, 0, 1],
+        ],
+        [
+            [2, 0, 2, 0, 0],
+            [1, 1, 0, 2, 2],
+            [2, 0, 0, 0, 0],
+            [1, 0, 0, 2, 0],
+            [2, 0, 2, 0, 2],
+        ],
+        [
+            [0, 0, 1, 0, 2],
+            [0, 0, 0, 1, 2],
+            [0, 0, 2, 2, 2],
+            [0, 0, 1, 0, 1],
+            [0, 1, 0, 1, 0],
+        ],
+        [
+            [0, 1, 2, 1, 2],
+            [2, 0, 2, 0, 1],
+            [1, 2, 2, 0, 0],
+            [2, 1, 1, 1, 1],
+            [0, 0, 1, 0, 0],
+        ],
+        [
+            [0, 1, 0, 2, 0],
+            [1, 0, 0, 0, 2],
+            [0, 1, 0, 0, 0],
+            [1, 0, 0, 0, 0],
+            [0, 0, 1, 2, 1],
+        ],
+    ],
+    dtype=np.uint8,
+)
+```
+
+where the segmentation `1` denotes block `1` and segmentation `2` denotes block `2` in the finite eelement mesh (with segmentation `0` excluded).
+
+![sparse.png](sparse.png)
+
+Figure: Sparse mesh composed of two materials at random voxel locations.
+
+![sparse_alt.png](sparse_alt.png)
+
+Figure: Sparse mesh composed of two materials at random voxel locations, shown with decreased opactity and without lattice and element node numbers.
 
 ## Source
 
