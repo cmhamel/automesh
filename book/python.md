@@ -6,7 +6,7 @@ from automesh import FiniteElements, Voxels
 
 ## Example
 
-Convert a Numpy segmentation file to an Abaqus input file:
+Convert a NumPy segmentation file to an Abaqus input file:
 
 ```py
 from automesh import Voxels
