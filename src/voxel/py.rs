@@ -68,7 +68,7 @@ impl Voxels {
         let data = voxel_data_from_spn(file_path, nel);
         Self { data }
     }
-    /// Writes the internal voxels data to a NPY file.
+    /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
         write_voxels_to_npy(&self.data, file_path);
     }
