@@ -9,6 +9,7 @@
 - [Examples](examples/README.md)
   - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
+  - [Spheres - continued](examples/spheres_cont/README.md)
 
 # Reference Guide
 
