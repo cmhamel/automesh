@@ -64,7 +64,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
     gold: Gold<D, E, N>,
 ) {
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel);
-    let fem = voxels.into_finite_elements(&gold.scale, &gold.translate);
+    let fem = voxels.into_finite_elements(gold.remove, &gold.scale, &gold.translate);
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(fem.get_element_connectivity(), &gold.element_connectivity);
     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
@@ -92,6 +92,9 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     /// the [x, y, z] directions.
     nel: [usize; NSD],
 
+    /// ???
+    remove: Option<Vec<u8>>,
+
     /// The scaling in the [x, y, z] directions to be applied to the domain.
     scale: [f64; NSD],
 
@@ -109,6 +112,7 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
             element_coordinates: [[0.0; NSD]; D],
             file_path: "".to_string(),
             nel: [0; NSD],
+            remove: Option::Some(vec![0]),
             scale: [1.0; NSD],
             translate: [0.0; NSD],
         }
@@ -442,6 +446,60 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
             nel: [4, 1, 1],
+            ..Default::default()
+        });
+    }
+    #[test]
+    fn quadruple_2_blocks_remove_1() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [21, 21],
+            element_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
+            element_coordinates: [
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+            ],
+            file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
+            nel: [4, 1, 1],
+            remove: Option::Some(vec![0, 11]),
+            ..Default::default()
+        });
+    }
+    #[test]
+    fn quadruple_2_blocks_remove_2() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11, 11],
+            element_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [4.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [4.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+                [4.0, 1.0, 1.0],
+            ],
+            file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
+            nel: [4, 1, 1],
+            remove: Option::Some(vec![0, 21]),
             ..Default::default()
         });
     }

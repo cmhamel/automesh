@@ -41,7 +41,7 @@ def assert_fem_data_from_spn_eq_gold(gold):
       corresponding 'gold' standard attributes.
     """
     voxels = Voxels.from_spn(gold.file_path, gold.nel)
-    fem = voxels.as_finite_elements(gold.scale, gold.translate)
+    fem = voxels.as_finite_elements(gold.remove, gold.scale, gold.translate)
     assert (fem.element_blocks == gold.element_blocks).all()
     assert (fem.element_connectivity == gold.element_connectivity).all()
     assert (fem.nodal_coordinates == gold.element_coordinates).all()
@@ -61,6 +61,7 @@ class Gold:
         nel=None,
         scale=[1.0, 1.0, 1.0],
         translate=[0.0, 0.0, 0.0],
+        remove=[0]
     ):
         """
         Initialize a Gold object.
@@ -110,8 +111,6 @@ class Gold:
         self.element_coordinates = element_coordinates
         self.file_path = file_path
         self.nel = nel
-        self.scale = scale
-        self.translate = translate
 
 
 def test_single():
@@ -461,6 +460,72 @@ def test_quadruple_2_blocks():
             ],
             file_path="tests/input/quadruple_2_blocks.spn",
             nel=[4, 1, 1],
+        )
+    )
+
+
+def test_quadruple_2_blocks_remove_1():
+    """???
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[21, 21],
+            element_connectivity=[
+                [1, 2, 5, 4, 7, 8, 11, 10],
+                [2, 3, 6, 5, 8, 9, 12, 11],
+            ],
+            element_coordinates=[
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks.spn",
+            nel=[4, 1, 1],
+            remove=[0, 11]
+        )
+    )
+
+
+def test_quadruple_2_blocks_remove_2():
+    """???
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11, 11],
+            element_connectivity=[
+                [1, 2, 6, 5, 9, 10, 14, 13],
+                [3, 4, 8, 7, 11, 12, 16, 15],
+            ],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [4.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [4.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+                [4.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks.spn",
+            nel=[4, 1, 1],
+            remove=[0, 21]
         )
     )
 
