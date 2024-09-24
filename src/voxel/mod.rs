@@ -68,7 +68,7 @@ impl Voxels {
             finite_element_data_from_npy_data(self.get_data(), None, scale, translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
-    /// Writes the internal voxels data to a NPY file.
+    /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
         write_voxels_to_npy(self.get_data(), file_path)
     }
