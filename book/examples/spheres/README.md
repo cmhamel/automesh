@@ -15,6 +15,8 @@ resolution (`radius=1`, `radius=3`, and `radius=5`), as shown below:
 
 ![spheres.png](spheres.png)
 
+Figure: Sphere segmentations at selected resolutions, shown in the voxel domain.
+
 For the `radius=1` case, the underyling data structure appears as:
 
 ```python
