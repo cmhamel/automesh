@@ -97,8 +97,7 @@ array([[[0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0]]], dtype=uint8)
 ```
 
-Because of the large size of `sphere_5`, its data structure is not shown
-here.
+Because of its large size, the data struture for `sphere_5` is not shown here.
 
 These segmentations are saved to
 
@@ -136,5 +135,4 @@ The `spheres_radius_3.inp` file:
 <!-- cmdrun cat spheres_radius_3.inp -->
 ```
 
-Because of the large size of `sphere_5`, its mesh structure is not shown
-here.
+Because of its large size, the mesh struture for `sphere_5` is not shown here.
