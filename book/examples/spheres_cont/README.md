@@ -62,3 +62,5 @@ error: unexpected argument '-2' found
 ```
 
 ### Meshes
+
+Figure (to come): Sphere segmentations at selected resolutions, shown in the finite element domain with cutting plane to expose interior structure.
