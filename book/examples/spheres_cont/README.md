@@ -28,19 +28,21 @@ to create finite element meshes.
 
 ## Solution
 
+### Python Segmentation
+
 Use [spheres_cont.py](spheres_cont.py) to create segmentations,
 
 ```python
 <!-- cmdrun cat spheres_cont.py -->
 ```
 
-Then use `Autotwin` to convert the segmentations into finite element meshes.
-
-### Python Segmentation
-
 ![spheres_cont](spheres_cont.png)
 
+Figure: Sphere segmentations at selected resolutions, shown in the voxel domain.
+
 ### Autotwin
+
+Use `Autotwin` to convert the segmentations into finite element meshes.
 
 ```sh
 automesh -i spheres_resolution_1.npy -o spheres_resolution_1.inp -x 24 -y 24 -z 24 -xtranslate -12 -ytranslate -12 -ztranslate -12
