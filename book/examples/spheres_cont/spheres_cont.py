@@ -1,6 +1,11 @@
 """This module builds on the `spheres.py` module to create high resolution,
 three-material, concentric spheres and export the voxelization as a .npy
 file.
+
+Example
+-------
+source ~/autotwin/automesh/.venv/bin/activate
+python spheres_cont.py
 """
 
 from pathlib import Path
@@ -81,20 +86,18 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
     return result
 
 
+rr = (1, 2, 4, 10)  # resolutions (voxels per cm)
+lims = tuple(map(lambda x: [0, 24*x], rr))  # limits
+tt = tuple(map(lambda x: [0, 12*x, 24*x], rr))  # ticks
+
 # User input begin
 spheres = {
-    "resolution_1": sphere(resolution=1),
-    # "resolution_2": sphere(resolution=2),
+    "resolution_1": sphere(resolution=rr[0]),
+    "resolution_2": sphere(resolution=rr[1]),
 }
 
 aa = Path(__file__)
 bb = aa.with_suffix(".png")
-
-# vox_01_per_cm = sphere(resolution=1)
-# vox_02_per_cm = sphere(resolution=2)
-# vox_04_per_cm = sphere(resolution=4)
-# vox_10_per_cm = sphere(resolution=10)
-
 
 # Visualize the elements.
 # width, height = 8, 4
@@ -115,40 +118,45 @@ visualize: Final[bool] = True  # turn to True to show the figure on screen
 serialize: Final[bool] = True  # turn to True to save .png and .npy files
 # User input end
 
-# breakpoint()
 N_SUBPLOTS = len(spheres)
-IDX = 1
-for title, struc in spheres.items():
-    # for index (key, value) in enumerate(spheres.items()):
-    ax = fig.add_subplot(1, N_SUBPLOTS, IDX, projection=Axes3D.name)
+for index, (key, value) in enumerate(spheres.items()):
+    print(f"index: {index}")
+    print(f"key: {key}")
+    print(f"value: {value}")
+    ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
     ax.voxels(
-        struc,
-        facecolors=colors[IDX-1],
-        edgecolor=colors[IDX-1],
+        value,
+        facecolors=colors[index],
+        edgecolor=colors[index],
         alpha=voxel_alpha,
         lightsource=lightsource)
-    ax.set_title(title)
-    IDX += 1
+    ax.set_title(key)
 
     # Set labels for the axes
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+    ax.set_xlabel("x (voxels)")
+    ax.set_ylabel("y (voxels)")
+    ax.set_zlabel("z (voxels)")
 
-    # ax.set_xlim([0, 10])
+    ax.set_xticks(ticks=tt[index])
+    ax.set_yticks(ticks=tt[index])
+    ax.set_zticks(ticks=tt[index])
+
+    ax.set_xlim(lims[index])
+    ax.set_ylim(lims[index])
+    ax.set_zlim(lims[index])
 
     # Set the camera view
     ax.set_aspect("equal")
     ax.view_init(elev=el, azim=az, roll=roll)
 
     if serialize:
-        cc = aa.with_stem("spheres_" + title)
+        cc = aa.with_stem("spheres_" + key)
         dd = cc.with_suffix(".npy")
         # Save the data in .npy format
-        np.save(dd, struc)
+        np.save(dd, value)
         print(f"Saved: {dd}")
 
-fig.tight_layout()
+# fig.tight_layout()  # don't use as it clips the x-axis label
 if visualize:
     plt.show()
 

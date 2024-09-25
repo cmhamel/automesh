@@ -1,20 +1,20 @@
 # Spheres - Continued
 
-Now we use the fundamentals learned in the [previous example](../spheres/README.md) to a more sophisticated example:  Concentric, high-resolution spheres consisting of three materials.
+Use the fundamentals learned in the [previous example](../spheres/README.md) to create a more sophisticated example:  Concentric, high-resolution spheres consisting of three materials.
 
 ## Problem Statement
 
 ### Given
 
-Given three concentric spheres of radius 10, 11, and 12 cm, as shown in the figure below:
+Given three concentric spheres of radius 10, 11, and 12 cm, as shown in the figure below,
 
 ![spheres_cont_dim](spheres_cont_dim.png)
 
-Figure: Three concentric spheres of radius 10, 11, and 12 cm.  Grid spacing is 1 cm.
+Figure: Schematic cross-section of three concentric spheres of radius 10, 11, and 12 cm.  Grid spacing is 1 cm.
 
 ### Find
 
-Create finite element meshes of the following resolutions:
+Use the following segmentation resolutions,
 
 resolution (vox/cm) | element side length (cm) | `nelx` | # voxels
 ---: | :---: | ---: | ---:
@@ -23,30 +23,40 @@ resolution (vox/cm) | element side length (cm) | `nelx` | # voxels
 4 | 025 | 96 | 884,736
 10 | 0.1 | 240 | 13,824,000
 
+with a cubic domain (`nelx = nely = nelz`),
+to create finite element meshes.
+
 ## Solution
 
-We use Python to create segmentations, then `Autotwin` to convert the segmentations into finite element meshes.
+Use [spheres_cont.py](spheres_cont.py) to create segmentations,
+
+```python
+<!-- cmdrun cat spheres_cont.py -->
+```
+
+Then use `Autotwin` to convert the segmentations into finite element meshes.
 
 ### Python Segmentation
 
 ![spheres_cont](spheres_cont.png)
 
-
 ### Autotwin
 
 ```sh
 automesh -i spheres_resolution_1.npy -o spheres_resolution_1.inp -x 24 -y 24 -z 24 -xtranslate -12 -ytranslate -12 -ztranslate -12
+# didn't work
 
 automesh -i spheres_resolution_1.npy -o spheres_resolution_1.inp -x 24 -y 24 -z 24 --xtranslate 24 --ytranslate 24 --ztranslate 24
+# works
 ```
 
 But translating in a negative direction seems to be error prone:
 
 ```sh
 automesh -i spheres_resolution_1.npy -o spheres_resolution_1.inp -x 24 -y 24 -z 24 --xtranslate -24 --ytranslate 24 --ztranslate 24
+# didn't work
 
 error: unexpected argument '-2' found
 ```
-
 
 ### Meshes
