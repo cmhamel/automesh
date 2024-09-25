@@ -66,9 +66,9 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
     # nvps = 2 * r12 * resolution + 1
     nvps = 2 * r12 * resolution
     vox_z, vox_y, vox_x = np.mgrid[
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
+        -r12: r12: nvps * 1j,
+        -r12: r12: nvps * 1j,
+        -r12: r12: nvps * 1j,
     ]
     domain = vox_x**2 + vox_y**2 + vox_z**2
     mask_10_in = np.array(domain <= r10 * r10, dtype=dtype)
