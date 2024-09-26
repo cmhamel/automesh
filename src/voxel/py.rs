@@ -40,10 +40,15 @@ impl Voxels {
     ///                    1       2
     /// ```
     )]
-    #[pyo3(signature = (scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
-    pub fn as_finite_elements(&self, scale: Scale, translate: Translate) -> FiniteElements {
+    #[pyo3(signature = (remove=[0].to_vec(), scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
+    pub fn as_finite_elements(
+        &self,
+        remove: Option<Vec<u8>>,
+        scale: Scale,
+        translate: Translate,
+    ) -> FiniteElements {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(&self.data, None, &scale, &translate);
+            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
     /// The internal voxels data.
