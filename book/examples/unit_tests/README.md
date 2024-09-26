@@ -1,6 +1,11 @@
 # Tests
 
-Following is documentation for unit tests used to validate code implementation.
+The following illustates a subset of the unit tests used to validate
+the code implementation.
+For a complete listing of the unit sets, see
+[voxels.rs](https://github.com/autotwin/automesh/blob/main/tests/voxel.rs)
+and [voxel.py](https://github.com/autotwin/automesh/blob/main/tests/voxel.py).
+
 The Python script used to generate the figures is included [below](#source).
 
 **Remark:** We use the convention `np` when importing `numpy` as follows:

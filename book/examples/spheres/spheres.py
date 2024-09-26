@@ -1,4 +1,9 @@
 """This module creates a voxelized sphere and exports it as a .npy file.
+
+Example
+-------
+source ~/autotwin/automesh/.venv/bin/activate
+python spheres.py
 """
 
 from pathlib import Path
@@ -95,33 +100,33 @@ serialize: Final[bool] = False  # turn to True to save .png and .npy files
 # User input end
 
 
+N_SUBPLOTS = len(spheres)
 IDX = 1
-for title, struc in spheres.items():
-    # for index (key, value) in enumerate(spheres.items()):
-    ax = fig.add_subplot(1, 3, IDX, projection=Axes3D.name)
+for index, (key, value) in enumerate(spheres.items()):
+    ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
     ax.voxels(
-        struc,
-        facecolors=colors[IDX-1],
-        edgecolor=colors[IDX-1],
+        value,
+        facecolors=colors[index],
+        edgecolor=colors[index],
         alpha=voxel_alpha,
         lightsource=lightsource)
-    ax.set_title(title)
+    ax.set_title(key)
     IDX += 1
 
     # Set labels for the axes
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+    ax.set_xlabel("x (voxels)")
+    ax.set_ylabel("y (voxels)")
+    ax.set_zlabel("z (voxels)")
 
     # Set the camera view
     ax.set_aspect("equal")
     ax.view_init(elev=el, azim=az, roll=roll)
 
     if serialize:
-        cc = aa.with_stem("spheres_" + title)
+        cc = aa.with_stem("spheres_" + key)
         dd = cc.with_suffix(".npy")
         # Save the data in .npy format
-        np.save(dd, struc)
+        np.save(dd, value)
         print(f"Saved: {dd}")
 
 fig.tight_layout()
