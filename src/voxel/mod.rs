@@ -63,12 +63,17 @@ impl Voxels {
     ///                    1       2
     /// ```
     )]
-    pub fn into_finite_elements(self, scale: &Scale, translate: &Translate) -> FiniteElements {
+    pub fn into_finite_elements(
+        self,
+        remove: Option<Vec<u8>>,
+        scale: &Scale,
+        translate: &Translate,
+    ) -> FiniteElements {
         let (element_blocks, element_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(self.get_data(), scale, translate);
+            finite_element_data_from_npy_data(self.get_data(), remove, scale, translate);
         FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
     }
-    /// Writes the internal voxels data to a NPY file.
+    /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
         write_voxels_to_npy(self.get_data(), file_path)
     }
@@ -92,7 +97,11 @@ fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConne
         });
 }
 
-fn filter_voxel_data(data: &VoxelData) -> (VoxelDataSized<3>, ElementBlocks) {
+fn filter_voxel_data(
+    data: &VoxelData,
+    remove: Option<Vec<u8>>,
+) -> (VoxelDataSized<3>, ElementBlocks) {
+    let removed_data = remove.unwrap_or(vec![0]);
     let filtered_voxel_data_combo: VoxelDataSized<4> = data
         .axis_iter(Axis(2))
         .enumerate()
@@ -104,7 +113,7 @@ fn filter_voxel_data(data: &VoxelData) -> (VoxelDataSized<3>, ElementBlocks) {
                     data_kj
                         .iter()
                         .enumerate()
-                        .filter(|(_, &data_kji)| data_kji > 0)
+                        .filter(|(_, &data_kji)| !removed_data.contains(&data_kji))
                         .map(|(i, data_kji)| [i, j, k, *data_kji as usize])
                         .collect()
                 })
@@ -128,6 +137,7 @@ fn filter_voxel_data(data: &VoxelData) -> (VoxelDataSized<3>, ElementBlocks) {
 
 fn finite_element_data_from_npy_data(
     data: &VoxelData,
+    remove: Option<Vec<u8>>,
     scale: &Scale,
     translate: &Translate,
 ) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
@@ -140,7 +150,7 @@ fn finite_element_data_from_npy_data(
     let xtranslate = translate[0];
     let ytranslate = translate[1];
     let ztranslate = translate[2];
-    let (filtered_voxel_data, element_blocks) = filter_voxel_data(data);
+    let (filtered_voxel_data, element_blocks) = filter_voxel_data(data, remove);
     let mut element_connectivity: ElementConnectivity = filtered_voxel_data
         .iter()
         .map(|entry| {

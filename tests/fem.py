@@ -1,12 +1,13 @@
 from automesh import Voxels
 
+remove = [0]
 scale = [1, 1, 1]
 translate = [0, 0, 0]
 
 
 def test_write_inp_letter_f_3d():
     voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', [4, 5, 3])
-    fem = voxels.as_finite_elements(scale, translate)
+    fem = voxels.as_finite_elements(remove, scale, translate)
     inp = 'target/letter_f_3d.inp'
     fem.write_inp(inp)
     with open('tests/input/letter_f_3d.inp') as gold, open(inp) as file:
@@ -25,7 +26,7 @@ def test_write_inp_letter_f_3d():
 
 def test_write_inp_sparse():
     voxels = Voxels.from_spn('tests/input/sparse.spn', [5, 5, 5])
-    fem = voxels.as_finite_elements(scale, translate)
+    fem = voxels.as_finite_elements(remove, scale, translate)
     inp = 'target/sparse.inp'
     fem.write_inp(inp)
     with open('tests/input/sparse.inp') as gold, open(inp) as file:

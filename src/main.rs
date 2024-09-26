@@ -14,8 +14,7 @@ use std::path::Path;
     @@@@@@@@@@@@  @@@
     @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
     @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
-     @@@@@@@@@@@@@@@@     - Scaling is applied before translation.
-",
+     @@@@@@@@@@@@@@@@     - Scaling is applied before translation.",
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
 ), arg_required_else_help = true, long_about = None, version)]
@@ -27,6 +26,10 @@ struct Args {
     /// Name of the Exodus (.exo) or Abaqus (.inp) output file.
     #[arg(short, long)]
     output: String,
+
+    /// Voxel IDs to remove from the mesh [default: 0].
+    #[arg(short = 'r', long)]
+    remove: Option<Vec<u8>>,
 
     /// Number of voxels in the x-direction.
     #[arg(short = 'x', long, default_value_t = 0)]
@@ -96,6 +99,7 @@ mod tests {
         Args {
             input: "foo.spn".to_string(),
             output: "bar.exo".to_string(),
+            remove: None,
             nelx: 1,
             nely: 1,
             nelz: 1,
@@ -209,6 +213,7 @@ fn main() {
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
     let fea = input.into_finite_elements(
+        args.remove,
         &[args.xscale, args.yscale, args.zscale],
         &[args.xtranslate, args.ytranslate, args.ztranslate],
     );

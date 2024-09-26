@@ -41,7 +41,7 @@ def assert_fem_data_from_spn_eq_gold(gold):
       corresponding 'gold' standard attributes.
     """
     voxels = Voxels.from_spn(gold.file_path, gold.nel)
-    fem = voxels.as_finite_elements(gold.scale, gold.translate)
+    fem = voxels.as_finite_elements(gold.remove, gold.scale, gold.translate)
     assert (fem.element_blocks == gold.element_blocks).all()
     assert (fem.element_connectivity == gold.element_connectivity).all()
     assert (fem.nodal_coordinates == gold.element_coordinates).all()
@@ -59,8 +59,9 @@ class Gold:
         element_coordinates=None,
         file_path=None,
         nel=None,
+        remove=[0],
         scale=[1.0, 1.0, 1.0],
-        translate=[0.0, 0.0, 0.0],
+        translate=[0.0, 0.0, 0.0]
     ):
         """
         Initialize a Gold object.
@@ -110,6 +111,7 @@ class Gold:
         self.element_coordinates = element_coordinates
         self.file_path = file_path
         self.nel = nel
+        self.remove = remove
         self.scale = scale
         self.translate = translate
 
@@ -465,6 +467,76 @@ def test_quadruple_2_blocks():
     )
 
 
+def test_quadruple_2_blocks_remove_1():
+    """A quadruple voxel lattice, with the two intermediate voxels in the
+    segmentation being a second block.
+    The first block is removed from the mesh.
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[21, 21],
+            element_connectivity=[
+                [1, 2, 5, 4, 7, 8, 11, 10],
+                [2, 3, 6, 5, 8, 9, 12, 11],
+            ],
+            element_coordinates=[
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks.spn",
+            nel=[4, 1, 1],
+            remove=[11]
+        )
+    )
+
+
+def test_quadruple_2_blocks_remove_2():
+    """A quadruple voxel lattice, with the two intermediate voxels in the
+    segmentation being a second block.
+    The second block is removed from the mesh.
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11, 11],
+            element_connectivity=[
+                [1, 2, 6, 5, 9, 10, 14, 13],
+                [3, 4, 8, 7, 11, 12, 16, 15],
+            ],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [4.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [4.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+                [4.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks.spn",
+            nel=[4, 1, 1],
+            remove=[21]
+        )
+    )
+
+
 def test_quadruple_2_blocks_void():
     """A quadruple voxel lattice, with the first intermediate voxel being
     the second block and the second intermediate voxel being void."""
@@ -500,6 +572,136 @@ def test_quadruple_2_blocks_void():
             ],
             file_path="tests/input/quadruple_2_blocks_void.spn",
             nel=[4, 1, 1],
+        )
+    )
+
+
+def test_quadruple_2_blocks_void_remove_0():
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11, 21, 11],
+            element_connectivity=[
+                [1, 2, 7, 6, 11, 12, 17, 16],
+                [2, 3, 8, 7, 12, 13, 18, 17],
+                [4, 5, 10, 9, 14, 15, 20, 19],
+            ],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [4.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [4.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+                [4.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks_void.spn",
+            nel=[4, 1, 1],
+            remove=[0]
+        )
+    )
+
+
+def test_quadruple_2_blocks_void_remove_1():
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void.
+    The first block is removed from the mesh."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[21],
+            element_connectivity=[
+                [1, 2, 4, 3, 5, 6, 8, 7],
+            ],
+            element_coordinates=[
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks_void.spn",
+            nel=[4, 1, 1],
+            remove=[0, 11]
+        )
+    )
+
+
+def test_quadruple_2_blocks_void_remove_2():
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void.
+    The second block is removed from the mesh."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11, 11],
+            element_connectivity=[
+                [1, 2, 6, 5, 9, 10, 14, 13],
+                [3, 4, 8, 7, 11, 12, 16, 15]
+            ],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [4.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [4.0, 0.0, 1.0],
+                [0.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+                [4.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks_void.spn",
+            nel=[4, 1, 1],
+            remove=[0, 21]
+        )
+    )
+
+
+def test_quadruple_2_blocks_void_remove_3():
+    """A quadruple voxel lattice, with the first intermediate voxel being
+    the second block and the second intermediate voxel being void.
+    The first and second blocks are removed, the void is retained."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[0],
+            element_connectivity=[
+                [1, 2, 4, 3, 5, 6, 8, 7],
+            ],
+            element_coordinates=[
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [3.0, 1.0, 0.0],
+                [2.0, 0.0, 1.0],
+                [3.0, 0.0, 1.0],
+                [2.0, 1.0, 1.0],
+                [3.0, 1.0, 1.0],
+            ],
+            file_path="tests/input/quadruple_2_blocks_void.spn",
+            nel=[4, 1, 1],
+            remove=[11, 21]
         )
     )
 

@@ -60,7 +60,7 @@ fn connectivity_node_renumbering() {
 #[test]
 fn filter() {
     let spn = Voxels::from_npy("tests/input/letter_f_3d.npy");
-    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data());
+    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data(), None);
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD
         .iter()
