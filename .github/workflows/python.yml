@@ -35,7 +35,7 @@ jobs:
     - name: pycodestyle
       run: pycodestyle --verbose .
     - name: pytest
-      run: pytest --verbose .
+      run: pytest --verbose
   wheels:
     strategy:
       fail-fast: false

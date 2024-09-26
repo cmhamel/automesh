@@ -5,16 +5,20 @@
 # User Guide
 
 - [Installation](installation.md)
-- [Mathematics](mathematics.md)
 - [Examples](examples/README.md)
   - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
+  - [Spheres - continued](examples/spheres_cont/README.md)
 
 # Reference Guide
 
-- [Command Line Interface](cli.md)
-- [Python Interface](python.md)
-- [Rust Interface](rust.md)
+- [Interfaces](interfaces/README.md)
+  - [Command Line Interface](interfaces/cli.md)
+  - [Python Interface](interfaces/python.md)
+  - [Rust Interface](interfaces/rust.md)
+- [Theory](theory/README.md)
+  - [Mathematics](theory/mathematics.md)
+  - [Smoothing](theory/smoothing.md) 
 
 # Appendices
 

@@ -52,9 +52,6 @@ class Gold:
     used for testing purposes.
     """
 
-    translate = [0.0, 0.0, 0.0]
-    scale = [1.0, 1.0, 1.0]
-
     def __init__(
         self,
         element_blocks=None,
@@ -83,6 +80,12 @@ class Gold:
             Default is None.
         nel : int, optional
             The number of elements. Default is None.
+        scale : list of three floats, optional
+            The x, y, z scaling of the element coordinates.
+            Default is [1.0, 1.0, 1.0].
+        translate: list of three floats, optional
+            The x, y, z translation of the element coordinates.
+            Default is [0.0, 0.0, 0.0].
 
         Attributes
         ----------
@@ -96,6 +99,10 @@ class Gold:
             Stores the file path to the gold standard data.
         nel : int or None
             Stores the number of elements.
+        scale : list of floats or None
+            Stores the x, y, z scaling factors.
+        translate: list of floats or None
+            Stores the x, y, z translation deltas.
         """
         self.element_blocks = element_blocks
         self.element_connectivity = element_connectivity
@@ -123,6 +130,128 @@ def test_single():
             ],
             file_path="tests/input/single.spn",
             nel=[1, 1, 1],
+        )
+    )
+
+
+def test_single_scaled_up():
+    """A single voxel lattice scaled up [x, y, z] amount [10.0, 20.0, 30.0]."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [10.0, 0.0, 0.0],
+                [0.0, 20.0, 0.0],
+                [10.0, 20.0, 0.0],
+                [0.0, 0.0, 30.0],
+                [10.0, 0.0, 30.0],
+                [0.0, 20.0, 30.0],
+                [10.0, 20.0, 30.0],
+            ],
+            file_path="tests/input/single.spn",
+            nel=[1, 1, 1],
+            scale=[10.0, 20.0, 30.0],
+        )
+    )
+
+
+def test_single_scaled_down():
+    """A single voxel lattice scaled down [x, y, z] amount
+    [0.5, 0.25, 0.125].
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [0.0, 0.0, 0.0],
+                [0.5, 0.0, 0.0],
+                [0.0, 0.25, 0.0],
+                [0.5, 0.25, 0.0],
+                [0.0, 0.0, 0.125],
+                [0.5, 0.0, 0.125],
+                [0.0, 0.25, 0.125],
+                [0.5, 0.25, 0.125],
+            ],
+            file_path="tests/input/single.spn",
+            nel=[1, 1, 1],
+            scale=[0.5, 0.25, 0.125],
+        )
+    )
+
+
+def test_single_translated_positive():
+    """A single voxel lattice translated [x, y, z] amount [0.3, 0.6, 0.9]."""
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [0.3, 0.6, 0.9],
+                [1.3, 0.6, 0.9],
+                [0.3, 1.6, 0.9],
+                [1.3, 1.6, 0.9],
+                [0.3, 0.6, 1.9],
+                [1.3, 0.6, 1.9],
+                [0.3, 1.6, 1.9],
+                [1.3, 1.6, 1.9],
+            ],
+            file_path="tests/input/single.spn",
+            nel=[1, 1, 1],
+            translate=[0.3, 0.6, 0.9],
+        )
+    )
+
+
+def test_single_translated_negative():
+    """A single voxel lattice translated [x, y, z] amount
+    [-1.0, -2.0, -3.0].
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [-1.0, -2.0, -3.0],
+                [0.0, -2.0, -3.0],
+                [-1.0, -1.0, -3.0],
+                [0.0, -1.0, -3.0],
+                [-1.0, -2.0, -2.0],
+                [0.0, -2.0, -2.0],
+                [-1.0, -1.0, -2.0],
+                [0.0, -1.0, -2.0],
+            ],
+            file_path="tests/input/single.spn",
+            nel=[1, 1, 1],
+            translate=[-1.0, -2.0, -3.0],
+        )
+    )
+
+
+def test_single_scaled_and_translated():
+    """A single voxel lattice scaled [10, 11, 12] and
+    translated [0.1, 0.2, 0.3].
+    """
+    assert_fem_data_from_spn_eq_gold(
+        Gold(
+            element_blocks=[11],
+            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates=[
+                [0.1, 0.2, 0.3],
+                [10.1, 0.2, 0.3],
+                [0.1, 11.2, 0.3],
+                [10.1, 11.2, 0.3],
+                [0.1, 0.2, 12.3],
+                [10.1, 0.2, 12.3],
+                [0.1, 11.2, 12.3],
+                [10.1, 11.2, 12.3],
+            ],
+            file_path="tests/input/single.spn",
+            nel=[1, 1, 1],
+            scale=[10.0, 11.0, 12.0],
+            translate=[0.1, 0.2, 0.3],
         )
     )
 
@@ -885,6 +1014,7 @@ def test_letter_f_3d():
 
 
 def test_sparse():
+    """A random 5x5x5 domain composed void and two materials."""
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[
@@ -1206,47 +1336,54 @@ def test_write_npy_letter_f_3d():
             [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
         ]
     )
-    Voxels.from_npy(
-        "tests/input/letter_f_3d.npy"
-    ).write_npy("target/letter_f_3d.npy")
+    Voxels.from_npy("tests/input/letter_f_3d.npy").write_npy(
+        "target/letter_f_3d.npy"
+    )
     voxels = Voxels.from_npy("target/letter_f_3d.npy")
     assert (voxels.data == gold_data).all()
 
 
-def test_write_npy_letter_f_3d():
-    gold_data = np.array([[
-        [0, 0, 0, 0, 2],
-        [0, 1, 0, 0, 2],
-        [1, 2, 0, 2, 0],
-        [0, 1, 0, 2, 0],
-        [1, 0, 0, 0, 1]
-    ], [
-        [2, 0, 2, 0, 0],
-        [1, 1, 0, 2, 2],
-        [2, 0, 0, 0, 0],
-        [1, 0, 0, 2, 0],
-        [2, 0, 2, 0, 2]
-    ], [
-        [0, 0, 1, 0, 2],
-        [0, 0, 0, 1, 2],
-        [0, 0, 2, 2, 2],
-        [0, 0, 1, 0, 1],
-        [0, 1, 0, 1, 0]
-    ], [
-        [0, 1, 2, 1, 2],
-        [2, 0, 2, 0, 1],
-        [1, 2, 2, 0, 0],
-        [2, 1, 1, 1, 1],
-        [0, 0, 1, 0, 0]
-    ], [
-        [0, 1, 0, 2, 0],
-        [1, 0, 0, 0, 2],
-        [0, 1, 0, 0, 0],
-        [1, 0, 0, 0, 0],
-        [0, 0, 1, 2, 1]
-    ]])
-    Voxels.from_npy(
-        "tests/input/sparse.npy"
-    ).write_npy("target/sparse.npy")
+def test_write_npy_sparse():
+    """A test of the random 5x5x5 domain composed void and two materials"""
+    gold_data = np.array(
+        [
+            [
+                [0, 0, 0, 0, 2],
+                [0, 1, 0, 0, 2],
+                [1, 2, 0, 2, 0],
+                [0, 1, 0, 2, 0],
+                [1, 0, 0, 0, 1],
+            ],
+            [
+                [2, 0, 2, 0, 0],
+                [1, 1, 0, 2, 2],
+                [2, 0, 0, 0, 0],
+                [1, 0, 0, 2, 0],
+                [2, 0, 2, 0, 2],
+            ],
+            [
+                [0, 0, 1, 0, 2],
+                [0, 0, 0, 1, 2],
+                [0, 0, 2, 2, 2],
+                [0, 0, 1, 0, 1],
+                [0, 1, 0, 1, 0],
+            ],
+            [
+                [0, 1, 2, 1, 2],
+                [2, 0, 2, 0, 1],
+                [1, 2, 2, 0, 0],
+                [2, 1, 1, 1, 1],
+                [0, 0, 1, 0, 0],
+            ],
+            [
+                [0, 1, 0, 2, 0],
+                [1, 0, 0, 0, 2],
+                [0, 1, 0, 0, 0],
+                [1, 0, 0, 0, 0],
+                [0, 0, 1, 2, 1],
+            ],
+        ]
+    )
+    Voxels.from_npy("tests/input/sparse.npy").write_npy("target/sparse.npy")
     voxels = Voxels.from_npy("target/sparse.npy")
     assert (voxels.data == gold_data).all()

@@ -56,15 +56,15 @@ struct Args {
     zscale: f64,
 
     /// Translation in the x-direction.
-    #[arg(long, default_value_t = 0.0)]
+    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
     xtranslate: f64,
 
     /// Translation in the y-direction.
-    #[arg(long, default_value_t = 0.0)]
+    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
     ytranslate: f64,
 
     /// Translation in the z-direction.
-    #[arg(long, default_value_t = 0.0)]
+    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
     ztranslate: f64,
 }
 
