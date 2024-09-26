@@ -112,6 +112,8 @@ class Gold:
         self.file_path = file_path
         self.nel = nel
         self.remove = remove
+        self.scale = scale
+        self.translate = translate
 
 
 def test_single():
