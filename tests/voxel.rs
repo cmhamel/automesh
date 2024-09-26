@@ -144,6 +144,117 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
+    /// A single voxel lattice scaled up [x, y, z] amount [10.0, 20.0, 30.0]
+    #[test]
+    fn single_scaled_up() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [10.0, 0.0, 0.0],
+                [0.0, 20.0, 0.0],
+                [10.0, 20.0, 0.0],
+                [0.0, 0.0, 30.0],
+                [10.0, 0.0, 30.0],
+                [0.0, 20.0, 30.0],
+                [10.0, 20.0, 30.0],
+            ],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            scale: [10.0, 20.0, 30.0],
+            ..Default::default()
+        });
+    }
+    /// A single voxel lattice scaled down [x, y, z] amount [0.5, 0.25, 0.125]
+    #[test]
+    fn single_scaled_down() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [0.0, 0.0, 0.0],
+                [0.5, 0.0, 0.0],
+                [0.0, 0.25, 0.0],
+                [0.5, 0.25, 0.0],
+                [0.0, 0.0, 0.125],
+                [0.5, 0.0, 0.125],
+                [0.0, 0.25, 0.125],
+                [0.5, 0.25, 0.125],
+            ],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            scale: [0.5, 0.25, 0.125],
+            ..Default::default()
+        });
+    }
+    /// A single voxel lattice translated [x, y, z] amount [0.3, 0.6, 0.9]
+    #[test]
+    fn single_translated_positive() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [0.3, 0.6, 0.9],
+                [1.3, 0.6, 0.9],
+                [0.3, 1.6, 0.9],
+                [1.3, 1.6, 0.9],
+                [0.3, 0.6, 1.9],
+                [1.3, 0.6, 1.9],
+                [0.3, 1.6, 1.9],
+                [1.3, 1.6, 1.9],
+            ],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            translate: [0.3, 0.6, 0.9],
+            ..Default::default()
+        });
+    }
+    /// A single voxel lattice translated [x, y, z] amount [-1.0, -2.0, -3.0]
+    #[test]
+    fn single_translated_negative() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [-1.0, -2.0, -3.0],
+                [0.0, -2.0, -3.0],
+                [-1.0, -1.0, -3.0],
+                [0.0, -1.0, -3.0],
+                [-1.0, -2.0, -2.0],
+                [0.0, -2.0, -2.0],
+                [-1.0, -1.0, -2.0],
+                [0.0, -1.0, -2.0],
+            ],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            translate: [-1.0, -2.0, -3.0],
+            ..Default::default()
+        });
+    }
+    /// A single voxel lattice scaled [10, 11, 12] and translated [0.1, 0.2, 0.3].
+    #[test]
+    fn single_scaled_and_translated() {
+        assert_fem_data_from_spn_eq_gold(Gold {
+            element_blocks: [11],
+            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_coordinates: [
+                [0.1, 0.2, 0.3],
+                [10.1, 0.2, 0.3],
+                [0.1, 11.2, 0.3],
+                [10.1, 11.2, 0.3],
+                [0.1, 0.2, 12.3],
+                [10.1, 0.2, 12.3],
+                [0.1, 11.2, 12.3],
+                [10.1, 11.2, 12.3],
+            ],
+            scale: [10.0, 11.0, 12.0],
+            translate: [0.1, 0.2, 0.3],
+            file_path: "tests/input/single.spn".to_string(),
+            nel: [1; NSD],
+            ..Default::default()
+        });
+    }
     /// A double voxel lattice, coursed along the x-axis.
     #[test]
     fn double_x() {
@@ -679,6 +790,7 @@ mod into_finite_elements {
             ..Default::default()
         });
     }
+    // A random 5x5x5 domain composed void and two materials.
     #[test]
     fn sparse() {
         assert_fem_data_from_spn_eq_gold(Gold {

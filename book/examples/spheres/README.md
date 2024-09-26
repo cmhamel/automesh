@@ -15,6 +15,8 @@ resolution (`radius=1`, `radius=3`, and `radius=5`), as shown below:
 
 ![spheres.png](spheres.png)
 
+Figure: Sphere segmentations at selected resolutions, shown in the voxel domain.
+
 For the `radius=1` case, the underyling data structure appears as:
 
 ```python
@@ -95,8 +97,7 @@ array([[[0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0]]], dtype=uint8)
 ```
 
-Because of the large size of `sphere_5`, its data structure is not shown
-here.
+Because of its large size, the data structure for `sphere_5` is not shown here.
 
 These segmentations are saved to
 
@@ -134,5 +135,4 @@ The `spheres_radius_3.inp` file:
 <!-- cmdrun cat spheres_radius_3.inp -->
 ```
 
-Because of the large size of `sphere_5`, its mesh structure is not shown
-here.
+Because of its large size, the mesh structure for `sphere_5` is not shown here.

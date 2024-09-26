@@ -10,6 +10,9 @@
   * And maybe we should version the RTD page as well, instead of just showing the latest build from merging into main? And then there is versioning of the book...
 * Zenodo
   * Citation example BibTeX and markdown
+* Bug: translate with negative value
+* Line length error, see `.pre-commit-config.yaml`
+
 
 ## 2024-09-18
 
