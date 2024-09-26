@@ -59,7 +59,9 @@ class Gold:
         element_coordinates=None,
         file_path=None,
         nel=None,
-        remove=[0]
+        remove=[0],
+        scale=[1.0, 1.0, 1.0],
+        translate=[0.0, 0.0, 0.0]
     ):
         """
         Initialize a Gold object.
@@ -110,6 +112,8 @@ class Gold:
         self.file_path = file_path
         self.nel = nel
         self.remove = remove
+        self.scale = scale
+        self.translate = translate
 
 
 def test_single():
