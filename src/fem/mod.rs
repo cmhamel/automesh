@@ -1,7 +1,10 @@
 #[cfg(feature = "python")]
 pub mod py;
 
-use super::{abaqus::Abaqus, exodus::Exodus};
+#[cfg(test)]
+pub mod test;
+
+use super::{abaqus::Abaqus, exodus::Exodus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
 use chrono::Utc;
 use itertools::Itertools;
 use std::{
@@ -11,42 +14,74 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 
+pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
-pub type ElementBlocks = Vec<usize>;
-pub type NodalCoordinates = Vec<Vec<f64>>;
+pub type Coordinates = Vec<Vec<f64>>;
 
 /// The finite elements type.
 pub struct FiniteElements {
-    element_blocks: ElementBlocks,
-    element_connectivity: Connectivity,
-    nodal_coordinates: NodalCoordinates,
+    calculated_node_element_connectivity: bool,
+    element_blocks: Blocks,
+    element_node_connectivity: Connectivity,
+    nodal_coordinates: Coordinates,
+    node_element_connectivity: Connectivity,
 }
 
 /// Inherent implementation of the finite elements type.
 impl FiniteElements {
     /// Constructs and returns a new Exodus type from data.
     pub fn from_data(
-        element_blocks: ElementBlocks,
-        element_connectivity: Connectivity,
-        nodal_coordinates: NodalCoordinates,
+        element_blocks: Blocks,
+        element_node_connectivity: Connectivity,
+        nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
+            calculated_node_element_connectivity: false,
             element_blocks,
-            element_connectivity,
+            element_node_connectivity,
             nodal_coordinates,
+            node_element_connectivity: vec![],
+        }
+    }
+    /// Calculates and sets the node-to-element connectivity.
+    pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {
+        if self.calculated_node_element_connectivity {
+            Err("Already calculated and set the node-to-element connectivity.")
+        } else {
+            let element_node_connectivity = self.get_element_node_connectivity();
+            let number_of_nodes = self.get_nodal_coordinates().len();
+            let mut node_element_connectivity = vec![vec![]; number_of_nodes];
+            node_element_connectivity.iter_mut().enumerate().for_each(
+                |(node, node_connectivity)| {
+                    element_node_connectivity.iter().enumerate().for_each(
+                        |(element, element_connectivity)| {
+                            if element_connectivity.contains(&(node + NODE_NUMBERING_OFFSET)) {
+                                node_connectivity.push(element + ELEMENT_NUMBERING_OFFSET)
+                            }
+                        },
+                    )
+                },
+            );
+            self.node_element_connectivity = node_element_connectivity;
+            self.calculated_node_element_connectivity = true;
+            Ok(())
         }
     }
     /// Returns a reference to the element blocks.
-    pub fn get_element_blocks(&self) -> &ElementBlocks {
+    pub fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
     }
-    /// Returns a reference to the element connectivity.
-    pub fn get_element_connectivity(&self) -> &Connectivity {
-        &self.element_connectivity
+    /// Returns a reference to the element-to-node connectivity.
+    pub fn get_element_node_connectivity(&self) -> &Connectivity {
+        &self.element_node_connectivity
     }
     /// Returns a reference to the nodal coordinates.
-    pub fn get_nodal_coordinates(&self) -> &NodalCoordinates {
+    pub fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
+    }
+    /// Returns a reference to the node-to-element connectivity.
+    pub fn get_node_element_connectivity(&self) -> &Connectivity {
+        &self.node_element_connectivity
     }
 }
 
@@ -56,7 +91,7 @@ impl Abaqus for FiniteElements {
         write_fem_to_inp(
             file_path,
             self.get_element_blocks(),
-            self.get_element_connectivity(),
+            self.get_element_node_connectivity(),
             self.get_nodal_coordinates(),
         )
     }
@@ -71,20 +106,20 @@ impl Exodus for FiniteElements {
 
 fn write_fem_to_inp(
     file_path: &str,
-    element_blocks: &ElementBlocks,
-    element_connectivity: &Connectivity,
-    nodal_coordinates: &NodalCoordinates,
+    element_blocks: &Blocks,
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
 ) {
-    let element_number_width = get_width(element_connectivity);
+    let element_number_width = get_width(element_node_connectivity);
     let node_number_width = get_width(nodal_coordinates);
     let inp_file = File::create(file_path).expect("Could not create the .inp file.");
     let mut file = BufWriter::new(inp_file);
     write_heading_to_inp(&mut file);
     write_nodal_coordinates_to_inp(&mut file, nodal_coordinates, &node_number_width);
-    write_element_connectivity_to_inp(
+    write_element_node_connectivity_to_inp(
         &mut file,
         element_blocks,
-        element_connectivity,
+        element_node_connectivity,
         &element_number_width,
         &node_number_width,
     );
@@ -103,7 +138,7 @@ fn write_heading_to_inp(file: &mut BufWriter<File>) {
 
 fn write_nodal_coordinates_to_inp(
     file: &mut BufWriter<File>,
-    nodal_coordinates: &NodalCoordinates,
+    nodal_coordinates: &Coordinates,
     node_number_width: &usize,
 ) {
     file.write_all("*NODE, NSET=ALLNODES".as_bytes()).unwrap();
@@ -123,10 +158,10 @@ fn write_nodal_coordinates_to_inp(
     end_section(file);
 }
 
-fn write_element_connectivity_to_inp(
+fn write_element_node_connectivity_to_inp(
     file: &mut BufWriter<File>,
-    element_blocks: &ElementBlocks,
-    element_connectivity: &Connectivity,
+    element_blocks: &Blocks,
+    element_node_connectivity: &Connectivity,
     element_number_width: &usize,
     node_number_width: &usize,
 ) {
@@ -148,7 +183,7 @@ fn write_element_connectivity_to_inp(
                         format!("{:>width$}", element + 1, width = element_number_width).as_bytes(),
                     )
                     .unwrap();
-                    element_connectivity[element].iter().for_each(|entry| {
+                    element_node_connectivity[element].iter().for_each(|entry| {
                         delimiter(file);
                         file.write_all(
                             format!("{:>width$}", entry, width = node_number_width + 3).as_bytes(),

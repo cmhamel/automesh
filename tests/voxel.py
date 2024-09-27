@@ -33,7 +33,7 @@ def assert_fem_data_from_spn_eq_gold(gold):
         - scale (float): Scaling factor for the finite elements.
         - translate (tuple): Translation vector for the finite elements.
         - element_blocks (numpy.ndarray): Expected element blocks.
-        - element_connectivity (numpy.ndarray): Expected element connectivity.
+        - element_node_connectivity (numpy.ndarray): Expected connectivity.
         - element_coordinates (numpy.ndarray): Expected nodal coordinates.
 
     Raises:
@@ -43,7 +43,9 @@ def assert_fem_data_from_spn_eq_gold(gold):
     voxels = Voxels.from_spn(gold.file_path, gold.nel)
     fem = voxels.as_finite_elements(gold.remove, gold.scale, gold.translate)
     assert (fem.element_blocks == gold.element_blocks).all()
-    assert (fem.element_connectivity == gold.element_connectivity).all()
+    assert (
+        fem.element_node_connectivity == gold.element_node_connectivity
+    ).all()
     assert (fem.nodal_coordinates == gold.element_coordinates).all()
 
 
@@ -55,7 +57,7 @@ class Gold:
     def __init__(
         self,
         element_blocks=None,
-        element_connectivity=None,
+        element_node_connectivity=None,
         element_coordinates=None,
         file_path=None,
         nel=None,
@@ -71,7 +73,7 @@ class Gold:
         element_blocks : list, optional
             A list of element blocks, where each block contains elements.
             Default is None.
-        element_connectivity : list of lists, optional
+        element_node_connectivity : list of lists, optional
             A list of lists defining the connectivity of elements.
             Default is None.
         element_coordinates : list of lists, optional
@@ -93,7 +95,7 @@ class Gold:
         ----------
         element_blocks : list or None
             Stores the element blocks.
-        element_connectivity : list of lists or None
+        element_node_connectivity : list of lists or None
             Stores the connectivity of elements.
         element_coordinates : list of lists or None
             Stores the coordinates of elements.
@@ -107,7 +109,7 @@ class Gold:
             Stores the x, y, z translation deltas.
         """
         self.element_blocks = element_blocks
-        self.element_connectivity = element_connectivity
+        self.element_node_connectivity = element_node_connectivity
         self.element_coordinates = element_coordinates
         self.file_path = file_path
         self.nel = nel
@@ -121,7 +123,7 @@ def test_single():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -143,7 +145,7 @@ def test_single_scaled_up():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [0.0, 0.0, 0.0],
                 [10.0, 0.0, 0.0],
@@ -168,7 +170,7 @@ def test_single_scaled_down():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [0.0, 0.0, 0.0],
                 [0.5, 0.0, 0.0],
@@ -191,7 +193,7 @@ def test_single_translated_positive():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [0.3, 0.6, 0.9],
                 [1.3, 0.6, 0.9],
@@ -216,7 +218,7 @@ def test_single_translated_negative():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [-1.0, -2.0, -3.0],
                 [0.0, -2.0, -3.0],
@@ -241,7 +243,7 @@ def test_single_scaled_and_translated():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11],
-            element_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity=[[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates=[
                 [0.1, 0.2, 0.3],
                 [10.1, 0.2, 0.3],
@@ -265,7 +267,7 @@ def test_double_x():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 5, 4, 7, 8, 11, 10],
                 [2, 3, 6, 5, 8, 9, 12, 11],
             ],
@@ -294,7 +296,7 @@ def test_double_y():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 4, 3, 7, 8, 10, 9],
                 [3, 4, 6, 5, 9, 10, 12, 11],
             ],
@@ -323,7 +325,7 @@ def test_triple_x():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 6, 5, 9, 10, 14, 13],
                 [2, 3, 7, 6, 10, 11, 15, 14],
                 [3, 4, 8, 7, 11, 12, 16, 15],
@@ -357,7 +359,7 @@ def test_quadruple_x():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11, 11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [3, 4, 9, 8, 13, 14, 19, 18],
@@ -398,7 +400,7 @@ def test_quadruple_2_voids_x():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 6, 5, 9, 10, 14, 13],
                 [3, 4, 8, 7, 11, 12, 16, 15],
             ],
@@ -433,7 +435,7 @@ def test_quadruple_2_blocks():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 21, 21, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [3, 4, 9, 8, 13, 14, 19, 18],
@@ -475,7 +477,7 @@ def test_quadruple_2_blocks_remove_1():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[21, 21],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 5, 4, 7, 8, 11, 10],
                 [2, 3, 6, 5, 8, 9, 12, 11],
             ],
@@ -508,7 +510,7 @@ def test_quadruple_2_blocks_remove_2():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 6, 5, 9, 10, 14, 13],
                 [3, 4, 8, 7, 11, 12, 16, 15],
             ],
@@ -543,7 +545,7 @@ def test_quadruple_2_blocks_void():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 21, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [4, 5, 10, 9, 14, 15, 20, 19],
@@ -582,7 +584,7 @@ def test_quadruple_2_blocks_void_remove_0():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 21, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [4, 5, 10, 9, 14, 15, 20, 19],
@@ -623,7 +625,7 @@ def test_quadruple_2_blocks_void_remove_1():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[21],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 4, 3, 5, 6, 8, 7],
             ],
             element_coordinates=[
@@ -650,7 +652,7 @@ def test_quadruple_2_blocks_void_remove_2():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 6, 5, 9, 10, 14, 13],
                 [3, 4, 8, 7, 11, 12, 16, 15]
             ],
@@ -686,7 +688,7 @@ def test_quadruple_2_blocks_void_remove_3():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[0],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 4, 3, 5, 6, 8, 7],
             ],
             element_coordinates=[
@@ -711,7 +713,7 @@ def test_cube():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[11, 11, 11, 11, 11, 11, 11, 11],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 5, 4, 10, 11, 14, 13],
                 [2, 3, 6, 5, 11, 12, 15, 14],
                 [4, 5, 8, 7, 13, 14, 17, 16],
@@ -761,7 +763,7 @@ def test_cube_multi():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=[82, 2, 2, 2, 31, 44],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 5, 4, 10, 11, 14, 13],
                 [2, 3, 6, 5, 11, 12, 15, 14],
                 [4, 5, 8, 7, 13, 14, 17, 16],
@@ -806,7 +808,7 @@ def test_letter_f():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=np.ones(8) * 11,
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 4, 3, 19, 20, 22, 21],
                 [3, 4, 6, 5, 21, 22, 24, 23],
                 [5, 6, 9, 8, 23, 24, 27, 26],
@@ -866,7 +868,7 @@ def test_letter_f_3d():
     assert_fem_data_from_spn_eq_gold(
         Gold(
             element_blocks=np.ones(39),
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 7, 6, 31, 32, 37, 36],
                 [2, 3, 8, 7, 32, 33, 38, 37],
                 [3, 4, 9, 8, 33, 34, 39, 38],
@@ -1029,7 +1031,7 @@ def test_sparse():
                 2, 1, 1, 2, 2, 2, 2, 2, 2, 2,
                 1, 2, 2, 1, 1, 1, 2, 1,
             ],
-            element_connectivity=[
+            element_node_connectivity=[
                 [1, 2, 4, 3, 29, 30, 36, 35],
                 [3, 4, 10, 9, 35, 36, 42, 41],
                 [5, 6, 12, 11, 37, 38, 44, 43],

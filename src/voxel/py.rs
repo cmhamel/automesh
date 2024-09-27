@@ -47,9 +47,9 @@ impl Voxels {
         scale: Scale,
         translate: Translate,
     ) -> FiniteElements {
-        let (element_blocks, element_connectivity, nodal_coordinates) =
+        let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_npy_data(&self.data, remove, &scale, &translate);
-        FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
+        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     /// The internal voxels data.
     #[getter]

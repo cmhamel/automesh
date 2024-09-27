@@ -1,4 +1,4 @@
-use super::{write_fem_to_inp, Abaqus, Connectivity, ElementBlocks, Exodus, NodalCoordinates};
+use super::{write_fem_to_inp, Abaqus, Blocks, Connectivity, Coordinates, Exodus};
 use numpy::{PyArray1, PyArray2};
 use pyo3::prelude::*;
 
@@ -10,9 +10,9 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 /// The finite element type.
 #[pyclass]
 pub struct FiniteElements {
-    element_blocks: ElementBlocks,
-    element_connectivity: Connectivity,
-    nodal_coordinates: NodalCoordinates,
+    element_blocks: Blocks,
+    element_node_connectivity: Connectivity,
+    nodal_coordinates: Coordinates,
 }
 
 #[pymethods]
@@ -20,13 +20,13 @@ impl FiniteElements {
     /// Constructs and returns a new Exodus type from data.
     #[new]
     pub fn from_data(
-        element_blocks: ElementBlocks,
-        element_connectivity: Connectivity,
-        nodal_coordinates: NodalCoordinates,
+        element_blocks: Blocks,
+        element_node_connectivity: Connectivity,
+        nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
             element_blocks,
-            element_connectivity,
+            element_node_connectivity,
             nodal_coordinates,
         }
     }
@@ -37,11 +37,11 @@ impl FiniteElements {
     }
     /// The nodal connectivity for each finite element.
     #[getter]
-    pub fn get_element_connectivity<'py>(
+    pub fn get_element_node_connectivity<'py>(
         &self,
         python: Python<'py>,
     ) -> Bound<'py, PyArray2<usize>> {
-        PyArray2::from_vec2_bound(python, &self.element_connectivity).unwrap()
+        PyArray2::from_vec2_bound(python, &self.element_node_connectivity).unwrap()
     }
     /// The nodal coordinates for each finite element.
     #[getter]
@@ -63,7 +63,7 @@ impl Abaqus for FiniteElements {
         write_fem_to_inp(
             file_path,
             &self.element_blocks,
-            &self.element_connectivity,
+            &self.element_node_connectivity,
             &self.nodal_coordinates,
         )
     }

@@ -66,7 +66,10 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel);
     let fem = voxels.into_finite_elements(gold.remove, &gold.scale, &gold.translate);
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
-    assert_data_eq_gold_2d(fem.get_element_connectivity(), &gold.element_connectivity);
+    assert_data_eq_gold_2d(
+        fem.get_element_node_connectivity(),
+        &gold.element_node_connectivity,
+    );
     assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
 }
 
@@ -79,7 +82,7 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     /// The connectivity matrix of a finite element mesh, with E rows of
     /// elements, and with each element composed of N local element node numbers
     /// in columns.
-    element_connectivity: [[usize; N]; E],
+    element_node_connectivity: [[usize; N]; E],
 
     /// The matrix of nodal points, with D rows of nodal points, and with each
     /// nodal point composed of (x, y, z) floats in columns.
@@ -108,7 +111,7 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
     fn default() -> Self {
         Self {
             element_blocks: [0; E],
-            element_connectivity: [[0; N]; E],
+            element_node_connectivity: [[0; N]; E],
             element_coordinates: [[0.0; NSD]; D],
             file_path: "".to_string(),
             nel: [0; NSD],
@@ -132,7 +135,7 @@ mod into_finite_elements {
     fn single() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -153,7 +156,7 @@ mod into_finite_elements {
     fn single_scaled_up() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [10.0, 0.0, 0.0],
@@ -175,7 +178,7 @@ mod into_finite_elements {
     fn single_scaled_down() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [0.5, 0.0, 0.0],
@@ -197,7 +200,7 @@ mod into_finite_elements {
     fn single_translated_positive() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [0.3, 0.6, 0.9],
                 [1.3, 0.6, 0.9],
@@ -219,7 +222,7 @@ mod into_finite_elements {
     fn single_translated_negative() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [-1.0, -2.0, -3.0],
                 [0.0, -2.0, -3.0],
@@ -241,7 +244,7 @@ mod into_finite_elements {
     fn single_scaled_and_translated() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [0.1, 0.2, 0.3],
                 [10.1, 0.2, 0.3],
@@ -264,7 +267,7 @@ mod into_finite_elements {
     fn double_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11],
-            element_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
+            element_node_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -289,7 +292,7 @@ mod into_finite_elements {
     fn double_y() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11],
-            element_connectivity: [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]],
+            element_node_connectivity: [[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -314,7 +317,7 @@ mod into_finite_elements {
     fn triple_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 6, 5, 9, 10, 14, 13],
                 [2, 3, 7, 6, 10, 11, 15, 14],
                 [3, 4, 8, 7, 11, 12, 16, 15],
@@ -347,7 +350,7 @@ mod into_finite_elements {
     fn quadruple_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11, 11, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [3, 4, 9, 8, 13, 14, 19, 18],
@@ -386,7 +389,7 @@ mod into_finite_elements {
     fn quadruple_2_voids_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11],
-            element_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
+            element_node_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -416,7 +419,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 21, 21, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [3, 4, 9, 8, 13, 14, 19, 18],
@@ -456,7 +459,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_remove_1() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [21, 21],
-            element_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
+            element_node_connectivity: [[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]],
             element_coordinates: [
                 [1.0, 0.0, 0.0],
                 [2.0, 0.0, 0.0],
@@ -484,7 +487,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_remove_2() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11],
-            element_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
+            element_node_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -515,7 +518,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_void() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 21, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [4, 5, 10, 9, 14, 15, 20, 19],
@@ -553,7 +556,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_void_remove_0() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 21, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 7, 6, 11, 12, 17, 16],
                 [2, 3, 8, 7, 12, 13, 18, 17],
                 [4, 5, 10, 9, 14, 15, 20, 19],
@@ -593,7 +596,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_void_remove_1() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [21],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [1.0, 0.0, 0.0],
                 [2.0, 0.0, 0.0],
@@ -617,7 +620,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_void_remove_2() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11],
-            element_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
+            element_node_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
                 [1.0, 0.0, 0.0],
@@ -649,7 +652,7 @@ mod into_finite_elements {
     fn quadruple_2_blocks_void_remove_3() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [0],
-            element_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
+            element_node_connectivity: [[1, 2, 4, 3, 5, 6, 8, 7]],
             element_coordinates: [
                 [2.0, 0.0, 0.0],
                 [3.0, 0.0, 0.0],
@@ -671,7 +674,7 @@ mod into_finite_elements {
     fn cube() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11, 11, 11, 11, 11, 11, 11, 11],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 5, 4, 10, 11, 14, 13],
                 [2, 3, 6, 5, 11, 12, 15, 14],
                 [4, 5, 8, 7, 13, 14, 17, 16],
@@ -720,7 +723,7 @@ mod into_finite_elements {
     fn cube_multi() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [82, 2, 2, 2, 31, 44],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 5, 4, 10, 11, 14, 13],
                 [2, 3, 6, 5, 11, 12, 15, 14],
                 [4, 5, 8, 7, 13, 14, 17, 16],
@@ -764,7 +767,7 @@ mod into_finite_elements {
     fn letter_f() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [11; 8],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 4, 3, 19, 20, 22, 21],
                 [3, 4, 6, 5, 21, 22, 24, 23],
                 [5, 6, 9, 8, 23, 24, 27, 26],
@@ -823,7 +826,7 @@ mod into_finite_elements {
     fn letter_f_3d() {
         assert_fem_data_from_spn_eq_gold(Gold {
             element_blocks: [1; 39],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 7, 6, 31, 32, 37, 36],
                 [2, 3, 8, 7, 32, 33, 38, 37],
                 [3, 4, 9, 8, 33, 34, 39, 38],
@@ -982,7 +985,7 @@ mod into_finite_elements {
                 1, 1, 2, 1, 1, 1, 2, 2, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 1, 1,
                 2, 1,
             ],
-            element_connectivity: [
+            element_node_connectivity: [
                 [1, 2, 4, 3, 29, 30, 36, 35],
                 [3, 4, 10, 9, 35, 36, 42, 41],
                 [5, 6, 12, 11, 37, 38, 44, 43],
