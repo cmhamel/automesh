@@ -303,4 +303,86 @@ mod cube {
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
         assert_eq!(node_element_connectivity, &node_element_connectivity_gold);
     }
+    #[test]
+    fn calculate_node_node_connectivity() {
+        let element_blocks = vec![11; 9];
+        let element_node_connectivity = vec![
+            vec![1, 2, 5, 4, 10, 11, 14, 13],
+            vec![2, 3, 6, 5, 11, 12, 15, 14],
+            vec![4, 5, 8, 7, 13, 14, 17, 16],
+            vec![5, 6, 9, 8, 14, 15, 18, 17],
+            vec![10, 11, 14, 13, 19, 20, 23, 22],
+            vec![11, 12, 15, 14, 20, 21, 24, 23],
+            vec![13, 14, 17, 16, 22, 23, 26, 25],
+            vec![14, 15, 18, 17, 23, 24, 27, 26],
+        ];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![2.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![2.0, 1.0, 0.0],
+            vec![0.0, 2.0, 0.0],
+            vec![1.0, 2.0, 0.0],
+            vec![2.0, 2.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![2.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+            vec![2.0, 1.0, 1.0],
+            vec![0.0, 2.0, 1.0],
+            vec![1.0, 2.0, 1.0],
+            vec![2.0, 2.0, 1.0],
+            vec![0.0, 0.0, 2.0],
+            vec![1.0, 0.0, 2.0],
+            vec![2.0, 0.0, 2.0],
+            vec![0.0, 1.0, 2.0],
+            vec![1.0, 1.0, 2.0],
+            vec![2.0, 1.0, 2.0],
+            vec![0.0, 2.0, 2.0],
+            vec![1.0, 2.0, 2.0],
+            vec![2.0, 2.0, 2.0],
+        ];
+        let node_node_connectivity_gold = vec![
+            vec![2, 4, 10],
+            vec![1, 3, 5, 11],
+            vec![2, 6, 12],
+            vec![1, 5, 7, 13],
+            vec![2, 4, 6, 8, 14],
+            vec![3, 5, 9, 15],
+            vec![4, 8, 16],
+            vec![5, 7, 9, 17],
+            vec![6, 8, 18],
+            vec![1, 11, 13, 19],
+            vec![2, 10, 12, 14, 20],
+            vec![3, 11, 15, 21],
+            vec![4, 10, 14, 16, 22],
+            vec![5, 11, 13, 15, 17, 23],
+            vec![6, 12, 14, 18, 24],
+            vec![7, 13, 17, 25],
+            vec![8, 14, 16, 18, 26],
+            vec![9, 15, 17, 27],
+            vec![10, 20, 22],
+            vec![11, 19, 21, 23],
+            vec![12, 20, 24],
+            vec![13, 19, 23, 25],
+            vec![14, 20, 22, 24, 26],
+            vec![15, 21, 23, 27],
+            vec![16, 22, 26],
+            vec![17, 23, 25, 27],
+            vec![18, 24, 26],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .expect("the unexpected");
+        finite_elements
+            .calculate_node_node_connectivity()
+            .expect("the unexpected");
+        let node_node_connectivity = finite_elements.get_node_node_connectivity();
+        assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
+    }
 }
