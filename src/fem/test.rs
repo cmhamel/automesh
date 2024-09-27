@@ -52,6 +52,91 @@ mod single {
             .calculate_node_element_connectivity()
             .unwrap();
     }
+    #[test]
+    fn calculate_node_node_connectivity() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let node_node_connectivity_gold = vec![
+            vec![2, 3, 5],
+            vec![1, 4, 6],
+            vec![1, 4, 7],
+            vec![2, 3, 8],
+            vec![1, 6, 7],
+            vec![2, 5, 8],
+            vec![3, 5, 8],
+            vec![4, 6, 7],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .expect("the unexpected");
+        finite_elements
+            .calculate_node_node_connectivity()
+            .expect("the unexpected");
+        let node_node_connectivity = finite_elements.get_node_node_connectivity();
+        assert_eq!(node_node_connectivity.len(), 8);
+        assert_eq!(node_node_connectivity_gold.len(), 8);
+        node_node_connectivity
+            .iter()
+            .flatten()
+            .zip(node_node_connectivity_gold.iter().flatten())
+            .for_each(|(entry, gold)| assert_eq!(entry, gold));
+    }
+    #[test]
+    #[should_panic(expected = "Need to calculate and set the node-to-element connectivity first.")]
+    fn calculate_node_node_connectivity_did_not_calculate_node_element_connectivity() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements.calculate_node_node_connectivity().unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Already calculated and set the node-to-node connectivity.")]
+    fn calculate_node_node_connectivity_twice() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .expect("the unexpected");
+        finite_elements
+            .calculate_node_node_connectivity()
+            .expect("the unexpected");
+        finite_elements.calculate_node_node_connectivity().unwrap();
+    }
 }
 
 mod double_x {

@@ -13,6 +13,7 @@ use std::{
 };
 
 const ELEMENT_TYPE: &str = "C3D8R";
+const ELEMENT_NUM_NODES: usize = 8;
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
@@ -21,10 +22,12 @@ pub type Coordinates = Vec<Vec<f64>>;
 /// The finite elements type.
 pub struct FiniteElements {
     calculated_node_element_connectivity: bool,
+    calculated_node_node_connectivity: bool,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
+    node_node_connectivity: Connectivity,
 }
 
 /// Inherent implementation of the finite elements type.
@@ -37,10 +40,12 @@ impl FiniteElements {
     ) -> Self {
         Self {
             calculated_node_element_connectivity: false,
+            calculated_node_node_connectivity: false,
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,
             node_element_connectivity: vec![],
+            node_node_connectivity: vec![],
         }
     }
     /// Calculates and sets the node-to-element connectivity.
@@ -67,6 +72,79 @@ impl FiniteElements {
             Ok(())
         }
     }
+    /// Calculates and sets the node-to-node connectivity.
+    pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
+        if self.calculated_node_node_connectivity {
+            Err("Already calculated and set the node-to-node connectivity.")
+        } else if self.calculated_node_element_connectivity {
+            let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
+            let element_node_connectivity = self.get_element_node_connectivity();
+            let node_element_connectivity = self.get_node_element_connectivity();
+            let number_of_nodes = self.get_nodal_coordinates().len();
+            let mut node_node_connectivity = vec![vec![]; number_of_nodes];
+            node_node_connectivity
+                .iter_mut()
+                .zip(node_element_connectivity.iter().enumerate())
+                .for_each(|(connectivity, (node, node_connectivity))| {
+                    node_connectivity.iter().for_each(|element| {
+                        element_connectivity = element_node_connectivity[element - 1].clone();
+                        match element_connectivity.iter().position(|&n| n == node + 1) {
+                            Some(0) => {
+                                connectivity.push(element_connectivity[1]);
+                                connectivity.push(element_connectivity[3]);
+                                connectivity.push(element_connectivity[4]);
+                            }
+                            Some(1) => {
+                                connectivity.push(element_connectivity[0]);
+                                connectivity.push(element_connectivity[2]);
+                                connectivity.push(element_connectivity[5]);
+                            }
+                            Some(2) => {
+                                connectivity.push(element_connectivity[1]);
+                                connectivity.push(element_connectivity[3]);
+                                connectivity.push(element_connectivity[6]);
+                            }
+                            Some(3) => {
+                                connectivity.push(element_connectivity[0]);
+                                connectivity.push(element_connectivity[2]);
+                                connectivity.push(element_connectivity[7]);
+                            }
+                            Some(4) => {
+                                connectivity.push(element_connectivity[0]);
+                                connectivity.push(element_connectivity[5]);
+                                connectivity.push(element_connectivity[7]);
+                            }
+                            Some(5) => {
+                                connectivity.push(element_connectivity[1]);
+                                connectivity.push(element_connectivity[4]);
+                                connectivity.push(element_connectivity[6]);
+                            }
+                            Some(6) => {
+                                connectivity.push(element_connectivity[2]);
+                                connectivity.push(element_connectivity[5]);
+                                connectivity.push(element_connectivity[7]);
+                            }
+                            Some(7) => {
+                                connectivity.push(element_connectivity[3]);
+                                connectivity.push(element_connectivity[4]);
+                                connectivity.push(element_connectivity[6]);
+                            }
+                            Some(8..) => panic!(
+                                "The element-to-node connectivity has been incorrectly calculated."
+                            ),
+                            None => panic!(
+                                "The node-to-element connectivity has been incorrectly calculated."
+                            ),
+                        };
+                    })
+                });
+            self.node_node_connectivity = node_node_connectivity;
+            self.calculated_node_node_connectivity = true;
+            Ok(())
+        } else {
+            Err("Need to calculate and set the node-to-element connectivity first.")
+        }
+    }
     /// Returns a reference to the element blocks.
     pub fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
@@ -82,6 +160,10 @@ impl FiniteElements {
     /// Returns a reference to the node-to-element connectivity.
     pub fn get_node_element_connectivity(&self) -> &Connectivity {
         &self.node_element_connectivity
+    }
+    /// Returns a reference to the node-to-node connectivity.
+    pub fn get_node_node_connectivity(&self) -> &Connectivity {
+        &self.node_node_connectivity
     }
 }
 
