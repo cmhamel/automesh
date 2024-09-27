@@ -59,14 +59,16 @@ impl Voxels {
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]
     pub fn from_npy(file_path: &str) -> Self {
-        let data = voxel_data_from_npy(file_path);
-        Self { data }
+        Self {
+            data: voxel_data_from_npy(file_path).expect("error reading voxels data from NPY file"),
+        }
     }
     /// Constructs and returns a new voxels type from an SPN file.
     #[staticmethod]
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
-        let data = voxel_data_from_spn(file_path, nel);
-        Self { data }
+        Self {
+            data: voxel_data_from_spn(file_path, nel),
+        }
     }
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {

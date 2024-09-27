@@ -31,13 +31,15 @@ pub struct Voxels {
 impl Voxels {
     /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Self {
-        let data = voxel_data_from_npy(file_path);
-        Self { data }
+        Self {
+            data: voxel_data_from_npy(file_path).expect("error reading voxels data from NPY file"),
+        }
     }
     /// Constructs and returns a new voxels type from an SPN file.
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
-        let data = voxel_data_from_spn(file_path, nel);
-        Self { data }
+        Self {
+            data: voxel_data_from_spn(file_path, nel),
+        }
     }
     /// Returns a reference to the internal voxels data.
     pub fn get_data(&self) -> &VoxelData {
@@ -249,22 +251,20 @@ fn finite_element_data_from_npy_data(
     (element_blocks, element_node_connectivity, nodal_coordinates)
 }
 
-fn voxel_data_from_npy(file_path: &str) -> VoxelData {
+fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, &str> {
     if !file_path.ends_with(".npy") {
-        panic!("File type must be .npy.")
+        return Err("File type must be .npy.");
     }
     let npy_file = match File::open(file_path) {
         Ok(file) => file,
         Err(error) => match error.kind() {
-            ErrorKind::NotFound => {
-                panic!("Could not find the .npy file.")
-            }
+            ErrorKind::NotFound => return Err("Could not find the .npy file."),
             _ => {
-                panic!("Could not open the .npy file.");
+                return Err("Could not open the .npy file.");
             }
         },
     };
-    VoxelData::read_npy(npy_file).expect("Could not open the .npy file")
+    Ok(VoxelData::read_npy(npy_file).expect("Could not open the .npy file"))
 }
 
 fn voxel_data_from_spn(file_path: &str, nel: Nel) -> VoxelData {
