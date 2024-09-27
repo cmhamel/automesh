@@ -31,8 +31,8 @@ dev = [
 ]
 
 [project.urls]
-Documentation = 'https://github.com/autotwin/automesh'
-Homepage = 'https://github.com/autotwin/automesh'
+Documentation = 'https://automesh.readthedocs.io'
+Homepage = 'https://autotwin.github.io/automesh'
 Repository = 'https://github.com/autotwin/automesh'
 
 [tool.pytest.ini_options]
