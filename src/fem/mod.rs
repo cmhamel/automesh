@@ -11,14 +11,14 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 
+pub type Connectivity = Vec<Vec<usize>>;
 pub type ElementBlocks = Vec<usize>;
-pub type ElementConnectivity = Vec<Vec<usize>>;
 pub type NodalCoordinates = Vec<Vec<f64>>;
 
 /// The finite elements type.
 pub struct FiniteElements {
     element_blocks: ElementBlocks,
-    element_connectivity: ElementConnectivity,
+    element_connectivity: Connectivity,
     nodal_coordinates: NodalCoordinates,
 }
 
@@ -27,7 +27,7 @@ impl FiniteElements {
     /// Constructs and returns a new Exodus type from data.
     pub fn from_data(
         element_blocks: ElementBlocks,
-        element_connectivity: ElementConnectivity,
+        element_connectivity: Connectivity,
         nodal_coordinates: NodalCoordinates,
     ) -> Self {
         Self {
@@ -41,7 +41,7 @@ impl FiniteElements {
         &self.element_blocks
     }
     /// Returns a reference to the element connectivity.
-    pub fn get_element_connectivity(&self) -> &ElementConnectivity {
+    pub fn get_element_connectivity(&self) -> &Connectivity {
         &self.element_connectivity
     }
     /// Returns a reference to the nodal coordinates.
@@ -72,7 +72,7 @@ impl Exodus for FiniteElements {
 fn write_fem_to_inp(
     file_path: &str,
     element_blocks: &ElementBlocks,
-    element_connectivity: &ElementConnectivity,
+    element_connectivity: &Connectivity,
     nodal_coordinates: &NodalCoordinates,
 ) {
     let element_number_width = get_width(element_connectivity);
@@ -126,7 +126,7 @@ fn write_nodal_coordinates_to_inp(
 fn write_element_connectivity_to_inp(
     file: &mut BufWriter<File>,
     element_blocks: &ElementBlocks,
-    element_connectivity: &ElementConnectivity,
+    element_connectivity: &Connectivity,
     element_number_width: &usize,
     node_number_width: &usize,
 ) {

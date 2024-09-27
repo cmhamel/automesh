@@ -1,6 +1,4 @@
-use super::{
-    write_fem_to_inp, Abaqus, ElementBlocks, ElementConnectivity, Exodus, NodalCoordinates,
-};
+use super::{write_fem_to_inp, Abaqus, Connectivity, ElementBlocks, Exodus, NodalCoordinates};
 use numpy::{PyArray1, PyArray2};
 use pyo3::prelude::*;
 
@@ -13,7 +11,7 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 #[pyclass]
 pub struct FiniteElements {
     element_blocks: ElementBlocks,
-    element_connectivity: ElementConnectivity,
+    element_connectivity: Connectivity,
     nodal_coordinates: NodalCoordinates,
 }
 
@@ -23,7 +21,7 @@ impl FiniteElements {
     #[new]
     pub fn from_data(
         element_blocks: ElementBlocks,
-        element_connectivity: ElementConnectivity,
+        element_connectivity: Connectivity,
         nodal_coordinates: NodalCoordinates,
     ) -> Self {
         Self {

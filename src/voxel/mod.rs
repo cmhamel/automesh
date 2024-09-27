@@ -4,7 +4,7 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
-use super::fem::{ElementBlocks, ElementConnectivity, FiniteElements, NodalCoordinates};
+use super::fem::{Connectivity, ElementBlocks, FiniteElements, NodalCoordinates};
 use itertools::Itertools;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyExt, WriteNpyExt};
@@ -79,7 +79,7 @@ impl Voxels {
     }
 }
 
-fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConnectivity) {
+fn element_connectivity_node_renumbering(element_connectivity: &mut Connectivity) {
     element_connectivity
         .clone()
         .into_iter()
@@ -140,7 +140,7 @@ fn finite_element_data_from_npy_data(
     remove: Option<Vec<u8>>,
     scale: &Scale,
     translate: &Translate,
-) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
+) -> (ElementBlocks, Connectivity, NodalCoordinates) {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
@@ -151,7 +151,7 @@ fn finite_element_data_from_npy_data(
     let ytranslate = translate[1];
     let ztranslate = translate[2];
     let (filtered_voxel_data, element_blocks) = filter_voxel_data(data, remove);
-    let mut element_connectivity: ElementConnectivity = filtered_voxel_data
+    let mut element_connectivity: Connectivity = filtered_voxel_data
         .iter()
         .map(|entry| {
             vec![
