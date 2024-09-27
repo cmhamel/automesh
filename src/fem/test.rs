@@ -22,11 +22,7 @@ mod single {
             .calculate_node_element_connectivity()
             .expect("the unexpected");
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
-        assert_eq!(node_element_connectivity.len(), 8);
-        node_element_connectivity.iter().for_each(|connectivity| {
-            assert_eq!(connectivity.len(), 1);
-            assert_eq!(connectivity[0], 1);
-        });
+        assert_eq!(node_element_connectivity, &vec![vec![1]; 8]);
     }
     #[test]
     #[should_panic(expected = "Already calculated and set the node-to-element connectivity.")]
@@ -85,13 +81,7 @@ mod single {
             .calculate_node_node_connectivity()
             .expect("the unexpected");
         let node_node_connectivity = finite_elements.get_node_node_connectivity();
-        assert_eq!(node_node_connectivity.len(), 8);
-        assert_eq!(node_node_connectivity_gold.len(), 8);
-        node_node_connectivity
-            .iter()
-            .flatten()
-            .zip(node_node_connectivity_gold.iter().flatten())
-            .for_each(|(entry, gold)| assert_eq!(entry, gold));
+        assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }
     #[test]
     #[should_panic(expected = "Need to calculate and set the node-to-element connectivity first.")]
@@ -182,13 +172,53 @@ mod double_x {
             .calculate_node_element_connectivity()
             .expect("the unexpected");
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
-        assert_eq!(node_element_connectivity.len(), 12);
-        assert_eq!(node_element_connectivity_gold.len(), 12);
-        node_element_connectivity
-            .iter()
-            .flatten()
-            .zip(node_element_connectivity_gold.iter().flatten())
-            .for_each(|(entry, gold)| assert_eq!(entry, gold));
+        assert_eq!(node_element_connectivity, &node_element_connectivity_gold);
+    }
+    #[test]
+    fn calculate_node_node_connectivity() {
+        let element_blocks = vec![1, 2];
+        let element_node_connectivity = vec![
+            vec![1, 2, 5, 4, 7, 8, 11, 10],
+            vec![2, 3, 6, 5, 8, 9, 12, 11],
+        ];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![2.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![2.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![2.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+            vec![2.0, 1.0, 1.0],
+        ];
+        let node_node_connectivity_gold = vec![
+            vec![2, 4, 7],
+            vec![1, 3, 5, 8],
+            vec![2, 6, 9],
+            vec![1, 5, 10],
+            vec![2, 4, 6, 11],
+            vec![3, 5, 12],
+            vec![1, 8, 10],
+            vec![2, 7, 9, 11],
+            vec![3, 8, 12],
+            vec![4, 7, 11],
+            vec![5, 8, 10, 12],
+            vec![6, 9, 11],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .expect("the unexpected");
+        finite_elements
+            .calculate_node_node_connectivity()
+            .expect("the unexpected");
+        let node_node_connectivity = finite_elements.get_node_node_connectivity();
+        assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }
 }
 
@@ -271,12 +301,6 @@ mod cube {
             .calculate_node_element_connectivity()
             .expect("the unexpected");
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
-        assert_eq!(node_element_connectivity.len(), 27);
-        assert_eq!(node_element_connectivity_gold.len(), 27);
-        node_element_connectivity
-            .iter()
-            .flatten()
-            .zip(node_element_connectivity_gold.iter().flatten())
-            .for_each(|(entry, gold)| assert_eq!(entry, gold));
+        assert_eq!(node_element_connectivity, &node_element_connectivity_gold);
     }
 }

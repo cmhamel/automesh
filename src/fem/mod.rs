@@ -136,9 +136,12 @@ impl FiniteElements {
                                 "The node-to-element connectivity has been incorrectly calculated."
                             ),
                         };
-                    })
+                    });
                 });
-            self.node_node_connectivity = node_node_connectivity;
+            self.node_node_connectivity = node_node_connectivity
+                .into_iter()
+                .map(|connectivity| connectivity.into_iter().unique().sorted().collect())
+                .collect();
             self.calculated_node_node_connectivity = true;
             Ok(())
         } else {
