@@ -4,7 +4,10 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
-use super::fem::{ElementBlocks, ElementConnectivity, FiniteElements, NodalCoordinates};
+use super::{
+    fem::{Blocks, Connectivity, Coordinates, FiniteElements},
+    NODE_NUMBERING_OFFSET,
+};
 use itertools::Itertools;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyExt, WriteNpyExt};
@@ -12,8 +15,6 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, ErrorKind},
 };
-
-const NODE_NUMBERING_OFFSET: usize = 1;
 
 type Nel = [usize; 3];
 type Scale = [f64; 3];
@@ -30,13 +31,15 @@ pub struct Voxels {
 impl Voxels {
     /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Self {
-        let data = voxel_data_from_npy(file_path);
-        Self { data }
+        Self {
+            data: voxel_data_from_npy(file_path).expect("error reading voxels data from NPY file"),
+        }
     }
     /// Constructs and returns a new voxels type from an SPN file.
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
-        let data = voxel_data_from_spn(file_path, nel);
-        Self { data }
+        Self {
+            data: voxel_data_from_spn(file_path, nel),
+        }
     }
     /// Returns a reference to the internal voxels data.
     pub fn get_data(&self) -> &VoxelData {
@@ -69,9 +72,9 @@ impl Voxels {
         scale: &Scale,
         translate: &Translate,
     ) -> FiniteElements {
-        let (element_blocks, element_connectivity, nodal_coordinates) =
+        let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_npy_data(self.get_data(), remove, scale, translate);
-        FiniteElements::from_data(element_blocks, element_connectivity, nodal_coordinates)
+        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
@@ -79,8 +82,8 @@ impl Voxels {
     }
 }
 
-fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConnectivity) {
-    element_connectivity
+fn element_node_connectivity_node_renumbering(element_node_connectivity: &mut Connectivity) {
+    element_node_connectivity
         .clone()
         .into_iter()
         .flatten()
@@ -89,7 +92,7 @@ fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConne
         .enumerate()
         .filter(|(index, id)| &(index + 1) != id)
         .for_each(|(index, id)| {
-            element_connectivity
+            element_node_connectivity
                 .iter_mut()
                 .flatten()
                 .filter(|entry| *entry == &id)
@@ -97,10 +100,7 @@ fn element_connectivity_node_renumbering(element_connectivity: &mut ElementConne
         });
 }
 
-fn filter_voxel_data(
-    data: &VoxelData,
-    remove: Option<Vec<u8>>,
-) -> (VoxelDataSized<3>, ElementBlocks) {
+fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<3>, Blocks) {
     let removed_data = remove.unwrap_or(vec![0]);
     let filtered_voxel_data_combo: VoxelDataSized<4> = data
         .axis_iter(Axis(2))
@@ -140,7 +140,7 @@ fn finite_element_data_from_npy_data(
     remove: Option<Vec<u8>>,
     scale: &Scale,
     translate: &Translate,
-) -> (ElementBlocks, ElementConnectivity, NodalCoordinates) {
+) -> (Blocks, Connectivity, Coordinates) {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
@@ -151,7 +151,7 @@ fn finite_element_data_from_npy_data(
     let ytranslate = translate[1];
     let ztranslate = translate[2];
     let (filtered_voxel_data, element_blocks) = filter_voxel_data(data, remove);
-    let mut element_connectivity: ElementConnectivity = filtered_voxel_data
+    let mut element_node_connectivity: Connectivity = filtered_voxel_data
         .iter()
         .map(|entry| {
             vec![
@@ -194,8 +194,8 @@ fn finite_element_data_from_npy_data(
             ]
         })
         .collect();
-    element_connectivity_node_renumbering(&mut element_connectivity);
-    let number_of_nodes = element_connectivity
+    element_node_connectivity_node_renumbering(&mut element_node_connectivity);
+    let number_of_nodes = element_node_connectivity
         .clone()
         .into_iter()
         .flatten()
@@ -205,7 +205,7 @@ fn finite_element_data_from_npy_data(
     let mut nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
     filtered_voxel_data
         .iter()
-        .zip(element_connectivity.iter())
+        .zip(element_node_connectivity.iter())
         .for_each(|(entry, connectivity)| {
             nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = vec![
                 (entry[0] as f64) * xscale + xtranslate,
@@ -248,25 +248,23 @@ fn finite_element_data_from_npy_data(
                 (entry[2] as f64 + 1.0) * zscale + ztranslate,
             ];
         });
-    (element_blocks, element_connectivity, nodal_coordinates)
+    (element_blocks, element_node_connectivity, nodal_coordinates)
 }
 
-fn voxel_data_from_npy(file_path: &str) -> VoxelData {
+fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, &str> {
     if !file_path.ends_with(".npy") {
-        panic!("File type must be .npy.")
+        return Err("File type must be .npy.");
     }
     let npy_file = match File::open(file_path) {
         Ok(file) => file,
         Err(error) => match error.kind() {
-            ErrorKind::NotFound => {
-                panic!("Could not find the .npy file.")
-            }
+            ErrorKind::NotFound => return Err("Could not find the .npy file."),
             _ => {
-                panic!("Could not open the .npy file.");
+                return Err("Could not open the .npy file.");
             }
         },
     };
-    VoxelData::read_npy(npy_file).expect("Could not open the .npy file")
+    Ok(VoxelData::read_npy(npy_file).expect("Could not open the .npy file"))
 }
 
 fn voxel_data_from_spn(file_path: &str, nel: Nel) -> VoxelData {
