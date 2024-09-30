@@ -46,7 +46,7 @@ impl Voxels {
         &self.data
     }
     #[doc = svgbobdoc::transform!(
-    /// Converts the voxels type into a finite element type, consuming the voxels type.
+    /// Converts the voxels type into a finite elements type, consuming the voxels type.
     ///
     /// The voxel data can be scaled and translated (in that order).
     ///

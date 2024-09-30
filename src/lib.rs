@@ -13,12 +13,10 @@
 mod py;
 
 mod abaqus;
-mod exodus;
 mod fem;
 mod voxel;
 
 pub use abaqus::Abaqus;
-pub use exodus::Exodus;
 pub use fem::FiniteElements;
 pub use voxel::Voxels;
 

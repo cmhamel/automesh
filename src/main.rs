@@ -1,4 +1,4 @@
-use automesh::{Abaqus, Exodus, Voxels};
+use automesh::{Abaqus, Voxels};
 use clap::Parser;
 use std::path::Path;
 
@@ -221,7 +221,6 @@ fn main() {
         .extension()
         .and_then(|ext| ext.to_str())
     {
-        Some("exo") => fea.write_exo(&args.output),
         Some("inp") => fea.write_inp(&args.output),
         _ => panic!("Invalid output ({}) specified.", args.output),
     };
