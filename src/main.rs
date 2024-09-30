@@ -23,7 +23,7 @@ struct Args {
     #[arg(short, long)]
     input: String,
 
-    /// Name of the Exodus (.exo) or Abaqus (.inp) output file.
+    /// Name of the Abaqus (.inp) output file.
     #[arg(short, long)]
     output: String,
 
@@ -84,10 +84,10 @@ fn validate(args: &Args) {
         _ => panic!("Input must be of type .npy or .spn"),
     }
     let output_path = Path::new(&args.output);
-    let extension = output_path.extension().and_then(|exo| exo.to_str());
+    let extension = output_path.extension().and_then(|ext| ext.to_str());
     match extension {
-        Some("exo") | Some("inp") => {}
-        _ => panic!("Output must be of type .exo or .inp"),
+        Some("inp") => {}
+        _ => panic!("Output must be of type .inp"),
     }
 }
 
@@ -98,7 +98,7 @@ mod tests {
     fn default_args() -> Args {
         Args {
             input: "foo.spn".to_string(),
-            output: "bar.exo".to_string(),
+            output: "bar.inp".to_string(),
             remove: None,
             nelx: 1,
             nely: 1,
@@ -190,8 +190,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Output must be of type .exo or .inp")]
-    fn test_output_not_exo_or_inp() {
+    #[should_panic(expected = "Output must be of type .inp")]
+    fn test_output_not_inp() {
         let default_args = default_args();
         let args_bad = Args {
             output: "bad_extension.bad".to_string(),
