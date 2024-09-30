@@ -2,7 +2,7 @@
 
 ```rust
 # extern crate automesh;
-use automesh::{Abaqus, Exodus, FiniteElements, Voxels};
+use automesh::{Abaqus, FiniteElements, Voxels};
 ```
 
 ## Example
