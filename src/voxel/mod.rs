@@ -10,7 +10,7 @@ use super::{
 };
 use itertools::Itertools;
 use ndarray::{Array3, Axis};
-use ndarray_npy::{ReadNpyExt, WriteNpyExt};
+use ndarray_npy::{ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, ErrorKind},
@@ -38,7 +38,8 @@ impl Voxels {
     /// Constructs and returns a new voxels type from an SPN file.
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
         Self {
-            data: voxel_data_from_spn(file_path, nel),
+            data: voxel_data_from_spn(file_path, nel)
+                .expect("error reading voxels data from SPN file"),
         }
     }
     /// Returns a reference to the internal voxels data.
@@ -79,6 +80,7 @@ impl Voxels {
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
         write_voxels_to_npy(self.get_data(), file_path)
+            .expect("error writing voxels data to NPY file")
     }
 }
 
@@ -251,24 +253,29 @@ fn finite_element_data_from_npy_data(
     (element_blocks, element_node_connectivity, nodal_coordinates)
 }
 
-fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, &str> {
-    if !file_path.ends_with(".npy") {
-        return Err("File type must be .npy.");
+fn check_file<'a>(file_path: &'a str, required_extension: &'a str) -> Result<File, String> {
+    if !file_path.ends_with(required_extension) {
+        Err(format!("File type must be {}.", required_extension))
+    } else {
+        match File::open(file_path) {
+            Ok(file) => Ok(file),
+            Err(error) => match error.kind() {
+                ErrorKind::NotFound => {
+                    Err(format!("Could not find the {} file.", required_extension))
+                }
+                _ => Err(format!("Could not open the {} file.", required_extension)),
+            },
+        }
     }
-    let npy_file = match File::open(file_path) {
-        Ok(file) => file,
-        Err(error) => match error.kind() {
-            ErrorKind::NotFound => return Err("Could not find the .npy file."),
-            _ => {
-                return Err("Could not open the .npy file.");
-            }
-        },
-    };
-    Ok(VoxelData::read_npy(npy_file).expect("Could not open the .npy file"))
 }
 
-fn voxel_data_from_spn(file_path: &str, nel: Nel) -> VoxelData {
-    let flat = BufReader::new(File::open(file_path).expect("File was not found."))
+fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, String> {
+    Ok(VoxelData::read_npy(check_file(file_path, ".npy")?).expect("Could not open the .npy file"))
+}
+
+fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, String> {
+    let spn_file = check_file(file_path, ".spn")?;
+    let flat = BufReader::new(spn_file)
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
         .collect::<Vec<u8>>();
@@ -285,10 +292,9 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> VoxelData {
                     })
                 })
         });
-    data
+    Ok(data)
 }
 
-fn write_voxels_to_npy(data: &VoxelData, file_path: &str) {
-    data.write_npy(BufWriter::new(File::create(file_path).unwrap()))
-        .unwrap();
+fn write_voxels_to_npy(data: &VoxelData, file_path: &str) -> Result<(), WriteNpyError> {
+    data.write_npy(BufWriter::new(File::create(file_path)?))
 }

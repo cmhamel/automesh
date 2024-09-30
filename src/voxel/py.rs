@@ -41,11 +41,12 @@ impl Voxels {
     #[staticmethod]
     pub fn from_spn(file_path: &str, nel: Nel) -> Self {
         Self {
-            data: voxel_data_from_spn(file_path, nel),
+            data: voxel_data_from_spn(file_path, nel)
+                .expect("error reading voxels data from SPN file"),
         }
     }
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) {
-        write_voxels_to_npy(&self.data, file_path);
+        write_voxels_to_npy(&self.data, file_path).expect("error writing voxels data to NPY file")
     }
 }

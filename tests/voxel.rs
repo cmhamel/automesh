@@ -122,12 +122,6 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
     }
 }
 
-#[test]
-fn from_spn() {
-    let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
-    assert_data_eq_gold(voxels);
-}
-
 mod into_finite_elements {
     use super::*;
     /// A single voxel lattice.
@@ -972,7 +966,7 @@ mod into_finite_elements {
                 [4.0, 5.0, 3.0],
             ],
             file_path: "tests/input/letter_f_3d.spn".to_string(),
-            nel: [4, 5, 3],
+            nel: NEL,
             ..Default::default()
         });
     }
@@ -1270,14 +1264,39 @@ mod from_npy {
     }
 }
 
+mod from_spn {
+    use super::*;
+    #[test]
+    #[should_panic(expected = "File type must be .spn")]
+    fn file_unreadable() {
+        let _ = Voxels::from_spn("tests/input/letter_f_3d.txt", NEL);
+    }
+    #[test]
+    #[should_panic(expected = "Could not find the .spn file")]
+    fn file_nonexistent() {
+        let _ = Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL);
+    }
+    #[test]
+    fn success() {
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
+        assert_data_eq_gold(voxels);
+    }
+}
+
 mod write_npy {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]);
+        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
         voxels_from_spn.write_npy("target/letter_f_3d.npy");
         let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy");
         assert_data_eq(voxels_from_npy, voxels_from_spn);
+    }
+    #[test]
+    #[should_panic(expected = "No such file or directory")]
+    fn no_such_directory() {
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
+        voxels.write_npy("no_such_directory/foo.npy");
     }
     #[test]
     fn sparse() {
