@@ -1293,6 +1293,7 @@ mod write_npy {
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
     #[test]
+    #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn no_such_directory() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
