@@ -1,6 +1,6 @@
 use automesh::{Abaqus, Voxels};
 use clap::Parser;
-use std::path::Path;
+use std::{path::Path, time::Instant};
 
 #[derive(Parser)]
 #[command(about = format!("
@@ -8,13 +8,14 @@ use std::path::Path;
      @@@@@@@@@@@@@@@@
       @@@@  @@@@@@@@@@
      @@@@  @@@@@@@@@@@
-    @@@@  @@@@@@@@@@@@    \x1b[1;4mAutomesh: Automatic mesh generation\x1b[0m
+    @@@@  @@@@@@@@@@@@    \x1b[1;4m{}: Automatic mesh generation\x1b[0m
       @@    @@    @@      {}
       @@    @@    @@      {}
     @@@@@@@@@@@@  @@@
     @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
     @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
      @@@@@@@@@@@@@@@@     - Scaling is applied before translation.",
+env!("CARGO_PKG_NAME"),
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
 ), arg_required_else_help = true, long_about = None, version)]
@@ -26,6 +27,10 @@ struct Args {
     /// Name of the Abaqus (.inp) output file.
     #[arg(short, long)]
     output: String,
+
+    /// Pass to quiet the output.
+    #[arg(short, long, action)]
+    quiet: bool,
 
     /// Voxel IDs to remove from the mesh [default: 0].
     #[arg(short = 'r', long)]
@@ -99,6 +104,7 @@ mod tests {
         Args {
             input: "foo.spn".to_string(),
             output: "bar.inp".to_string(),
+            quiet: false,
             remove: None,
             nelx: 1,
             nely: 1,
@@ -202,16 +208,33 @@ mod tests {
 }
 
 fn main() {
+    let time = Instant::now();
     let args = Args::parse();
+    if !args.quiet {
+        println!(
+            "\x1b[1m    {} {}\x1b[0m",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+    }
     validate(&args);
     let input = match Path::new(&args.input)
         .extension()
         .and_then(|ext| ext.to_str())
     {
-        Some("npy") => Voxels::from_npy(&args.input),
+        Some("npy") => {
+            if !args.quiet {
+                println!("     \x1b[1;96mReading\x1b[0m {}", args.input);
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            Voxels::from_npy(&args.input)
+        }
         Some("spn") => Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
         _ => panic!("Invalid input ({}) specified.", args.input),
     };
+    if !args.quiet {
+        println!("\x1b[F       \x1b[1;92mInput\x1b[0m {}", args.input);
+    }
     let fea = input.into_finite_elements(
         args.remove,
         &[args.xscale, args.yscale, args.zscale],
@@ -221,7 +244,19 @@ fn main() {
         .extension()
         .and_then(|ext| ext.to_str())
     {
-        Some("inp") => fea.write_inp(&args.output),
+        Some("inp") => {
+            if !args.quiet {
+                println!("     \x1b[1;96mMeshing\x1b[0m {}", args.output);
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+            fea.write_inp(&args.output);
+            if !args.quiet {
+                println!("\x1b[F      \x1b[1;92mOutput\x1b[0m {}", args.output);
+            }
+        }
         _ => panic!("Invalid output ({}) specified.", args.output),
     };
+    if !args.quiet {
+        println!("        \x1b[1;92mTime\x1b[0m {:?}", time.elapsed());
+    }
 }
