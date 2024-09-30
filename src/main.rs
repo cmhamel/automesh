@@ -226,7 +226,6 @@ fn main() {
             if !args.quiet {
                 println!("     \x1b[1;96mReading\x1b[0m {}", args.input);
             }
-            std::thread::sleep(std::time::Duration::from_millis(1000));
             Voxels::from_npy(&args.input)
         }
         Some("spn") => Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz]),
@@ -248,7 +247,6 @@ fn main() {
             if !args.quiet {
                 println!("     \x1b[1;96mMeshing\x1b[0m {}", args.output);
             }
-            std::thread::sleep(std::time::Duration::from_millis(1000));
             fea.write_inp(&args.output);
             if !args.quiet {
                 println!("\x1b[F      \x1b[1;92mOutput\x1b[0m {}", args.output);
