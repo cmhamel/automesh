@@ -4,7 +4,7 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
-use super::{abaqus::Abaqus, exodus::Exodus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
+use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
 use chrono::Utc;
 use itertools::Itertools;
 use std::{
@@ -32,7 +32,7 @@ pub struct FiniteElements {
 
 /// Inherent implementation of the finite elements type.
 impl FiniteElements {
-    /// Constructs and returns a new Exodus type from data.
+    /// Constructs and returns a new finite elements type from data.
     pub fn from_data(
         element_blocks: Blocks,
         element_node_connectivity: Connectivity,
@@ -179,13 +179,6 @@ impl Abaqus for FiniteElements {
             self.get_element_node_connectivity(),
             self.get_nodal_coordinates(),
         )
-    }
-}
-
-/// Exodus implementation of the finite elements type.
-impl Exodus for FiniteElements {
-    fn write_exo(&self, _file_path: &str) {
-        todo!("Writing Exodus files has not yet been implemented.")
     }
 }
 
