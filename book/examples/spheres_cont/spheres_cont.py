@@ -41,19 +41,8 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
         ------
         ValueError
             If the resolution is less than 1.
-
-        Example
-        -------
-        >>> sphere(resolution=2) returns
-            array(
-                [
-    #                [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
-    #                [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
-    #                [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
-                ],
-                dtype=uint8
-            )
     """
+    print(f"Creating sphere with resolution: {resolution}")
     if resolution < 1:
         raise ValueError("Resolution must be >= 1")
 
@@ -83,6 +72,7 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
 
     result = mask_10_in + shell_10_11 + shell_11_12
     # breakpoint()
+    print(f"Completed: Sphere with resolution: {resolution}")
     return result
 
 
@@ -94,6 +84,8 @@ tt = tuple(map(lambda x: [0, 12*x, 24*x], rr))  # ticks
 spheres = {
     "resolution_1": sphere(resolution=rr[0]),
     "resolution_2": sphere(resolution=rr[1]),
+    "resolution_3": sphere(resolution=rr[2]),
+    "resolution_4": sphere(resolution=rr[3]),
 }
 
 aa = Path(__file__)
@@ -114,40 +106,41 @@ colors = cmap(np.linspace(0, 1, num_colors))
 lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 dpi: Final[int] = 300  # resolution, dots per inch
-visualize: Final[bool] = True  # turn to True to show the figure on screen
+visualize: Final[bool] = False  # turn to True to show the figure on screen
 serialize: Final[bool] = True  # turn to True to save .png and .npy files
 # User input end
 
 N_SUBPLOTS = len(spheres)
 for index, (key, value) in enumerate(spheres.items()):
-    print(f"index: {index}")
-    print(f"key: {key}")
-    print(f"value: {value}")
-    ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
-    ax.voxels(
-        value,
-        facecolors=colors[index],
-        edgecolor=colors[index],
-        alpha=voxel_alpha,
-        lightsource=lightsource)
-    ax.set_title(key)
+    if visualize:
+        print(f"index: {index}")
+        print(f"key: {key}")
+        print(f"value: {value}")
+        ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
+        ax.voxels(
+            value,
+            facecolors=colors[index],
+            edgecolor=colors[index],
+            alpha=voxel_alpha,
+            lightsource=lightsource)
+        ax.set_title(key)
 
-    # Set labels for the axes
-    ax.set_xlabel("x (voxels)")
-    ax.set_ylabel("y (voxels)")
-    ax.set_zlabel("z (voxels)")
+        # Set labels for the axes
+        ax.set_xlabel("x (voxels)")
+        ax.set_ylabel("y (voxels)")
+        ax.set_zlabel("z (voxels)")
 
-    ax.set_xticks(ticks=tt[index])
-    ax.set_yticks(ticks=tt[index])
-    ax.set_zticks(ticks=tt[index])
+        ax.set_xticks(ticks=tt[index])
+        ax.set_yticks(ticks=tt[index])
+        ax.set_zticks(ticks=tt[index])
 
-    ax.set_xlim(lims[index])
-    ax.set_ylim(lims[index])
-    ax.set_zlim(lims[index])
+        ax.set_xlim(lims[index])
+        ax.set_ylim(lims[index])
+        ax.set_zlim(lims[index])
 
-    # Set the camera view
-    ax.set_aspect("equal")
-    ax.view_init(elev=el, azim=az, roll=roll)
+        # Set the camera view
+        ax.set_aspect("equal")
+        ax.view_init(elev=el, azim=az, roll=roll)
 
     if serialize:
         cc = aa.with_stem("spheres_" + key)
@@ -160,6 +153,6 @@ for index, (key, value) in enumerate(spheres.items()):
 if visualize:
     plt.show()
 
-if serialize:
-    fig.savefig(bb, dpi=dpi)
-    print(f"Saved: {bb}")
+    if serialize:
+        fig.savefig(bb, dpi=dpi)
+        print(f"Saved: {bb}")
