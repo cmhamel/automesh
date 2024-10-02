@@ -27,9 +27,9 @@ pub struct FiniteElements {
     calculated_node_node_connectivity: bool,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
-    _exterior_nodes: Nodes,
-    _interior_nodes: Nodes,
+    exterior_nodes: Nodes,
     interface_nodes: Nodes,
+    interior_nodes: Nodes,
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
@@ -49,9 +49,9 @@ impl FiniteElements {
             calculated_node_node_connectivity: false,
             element_blocks,
             element_node_connectivity,
-            _exterior_nodes: vec![],
-            _interior_nodes: vec![],
+            exterior_nodes: vec![],
             interface_nodes: vec![],
+            interior_nodes: vec![],
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
@@ -62,26 +62,30 @@ impl FiniteElements {
         if self.calculated_nodal_hierarchy {
             Err("Already calculated and set the nodal hierarchy.")
         } else if self.calculated_node_element_connectivity {
-            let mut connected_blocks = vec![];
             let element_blocks = self.get_element_blocks();
+            let mut exterior_nodes = vec![];
             let mut interface_nodes = vec![];
+            let mut interior_nodes = vec![];
             let node_element_connectivity = self.get_node_element_connectivity();
             node_element_connectivity
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
-                    connected_blocks = connected_elements
+                    if connected_elements
                         .iter()
                         .map(|element| element_blocks[element - ELEMENT_NUMBERING_OFFSET])
                         .unique()
-                        .collect();
-                    if connected_blocks.len() > 1 {
+                        .collect::<Vec<usize>>()
+                        .len()
+                        > 1
+                    {
                         interface_nodes.push(node + NODE_NUMBERING_OFFSET);
+                    } else if connected_elements.len() == 8 {
+                        interior_nodes.push(node + NODE_NUMBERING_OFFSET);
+                    } else {
+                        exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            // if (touches two different blocks) => interface
-            // else (if touches free surface) => surface
-            // else => interior
             self.interface_nodes = interface_nodes;
             self.calculated_nodal_hierarchy = true;
             Ok(())
@@ -205,9 +209,17 @@ impl FiniteElements {
     pub fn get_element_node_connectivity(&self) -> &Connectivity {
         &self.element_node_connectivity
     }
+    /// Returns a reference to the exterior nodes.
+    pub fn get_exterior_nodes(&self) -> &Nodes {
+        &self.exterior_nodes
+    }
     /// Returns a reference to the interface nodes.
     pub fn get_interface_nodes(&self) -> &Nodes {
         &self.interface_nodes
+    }
+    /// Returns a reference to the interior nodes.
+    pub fn get_interior_nodes(&self) -> &Nodes {
+        &self.interior_nodes
     }
     /// Returns a reference to the nodal coordinates.
     pub fn get_nodal_coordinates(&self) -> &Coordinates {
