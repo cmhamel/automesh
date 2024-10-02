@@ -24,5 +24,5 @@ fn main() {
 The resulting Abaqus input file:
 
 ```sh
-<!-- cmdrun cat ../../target/single_from_cli.inp -->
+{{#include ../../target/single_from_cli.inp}}
 ```
