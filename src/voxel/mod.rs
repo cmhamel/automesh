@@ -13,7 +13,7 @@ use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
     fs::File,
-    io::{BufRead, BufReader, BufWriter, ErrorKind},
+    io::{BufRead, BufReader, BufWriter, Error},
 };
 
 type Nel = [usize; 3];
@@ -251,30 +251,30 @@ fn finite_element_data_from_npy_data(
     (element_blocks, element_node_connectivity, nodal_coordinates)
 }
 
-fn check_file<'a>(file_path: &'a str, required_extension: &'a str) -> Result<File, String> {
-    if !file_path.ends_with(required_extension) {
-        Err(format!("File type must be {}.", required_extension))
-    } else {
-        match File::open(file_path) {
-            Ok(file) => Ok(file),
-            Err(error) => match error.kind() {
-                ErrorKind::NotFound => {
-                    Err(format!("Could not find the {} file.", required_extension))
-                }
-                _ => Err(format!("Could not open the {} file.", required_extension)),
-            },
+struct IntermediateError {
+    message: String,
+}
+
+impl From<Error> for IntermediateError {
+    fn from(err: Error) -> IntermediateError {
+        IntermediateError {
+            message: err.to_string(),
         }
     }
 }
 
+impl From<IntermediateError> for String {
+    fn from(err: IntermediateError) -> String {
+        err.message
+    }
+}
+
 fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
-    // VoxelData::read_npy(check_file(file_path, ".npy")?)
     VoxelData::read_npy(File::open(file_path)?)
 }
 
-fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, String> {
-    let spn_file = check_file(file_path, ".spn")?;
-    let flat = BufReader::new(spn_file)
+fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, IntermediateError> {
+    let flat = BufReader::new(File::open(file_path)?)
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
         .collect::<Vec<u8>>();

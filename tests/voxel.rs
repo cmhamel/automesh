@@ -1243,19 +1243,25 @@ mod into_finite_elements {
 mod from_npy {
     use super::*;
     #[test]
-    #[should_panic(expected = "File type must be .npy")]
-    fn file_unreadable() {
-        let _ = Voxels::from_npy("tests/input/letter_f_3d.txt");
-    }
-    #[test]
-    #[should_panic(expected = "Could not find the .npy file")]
+    #[should_panic(expected = "I/O error: No such file or directory")]
     fn file_nonexistent() {
-        let _ = Voxels::from_npy("tests/input/f_file_nonexistent.npy");
+        Voxels::from_npy("tests/input/f_file_nonexistent.npy")
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Could not open the .npy file")]
+    #[should_panic(expected = "error parsing header: start does not match magic string")]
+    fn file_unreadable() {
+        Voxels::from_npy("tests/input/letter_f_3d.txt")
+            .map_err(|e| e.to_string())
+            .unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "error parsing header: start does not match magic string")]
     fn file_unopenable() {
-        let _ = Voxels::from_npy("tests/input/encrypted.npy");
+        Voxels::from_npy("tests/input/encrypted.npy")
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
     fn success() {
@@ -1267,14 +1273,18 @@ mod from_npy {
 mod from_spn {
     use super::*;
     #[test]
-    #[should_panic(expected = "File type must be .spn")]
-    fn file_unreadable() {
-        let _ = Voxels::from_spn("tests/input/letter_f_3d.txt", NEL);
+    #[should_panic(expected = "No such file or directory")]
+    fn file_nonexistent() {
+        Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL)
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Could not find the .spn file")]
-    fn file_nonexistent() {
-        let _ = Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL);
+    #[should_panic(expected = "ParseIntError { kind: InvalidDigit }")]
+    fn file_unreadable() {
+        Voxels::from_spn("tests/input/letter_f_3d.txt", NEL)
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
     fn success() {
