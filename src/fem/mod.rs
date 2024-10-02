@@ -85,7 +85,9 @@ impl FiniteElements {
                         exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            self.interface_nodes = interface_nodes;
+            self.exterior_nodes = exterior_nodes.into_iter().sorted().collect();
+            self.interface_nodes = interface_nodes.into_iter().sorted().collect();
+            self.interior_nodes = interior_nodes.into_iter().sorted().collect();
             self.calculated_nodal_hierarchy = true;
             Ok(())
         } else {
