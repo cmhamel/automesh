@@ -1,6 +1,7 @@
 use automesh::{Abaqus, Voxels};
 use clap::Parser;
-use std::{path::Path, time::Instant};
+use ndarray_npy::ReadNpyError;
+use std::{io::Error, path::Path, time::Instant};
 
 #[derive(Parser)]
 #[command(about = format!("
@@ -88,7 +89,39 @@ struct Args {
     quiet: bool,
 }
 
-fn validate(args: &Args) {
+struct ErrorWrapper {
+    message: String,
+}
+
+impl std::fmt::Debug for ErrorWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "\x1b[1;91m{}.\x1b[0m", self.message)
+    }
+}
+
+impl From<Error> for ErrorWrapper {
+    fn from(error: Error) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<ReadNpyError> for ErrorWrapper {
+    fn from(error: ReadNpyError) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<String> for ErrorWrapper {
+    fn from(message: String) -> ErrorWrapper {
+        ErrorWrapper { message }
+    }
+}
+
+fn validate(args: &Args) -> Result<(), String> {
     assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
     assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
     assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
@@ -101,14 +134,105 @@ fn validate(args: &Args) {
             assert!(args.nely >= 1, "Need to specify nely > 0");
             assert!(args.nelz >= 1, "Need to specify nelz > 0");
         }
-        _ => panic!("\x1b[1;91mInput must be of type .npy or .spn\x1b[0m"),
+        _ => Err("Input must be of type .npy or .spn.".to_string())?,
     }
     let output_path = Path::new(&args.output);
     let extension = output_path.extension().and_then(|ext| ext.to_str());
     match extension {
-        Some("inp") => {}
-        _ => panic!("\x1b[1;91mOutput must be of type .inp\x1b[0m"),
+        Some("inp") => Ok(()),
+        _ => Err("Output must be of type .inp.".to_string()),
     }
+}
+
+fn main() -> Result<(), ErrorWrapper> {
+    let time_0 = Instant::now();
+    let args = Args::parse();
+    if !args.quiet {
+        println!(
+            "\x1b[1m    {} {}\x1b[0m",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+    }
+    validate(&args)?;
+    if !args.quiet {
+        print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
+    }
+    let input = match Path::new(&args.input)
+        .extension()
+        .and_then(|ext| ext.to_str())
+    {
+        Some("npy") => {
+            if !args.quiet {
+                println!();
+            }
+            Voxels::from_npy(&args.input)?
+        }
+        Some("spn") => {
+            if !args.quiet {
+                println!(
+                    " [nelx: {}, nely: {}, nelz: {}]",
+                    args.nelx, args.nely, args.nelz
+                );
+            }
+            Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])?
+        }
+        _ => panic!("unreachable since validate() checks"),
+    };
+    if !args.quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
+        let entirely_default = args.xscale == 1.0
+            && args.yscale == 1.0
+            && args.zscale == 1.0
+            && args.xtranslate == 0.0
+            && args.ytranslate == 0.0
+            && args.ztranslate == 0.0;
+        print!("     \x1b[1;96mMeshing\x1b[0m {}", args.output);
+        if !entirely_default {
+            print!(" [");
+        }
+        if args.xscale != 1.0 {
+            print!("xscale: {}, ", args.xscale);
+        }
+        if args.yscale != 1.0 {
+            print!("yscale: {}, ", args.yscale);
+        }
+        if args.zscale != 1.0 {
+            print!("zscale: {}, ", args.zscale);
+        }
+        if args.xtranslate != 0.0 {
+            print!("xtranslate: {}, ", args.xtranslate);
+        }
+        if args.ytranslate != 0.0 {
+            print!("ytranslate: {}, ", args.ytranslate);
+        }
+        if args.ztranslate != 0.0 {
+            print!("ztranslate: {}, ", args.ztranslate);
+        }
+        if !entirely_default {
+            print!("\x1b[2D]");
+        }
+        println!();
+    }
+    let time_1 = Instant::now();
+    let fea = input.into_finite_elements(
+        args.remove,
+        &[args.xscale, args.yscale, args.zscale],
+        &[args.xtranslate, args.ytranslate, args.ztranslate],
+    );
+    match Path::new(&args.output)
+        .extension()
+        .and_then(|ext| ext.to_str())
+    {
+        Some("inp") => {
+            fea.write_inp(&args.output)?;
+        }
+        _ => panic!("unreachable since validate() checks"),
+    };
+    if !args.quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -219,97 +343,5 @@ mod tests {
             ..default_args
         };
         validate(&args_bad);
-    }
-}
-
-fn main() {
-    let time_0 = Instant::now();
-    let args = Args::parse();
-    if !args.quiet {
-        println!(
-            "\x1b[1m    {} {}\x1b[0m",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        );
-    }
-    validate(&args);
-    if !args.quiet {
-        print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
-    }
-    let input = match Path::new(&args.input)
-        .extension()
-        .and_then(|ext| ext.to_str())
-    {
-        Some("npy") => {
-            if !args.quiet {
-                println!();
-            }
-            Voxels::from_npy(&args.input).expect("Could not read the .npy file.")
-        }
-        Some("spn") => {
-            if !args.quiet {
-                println!(
-                    " [nelx: {}, nely: {}, nelz: {}",
-                    args.nelx, args.nely, args.nelz
-                );
-            }
-            Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])
-                .expect("Could not read the .spn file.")
-        }
-        _ => panic!(),
-    };
-    if !args.quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
-        let entirely_default = args.xscale == 1.0
-            && args.yscale == 1.0
-            && args.zscale == 1.0
-            && args.xtranslate == 0.0
-            && args.ytranslate == 0.0
-            && args.ztranslate == 0.0;
-        print!("     \x1b[1;96mMeshing\x1b[0m {}", args.output);
-        if !entirely_default {
-            print!(" [");
-        }
-        if args.xscale != 1.0 {
-            print!("xscale: {}, ", args.xscale);
-        }
-        if args.yscale != 1.0 {
-            print!("yscale: {}, ", args.yscale);
-        }
-        if args.zscale != 1.0 {
-            print!("zscale: {}, ", args.zscale);
-        }
-        if args.xtranslate != 0.0 {
-            print!("xtranslate: {}, ", args.xtranslate);
-        }
-        if args.ytranslate != 0.0 {
-            print!("ytranslate: {}, ", args.ytranslate);
-        }
-        if args.ztranslate != 0.0 {
-            print!("ztranslate: {}, ", args.ztranslate);
-        }
-        if !entirely_default {
-            print!("\x1b[2D]");
-        }
-        println!();
-    }
-    let time_1 = Instant::now();
-    let fea = input.into_finite_elements(
-        args.remove,
-        &[args.xscale, args.yscale, args.zscale],
-        &[args.xtranslate, args.ytranslate, args.ztranslate],
-    );
-    match Path::new(&args.output)
-        .extension()
-        .and_then(|ext| ext.to_str())
-    {
-        Some("inp") => {
-            fea.write_inp(&args.output)
-                .expect("Could not create the .inp file.");
-        }
-        _ => panic!(),
-    };
-    if !args.quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
     }
 }

@@ -256,9 +256,9 @@ struct IntermediateError {
 }
 
 impl From<Error> for IntermediateError {
-    fn from(err: Error) -> IntermediateError {
+    fn from(error: Error) -> IntermediateError {
         IntermediateError {
-            message: err.to_string(),
+            message: error.to_string(),
         }
     }
 }

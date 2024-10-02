@@ -57,37 +57,37 @@ pub struct PyIntermediateError {
 }
 
 impl From<ReadNpyError> for PyIntermediateError {
-    fn from(err: ReadNpyError) -> PyIntermediateError {
+    fn from(error: ReadNpyError) -> PyIntermediateError {
         PyIntermediateError {
-            message: err.to_string(),
+            message: error.to_string(),
         }
     }
 }
 
 impl From<String> for PyIntermediateError {
-    fn from(err: String) -> PyIntermediateError {
-        PyIntermediateError { message: err }
+    fn from(message: String) -> PyIntermediateError {
+        PyIntermediateError { message }
     }
 }
 
 impl From<WriteNpyError> for PyIntermediateError {
-    fn from(err: WriteNpyError) -> PyIntermediateError {
+    fn from(error: WriteNpyError) -> PyIntermediateError {
         PyIntermediateError {
-            message: err.to_string(),
+            message: error.to_string(),
         }
     }
 }
 
 impl From<PyIntermediateError> for PyErr {
-    fn from(err: PyIntermediateError) -> PyErr {
-        PyTypeError::new_err(err.message)
+    fn from(error: PyIntermediateError) -> PyErr {
+        PyTypeError::new_err(error.message)
     }
 }
 
 impl From<IntermediateError> for PyIntermediateError {
-    fn from(err: IntermediateError) -> PyIntermediateError {
+    fn from(error: IntermediateError) -> PyIntermediateError {
         PyIntermediateError {
-            message: err.message,
+            message: error.message,
         }
     }
 }
