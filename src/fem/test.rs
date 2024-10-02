@@ -92,8 +92,7 @@ fn single() {
 
 #[test]
 fn double_x() {
-    // let element_blocks = vec![11, 11];
-    let element_blocks = vec![1, 2];
+    let element_blocks = vec![11, 11];
     let element_node_connectivity = vec![
         vec![1, 2, 5, 4, 7, 8, 11, 10],
         vec![2, 3, 6, 5, 8, 9, 12, 11],
@@ -140,8 +139,8 @@ fn double_x() {
         vec![5, 8, 10, 12],
         vec![6, 9, 11],
     ];
-    let exterior_nodes_gold = vec![1, 3, 4, 6, 7, 9, 10, 12];
-    let interface_nodes_gold = vec![2, 5, 8, 11];
+    let exterior_nodes_gold = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
     test_finite_elements(
         element_blocks,
