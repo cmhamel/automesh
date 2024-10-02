@@ -1,30 +1,89 @@
-use super::FiniteElements;
+use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes};
+
+fn test_finite_elements(
+    element_blocks: Blocks,
+    element_node_connectivity: Connectivity,
+    nodal_coordinates: Coordinates,
+    node_element_connectivity_gold: Connectivity,
+    node_node_connectivity_gold: Connectivity,
+    interface_nodes_gold: Nodes,
+) {
+    let mut finite_elements =
+        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+    assert_eq!(
+        finite_elements.calculate_node_node_connectivity(),
+        Err("Need to calculate and set the node-to-element connectivity first.")
+    );
+    assert_eq!(
+        finite_elements.calculate_nodal_hierarchy(),
+        Err("Need to calculate and set the node-to-element connectivity first.")
+    );
+    finite_elements
+        .calculate_node_element_connectivity()
+        .unwrap();
+    assert_eq!(
+        finite_elements.calculate_node_element_connectivity(),
+        Err("Already calculated and set the node-to-element connectivity.")
+    );
+    finite_elements.calculate_node_node_connectivity().unwrap();
+    assert_eq!(
+        finite_elements.calculate_node_node_connectivity(),
+        Err("Already calculated and set the node-to-node connectivity.")
+    );
+    finite_elements.calculate_nodal_hierarchy().unwrap();
+    assert_eq!(
+        finite_elements.calculate_nodal_hierarchy(),
+        Err("Already calculated and set the nodal hierarchy.")
+    );
+    assert_eq!(
+        finite_elements.get_node_element_connectivity(),
+        &node_element_connectivity_gold
+    );
+    assert_eq!(
+        finite_elements.get_node_node_connectivity(),
+        &node_node_connectivity_gold
+    );
+    assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
+}
+
+#[test]
+fn single() {
+    let element_blocks = vec![1];
+    let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+    let nodal_coordinates = vec![
+        vec![0.0, 0.0, 0.0],
+        vec![1.0, 0.0, 0.0],
+        vec![0.0, 1.0, 0.0],
+        vec![1.0, 1.0, 0.0],
+        vec![0.0, 0.0, 1.0],
+        vec![1.0, 0.0, 1.0],
+        vec![0.0, 1.0, 1.0],
+        vec![1.0, 1.0, 1.0],
+    ];
+    let node_element_connectivity_gold = vec![vec![1]; 8];
+    let node_node_connectivity_gold = vec![
+        vec![2, 3, 5],
+        vec![1, 4, 6],
+        vec![1, 4, 7],
+        vec![2, 3, 8],
+        vec![1, 6, 7],
+        vec![2, 5, 8],
+        vec![3, 5, 8],
+        vec![4, 6, 7],
+    ];
+    let interface_nodes_gold = vec![];
+    test_finite_elements(
+        element_blocks,
+        element_node_connectivity,
+        nodal_coordinates,
+        node_element_connectivity_gold,
+        node_node_connectivity_gold,
+        interface_nodes_gold,
+    );
+}
 
 mod single {
     use super::*;
-    #[test]
-    fn calculate_nodal_hierarchy() {
-        let element_blocks = vec![1];
-        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
-        let nodal_coordinates = vec![
-            vec![0.0, 0.0, 0.0],
-            vec![1.0, 0.0, 0.0],
-            vec![0.0, 1.0, 0.0],
-            vec![1.0, 1.0, 0.0],
-            vec![0.0, 0.0, 1.0],
-            vec![1.0, 0.0, 1.0],
-            vec![0.0, 1.0, 1.0],
-            vec![1.0, 1.0, 1.0],
-        ];
-        let mut finite_elements =
-            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
-        finite_elements
-            .calculate_node_element_connectivity()
-            .unwrap();
-        finite_elements.calculate_nodal_hierarchy().unwrap();
-        let interface_nodes = finite_elements.get_interface_nodes();
-        assert_eq!(interface_nodes, &vec![]);
-    }
     #[test]
     #[should_panic(expected = "Need to calculate and set the node-to-element connectivity first.")]
     fn calculate_nodal_hierarchy_did_not_calculate_node_element_connectivity() {
@@ -68,28 +127,6 @@ mod single {
         finite_elements.calculate_nodal_hierarchy().unwrap();
     }
     #[test]
-    fn calculate_node_element_connectivity() {
-        let element_blocks = vec![1];
-        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
-        let nodal_coordinates = vec![
-            vec![0.0, 0.0, 0.0],
-            vec![1.0, 0.0, 0.0],
-            vec![0.0, 1.0, 0.0],
-            vec![1.0, 1.0, 0.0],
-            vec![0.0, 0.0, 1.0],
-            vec![1.0, 0.0, 1.0],
-            vec![0.0, 1.0, 1.0],
-            vec![1.0, 1.0, 1.0],
-        ];
-        let mut finite_elements =
-            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
-        finite_elements
-            .calculate_node_element_connectivity()
-            .unwrap();
-        let node_element_connectivity = finite_elements.get_node_element_connectivity();
-        assert_eq!(node_element_connectivity, &vec![vec![1]; 8]);
-    }
-    #[test]
     #[should_panic(expected = "Already calculated and set the node-to-element connectivity.")]
     fn calculate_node_element_connectivity_twice() {
         let element_blocks = vec![1];
@@ -112,39 +149,6 @@ mod single {
         finite_elements
             .calculate_node_element_connectivity()
             .unwrap();
-    }
-    #[test]
-    fn calculate_node_node_connectivity() {
-        let element_blocks = vec![1];
-        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
-        let nodal_coordinates = vec![
-            vec![0.0, 0.0, 0.0],
-            vec![1.0, 0.0, 0.0],
-            vec![0.0, 1.0, 0.0],
-            vec![1.0, 1.0, 0.0],
-            vec![0.0, 0.0, 1.0],
-            vec![1.0, 0.0, 1.0],
-            vec![0.0, 1.0, 1.0],
-            vec![1.0, 1.0, 1.0],
-        ];
-        let node_node_connectivity_gold = vec![
-            vec![2, 3, 5],
-            vec![1, 4, 6],
-            vec![1, 4, 7],
-            vec![2, 3, 8],
-            vec![1, 6, 7],
-            vec![2, 5, 8],
-            vec![3, 5, 8],
-            vec![4, 6, 7],
-        ];
-        let mut finite_elements =
-            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
-        finite_elements
-            .calculate_node_element_connectivity()
-            .unwrap();
-        finite_elements.calculate_node_node_connectivity().unwrap();
-        let node_node_connectivity = finite_elements.get_node_node_connectivity();
-        assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }
     #[test]
     #[should_panic(expected = "Need to calculate and set the node-to-element connectivity first.")]

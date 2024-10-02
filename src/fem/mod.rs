@@ -66,8 +66,7 @@ impl FiniteElements {
             let mut exterior_nodes = vec![];
             let mut interface_nodes = vec![];
             let mut interior_nodes = vec![];
-            let node_element_connectivity = self.get_node_element_connectivity();
-            node_element_connectivity
+            self.get_node_element_connectivity()
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
