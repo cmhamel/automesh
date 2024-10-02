@@ -28,49 +28,64 @@ struct Args {
     #[arg(short, long, value_name = "FILE")]
     output: String,
 
-    /// Pass to quiet the output.
-    #[arg(short, long, action)]
-    quiet: bool,
-
     /// Voxel IDs to remove from the mesh [default: 0].
     #[arg(short = 'r', long, value_name = "ID")]
     remove: Option<Vec<u8>>,
 
     /// Number of voxels in the x-direction.
-    #[arg(short = 'x', long, default_value_t = 0)]
+    #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
     nelx: usize,
 
     /// Number of voxels in the y-direction.
-    #[arg(short = 'y', long, default_value_t = 0)]
+    #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
     nely: usize,
 
     /// Number of voxels in the z-direction.
-    #[arg(short = 'z', long, default_value_t = 0)]
+    #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
     nelz: usize,
 
-    /// Scaling in the x-direction.
-    #[arg(long, default_value_t = 1.0)]
+    /// Scaling (> 0.0) in the x-direction.
+    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
     xscale: f64,
 
-    /// Scaling in the y-direction.
-    #[arg(long, default_value_t = 1.0)]
+    /// Scaling (> 0.0) in the y-direction.
+    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
     yscale: f64,
 
-    /// Scaling in the z-direction.
-    #[arg(long, default_value_t = 1.0)]
+    /// Scaling (> 0.0) in the z-direction.
+    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
     zscale: f64,
 
     /// Translation in the x-direction.
-    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "TRANSLATE"
+    )]
     xtranslate: f64,
 
     /// Translation in the y-direction.
-    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "TRANSLATE"
+    )]
     ytranslate: f64,
 
     /// Translation in the z-direction.
-    #[arg(long, default_value_t = 0.0, allow_negative_numbers = true)]
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "TRANSLATE"
+    )]
     ztranslate: f64,
+
+    /// Pass to quiet the output.
+    #[arg(short, long, action)]
+    quiet: bool,
 }
 
 fn validate(args: &Args) {
@@ -208,7 +223,7 @@ mod tests {
 }
 
 fn main() {
-    let time = Instant::now();
+    let time_0 = Instant::now();
     let args = Args::parse();
     if !args.quiet {
         println!(
@@ -227,28 +242,23 @@ fn main() {
     {
         Some("npy") => {
             if !args.quiet {
-                println!("\x1b[s");
+                println!();
             }
-            std::thread::sleep(std::time::Duration::from_millis(1000));
             Voxels::from_npy(&args.input)
         }
         Some("spn") => {
             if !args.quiet {
                 println!(
-                    " [nelx: {}, nely: {}, nelz: {}]\x1b[s",
+                    " [nelx: {}, nely: {}, nelz: {}",
                     args.nelx, args.nely, args.nelz
                 );
             }
-            std::thread::sleep(std::time::Duration::from_millis(1000));
             Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])
         }
         _ => panic!(),
     };
     if !args.quiet {
-        println!(
-            "\x1b[F       \x1b[1;92mInput\x1b[0m\x1b[u\x1b[A in {:?}",
-            time.elapsed()
-        );
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
         let entirely_default = args.xscale == 1.0
             && args.yscale == 1.0
             && args.zscale == 1.0
@@ -280,15 +290,14 @@ fn main() {
         if !entirely_default {
             print!("\x1b[2D]");
         }
-        println!("\x1b[s");
+        println!();
     }
-    let next_time = Instant::now();
+    let time_1 = Instant::now();
     let fea = input.into_finite_elements(
         args.remove,
         &[args.xscale, args.yscale, args.zscale],
         &[args.xtranslate, args.ytranslate, args.ztranslate],
     );
-    std::thread::sleep(std::time::Duration::from_millis(2000));
     match Path::new(&args.output)
         .extension()
         .and_then(|ext| ext.to_str())
@@ -299,10 +308,6 @@ fn main() {
         _ => panic!(),
     };
     if !args.quiet {
-        println!(
-            "\x1b[F      \x1b[1;92mOutput\x1b[0m\x1b[u\x1b[A in {:?}",
-            next_time.elapsed()
-        );
-        println!("       \x1b[1;92mTotal\x1b[0m {:?}", time.elapsed());
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
     }
 }

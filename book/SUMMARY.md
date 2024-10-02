@@ -17,8 +17,7 @@
   - [Python Interface](interfaces/python.md)
   - [Rust Interface](interfaces/rust.md)
 - [Theory](theory/README.md)
-  - [Mathematics](theory/mathematics.md)
-  - [Smoothing](theory/smoothing.md) 
+  - [Smoothing](theory/smoothing.md)
 
 # Appendices
 

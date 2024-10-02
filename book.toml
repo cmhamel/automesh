@@ -10,7 +10,7 @@ build-dir = "book/build/"
 create-missing = false
 
 [rust]
-edition = "2018"
+edition = "2021"
 
 [preprocessor.cmdrun]
 
