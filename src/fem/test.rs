@@ -52,7 +52,7 @@ fn test_finite_elements(
 
 #[test]
 fn single() {
-    let element_blocks = vec![1];
+    let element_blocks = vec![11];
     let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
     let nodal_coordinates = vec![
         vec![0.0, 0.0, 0.0],
@@ -91,7 +91,8 @@ fn single() {
 }
 
 #[test]
-fn double() {
+fn double_x() {
+    // let element_blocks = vec![11, 11];
     let element_blocks = vec![1, 2];
     let element_node_connectivity = vec![
         vec![1, 2, 5, 4, 7, 8, 11, 10],
@@ -152,6 +153,125 @@ fn double() {
         interface_nodes_gold,
         interior_nodes_gold,
     );
+}
+
+#[test]
+fn double_y() {
+    let element_blocks = vec![11, 11];
+    let element_node_connectivity = vec![
+        vec![1, 2, 4, 3, 7, 8, 10, 9],
+        vec![3, 4, 6, 5, 9, 10, 12, 11],
+    ];
+    let nodal_coordinates = vec![
+        vec![0.0, 0.0, 0.0],
+        vec![1.0, 0.0, 0.0],
+        vec![0.0, 1.0, 0.0],
+        vec![1.0, 1.0, 0.0],
+        vec![0.0, 2.0, 0.0],
+        vec![1.0, 2.0, 0.0],
+        vec![0.0, 0.0, 1.0],
+        vec![1.0, 0.0, 1.0],
+        vec![0.0, 1.0, 1.0],
+        vec![1.0, 1.0, 1.0],
+        vec![0.0, 2.0, 1.0],
+        vec![1.0, 2.0, 1.0],
+    ];
+    let node_element_connectivity_gold = vec![
+        vec![1],
+        vec![1],
+        vec![1, 2],
+        vec![1, 2],
+        vec![2],
+        vec![2],
+        vec![1],
+        vec![1],
+        vec![1, 2],
+        vec![1, 2],
+        vec![2],
+        vec![2],
+    ];
+    let node_node_connectivity_gold = vec![
+        vec![2, 3, 7],
+        vec![1, 4, 8],
+        vec![1, 4, 5, 9],
+        vec![2, 3, 6, 10],
+        vec![3, 6, 11],
+        vec![4, 5, 12],
+        vec![1, 8, 9],
+        vec![2, 7, 10],
+        vec![3, 7, 10, 11],
+        vec![4, 8, 9, 12],
+        vec![5, 9, 12],
+        vec![6, 10, 11],
+    ];
+    let exterior_nodes_gold = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    let interface_nodes_gold = vec![];
+    let interior_nodes_gold = vec![];
+    test_finite_elements(
+        element_blocks,
+        element_node_connectivity,
+        nodal_coordinates,
+        node_element_connectivity_gold,
+        node_node_connectivity_gold,
+        exterior_nodes_gold,
+        interface_nodes_gold,
+        interior_nodes_gold,
+    );
+}
+
+#[test]
+fn triple_x() {
+    todo!()
+}
+
+#[test]
+fn quadruple_x() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_voids_x() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_remove_1() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_remove_2() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_void() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_void_remove_0() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_void_remove_1() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_void_remove_2() {
+    todo!()
+}
+
+#[test]
+fn quadruple_2_blocks_void_remove_3() {
+    todo!()
 }
 
 #[test]
@@ -270,4 +390,21 @@ fn cube() {
         interface_nodes_gold,
         interior_nodes_gold,
     );
+}
+
+#[test]
+fn cube_multi() {
+    todo!()
+}
+#[test]
+fn letter_f() {
+    todo!()
+}
+#[test]
+fn letter_f_3d() {
+    todo!()
+}
+#[test]
+fn sparse() {
+    todo!()
 }
