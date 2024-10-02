@@ -76,12 +76,14 @@ Figure: Finite element meshes at various resolutions, shown with half-symmetric 
 
 Table: Summary of vital results with `automesh` version `0.1.7`.
 
-resolution (vox/cm) | processing time | `.npy` file size | `.inp` file size (MB)) | `.g` file size (MB)
+resolution (vox/cm) | processing time | `.npy` file size | `.inp` file size (MB) | `.g` file size (MB)
 ---: | ---:     | ---:    | ---:  | ---:
 1    | 3.24 sec | 14 kB   | 0.962 | 0.557
 2    | 15.2 sec | 111 kB  |   8.5 |   4.5
 4    | 13.5 min | 885 kB  |  73.6 |  36.8
 10   | xxx      | 13.8 MB |  xxxx | xxxxx
+
+#TODO: Comparison with Sculpt on a single processor, for timing and file size.
 
 Cubit is used for the visualizations with the following recipe:
 

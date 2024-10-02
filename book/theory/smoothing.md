@@ -14,45 +14,62 @@ For concereteness, consider a node with four neighbors, shown in the figure belo
 
 ![node_p_q](node_p_q.png)
 
-Figure: The subject node $\boldsymbol{p}$ with edge connections (dotted lines) to neighbor nodes $\boldsymbol{q}_i$ with $i \in [0, n]$ (withouth loss of generality, the specific example of $n=4$ is shown).  The average position of all neighbors of $\boldsymbol{p}$ is denoted $\bar{\boldsymbol{p}}$, and the gap $\boldsymbol{g}$ (dashed line) originates at $\bar{\boldsymbol{p}}$ and terminates at $\boldsymbol{p}$.
+Figure: The subject node $\boldsymbol{p}$ with edge connections (dotted lines) to neighbor nodes $\boldsymbol{q}_i$ with $i \in [1, n]$ (withouth loss of generality, the specific example of $n=4$ is shown).  The average position of all neighbors of $\boldsymbol{p}$ is denoted $\bar{\boldsymbol{q}}$, and the gap $\Delta \boldsymbol{p}$ (dashed line) originates at $\boldsymbol{p}$ and terminates at $\bar{\boldsymbol{q}}$.
 
-Define $\bar{\boldsymbol{p}}$ as the average position of all $\boldsymbol{q}_i$ neighbors of $\boldsymbol{p}$
+Define $\bar{\boldsymbol{q}}$ as the average position of all $\boldsymbol{q}_i$ neighbors of $\boldsymbol{p}$,
 
-$$ \bar{\boldsymbol{p}} := \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i.  $$
+$$ \bar{\boldsymbol{q}} := \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i.  $$
 
-Define the gap vector $\boldsymbol{g}$ as originating at $\bar{\boldsymbol{p}}$ and terminating at $\boldsymbol{p}$ (*viz.*, $\bar{\boldsymbol{p}} + \boldsymbol{g} = \boldsymbol{p}$),
+Define the gap vector $\Delta\boldsymbol{p}$ as originating at $\boldsymbol{p}$ and terminating at $\bar{\boldsymbol{q}}$ (*viz.*, $\boldsymbol{p} + \Delta\boldsymbol{p} = \bar{\boldsymbol{q}}$),
 
-$$ \boldsymbol{g} := \boldsymbol{p} - \bar{\boldsymbol{p}}. $$
+$$ \Delta\boldsymbol{p} := \bar{\boldsymbol{q}} - \boldsymbol{p}. $$
 
-Let $\lambda \in \mathbb{R}^+ \subset (0, 1)$ be a scaling factor for the gap $\boldsymbol{g}$.
+Let $\lambda \in \mathbb{R}^+$ be the positive scaling factor for the gap $\Delta\boldsymbol{p}$.
 
-At iteration $k$, update the position of $\boldsymbol{p}$ by an amount $-\lambda \boldsymbol{g}$ to $\boldsymbol{p}'$ as
+Since 
 
-$$ \boldsymbol{p}' := \boldsymbol{p} - \lambda \boldsymbol{g}, $$
+$$ \bar{\boldsymbol{q}} = \boldsymbol{p} + \lambda\Delta\boldsymbol{p} \hspace{0.5cm} \rm{when} \hspace{0.5cm} \lambda = 1, $$
 
-since $\bar{\boldsymbol{p}} = \boldsymbol{p} - \boldsymbol{g}$ when $\lambda = 1$.
+subdivision of this relationship into several substeps gives rise to an iterative approach.
+We typically select $\lambda < 1$ to avoid overshoot of the update, $\lambda \in \mathbb{R}^+ \subset (0, 1)$.
 
-We typically select $\lambda < 1$ to avoid overshoot of the update.  
+At iteration $k$, we update the position of $\boldsymbol{p}^{(k)}$ by an amount $\lambda \Delta\boldsymbol{p}^{(k)}$ to $\boldsymbol{p}^{(k+1)}$ as
+
+$$ \boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \Delta\boldsymbol{p}^{(k)}, $$
+
+with
+
+$$ \Delta\boldsymbol{p}^{(k)} = \bar{\boldsymbol{q}}^{(k)} - \boldsymbol{p}^{(k)}. $$
+
+Thus 
+
+$$ \boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \Delta\boldsymbol{p}^{(k)}\right), $$
+
+$$ \boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \bar{\boldsymbol{q}}^{(k)} - \boldsymbol{p}^{(k)} \right), $$
+
+and finally
+
+$$ \boxed{\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right).} $$
 
 ### Example
 
-For a 1D configuration, consider a node with initial position $\boldsymbol{p} = 1.5$ with two neighbors (that never move) with positions $\boldsymbol{q}_1 = 0.0$ and $\boldsymbol{q}_2 = 1.0$ ($\bar{\boldsymbol{p}} = 0.5$).  With $\lambda = 0.3$, the table below shows updates for for position $\boldsymbol{p}$.
+For a 1D configuration, consider a node with initial position $\boldsymbol{p} = 1.5$ with two neighbors (that never move) with positions $\boldsymbol{q}_1 = 0.0$ and $\boldsymbol{q}_2 = 1.0$ ($\bar{\boldsymbol{q}} = 0.5$).  With $\lambda = 0.3$, the table below shows updates for for position $\boldsymbol{p}$.
 
 Table: Iteration updates of a 1D example.
 
-$k$ | $\bar{\boldsymbol{p}}$ | $\boldsymbol{p}^{(k)}$ | $\boldsymbol{g}^{(k)} = \boldsymbol{p}^{(k)} - \bar{\boldsymbol{p}}$ | $\lambda \boldsymbol{g}^{(k)}$
+$k$ | $\bar{\boldsymbol{q}}^{(k)}$ | $\boldsymbol{p}^{(k)}$ | $\Delta\boldsymbol{p}^{(k)} = \bar{\boldsymbol{q}} - \boldsymbol{p}^{(k)}$ | $\lambda \Delta\boldsymbol{p}^{(k)}$
 --- | --- | --- | --- | ---
-0 | 0.5 | 1.5 | 1 | 0.3
-1 | 0.5 | 1.2 | 0.7 | 0.21
-2 | 0.5 | 0.99 | 0.49 | 0.147
-3 | 0.5 | 0.843 | 0.343 | 0.1029
-4 | 0.5 | 0.7401 | 0.2401 | 0.07203
-5 | 0.5 | 0.66807 | 0.16807 | 0.050421
-6 | 0.5 | 0.617649 | 0.117649 | 0.0352947
-7 | 0.5 | 0.5823543 | 0.0823543 | 0.02470629
-8 | 0.5 | 0.55764801 | 0.05764801 | 0.017294403
-9 | 0.5 | 0.540353607 | 0.040353607 | 0.012106082
-10 | 0.5 | 0.528247525 | 0.028247525 | 0.008474257
+0 | 0.5 | 1.5 | -1 | -0.3
+1 | 0.5 | 1.2 | -0.7 | -0.21
+2 | 0.5 | 0.99 | -0.49 | -0.147
+3 | 0.5 | 0.843 | -0.343 | -0.1029
+4 | 0.5 | 0.7401 | -0.2401 | -0.07203
+5 | 0.5 | 0.66807 | -0.16807 | -0.050421
+6 | 0.5 | 0.617649 | -0.117649 | -0.0352947
+7 | 0.5 | 0.5823543 | -0.0823543 | -0.02470629
+8 | 0.5 | 0.55764801 | -0.05764801 | -0.017294403
+9 | 0.5 | 0.540353607 | -0.040353607 | -0.012106082
+10 | 0.5 | 0.528247525 | -0.028247525 | -0.008474257
 
 ![laplace_smoothing.png](laplace_smoothing.png)
 
@@ -60,7 +77,29 @@ Figure: Convergence of position $\boldsymbol{p}$ toward $0.5$ as a function of i
 
 ## Taubin Smoothing
 
-* Taubin[^Taubin_1995]
+Taubin smoothing is a two-parameter, two-pass iterative variation of Laplace smoothing.
+Specifically with the definitions used in Laplacian smoothing, and a new second negative parameter $\mu$, where
+
+$$ 0 < \lambda < -\mu, $$
+
+is used.  The first parameter, $\lambda$, tends to smooth (and shrink) the domain.  The second parameter, $\mu$, tends to expand the domain.
+
+Taubin smoothing is written as, for $k = 0$, $k < k_{\rm{max}}$, $k = k+1$, with $k_{\rm{max}}$ an even number,
+
+* **First pass** (if $k$ is even):
+
+$$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right),} $$
+
+* **Second pass** (if $k$ is odd):
+
+$$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right),} $$
+
+
+> In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not explicitly and carefully explicate this second pass update, and so we emphasize it here.
+
+## Hierarchical Smoothing
+
+* Taubin[^Taubin_1995a] and [^Taubin_1995b]
 * Used by Chen[^Chen_2010]
   * Hierarchical mesh Laplacian smoothing with Taubin strategy to conserve mesh volume, and avoid volume shrinkage from conventional Laplacian smoothing techniques. Used eight (8) smoothing iterations.
 
@@ -103,6 +142,8 @@ Goal: Given that a conversion of image voxels to a hexahedral mesh creates "jagg
 
 ## References
 
-[^Taubin_1995]: Taubin G. A signal processing approach to fair surface design. In *Proceedings of the 22nd annual conference on Computer graphics and interactive techniques* 1995 Sep 15 (pp. 351-358). [paper](https://dl.acm.org/doi/pdf/10.1145/218380.218473)
+[^Taubin_1995a]: Taubin G. Curve and surface smoothing without shrinkage. In *Proceedings of IEEE international conference on computer vision* 1995 Jun 20 (pp. 852-857). IEEE.  [paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=466848)
+
+[^Taubin_1995b]: Taubin G. A signal processing approach to fair surface design. In *Proceedings of the 22nd annual conference on Computer graphics and interactive techniques* 1995 Sep 15 (pp. 351-358). [paper](https://dl.acm.org/doi/pdf/10.1145/218380.218473)
 
 [^Chen_2010]: Chen Y, Ostoja-Starzewski M. MRI-based finite element modeling of head trauma: spherically focusing shear waves. Acta mechanica. 2010 Aug;213(1):155-67. [paper](https://link.springer.com/content/pdf/10.1007/s00707-009-0274-0.pdf)
