@@ -63,7 +63,7 @@ where
 fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usize>(
     gold: Gold<D, E, N>,
 ) {
-    let voxels = Voxels::from_spn(&gold.file_path, gold.nel);
+    let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
     let fem = voxels.into_finite_elements(gold.remove, &gold.scale, &gold.translate);
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
@@ -1259,7 +1259,7 @@ mod from_npy {
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy");
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         assert_data_eq_gold(voxels);
     }
 }
@@ -1278,7 +1278,7 @@ mod from_spn {
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
         assert_data_eq_gold(voxels);
     }
 }
@@ -1287,23 +1287,23 @@ mod write_npy {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
-        voxels_from_spn.write_npy("target/letter_f_3d.npy");
-        let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy");
+        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        voxels_from_spn.write_npy("target/letter_f_3d.npy").unwrap();
+        let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
     #[test]
     #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn no_such_directory() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
-        voxels.write_npy("no_such_directory/foo.npy");
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        voxels.write_npy("no_such_directory/foo.npy").unwrap();
     }
     #[test]
     fn sparse() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]);
-        voxels_from_spn.write_npy("target/sparse.npy");
-        let voxels_from_npy = Voxels::from_npy("target/sparse.npy");
+        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]).unwrap();
+        voxels_from_spn.write_npy("target/sparse.npy").unwrap();
+        let voxels_from_npy = Voxels::from_npy("target/sparse.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
 }

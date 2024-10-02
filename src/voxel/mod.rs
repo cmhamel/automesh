@@ -10,7 +10,7 @@ use super::{
 };
 use itertools::Itertools;
 use ndarray::{Array3, Axis};
-use ndarray_npy::{ReadNpyExt, WriteNpyError, WriteNpyExt};
+use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, ErrorKind},
@@ -30,17 +30,16 @@ pub struct Voxels {
 /// Inherent implementation of the voxels type.
 impl Voxels {
     /// Constructs and returns a new voxels type from an NPY file.
-    pub fn from_npy(file_path: &str) -> Self {
-        Self {
-            data: voxel_data_from_npy(file_path).expect("error reading voxels data from NPY file"),
-        }
+    pub fn from_npy(file_path: &str) -> Result<Self, ReadNpyError> {
+        Ok(Self {
+            data: voxel_data_from_npy(file_path)?,
+        })
     }
     /// Constructs and returns a new voxels type from an SPN file.
-    pub fn from_spn(file_path: &str, nel: Nel) -> Self {
-        Self {
-            data: voxel_data_from_spn(file_path, nel)
-                .expect("error reading voxels data from SPN file"),
-        }
+    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {
+        Ok(Self {
+            data: voxel_data_from_spn(file_path, nel)?,
+        })
     }
     /// Returns a reference to the internal voxels data.
     pub fn get_data(&self) -> &VoxelData {
@@ -78,9 +77,8 @@ impl Voxels {
         FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     /// Writes the internal voxels data to an NPY file.
-    pub fn write_npy(&self, file_path: &str) {
+    pub fn write_npy(&self, file_path: &str) -> Result<(), WriteNpyError> {
         write_voxels_to_npy(self.get_data(), file_path)
-            .expect("error writing voxels data to NPY file")
     }
 }
 
@@ -269,8 +267,9 @@ fn check_file<'a>(file_path: &'a str, required_extension: &'a str) -> Result<Fil
     }
 }
 
-fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, String> {
-    Ok(VoxelData::read_npy(check_file(file_path, ".npy")?).expect("Could not open the .npy file"))
+fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
+    // VoxelData::read_npy(check_file(file_path, ".npy")?)
+    VoxelData::read_npy(File::open(file_path)?)
 }
 
 fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, String> {

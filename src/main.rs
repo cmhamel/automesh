@@ -244,7 +244,7 @@ fn main() {
             if !args.quiet {
                 println!();
             }
-            Voxels::from_npy(&args.input)
+            Voxels::from_npy(&args.input).expect("Could not read the .npy file.")
         }
         Some("spn") => {
             if !args.quiet {
@@ -254,6 +254,7 @@ fn main() {
                 );
             }
             Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])
+                .expect("Could not read the .spn file.")
         }
         _ => panic!(),
     };
@@ -303,7 +304,8 @@ fn main() {
         .and_then(|ext| ext.to_str())
     {
         Some("inp") => {
-            fea.write_inp(&args.output);
+            fea.write_inp(&args.output)
+                .expect("Could not create the .inp file.");
         }
         _ => panic!(),
     };

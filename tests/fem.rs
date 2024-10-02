@@ -37,9 +37,9 @@ fn compare_files(
     scale: [f64; 3],
     translate: [f64; 3],
 ) {
-    let voxels = Voxels::from_spn(spn_path, nel);
+    let voxels = Voxels::from_spn(spn_path, nel).unwrap();
     let fem = voxels.into_finite_elements(None, &scale, &translate);
-    fem.write_inp(file_path);
+    fem.write_inp(file_path).unwrap();
     let mut gold = String::new();
     let mut line = String::new();
     let mut gold_reader = BufReader::new(File::open(gold_path).unwrap());
