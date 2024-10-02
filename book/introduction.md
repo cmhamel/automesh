@@ -1,6 +1,6 @@
 # Introduction
 
-`Automesh` is an automatic mesh generation tool that converts a segmentation
+`automesh` is an automatic mesh generation tool that converts a segmentation
 into a hexahedral finite element mesh.
 
 ## Segmentation
@@ -23,7 +23,7 @@ These two concepts are shown below:
 
 Figure: Distinction between semantic segmentation and instance segmentation, from Lin *et al.*[^Lin_2014]
 
-Both segmentation types, semantic and instance, can be used with `Automesh`.  However, `Automesh` operates on a 3D segmentation, not a 2D segmentation, as present in a digital image.  To obtain a 3D segmentation, two or more images are stacked to compose a volume.
+Both segmentation types, semantic and instance, can be used with `automesh`.  However, `automesh` operates on a 3D segmentation, not a 2D segmentation, as present in a digital image.  To obtain a 3D segmentation, two or more images are stacked to compose a volume.
 
 The structured volume of a stacked of pixel composes a volumetric unit called a voxel.  A voxel, in the context of this work, will have the same dimensionality in the `x` and `y` dimension as the pixel in the image space, and will have the `z` dimensionality that is the stack interval distance between each image slice.  All pixels are rectangular, and all voxels are cuboid.
 
@@ -33,7 +33,7 @@ The figure below illustrates the concept of stacked images:
 
 Figure: Example of stacking several images to create a 3D representation, from Bit *et al.*[^Bit_2017]
 
-The digital image sources are frequently medical images, obtained by CT or MR, though `Automesh` can be used for any subject that can be represented as a stacked segmentation.  Anatomical regions are classified into categories.  For example, in the image below, ten unique integers have been used to represent
+The digital image sources are frequently medical images, obtained by CT or MR, though `automesh` can be used for any subject that can be represented as a stacked segmentation.  Anatomical regions are classified into categories.  For example, in the image below, ten unique integers have been used to represent
 bone, disc, vasculature, airway/sinus, membrane, cerebral spinal fluid, white matter, gray matter, muscle, and skin.
 
 ![fig/sibl_bob_mid-sagittal.png](fig/sibl_bob_mid-sagittal.png)
