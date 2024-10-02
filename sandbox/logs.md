@@ -4,6 +4,10 @@
 
 *In order of most recent to least recent.*
 
+## 2024-10-02
+
+To come.
+
 ## 2024-09-25
 
 * Versioning
@@ -20,7 +24,7 @@ CBH OOO.  No pair programming.
 
 ## 2024-09-11
 
-* Reproduce *Voxelated* spheres (4 resolutions) with `Automesh`
+* Reproduce *Voxelated* spheres (4 resolutions) with `automesh`
   * Reference https://github.com/autotwin/basis/blob/main/README_three_material_spheres.md#voxelated
   * Create `.py` file, to live currently in `automesh/sandbox/`
   * Command line example, input as `.npy` file, output as `.inp` file.
@@ -46,7 +50,7 @@ CBH OOO.  No pair programming.
   * done - `Command Line Interface` update from static to dynamic reflection of the CLI.
   * pending - Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
     * plug out Sculpt
-    * plug in Automesh
+    * plug in automesh
   * pending - Currently the figures are static build, but we want to eventually migrate to building the images on checkin, done with `.yml` CI/CD, makes sure the source script still works.  Preprocessor command that runs prior to mdbook.
 
 ```bash
@@ -64,7 +68,7 @@ mdbook serve
   * Random/crazy test, connectivity gaps, voids (called `Sparse`)
   * Review https://github.com/autotwin/mesh/blob/main/doc/npy_to_mesh.md
     * plug out Sculpt
-    * plug in Automesh
+    * plug in automesh
   * mdBook documentation - seed this as part of the build process on GitHub
 * CBH
   * How to capture the `.png`
