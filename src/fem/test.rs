@@ -3,6 +3,71 @@ use super::FiniteElements;
 mod single {
     use super::*;
     #[test]
+    fn calculate_nodal_hierarchy() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .unwrap();
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+        let interface_nodes = finite_elements.get_interface_nodes();
+        assert_eq!(interface_nodes, &vec![]);
+    }
+    #[test]
+    #[should_panic(expected = "Need to calculate and set the node-to-element connectivity first.")]
+    fn calculate_nodal_hierarchy_did_not_calculate_node_element_connectivity() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Already calculated and set the nodal hierarchy.")]
+    fn calculate_nodal_hierarchy_twice() {
+        let element_blocks = vec![1];
+        let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .unwrap();
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+    }
+    #[test]
     fn calculate_node_element_connectivity() {
         let element_blocks = vec![1];
         let element_node_connectivity = vec![vec![1, 2, 4, 3, 5, 6, 8, 7]];
@@ -127,6 +192,36 @@ mod single {
 
 mod double_x {
     use super::*;
+    #[test]
+    fn calculate_nodal_hierarchy() {
+        let element_blocks = vec![1, 2];
+        let element_node_connectivity = vec![
+            vec![1, 2, 5, 4, 7, 8, 11, 10],
+            vec![2, 3, 6, 5, 8, 9, 12, 11],
+        ];
+        let nodal_coordinates = vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![2.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0, 1.0, 0.0],
+            vec![2.0, 1.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![2.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 1.0, 1.0],
+            vec![2.0, 1.0, 1.0],
+        ];
+        let mut finite_elements =
+            FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+        finite_elements
+            .calculate_node_element_connectivity()
+            .unwrap();
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+        let interface_nodes = finite_elements.get_interface_nodes();
+        assert_eq!(interface_nodes, &vec![2, 5, 8, 11]);
+    }
     #[test]
     fn calculate_node_element_connectivity() {
         let element_blocks = vec![1, 2];
