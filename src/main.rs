@@ -1,6 +1,7 @@
 use automesh::{Abaqus, Voxels};
 use clap::Parser;
-use std::{path::Path, time::Instant};
+use ndarray_npy::ReadNpyError;
+use std::{io::Error, path::Path, time::Instant};
 
 #[derive(Parser)]
 #[command(about = format!("
@@ -88,7 +89,39 @@ struct Args {
     quiet: bool,
 }
 
-fn validate(args: &Args) {
+struct ErrorWrapper {
+    message: String,
+}
+
+impl std::fmt::Debug for ErrorWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "\x1b[1;91m{}.\x1b[0m", self.message)
+    }
+}
+
+impl From<Error> for ErrorWrapper {
+    fn from(error: Error) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<ReadNpyError> for ErrorWrapper {
+    fn from(error: ReadNpyError) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<String> for ErrorWrapper {
+    fn from(message: String) -> ErrorWrapper {
+        ErrorWrapper { message }
+    }
+}
+
+fn validate(args: &Args) -> Result<(), String> {
     assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
     assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
     assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
@@ -101,128 +134,17 @@ fn validate(args: &Args) {
             assert!(args.nely >= 1, "Need to specify nely > 0");
             assert!(args.nelz >= 1, "Need to specify nelz > 0");
         }
-        _ => panic!("\x1b[1;91mInput must be of type .npy or .spn\x1b[0m"),
+        _ => Err("Input must be of type .npy or .spn".to_string())?,
     }
     let output_path = Path::new(&args.output);
     let extension = output_path.extension().and_then(|ext| ext.to_str());
     match extension {
-        Some("inp") => {}
-        _ => panic!("\x1b[1;91mOutput must be of type .inp\x1b[0m"),
+        Some("inp") => Ok(()),
+        _ => Err("Output must be of type .inp".to_string()),
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn default_args() -> Args {
-        Args {
-            input: "foo.spn".to_string(),
-            output: "bar.inp".to_string(),
-            quiet: false,
-            remove: None,
-            nelx: 1,
-            nely: 1,
-            nelz: 1,
-            xscale: 1.0,
-            yscale: 1.0,
-            zscale: 1.0,
-            xtranslate: 0.0,
-            ytranslate: 0.0,
-            ztranslate: 0.0,
-        }
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify xscale > 0.0")]
-    fn test_xscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            xscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify yscale > 0.0")]
-    fn test_yscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            yscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify zscale > 0.0")]
-    fn test_zscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            zscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify nelx > 0")]
-    fn test_nelx_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nelx: 0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify nely > 0")]
-    fn test_nely_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nely: 0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Need to specify nelz > 0")]
-    fn test_nelz_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nelz: 0,
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Input must be of type .npy or .spn")]
-    fn test_input_not_npy_or_spn() {
-        let default_args = default_args();
-        let args_bad = Args {
-            input: "bad_extension.bad".to_string(),
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-
-    #[test]
-    #[should_panic(expected = "Output must be of type .inp")]
-    fn test_output_not_inp() {
-        let default_args = default_args();
-        let args_bad = Args {
-            output: "bad_extension.bad".to_string(),
-            ..default_args
-        };
-        validate(&args_bad);
-    }
-}
-
-fn main() {
+fn main() -> Result<(), ErrorWrapper> {
     let time_0 = Instant::now();
     let args = Args::parse();
     if !args.quiet {
@@ -232,7 +154,7 @@ fn main() {
             env!("CARGO_PKG_VERSION")
         );
     }
-    validate(&args);
+    validate(&args)?;
     if !args.quiet {
         print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
     }
@@ -244,18 +166,18 @@ fn main() {
             if !args.quiet {
                 println!();
             }
-            Voxels::from_npy(&args.input)
+            Voxels::from_npy(&args.input)?
         }
         Some("spn") => {
             if !args.quiet {
                 println!(
-                    " [nelx: {}, nely: {}, nelz: {}",
+                    " [nelx: {}, nely: {}, nelz: {}]",
                     args.nelx, args.nely, args.nelz
                 );
             }
-            Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])
+            Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])?
         }
-        _ => panic!(),
+        _ => panic!("unreachable since validate() checks"),
     };
     if !args.quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
@@ -303,11 +225,123 @@ fn main() {
         .and_then(|ext| ext.to_str())
     {
         Some("inp") => {
-            fea.write_inp(&args.output);
+            fea.write_inp(&args.output)?;
         }
-        _ => panic!(),
+        _ => panic!("unreachable since validate() checks"),
     };
     if !args.quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn default_args() -> Args {
+        Args {
+            input: "foo.spn".to_string(),
+            output: "bar.inp".to_string(),
+            quiet: false,
+            remove: None,
+            nelx: 1,
+            nely: 1,
+            nelz: 1,
+            xscale: 1.0,
+            yscale: 1.0,
+            zscale: 1.0,
+            xtranslate: 0.0,
+            ytranslate: 0.0,
+            ztranslate: 0.0,
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify xscale > 0.0")]
+    fn test_xscale_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            xscale: 0.0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify yscale > 0.0")]
+    fn test_yscale_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            yscale: 0.0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify zscale > 0.0")]
+    fn test_zscale_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            zscale: 0.0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify nelx > 0")]
+    fn test_nelx_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            nelx: 0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify nely > 0")]
+    fn test_nely_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            nely: 0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Need to specify nelz > 0")]
+    fn test_nelz_zero() {
+        let default_args = default_args();
+        let args_bad = Args {
+            nelz: 0,
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Input must be of type .npy or .spn")]
+    fn test_input_not_npy_or_spn() {
+        let default_args = default_args();
+        let args_bad = Args {
+            input: "bad_extension.bad".to_string(),
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Output must be of type .inp")]
+    fn test_output_not_inp() {
+        let default_args = default_args();
+        let args_bad = Args {
+            output: "bad_extension.bad".to_string(),
+            ..default_args
+        };
+        validate(&args_bad).unwrap();
     }
 }

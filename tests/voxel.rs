@@ -63,7 +63,7 @@ where
 fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usize>(
     gold: Gold<D, E, N>,
 ) {
-    let voxels = Voxels::from_spn(&gold.file_path, gold.nel);
+    let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
     let fem = voxels.into_finite_elements(gold.remove, &gold.scale, &gold.translate);
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
@@ -1243,23 +1243,30 @@ mod into_finite_elements {
 mod from_npy {
     use super::*;
     #[test]
-    #[should_panic(expected = "File type must be .npy")]
-    fn file_unreadable() {
-        let _ = Voxels::from_npy("tests/input/letter_f_3d.txt");
-    }
-    #[test]
-    #[should_panic(expected = "Could not find the .npy file")]
+    #[cfg(not(target_os = "windows"))]
+    #[should_panic(expected = "No such file or directory")]
     fn file_nonexistent() {
-        let _ = Voxels::from_npy("tests/input/f_file_nonexistent.npy");
+        Voxels::from_npy("tests/input/f_file_nonexistent.npy")
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Could not open the .npy file")]
+    #[should_panic(expected = "error parsing header: start does not match magic string")]
+    fn file_unreadable() {
+        Voxels::from_npy("tests/input/letter_f_3d.txt")
+            .map_err(|e| e.to_string())
+            .unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "error parsing header: start does not match magic string")]
     fn file_unopenable() {
-        let _ = Voxels::from_npy("tests/input/encrypted.npy");
+        Voxels::from_npy("tests/input/encrypted.npy")
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy");
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         assert_data_eq_gold(voxels);
     }
 }
@@ -1267,18 +1274,23 @@ mod from_npy {
 mod from_spn {
     use super::*;
     #[test]
-    #[should_panic(expected = "File type must be .spn")]
-    fn file_unreadable() {
-        let _ = Voxels::from_spn("tests/input/letter_f_3d.txt", NEL);
+    #[cfg(not(target_os = "windows"))]
+    #[should_panic(expected = "No such file or directory")]
+    fn file_nonexistent() {
+        Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL)
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Could not find the .spn file")]
-    fn file_nonexistent() {
-        let _ = Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL);
+    #[should_panic(expected = "ParseIntError { kind: InvalidDigit }")]
+    fn file_unreadable() {
+        Voxels::from_spn("tests/input/letter_f_3d.txt", NEL)
+            .map_err(|e| e.to_string())
+            .unwrap();
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
         assert_data_eq_gold(voxels);
     }
 }
@@ -1287,23 +1299,23 @@ mod write_npy {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
-        voxels_from_spn.write_npy("target/letter_f_3d.npy");
-        let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy");
+        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        voxels_from_spn.write_npy("target/letter_f_3d.npy").unwrap();
+        let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
     #[test]
     #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn no_such_directory() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL);
-        voxels.write_npy("no_such_directory/foo.npy");
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        voxels.write_npy("no_such_directory/foo.npy").unwrap();
     }
     #[test]
     fn sparse() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]);
-        voxels_from_spn.write_npy("target/sparse.npy");
-        let voxels_from_npy = Voxels::from_npy("target/sparse.npy");
+        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]).unwrap();
+        voxels_from_spn.write_npy("target/sparse.npy").unwrap();
+        let voxels_from_npy = Voxels::from_npy("target/sparse.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
 }

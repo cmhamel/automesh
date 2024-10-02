@@ -20,7 +20,7 @@ mod single {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
+            .unwrap();
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
         assert_eq!(node_element_connectivity, &vec![vec![1]; 8]);
     }
@@ -43,7 +43,7 @@ mod single {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
+            .unwrap();
         finite_elements
             .calculate_node_element_connectivity()
             .unwrap();
@@ -76,10 +76,8 @@ mod single {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
-        finite_elements
-            .calculate_node_node_connectivity()
-            .expect("the unexpected");
+            .unwrap();
+        finite_elements.calculate_node_node_connectivity().unwrap();
         let node_node_connectivity = finite_elements.get_node_node_connectivity();
         assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }
@@ -121,10 +119,8 @@ mod single {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
-        finite_elements
-            .calculate_node_node_connectivity()
-            .expect("the unexpected");
+            .unwrap();
+        finite_elements.calculate_node_node_connectivity().unwrap();
         finite_elements.calculate_node_node_connectivity().unwrap();
     }
 }
@@ -170,7 +166,7 @@ mod double_x {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
+            .unwrap();
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
         assert_eq!(node_element_connectivity, &node_element_connectivity_gold);
     }
@@ -213,10 +209,8 @@ mod double_x {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
-        finite_elements
-            .calculate_node_node_connectivity()
-            .expect("the unexpected");
+            .unwrap();
+        finite_elements.calculate_node_node_connectivity().unwrap();
         let node_node_connectivity = finite_elements.get_node_node_connectivity();
         assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }
@@ -299,7 +293,7 @@ mod cube {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
+            .unwrap();
         let node_element_connectivity = finite_elements.get_node_element_connectivity();
         assert_eq!(node_element_connectivity, &node_element_connectivity_gold);
     }
@@ -378,10 +372,8 @@ mod cube {
             FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
         finite_elements
             .calculate_node_element_connectivity()
-            .expect("the unexpected");
-        finite_elements
-            .calculate_node_node_connectivity()
-            .expect("the unexpected");
+            .unwrap();
+        finite_elements.calculate_node_node_connectivity().unwrap();
         let node_node_connectivity = finite_elements.get_node_node_connectivity();
         assert_eq!(node_node_connectivity, &node_node_connectivity_gold);
     }

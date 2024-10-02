@@ -1,9 +1,11 @@
 use super::{
     finite_element_data_from_npy_data, voxel_data_from_npy, voxel_data_from_spn,
-    write_voxels_to_npy, Nel, Scale, Translate, VoxelData,
+    write_voxels_to_npy, IntermediateError, Nel, Scale, Translate, VoxelData,
 };
 use crate::fem::py::FiniteElements;
-use pyo3::prelude::*;
+use ndarray_npy::{ReadNpyError, WriteNpyError};
+use pyo3::{exceptions::PyTypeError, prelude::*};
+use std::convert::From;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<Voxels>()?;
@@ -32,21 +34,60 @@ impl Voxels {
     }
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]
-    pub fn from_npy(file_path: &str) -> Self {
-        Self {
-            data: voxel_data_from_npy(file_path).expect("error reading voxels data from NPY file"),
-        }
+    pub fn from_npy(file_path: &str) -> Result<Self, PyIntermediateError> {
+        Ok(Self {
+            data: voxel_data_from_npy(file_path)?,
+        })
     }
     /// Constructs and returns a new voxels type from an SPN file.
     #[staticmethod]
-    pub fn from_spn(file_path: &str, nel: Nel) -> Self {
-        Self {
-            data: voxel_data_from_spn(file_path, nel)
-                .expect("error reading voxels data from SPN file"),
-        }
+    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, PyIntermediateError> {
+        Ok(Self {
+            data: voxel_data_from_spn(file_path, nel)?,
+        })
     }
     /// Writes the internal voxels data to an NPY file.
-    pub fn write_npy(&self, file_path: &str) {
-        write_voxels_to_npy(&self.data, file_path).expect("error writing voxels data to NPY file")
+    pub fn write_npy(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_voxels_to_npy(&self.data, file_path)?)
+    }
+}
+
+pub struct PyIntermediateError {
+    message: String,
+}
+
+impl From<ReadNpyError> for PyIntermediateError {
+    fn from(error: ReadNpyError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<String> for PyIntermediateError {
+    fn from(message: String) -> PyIntermediateError {
+        PyIntermediateError { message }
+    }
+}
+
+impl From<WriteNpyError> for PyIntermediateError {
+    fn from(error: WriteNpyError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<PyIntermediateError> for PyErr {
+    fn from(error: PyIntermediateError) -> PyErr {
+        PyTypeError::new_err(error.message)
+    }
+}
+
+impl From<IntermediateError> for PyIntermediateError {
+    fn from(error: IntermediateError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.message,
+        }
     }
 }
