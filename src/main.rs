@@ -265,7 +265,7 @@ mod tests {
             xscale: 0.0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -276,7 +276,7 @@ mod tests {
             yscale: 0.0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -287,7 +287,7 @@ mod tests {
             zscale: 0.0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -298,7 +298,7 @@ mod tests {
             nelx: 0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -309,7 +309,7 @@ mod tests {
             nely: 0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -320,7 +320,7 @@ mod tests {
             nelz: 0,
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -331,7 +331,7 @@ mod tests {
             input: "bad_extension.bad".to_string(),
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 
     #[test]
@@ -342,6 +342,6 @@ mod tests {
             output: "bad_extension.bad".to_string(),
             ..default_args
         };
-        validate(&args_bad);
+        validate(&args_bad).unwrap();
     }
 }
