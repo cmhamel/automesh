@@ -134,13 +134,13 @@ fn validate(args: &Args) -> Result<(), String> {
             assert!(args.nely >= 1, "Need to specify nely > 0");
             assert!(args.nelz >= 1, "Need to specify nelz > 0");
         }
-        _ => Err("Input must be of type .npy or .spn.".to_string())?,
+        _ => Err("Input must be of type .npy or .spn".to_string())?,
     }
     let output_path = Path::new(&args.output);
     let extension = output_path.extension().and_then(|ext| ext.to_str());
     match extension {
         Some("inp") => Ok(()),
-        _ => Err("Output must be of type .inp.".to_string()),
+        _ => Err("Output must be of type .inp".to_string()),
     }
 }
 

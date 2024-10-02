@@ -1243,7 +1243,8 @@ mod into_finite_elements {
 mod from_npy {
     use super::*;
     #[test]
-    #[should_panic(expected = "I/O error: No such file or directory")]
+    #[cfg(not(target_os = "windows"))]
+    #[should_panic(expected = "No such file or directory")]
     fn file_nonexistent() {
         Voxels::from_npy("tests/input/f_file_nonexistent.npy")
             .map_err(|e| e.to_string())
@@ -1273,6 +1274,7 @@ mod from_npy {
 mod from_spn {
     use super::*;
     #[test]
+    #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn file_nonexistent() {
         Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL)
