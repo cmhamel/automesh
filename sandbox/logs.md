@@ -6,7 +6,23 @@
 
 ## 2024-10-02
 
-To come.
+* CLI
+  * feedback https://github.com/autotwin/automesh/issues/107
+  * description https://github.com/autotwin/automesh/issues/106
+* Smoothing
+  * Building blocks
+    * node-to-node connectivity
+    * nodes classification into interior, interface, and surface - MRB
+    * additional unit test example meshes
+      * 2x2 rubix cube
+      * 3x3 rubix cube - CBH
+  * Laplace everywhere - MRB
+  * Laplace on the interior - MRB
+  * Node connectivity to output file? No.
+  * Node classification for hierarchical smoothing (surface, interfaced, interior)
+  * Algorithm
+* High-res spheres https://autotwin.github.io/automesh/examples/spheres_cont/index.html 
+  * Compare to Sculpt with a single processor
 
 ## 2024-09-25
 
