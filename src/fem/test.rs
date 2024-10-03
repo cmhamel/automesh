@@ -581,10 +581,52 @@ fn quadruple_2_blocks_void() {
         vec![3.0, 1.0, 1.0],
         vec![4.0, 1.0, 1.0],
     ];
-    let node_element_connectivity_gold = vec![vec![]];
-    let node_node_connectivity_gold = vec![vec![]];
-    let exterior_nodes_gold = (1..=1).collect();
-    let interface_nodes_gold = vec![];
+    let node_element_connectivity_gold = vec![
+        vec![1],
+        vec![1, 2],
+        vec![2],
+        vec![3],
+        vec![3],
+        vec![1],
+        vec![1, 2],
+        vec![2],
+        vec![3],
+        vec![3],
+        vec![1],
+        vec![1, 2],
+        vec![2],
+        vec![3],
+        vec![3],
+        vec![1],
+        vec![1, 2],
+        vec![2],
+        vec![3],
+        vec![3],
+    ];
+    let node_node_connectivity_gold = vec![
+        vec![2, 6, 11],
+        vec![1, 3, 7, 12],
+        vec![2, 8, 13],
+        vec![5, 9, 14],
+        vec![4, 10, 15],
+        vec![1, 7, 16],
+        vec![2, 6, 8, 17],
+        vec![3, 7, 18],
+        vec![4, 10, 19],
+        vec![5, 9, 20],
+        vec![1, 12, 16],
+        vec![2, 11, 13, 17],
+        vec![3, 12, 18],
+        vec![4, 15, 19],
+        vec![5, 14, 20],
+        vec![6, 11, 17],
+        vec![7, 12, 16, 18],
+        vec![8, 13, 17],
+        vec![9, 14, 20],
+        vec![10, 15, 19],
+    ];
+    let exterior_nodes_gold = vec![1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20];
+    let interface_nodes_gold = vec![2, 7, 12, 17];
     let interior_nodes_gold = vec![];
     test_finite_elements(
         element_blocks,
