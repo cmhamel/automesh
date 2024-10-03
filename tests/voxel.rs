@@ -95,7 +95,7 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     /// the [x, y, z] directions.
     nel: [usize; NSD],
 
-    /// ???
+    /// Option to remove blocks.
     remove: Option<Vec<u8>>,
 
     /// The scaling in the [x, y, z] directions to be applied to the domain.
