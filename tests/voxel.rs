@@ -382,7 +382,7 @@ mod into_finite_elements {
     #[test]
     fn quadruple_2_voids_x() {
         assert_fem_data_from_spn_eq_gold(Gold {
-            element_blocks: [99, 99],
+            element_blocks: [11, 11],
             element_node_connectivity: [[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]],
             element_coordinates: [
                 [0.0, 0.0, 0.0],
