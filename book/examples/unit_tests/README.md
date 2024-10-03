@@ -25,9 +25,7 @@ contains the following segmentation:
 segmentation = np.array(
     [
         [
-            [
-                11,
-            ],
+            [ 11, ],
         ],
     ],
     dtype=np.uint8,
@@ -87,9 +85,7 @@ meshes.
 segmentation = np.array(
     [
         [
-            [
-                11, 11
-            ],
+            [ 11, 11 ],
         ],
     ],
     dtype=np.uint8,
@@ -109,12 +105,8 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 segmentation = np.array(
     [
         [
-            [
-                11,
-            ],
-            [
-                11,
-            ],
+            [ 11, ],
+            [ 11, ],
         ],
     ],
     dtype=np.uint8,
@@ -134,11 +126,7 @@ the `y-axis`, (left) lattice node numbers, (right) mesh node numbers.
 segmentation = np.array(
     [
         [
-            [
-                11,
-                11,
-                11,
-            ],
+            [ 11, 11, 11, ],
         ],
     ],
     dtype=np.uint8,
@@ -158,12 +146,7 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 segmentation = np.array(
     [
         [
-            [
-                11,
-                11,
-                11,
-                11,
-            ],
+            [ 11, 11, 11, 11, ],
         ],
     ],
     dtype=np.uint8,
@@ -183,12 +166,7 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 egmentation = np.array(
     [
         [
-            [
-                99,
-                0,
-                0,
-                99,
-            ],
+            [ 99, 0, 0, 99, ],
         ],
     ],
     dtype=np.uint8,
@@ -209,12 +187,7 @@ numbers.
 segmentation = np.array(
     [
         [
-            [
-                100,
-                101,
-                101,
-                100,
-            ],
+            [ 100, 101, 101, 100, ],
         ],
     ],
     dtype=np.uint8,
@@ -236,12 +209,7 @@ node numbers.
 segmentation = np.array(
     [
         [
-            [
-                102,
-                103,
-                0,
-                102,
-            ],
+            [ 102, 103, 0, 102, ],
         ],
     ],
     dtype=np.uint8,
@@ -264,24 +232,12 @@ numbers, (right) mesh node numbers.
 segmentation = np.array(
     [
         [
-            [
-                11,
-                11,
-            ],
-            [
-                11,
-                11,
-            ],
+            [ 11, 11, ],
+            [ 11, 11, ],
         ],
         [
-            [
-                11,
-                11,
-            ],
-            [
-                11,
-                11,
-            ],
+            [ 11, 11, ],
+            [ 11, 11, ],
         ],
     ],
     dtype=np.uint8,
@@ -301,24 +257,12 @@ numbers, (right) mesh node numbers.
 segmentation = np.array(
 [
     [
-        [
-            82,
-            2,
-        ],
-        [
-            2,
-            2,
-        ],
+        [ 82, 2, ],
+        [ 2, 2, ],
     ],
     [
-        [
-            0,
-            31,
-        ],
-        [
-            0,
-            44,
-        ],
+        [ 0, 31, ],
+        [ 0, 44, ],
     ],
 ],
 dtype=np.uint8,
@@ -335,37 +279,47 @@ Figure: Mesh composed of four blocks (block `82` has one element, block `2`
 has three elements, block `31` has one element, and block `44` has one
 element), (left) lattice node numbers, (right) mesh node numbers.
 
+## Cube with Inclusion
+
+```python
+segmentation = np.array(
+[
+    [
+        [ 11, 11, 11, ],
+        [ 11, 11, 11, ],
+        [ 11, 11, 11, ],
+    ],
+    [
+        [ 11, 11, 11, ],
+        [ 11, 88, 11, ],
+        [ 11, 11, 11, ],
+    ],
+    [
+        [ 11, 11, 11, ],
+        [ 11, 11, 11, ],
+        [ 11, 11, 11, ],
+    ],
+],
+dtype=np.uint8,
+)
+```
+
+![cube_with_inclusion.png](cube_with_inclusion.png)
+
+Figure: Mesh composed of 26 voxels of (block `11`) and one voxel inslusion
+(block `88`), (left) lattice node numbers, (right) mesh node numbers.
+
 ## Letter F
 
 ```python
 segmentation = np.array(
     [
         [
-            [
-                11,
-                0,
-                0,
-            ],
-            [
-                11,
-                0,
-                0,
-            ],
-            [
-                11,
-                11,
-                0,
-            ],
-            [
-                11,
-                0,
-                0,
-            ],
-            [
-                11,
-                11,
-                11,
-            ],
+            [ 11, 0, 0, ],
+            [ 11, 0, 0, ],
+            [ 11, 11, 0, ],
+            [ 11, 0, 0, ],
+            [ 11, 11, 11, ],
         ],
     ],
     dtype=np.uint8,
