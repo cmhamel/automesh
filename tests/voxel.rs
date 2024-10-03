@@ -761,7 +761,10 @@ mod into_finite_elements {
     #[test]
     fn cube_with_inclusion() {
         assert_fem_data_from_spn_eq_gold(Gold {
-            element_blocks: [11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 88, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11],
+            element_blocks: [
+                11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 88, 11, 11, 11, 11, 11, 11, 11,
+                11, 11, 11, 11, 11, 11,
+            ],
             element_node_connectivity: [
                 [1, 2, 6, 5, 17, 18, 22, 21],
                 [2, 3, 7, 6, 18, 19, 23, 22],
