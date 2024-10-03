@@ -22,5 +22,5 @@ fem.write_inp("single.inp")
 The resulting Abaqus input file:
 
 ```sh
-<!-- cmdrun cat ../../target/single_from_py.inp -->
+{{#include ../../target/single_from_py.inp}}
 ```

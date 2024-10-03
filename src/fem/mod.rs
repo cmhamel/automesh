@@ -18,13 +18,18 @@ const ELEMENT_NUM_NODES: usize = 8;
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
 pub type Coordinates = Vec<Vec<f64>>;
+pub type Nodes = Vec<usize>;
 
 /// The finite elements type.
 pub struct FiniteElements {
+    calculated_nodal_hierarchy: bool,
     calculated_node_element_connectivity: bool,
     calculated_node_node_connectivity: bool,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
+    exterior_nodes: Nodes,
+    interface_nodes: Nodes,
+    interior_nodes: Nodes,
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
@@ -39,13 +44,54 @@ impl FiniteElements {
         nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
+            calculated_nodal_hierarchy: false,
             calculated_node_element_connectivity: false,
             calculated_node_node_connectivity: false,
             element_blocks,
             element_node_connectivity,
+            exterior_nodes: vec![],
+            interface_nodes: vec![],
+            interior_nodes: vec![],
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
+        }
+    }
+    /// Calculates and sets the nodal hierarchy.
+    pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
+        if self.calculated_nodal_hierarchy {
+            Err("Already calculated and set the nodal hierarchy.")
+        } else if self.calculated_node_element_connectivity {
+            let element_blocks = self.get_element_blocks();
+            let mut exterior_nodes_unsorted = vec![];
+            let mut interface_nodes_unsorted = vec![];
+            let mut interior_nodes_unsorted = vec![];
+            self.get_node_element_connectivity()
+                .iter()
+                .enumerate()
+                .for_each(|(node, connected_elements)| {
+                    if connected_elements
+                        .iter()
+                        .map(|element| element_blocks[element - ELEMENT_NUMBERING_OFFSET])
+                        .unique()
+                        .collect::<Vec<usize>>()
+                        .len()
+                        > 1
+                    {
+                        interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                    } else if connected_elements.len() == 8 {
+                        interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                    } else {
+                        exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                    }
+                });
+            self.exterior_nodes = exterior_nodes_unsorted.into_iter().sorted().collect();
+            self.interface_nodes = interface_nodes_unsorted.into_iter().sorted().collect();
+            self.interior_nodes = interior_nodes_unsorted.into_iter().sorted().collect();
+            self.calculated_nodal_hierarchy = true;
+            Ok(())
+        } else {
+            Err("Need to calculate and set the node-to-element connectivity first.")
         }
     }
     /// Calculates and sets the node-to-element connectivity.
@@ -81,8 +127,8 @@ impl FiniteElements {
             let element_node_connectivity = self.get_element_node_connectivity();
             let node_element_connectivity = self.get_node_element_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
-            let mut node_node_connectivity = vec![vec![]; number_of_nodes];
-            node_node_connectivity
+            let mut node_node_connectivity_nonunique_unsorted = vec![vec![]; number_of_nodes];
+            node_node_connectivity_nonunique_unsorted
                 .iter_mut()
                 .zip(node_element_connectivity.iter().enumerate())
                 .try_for_each(|(connectivity, (node, node_connectivity))| {
@@ -146,7 +192,7 @@ impl FiniteElements {
                         }
                     })
                 })?;
-            self.node_node_connectivity = node_node_connectivity
+            self.node_node_connectivity = node_node_connectivity_nonunique_unsorted
                 .into_iter()
                 .map(|connectivity| connectivity.into_iter().unique().sorted().collect())
                 .collect();
@@ -163,6 +209,18 @@ impl FiniteElements {
     /// Returns a reference to the element-to-node connectivity.
     pub fn get_element_node_connectivity(&self) -> &Connectivity {
         &self.element_node_connectivity
+    }
+    /// Returns a reference to the exterior nodes.
+    pub fn get_exterior_nodes(&self) -> &Nodes {
+        &self.exterior_nodes
+    }
+    /// Returns a reference to the interface nodes.
+    pub fn get_interface_nodes(&self) -> &Nodes {
+        &self.interface_nodes
+    }
+    /// Returns a reference to the interior nodes.
+    pub fn get_interior_nodes(&self) -> &Nodes {
+        &self.interior_nodes
     }
     /// Returns a reference to the nodal coordinates.
     pub fn get_nodal_coordinates(&self) -> &Coordinates {
