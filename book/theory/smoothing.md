@@ -1,14 +1,14 @@
 # Smoothing
 
-Both Laplacian smoothing and Taubin smoothing are smoothing operations that adjust the positions of the nodes in a finite element mesh.
+Both Laplacian smoothing and Taubin smoothing[^Taubin_1995a] [^Taubin_1995b] are smoothing operations that adjust the positions of the nodes in a finite element mesh.
 
-Laplacian smoothing, based on the Laplacian operator, computes the average position of a point's neighbors and moves the point toward the average.  This reduces high-frequency noise, but can result in a loss of shape and detail, with overall shrinkage.
+Laplacian smoothing, based on the Laplacian operator, computes the average position of a point's neighbors and moves the point toward the average.  This reduces high-frequency noise, but can result in a loss of shape and detail, with overall shrinkage.  
 
 Taubin smoothing is an extension of Laplacian smoothing that seeks to overcome the shrinkage drawback associated with the Laplacian approach.   Taubin is a two-pass approach.  The first pass smooths the mesh.  The second pass re-expands the mesh.
 
 ## Laplacian Smoothing
 
-Consider a subject node with position $\boldsymbol{p}$.  The subject node connects to $n$ neighbor points $\boldsymbol{q}_i$ for $i \in [1, n]$ through $n$ edges. 
+Consider a subject node with position $\boldsymbol{p} = \boldsymbol{p}(x, y, z)$.  The subject node connects to $n$ neighbor points $\boldsymbol{q}_i$ for $i \in [1, n]$ through $n$ edges. 
 
 For concereteness, consider a node with four neighbors, shown in the figure below.
 
@@ -51,6 +51,12 @@ and finally
 
 $$ \boxed{\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right).} $$
 
+> The formulation above, based on the average position of the neighbors, is a special case of the more generalized presentation of Laplace smoothing, wherein a normalized weighting factor, $w_i$, is used: 
+
+$$ \boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \sum_{i=1}^n w_i \left( \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right). $$
+
+> When all weights are equal and normalized by the number of neighbors, $w_i = \frac{1}{n}$, the special case presented in the box above is recovered.
+
 ### Example
 
 For a 1D configuration, consider a node with initial position $\boldsymbol{p} = 1.5$ with two neighbors (that never move) with positions $\boldsymbol{q}_1 = 0.0$ and $\boldsymbol{q}_2 = 1.0$ ($\bar{\boldsymbol{q}} = 0.5$).  With $\lambda = 0.3$, the table below shows updates for for position $\boldsymbol{p}$.
@@ -78,11 +84,11 @@ Figure: Convergence of position $\boldsymbol{p}$ toward $0.5$ as a function of i
 ## Taubin Smoothing
 
 Taubin smoothing is a two-parameter, two-pass iterative variation of Laplace smoothing.
-Specifically with the definitions used in Laplacian smoothing, and a new second negative parameter $\mu$, where
+Specifically with the definitions used in Laplacian smoothing, a second negative parameter $\mu$ is used, where
 
-$$ 0 < \lambda < -\mu, $$
+$$ \lambda \in \mathbb{R}^+ \subset (0, 1) \hspace{0.5cm} \rm{and} \hspace{0.5cm} \lambda < -\mu. $$
 
-is used.  The first parameter, $\lambda$, tends to smooth (and shrink) the domain.  The second parameter, $\mu$, tends to expand the domain.
+The first parameter, $\lambda$, tends to smooth (and shrink) the domain.  The second parameter, $\mu$, tends to expand the domain.
 
 Taubin smoothing is written as, for $k = 0$, $k < k_{\rm{max}}$, $k = k+1$, with $k_{\rm{max}}$ an even number,
 
@@ -95,50 +101,33 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} 
 $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right),} $$
 
 
-> In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not explicitly and carefully explicate this second pass update, and so we emphasize it here.
+> In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not carefully state the second pass update, and so we emphasize it here.
 
-## Hierarchical Smoothing
+## Hierarchical Control
 
-* Taubin[^Taubin_1995a] and [^Taubin_1995b]
-* Used by Chen[^Chen_2010]
-  * Hierarchical mesh Laplacian smoothing with Taubin strategy to conserve mesh volume, and avoid volume shrinkage from conventional Laplacian smoothing techniques. Used eight (8) smoothing iterations.
+Hierarchical control classifies all nodes in a mesh as belonging to a surface $\mathbb{A}$, interface $\mathbb{B}$, or interior $\mathbb{C}$.  These categories are mutually exclusive.  Any and all nodes must belong to one, and only one, of these three categories.  For a given node $\boldsymbol{p}$, let
 
-### Chen Mesh Smoothing
+* the set of *surface* neighbors be denoted $\boldsymbol{q}_{\mathbb{A}}$,
+* the set of *interface* neighbors be denoted $\boldsymbol{q}_{\mathbb{B}}$, and
+* the set of *interior* neighbors be denoted $\boldsymbol{q}_{\mathbb{C}}$.
 
-Goal: Given that a conversion of image voxels to a hexahedral mesh creates "jagged edges on mesh surface and material interfaces", causing numical artifacts, smooth the outer and inner surfaces.
+Hierarchical control states that
 
-* **Step 1: Hierarchy**
-  * For all nodes in the mesh, classify each node as a surface, interface, or interior node, and assign a hierarchical order accordingly,
-    * `surface_node` with `hierarchy_order = 3`
-    * `interface_node` with `hierarchy_order = 2`
-    * `interior_node` and `hierarchy_order = 1`
-* **Step 2: Neighborhoods**
-  * For all surface nodes and interface nodes, define neighborhoods with hierarchical constraints.
-    * General neighborhoods
-      * A `surface_node` that lies a corner, edge, or face will typically has three, four, or five neighbors, respectively.
-      * An `interface_node` will typically have six neighbors.
-      * For completeness, an `interior_node` will typically have six neighbors, but we don't need to define neighborhoods for interior nodes.
-    * Hierarchical neighborhoods - only nodes with the same or greater `hierarchy_order` can be neighbors.
-      * A `surface_node` will only consider another `suface_node` to be a neighbor; it will not consider an `interface_node` or an `internal_node` to be a neighbor.
-      * An `interface_node` will consider either a `surface_node` or an `interface_node` to be a neighbor, but will not consider an `interior_node` to be a neighbor.
-      * Let the set of neighbors of node $i$ be denoted $i*$.
-* **Step 3: Smoothing**
-  * Define
-    * $\lambda = 0.6307$
-    * $\mu = -0.6732$
-    * $k$ iteration counter
-    * $k_{\max}$ (number of smoothing interations), $k_{\max}=8$ in the Chen paper, as too many mesh smoothing interations can cause severe element distortion.
-    * For the position of any node $\boldsymbol{p} = (x, y, z)$ with $n$ neighbors $\boldsymbol{q}_i$, for $i \in [1, n]$
-  * Smooth
-    * for $k=0, k<k_{\max}, k = k+1$
-      * $\Delta \boldsymbol{p} = \frac{1}{n} \sum_{i=1}^n (\boldsymbol{q}_i - \boldsymbol{p})$
-        * if $k$ is even:
-          * $\boldsymbol{p}' = \boldsymbol{p} + \lambda \Delta \boldsymbol{p}$
-        * else ($k$ is odd):
-          * $\boldsymbol{p}' = \boldsymbol{p} + \mu \Delta \boldsymbol{p}$
-  * Remarks
-    * Conventional Laplacian smoothing causes volume shrinkage.  The Chen algorithm conserves mesh volume.  *(??? Would like to see the proof or constraint equations that makes this a true statement.)*
-    * Seems like an even number of interations should be used to provide both a smoothing/deflation step followed by an inflation step.
+* for any *surface* node $\boldsymbol{p} \in \mathbb{A}$, only surface nodes $\boldsymbol{q}_{\mathbb{A}}$ connected via edges to $\boldsymbol{p}$ are considered neighbors,
+* for any *interface* node $\boldsymbol{p} \in \mathbb{B}$, only surface nodes $\boldsymbol{q}_{\mathbb{A}}$ and interface nodes $\boldsymbol{q}_{\mathbb{B}}$ connected via edges to $\boldsymbol{p}$ are neighbors, and
+* for any *interior* node $\boldsymbol{p} \in \mathbb{C}$, surface nodes $\boldsymbol{q}_{\mathbb{A}}$, interface nodes $\boldsymbol{q}_{\mathbb{B}}$, and interior nodes $\boldsymbol{q}_{\mathbb{C}}$ connecting via edges to $\boldsymbol{p}$ are neighbors.
+
+The following figure shows this concept:
+
+![hierarchy_sets](hierarchy_sets.png)
+
+Figure: Classification of nodes into categories of surface nodes $\mathbb{A}$, interface nodes $\mathbb{B}$, and interior nodes $\mathbb{C}$.  Hierarchical relationship: a surface node's neighbors are other other edge-connected surface nodes, an interface node's neighbors are other edge-connected interface nodes or surface nodes, and an interior node's neighbors are edge-connected nodes of any category.
+
+### Chen Example
+
+Chen[^Chen_2010] used medical image voxel data to create a structured hexahedral mesh.   They noded that the approach generated a mesh with "jagged edges on mesh surface and material interfaces," which can cause numerical artifacts.  
+
+Chen[^Chen_2010] used hierarchical Taubin mesh smoothing for eight (8) iterations, with $\lambda = 0.6307$ and $\mu = -0.6732$ to smooth the outer and inner surfaces of the mesh.
 
 ## References
 

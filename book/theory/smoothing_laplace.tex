@@ -142,6 +142,43 @@ never move), a simple 1D example:
   \end{tabular}
 \end{table}
 
+\begin{figure}[htb]
+  \begin{center}
+
+    \begin{tikzpicture}
+      \node[shape=circle,draw=black] (a) at (-6,0) {$\vp \in \mathbb{A}$};
+      \node[shape=circle,draw=black] (b) at (-4,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (c) at (-3.576,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (d) at (-4,-1) {$\vq_{\mathbb{C}}$};
+
+      \node[shape=circle,draw=black] (e) at (-1,0) {$\vp \in \mathbb{B}$};
+      \node[shape=circle,draw=black] (f) at (1,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=black] (g) at (1.424,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (h) at (1,-1) {$\vq_{\mathbb{C}}$};
+
+      \node[shape=circle,draw=black] (i) at (4,0) {$\vp \in \mathbb{C}$};
+      \node[shape=circle,draw=black] (j) at (6,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=black] (k) at (6.424,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=black] (l) at (6,-1) {$\vq_{\mathbb{C}}$};
+  
+      \path (a) edge (b);
+      \path [dashed](a) edge node[align=center] {$\otimes$} (c);
+      \path [dashed](a) edge node[align=center] {$\otimes$} (d);
+
+      \path (e) edge (f);
+      \path (e) edge (g);
+      \path [dashed](e) edge node[align=center] {$\otimes$} (h);
+
+      \path (i) edge (j);
+      \path (i) edge (k);
+      \path (i) edge (l);
+    \end{tikzpicture}
+
+  \end{center}
+
+  \caption{Hierarchical classification of nodes based on categories of surface $\mathbb{A}$, interface $\mathbb{B}$, and interior $\mathbb{C}$.}
+\label{fig:hierarchy} % label must come after caption 
+\end{figure}
 
 % \begin{figure}[htb]
 %   \begin{center}
@@ -171,6 +208,9 @@ never move), a simple 1D example:
 %   \caption{Subject node $\vp$ with edge connections to neighbor nodes $\vq_i$ with $i \in [1, n]$.}
 % \label{fig:single_node} % label must come after caption 
 % \end{figure}
+
+
+
 
 
 \end{document}
