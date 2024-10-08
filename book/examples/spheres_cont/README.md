@@ -47,6 +47,8 @@ is slow, only the first two resolutions are shown.
 Use `automesh` to convert the segmentations into finite element meshes.
 
 ```sh
+cd ~/autotwin/automesh/book/examples/spheres_cont/
+
 automesh -i spheres_resolution_1.npy -o spheres_resolution_1.inp \
 -x 24 -y 24 -z 24 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
@@ -110,4 +112,35 @@ view from 100 -100 100
 graphics clip manipulation off
 
 view bottom
+```
+
+## Comparison
+
+Set up reference to the Sculpt binary,
+
+```sh
+alias sculpt='/Applications/Cubit-16.14/Cubit.app/Contents/MacOS/sculpt'
+```
+
+Convert `.npy` files to `.spn` files
+
+Run Sculpt
+
+```sh
+cd ~/autotwin/automesh/book/examples/spheres_cont/
+
+sculpt --num_procs 1 --input_spn
+```
+
+### Using `sculpt_stl_to_inp`
+
+We compare results above to a similar problem meshed with Sculpt.
+Using [three_material_vox_m.yml](https://github.com/autotwin/basis/blob/main/data/three_material/three_material_vox_m.yml), then
+
+```sh
+cd ~/autotwin/mesh/
+source .venv/bin/activate.fish
+
+arch -x86_64 python3.11 ~/autotwin/mesh/src/atmesh/sculpt_stl_to_inp.py ~/autotwin/basis/data/three_material/three_material_vox_m.yml
+
 ```
