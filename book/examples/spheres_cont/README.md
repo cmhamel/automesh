@@ -126,13 +126,11 @@ Convert `.npy` files to `.spn` files
 
 Run Sculpt
 
-```
+```sh
 cd ~/autotwin/automesh/book/examples/spheres_cont/
 
 sculpt --num_procs 1 --input_spn
-
 ```
-
 
 ### Using `sculpt_stl_to_inp`
 
