@@ -1,5 +1,5 @@
 use automesh::{Abaqus, Voxels};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use ndarray_npy::ReadNpyError;
 use std::{io::Error, path::Path, time::Instant};
 
@@ -21,6 +21,10 @@ env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
 ), arg_required_else_help = true, long_about = None, version)]
 struct Args {
+    /// ???
+    #[command(subcommand)]
+    command: Option<Commands>,
+
     /// Name of the NumPy (.npy) or SPN (.spn) input file.
     #[arg(short, long, value_name = "FILE")]
     input: String,
@@ -89,6 +93,28 @@ struct Args {
     quiet: bool,
 }
 
+#[derive(Subcommand)]
+enum Commands {
+    /// Converts between segmentation input file types
+    Convert {
+        // just keep input and output required at top-level since always used
+    },
+    /// Creates a finite element mesh from a segmentation
+    Mesh {
+        /// Number of voxels in the x-direction.
+        #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
+        nelx: usize,
+        /// Number of voxels in the y-direction.
+        #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
+        nely: usize,
+        /// Number of voxels in the z-direction.
+        #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
+        nelz: usize,
+    },
+    /// Applies smoothing to an existing mesh file
+    Smooth {},
+}
+
 struct ErrorWrapper {
     message: String,
 }
@@ -121,32 +147,9 @@ impl From<String> for ErrorWrapper {
     }
 }
 
-fn validate(args: &Args) -> Result<(), String> {
-    assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
-    assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
-    assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
-    let input_path = Path::new(&args.input);
-    let extension = input_path.extension().and_then(|ext| ext.to_str());
-    match extension {
-        Some("npy") => {}
-        Some("spn") => {
-            assert!(args.nelx >= 1, "Need to specify nelx > 0");
-            assert!(args.nely >= 1, "Need to specify nely > 0");
-            assert!(args.nelz >= 1, "Need to specify nelz > 0");
-        }
-        _ => Err("Input must be of type .npy or .spn".to_string())?,
-    }
-    let output_path = Path::new(&args.output);
-    let extension = output_path.extension().and_then(|ext| ext.to_str());
-    match extension {
-        Some("inp") => Ok(()),
-        _ => Err("Output must be of type .inp".to_string()),
-    }
-}
-
 fn main() -> Result<(), ErrorWrapper> {
-    let time_0 = Instant::now();
     let args = Args::parse();
+    validate(&args)?;
     if !args.quiet {
         println!(
             "\x1b[1m    {} {}\x1b[0m",
@@ -154,7 +157,26 @@ fn main() -> Result<(), ErrorWrapper> {
             env!("CARGO_PKG_VERSION")
         );
     }
-    validate(&args)?;
+    match &args.command {
+        Some(Commands::Convert {}) => {
+            todo!()
+        }
+        Some(Commands::Smooth {}) => {
+            todo!()
+        }
+        Some(Commands::Mesh {
+            nelx: _,
+            nely: _,
+            nelz: _,
+        }) => mesh(args),
+        None => {
+            todo!("dont know how to get 'or None' with struct fields, maybe not possible")
+        }
+    }
+}
+
+fn mesh(args: Args) -> Result<(), ErrorWrapper> {
+    let time_0 = Instant::now();
     if !args.quiet {
         print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
     }
@@ -233,6 +255,29 @@ fn main() -> Result<(), ErrorWrapper> {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
     }
     Ok(())
+}
+
+fn validate(args: &Args) -> Result<(), String> {
+    assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
+    assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
+    assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
+    let input_path = Path::new(&args.input);
+    let extension = input_path.extension().and_then(|ext| ext.to_str());
+    match extension {
+        Some("npy") => {}
+        Some("spn") => {
+            assert!(args.nelx >= 1, "Need to specify nelx > 0");
+            assert!(args.nely >= 1, "Need to specify nely > 0");
+            assert!(args.nelz >= 1, "Need to specify nelz > 0");
+        }
+        _ => Err("Input must be of type .npy or .spn".to_string())?,
+    }
+    let output_path = Path::new(&args.output);
+    let extension = output_path.extension().and_then(|ext| ext.to_str());
+    match extension {
+        Some("inp") => Ok(()),
+        _ => Err("Output must be of type .inp".to_string()),
+    }
 }
 
 #[cfg(test)]
