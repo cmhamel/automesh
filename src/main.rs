@@ -149,15 +149,9 @@ impl From<String> for ErrorWrapper {
 
 fn main() -> Result<(), ErrorWrapper> {
     let args = Args::parse();
-    validate(&args)?;
-    if !args.quiet {
-        println!(
-            "\x1b[1m    {} {}\x1b[0m",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        );
-    }
     match &args.command {
+        // will eventually just send fields from matched structs
+        // match Args::parse().command {
         Some(Commands::Convert {}) => {
             todo!()
         }
@@ -169,15 +163,21 @@ fn main() -> Result<(), ErrorWrapper> {
             nely: _,
             nelz: _,
         }) => mesh(args),
-        None => {
-            todo!("dont know how to get 'or None' with struct fields, maybe not possible")
-        }
+        None => Ok(Err("Need to specify a command".to_string())?),
     }
 }
 
 fn mesh(args: Args) -> Result<(), ErrorWrapper> {
+    // should validate args using fns for each subcommand
+    validate(&args)?;
+
     let time_0 = Instant::now();
     if !args.quiet {
+        println!(
+            "\x1b[1m    {} {}\x1b[0m",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
         print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
     }
     let input = match Path::new(&args.input)
