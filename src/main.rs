@@ -1,6 +1,6 @@
 use automesh::{Abaqus, FiniteElements, Voxels};
 use clap::{Parser, Subcommand};
-use ndarray_npy::ReadNpyError;
+use ndarray_npy::{ReadNpyError, WriteNpyError};
 use std::{io::Error, path::Path, time::Instant};
 
 #[derive(Parser)]
@@ -156,8 +156,18 @@ impl From<String> for ErrorWrapper {
     }
 }
 
+impl From<WriteNpyError> for ErrorWrapper {
+    fn from(error: WriteNpyError) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
 enum OutputTypes {
     Abaqus(FiniteElements),
+    Npy(Voxels),
+    Spn(Voxels),
 }
 
 fn main() -> Result<(), ErrorWrapper> {
@@ -196,16 +206,26 @@ fn main() -> Result<(), ErrorWrapper> {
 
 fn convert(
     input: String,
-    _output: String,
+    output: String,
     nelx: usize,
     nely: usize,
     nelz: usize,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let _input_type = read_input(input, nelx, nely, nelz, quiet)?;
-    // convert from one to other, timing result
-    // write_output(output, OutputTypes::Npy(output_type), quiet)?;
-    // write_output(output, OutputTypes::Spn(output_type), quiet)?;
+    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
+    match (input_extension, output_extension) {
+        (Some("npy"), Some("spn")) => write_output(output, OutputTypes::Spn(input_type), quiet)?,
+        (Some("spn"), Some("npy")) => write_output(output, OutputTypes::Npy(input_type), quiet)?,
+        _ => Err(format!(
+            "Invalid extensions .{} and .{} from input and output files {} and {}",
+            input_extension.unwrap(),
+            output_extension.unwrap(),
+            input,
+            output
+        ))?,
+    }
     Ok(())
 }
 
@@ -228,7 +248,7 @@ fn mesh(
     // should validate args using fns for each subcommand
     // validate(&args)?;
 
-    let input_type = read_input(input, nelx, nely, nelz, quiet)?;
+    let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
     if !quiet {
         let entirely_default = xscale == 1.0
             && yscale == 1.0
@@ -277,7 +297,7 @@ fn mesh(
 }
 
 fn read_input(
-    input: String,
+    input: &str,
     nelx: usize,
     nely: usize,
     nelz: usize,
@@ -298,13 +318,13 @@ fn read_input(
             if !quiet {
                 println!();
             }
-            Voxels::from_npy(&input)?
+            Voxels::from_npy(input)?
         }
         Some("spn") => {
             if !quiet {
                 println!(" [nelx: {}, nely: {}, nelz: {}]", nelx, nely, nelz);
             }
-            Voxels::from_spn(&input, [nelx, nely, nelz])?
+            Voxels::from_spn(input, [nelx, nely, nelz])?
         }
         _ => {
             if !quiet {
@@ -332,16 +352,22 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
     match output_extension {
         Some("inp") => match output_type {
             OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
+            _ => panic!(),
         },
-        Some("spn") => {
-            todo!()
-        }
+        Some("npy") => match output_type {
+            OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
+            _ => panic!(),
+        },
+        Some("spn") => match output_type {
+            OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
+            _ => panic!(),
+        },
         _ => Err(format!(
             "Invalid extension .{} from output file {}",
             output_extension.unwrap(),
             output
         ))?,
-    };
+    }
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
