@@ -1,5 +1,5 @@
-import numpy as np
 from automesh import Voxels
+import numpy as np
 
 
 def test_write_npy():
