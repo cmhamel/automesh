@@ -10,6 +10,7 @@ Example:
     source .venv/bin/activate
 
     cd book/examples/unit_tests
+    pip install matplotlib
     python figures.py
 
 Ouput:
@@ -1533,18 +1534,18 @@ def main():
     examples = [
         Single(),
         DoubleX(),
-        DoubleY(),
-        TripleX(),
-        QuadrupleX(),
-        Quadruple2VoidsX(),
-        Quadruple2Blocks(),
-        Quadruple2BlocksVoid(),
-        Cube(),
-        CubeMulti(),
-        CubeWithInclusion(),
-        LetterF(),
-        LetterF3D(),
-        Sparse(),
+        # DoubleY(),
+        # TripleX(),
+        # QuadrupleX(),
+        # Quadruple2VoidsX(),
+        # Quadruple2Blocks(),
+        # Quadruple2BlocksVoid(),
+        # Cube(),
+        # CubeMulti(),
+        # CubeWithInclusion(),
+        # LetterF(),
+        # LetterF3D(),
+        # Sparse(),
     ]
 
     # output_dir: Final[str] = "~/scratch"
