@@ -203,6 +203,9 @@ fn convert(
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let _input_type = read_input(input, nelx, nely, nelz, quiet)?;
+    // convert from one to other, timing result
+    // write_output(output, OutputTypes::Npy(output_type), quiet)?;
+    // write_output(output, OutputTypes::Spn(output_type), quiet)?;
     Ok(())
 }
 
