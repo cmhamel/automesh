@@ -23,10 +23,6 @@ env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
 struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
-
-    /// Pass to quiet the output.
-    #[arg(action, global = true, long, short)]
-    quiet: bool,
 }
 
 #[derive(Subcommand)]
@@ -52,6 +48,10 @@ enum Commands {
         /// Number of voxels in the z-direction.
         #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
         nelz: usize,
+
+        /// Pass to quiet the output.
+        #[arg(action, long, short)]
+        quiet: bool,
     },
 
     /// Creates a finite element mesh from a segmentation
@@ -118,6 +118,10 @@ enum Commands {
             value_name = "TRANSLATE"
         )]
         ztranslate: f64,
+
+        /// Pass to quiet the output.
+        #[arg(action, long, short)]
+        quiet: bool,
     },
 
     /// Applies smoothing to an existing mesh file
@@ -179,7 +183,8 @@ fn main() -> Result<(), ErrorWrapper> {
             nelx,
             nely,
             nelz,
-        }) => convert(input, output, nelx, nely, nelz, args.quiet),
+            quiet,
+        }) => convert(input, output, nelx, nely, nelz, quiet),
         Some(Commands::Smooth {}) => {
             todo!()
         }
@@ -196,9 +201,10 @@ fn main() -> Result<(), ErrorWrapper> {
             xtranslate,
             ytranslate,
             ztranslate,
+            quiet,
         }) => mesh(
             input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, args.quiet,
+            ytranslate, ztranslate, quiet,
         ),
         None => Ok(Err("Need to specify a command".to_string())?),
     }
