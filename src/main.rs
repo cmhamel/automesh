@@ -251,9 +251,6 @@ fn mesh(
     ztranslate: f64,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    // should validate args using fns for each subcommand
-    // validate(&args)?;
-
     let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
     if !quiet {
         let entirely_default = xscale == 1.0
