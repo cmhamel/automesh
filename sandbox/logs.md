@@ -21,7 +21,7 @@
   * Node connectivity to output file? No.
   * Node classification for hierarchical smoothing (surface, interfaced, interior)
   * Algorithm
-* High-res spheres https://autotwin.github.io/automesh/examples/spheres_cont/index.html 
+* High-res spheres https://autotwin.github.io/automesh/examples/spheres_cont/index.html
   * Compare to Sculpt with a single processor
 
 ## 2024-09-25

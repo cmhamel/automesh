@@ -44,8 +44,8 @@ where the segmentation `11` denotes block `11` in the finite element mesh.
 Equivalently, the [single.spn](https://raw.githubusercontent.com/autotwin/automesh/main/tests/input/single.spn) contains a
 single integer:
 
-```bash
-11
+```sh
+11   #  x:1  y:1  z:1
 ```
 
 The resulting finite element mesh is visualized is shown in the following
@@ -81,15 +81,9 @@ meshes.
 
 ### Double X
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, 11 ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+11   #    2    1    1
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -101,16 +95,9 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ### Double Y
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, ],
-            [ 11, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+11   #    1    2    1
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -122,15 +109,10 @@ the `y-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Triple
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, 11, 11, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+11   #    2    1    1
+11   #    3    1    1
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -142,15 +124,11 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Quadruple
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, 11, 11, 11, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+11   #    2    1    1
+11   #    3    1    1
+11   #    4    1    1
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -162,15 +140,11 @@ the `x-axis`, (left) lattice node numbers, (right) mesh node numbers.
 
 ## Quadruple with Voids
 
-```python
-egmentation = np.array(
-    [
-        [
-            [ 99, 0, 0, 99, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+99   #  x:1  y:1  z:1
+0    #    2    1    1
+0    #    3    1    1
+99   #    4    1    1
 ```
 
 where the segmentation `99` denotes block `99` in the finite element mesh, and segmentation `0` is excluded from the mesh.
@@ -183,15 +157,12 @@ numbers.
 
 ## Quadruple with Two Blocks
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 100, 101, 101, 100, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+
+```sh
+100  #  x:1  y:1  z:1
+101  #    2    1    1
+101  #    3    1    1
+100  #    4    1    1
 ```
 
 where the segmentation `100` and `101` denotes block `100` and `101`,
@@ -205,20 +176,15 @@ node numbers.
 
 ## Quadruple with Two Blocks and Void
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 102, 103, 0, 102, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+102  #  x:1  y:1  z:1
+103  #    2    1    1
+0    #    3    1    1
+102  #    4    1    1
 ```
 
 where the segmentation `102` and `103` denotes block `102` and `103`,
-respectively, in the finite element mesh, and segmentation `0` will be included
-from the finite element mesh.
+respectively, in the finite element mesh, and segmentation `0` will be included from the finite element mesh.
 
 ![quadruple_2_blocks_void.png](quadruple_2_blocks_void.png)
 
@@ -228,20 +194,15 @@ numbers, (right) mesh node numbers.
 
 ## Cube
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, 11, ],
-            [ 11, 11, ],
-        ],
-        [
-            [ 11, 11, ],
-            [ 11, 11, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+11   #  _ 2  _ 1    1
+11   #    1    2    1
+11   #  _ 2  _ 2  _ 1
+11   #    1    1    2
+11   #  _ 2  _ 1    2
+11   #    1    2    2
+11   #  _ 2  _ 2  _ 2
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -253,20 +214,15 @@ numbers, (right) mesh node numbers.
 
 ## Cube with Multi Blocks and Void
 
-```python
-segmentation = np.array(
-[
-    [
-        [ 82, 2, ],
-        [ 2, 2, ],
-    ],
-    [
-        [ 0, 31, ],
-        [ 0, 44, ],
-    ],
-],
-dtype=np.uint8,
-)
+```sh
+82   #  x:1  y:1  z:1
+2    #  _ 2  _ 1    1
+2    #    1    2    1
+2    #  _ 2  _ 2  _ 1
+0    #    1    1    2
+31   #  _ 2  _ 1    2
+0    #    1    2    2
+44   #  _ 2  _ 2  _ 2
 ```
 
 where the segmentation `82`, `2`, `31` and `44` denotes block `82`, `2`, `31`
@@ -281,28 +237,35 @@ element), (left) lattice node numbers, (right) mesh node numbers.
 
 ## Cube with Inclusion
 
-```python
-segmentation = np.array(
-[
-    [
-        [ 11, 11, 11, ],
-        [ 11, 11, 11, ],
-        [ 11, 11, 11, ],
-    ],
-    [
-        [ 11, 11, 11, ],
-        [ 11, 88, 11, ],
-        [ 11, 11, 11, ],
-    ],
-    [
-        [ 11, 11, 11, ],
-        [ 11, 11, 11, ],
-        [ 11, 11, 11, ],
-    ],
-],
-dtype=np.uint8,
-)
-```
+```sh
+11   #  x:1  y:1  z:1
+11   #    2    1    1
+11   #  _ 3  _ 1    1
+11   #    1    2    1
+11   #    2    2    1
+11   #  _ 3  _ 2    1
+11   #    1    3    1
+11   #    2    3    1
+11   #  _ 3  _ 3  _ 1
+11   #    1    1    2
+11   #    2    1    2
+11   #  _ 3  _ 1    2
+11   #    1    2    2
+88   #    2    2    2
+11   #  _ 3  _ 2    2
+11   #    1    3    2
+11   #    2    3    2
+11   #  _ 3  _ 3  _ 2
+11   #    1    1    3
+11   #    2    1    3
+11   #  _ 3  _ 1    3
+11   #    1    2    3
+11   #    2    2    3
+11   #  _ 3  _ 2    3
+11   #    1    3    3
+11   #    2    3    3
+11   #  _ 3  _ 3  _ 3
+````
 
 ![cube_with_inclusion.png](cube_with_inclusion.png)
 
@@ -311,19 +274,22 @@ Figure: Mesh composed of 26 voxels of (block `11`) and one voxel inslusion
 
 ## Letter F
 
-```python
-segmentation = np.array(
-    [
-        [
-            [ 11, 0, 0, ],
-            [ 11, 0, 0, ],
-            [ 11, 11, 0, ],
-            [ 11, 0, 0, ],
-            [ 11, 11, 11, ],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+11   #  x:1  y:1  z:1
+0    #    2    1    1
+0    #  _ 3  _ 1    1
+11   #    1    2    1
+0    #    2    2    1
+0    #  _ 3  _ 2    1
+11   #    1    3    1
+11   #    2    3    1
+0    #  _ 3  _ 3    1
+11   #    1    4    1
+0    #    2    4    1
+0    #  _ 3  _ 4    1
+11   #    1    5    1
+11   #    2    5    1
+11   #  _ 3  _ 5  _ 1
 ```
 
 where the segmentation `11` denotes block `11` in the finite element mesh.
@@ -335,45 +301,70 @@ node numbers, (right) mesh node numbers.
 
 ## Letter F in 3D
 
-```python
-segmentation = np.array(
-    [
-        [
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-        ],
-        [
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 1, 1, 1],
-            [1, 0, 0, 0],
-            [1, 1, 1, 1],
-        ],
-        [
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 1, 1, 1],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+1    #  x:1  y:1  z:1
+1    #    2    1    1
+1    #    3    1    1
+1    #  _ 4  _ 1    1
+1    #    1    2    1
+1    #    2    2    1
+1    #    3    2    1
+1    #  _ 4  _ 2    1
+1    #    1    3    1
+1    #    2    3    1
+1    #    3    3    1
+1    #  _ 4  _ 3    1
+1    #    1    4    1
+1    #    2    4    1
+1    #    3    4    1
+1    #  _ 4  _ 4    1
+1    #    1    5    1
+1    #    2    5    1
+1    #    3    5    1
+1    #  _ 4  _ 5  _ 1
+1    #  x:1  y:1  z:2
+0    #    2    1    2
+0    #    3    1    2
+0    #  _ 4  _ 1    2
+1    #    1    2    2
+0    #    2    2    2
+0    #    3    2    2
+0    #  _ 4  _ 2    2
+1    #    1    3    2
+1    #    2    3    2
+1    #    3    3    2
+1    #  _ 4  _ 3    2
+1    #    1    4    2
+0    #    2    4    2
+0    #    3    4    2
+0    #  _ 4  _ 4    2
+1    #    1    5    2
+1    #    2    5    2
+1    #    3    5    2
+1    #  _ 4  _ 5  _ 2
+1    #  x:1  y:1  z:3
+0    #    2    1    j
+0    #    3    1    2
+0    #  _ 4  _ 1    2
+1    #    1    2    3
+0    #    2    2    3
+0    #    3    2    3
+0    #  _ 4  _ 2    3
+1    #    1    3    3
+0    #    2    3    3
+0    #    3    3    3
+0    #  _ 4  _ 3    3
+1    #    1    4    3
+0    #    2    4    3
+0    #    3    4    3
+0    #  _ 4  _ 4    3
+1    #    1    5    3
+1    #    2    5    3
+1    #    3    5    3
+1    #  _ 4  _ 5  _ 3
 ```
 
-where the segmentation `1` denotes block `1` in the finite element mesh (with segmentation `0` excluded).
-
-For concreteness, we note the shape of the `segmentation`
-
-```python
-segmentation.shape
-(3, 5, 4)
-```
-
-which corresponds to `--nelz 3`, `--nely 5`, and `--nelx  4` in the
+which corresponds to `--nelx 4`, `--nely 5`, and `--nelz  3` in the
 [command line interface](cli.md).
 
 ![letter_f_3d.png](letter_f_3d.png)
@@ -391,47 +382,132 @@ with decreased opacity and without lattice and element node numbers.
 
 ## Sparse
 
-```python
-segmentation = np.array(
-    [
-        [
-            [0, 0, 0, 0, 2],
-            [0, 1, 0, 0, 2],
-            [1, 2, 0, 2, 0],
-            [0, 1, 0, 2, 0],
-            [1, 0, 0, 0, 1],
-        ],
-        [
-            [2, 0, 2, 0, 0],
-            [1, 1, 0, 2, 2],
-            [2, 0, 0, 0, 0],
-            [1, 0, 0, 2, 0],
-            [2, 0, 2, 0, 2],
-        ],
-        [
-            [0, 0, 1, 0, 2],
-            [0, 0, 0, 1, 2],
-            [0, 0, 2, 2, 2],
-            [0, 0, 1, 0, 1],
-            [0, 1, 0, 1, 0],
-        ],
-        [
-            [0, 1, 2, 1, 2],
-            [2, 0, 2, 0, 1],
-            [1, 2, 2, 0, 0],
-            [2, 1, 1, 1, 1],
-            [0, 0, 1, 0, 0],
-        ],
-        [
-            [0, 1, 0, 2, 0],
-            [1, 0, 0, 0, 2],
-            [0, 1, 0, 0, 0],
-            [1, 0, 0, 0, 0],
-            [0, 0, 1, 2, 1],
-        ],
-    ],
-    dtype=np.uint8,
-)
+```sh
+0    #  x:1  y:1  z:1
+0    #    2    1    1
+0    #    3    1    1
+0    #    4    1    1
+2    #  _ 5  _ 1    1
+0    #    1    2    1
+1    #    2    2    1
+0    #    3    2    1
+0    #    4    2    1
+2    #  _ 5  _ 2    1
+1    #    1    3    1
+2    #    2    3    1
+0    #    3    3    1
+2    #    4    3    1
+0    #  _ 5  _ 3    1
+0    #    1    4    1
+1    #    2    4    1
+0    #    3    4    1
+2    #    4    4    1
+0    #  _ 5  _ 4    1
+1    #    1    5    1
+0    #    2    5    1
+0    #    3    5    1
+0    #    4    5    1
+1    #  _ 5  _ 5  _ 1
+2    #  x:1  y:1  z:2
+0    #    2    1    2
+2    #    3    1    2
+0    #    4    1    2
+0    #  _ 5  _ 1    2
+1    #    1    2    2
+1    #    2    2    2
+0    #    3    2    2
+2    #    4    2    2
+2    #  _ 5  _ 2    2
+2    #    1    3    2
+0    #    2    3    2
+0    #    3    3    2
+0    #    4    3    2
+0    #  _ 5  _ 3    2
+1    #    1    4    2
+0    #    2    4    2
+0    #    3    4    2
+2    #    4    4    2
+0    #  _ 5  _ 4    2
+2    #    1    5    2
+0    #    2    5    2
+2    #    3    5    2
+0    #    4    5    2
+2    #  _ 5  _ 5  _ 2
+0    #  x:1  y:1  z:3
+0    #    2    1    3
+1    #    3    1    3
+0    #    4    1    3
+2    #  _ 5  _ 1    3
+0    #    1    2    3
+0    #    2    2    3
+0    #    3    2    3
+1    #    4    2    3
+2    #  _ 5  _ 2    3
+0    #    1    3    3
+0    #    2    3    3
+2    #    3    3    3
+2    #    4    3    3
+2    #  _ 5  _ 3    3
+0    #    1    4    3
+0    #    2    4    3
+1    #    3    4    3
+0    #    4    4    3
+1    #  _ 5  _ 4    3
+0    #    1    5    3
+1    #    2    5    3
+0    #    3    5    3
+1    #    4    5    3
+0    #  _ 5  _ 5  _ 3
+0    #  x:1  y:1  z:4
+1    #    2    1    4
+2    #    3    1    4
+1    #    4    1    4
+2    #  _ 5  _ 1    4
+2    #    1    2    4
+0    #    2    2    4
+2    #    3    2    4
+0    #    4    2    4
+1    #  _ 5  _ 2    4
+1    #    1    3    4
+2    #    2    3    4
+2    #    3    3    4
+0    #    4    3    4
+0    #  _ 5  _ 3    4
+2    #    1    4    4
+1    #    2    4    4
+1    #    3    4    4
+1    #    4    4    4
+1    #  _ 5  _ 4    4
+0    #    1    5    4
+0    #    2    5    4
+1    #    3    5    4
+0    #    4    5    4
+0    #  _ 5  _ 5  _ 4
+0    #  x:1  y:1  z:5
+1    #    2    1    5
+0    #    3    1    5
+2    #    4    1    5
+0    #  _ 5  _ 1    5
+1    #    1    2    5
+0    #    2    2    5
+0    #    3    2    5
+0    #    4    2    5
+2    #  _ 5  _ 2    5
+0    #    1    3    5
+1    #    2    3    5
+0    #    3    3    5
+0    #    4    3    5
+0    #  _ 5  _ 3    5
+1    #    1    4    5
+0    #    2    4    5
+0    #    3    4    5
+0    #    4    4    5
+0    #  _ 5  _ 4    5
+0    #    1    5    5
+0    #    2    5    5
+1    #    3    5    5
+2    #    4    5    5
+1    #  _ 5  _ 5  _ 5
 ```
 
 where the segmentation `1` denotes block `1` and segmentation `2` denotes block `2` in the finite eelement mesh (with segmentation `0` excluded).
