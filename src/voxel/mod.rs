@@ -80,7 +80,7 @@ impl Voxels {
     pub fn write_npy(&self, file_path: &str) -> Result<(), WriteNpyError> {
         write_voxels_to_npy(self.get_data(), file_path)
     }
-    /// Writes the internal voxels data to a SPN file.
+    /// Writes the internal voxels data to an SPN file.
     pub fn write_spn(&self, file_path: &str) -> Result<(), Error> {
         write_voxels_to_spn(self.get_data(), file_path)
     }
