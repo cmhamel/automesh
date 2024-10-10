@@ -10,7 +10,7 @@ automesh --help
 Convert a Numpy segmentation file to an Abaqus input file:
 
 ```sh
-automesh --input single.npy --output single.inp
+automesh mesh --input single.npy --output single.inp
 ```
 
 The terminal output:

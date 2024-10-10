@@ -25,92 +25,82 @@ struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
 
-    /// Name of the NumPy (.npy) or SPN (.spn) input file.
-    #[arg(short, long, value_name = "FILE")]
-    input: String,
-
-    /// Name of the Abaqus (.inp) output file.
-    #[arg(short, long, value_name = "FILE")]
-    output: String,
-
-    /// Voxel IDs to remove from the mesh [default: 0].
-    #[arg(short = 'r', long, value_name = "ID")]
-    remove: Option<Vec<u8>>,
-
-    /// Number of voxels in the x-direction.
-    #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
-    nelx: usize,
-
-    /// Number of voxels in the y-direction.
-    #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
-    nely: usize,
-
-    /// Number of voxels in the z-direction.
-    #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
-    nelz: usize,
-
-    /// Scaling (> 0.0) in the x-direction.
-    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
-    xscale: f64,
-
-    /// Scaling (> 0.0) in the y-direction.
-    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
-    yscale: f64,
-
-    /// Scaling (> 0.0) in the z-direction.
-    #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
-    zscale: f64,
-
-    /// Translation in the x-direction.
-    #[arg(
-        long,
-        default_value_t = 0.0,
-        allow_negative_numbers = true,
-        value_name = "TRANSLATE"
-    )]
-    xtranslate: f64,
-
-    /// Translation in the y-direction.
-    #[arg(
-        long,
-        default_value_t = 0.0,
-        allow_negative_numbers = true,
-        value_name = "TRANSLATE"
-    )]
-    ytranslate: f64,
-
-    /// Translation in the z-direction.
-    #[arg(
-        long,
-        default_value_t = 0.0,
-        allow_negative_numbers = true,
-        value_name = "TRANSLATE"
-    )]
-    ztranslate: f64,
-
     /// Pass to quiet the output.
-    #[arg(short, long, action)]
+    #[arg(action, global = true, long, short)]
     quiet: bool,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     /// Converts between segmentation input file types
-    Convert {
-        // just keep input and output required at top-level since always used
-    },
+    Convert {},
+
     /// Creates a finite element mesh from a segmentation
     Mesh {
+        /// Name of the NumPy (.npy) or SPN (.spn) input file.
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the Abaqus (.inp) output file.
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
         /// Number of voxels in the x-direction.
         #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
         nelx: usize,
+
         /// Number of voxels in the y-direction.
         #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
         nely: usize,
+
         /// Number of voxels in the z-direction.
         #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
         nelz: usize,
+
+        /// Voxel IDs to remove from the mesh [default: 0].
+        #[arg(short = 'r', long, value_name = "ID")]
+        remove: Option<Vec<u8>>,
+
+        /// Scaling (> 0.0) in the x-direction.
+        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        xscale: f64,
+
+        /// Scaling (> 0.0) in the y-direction.
+        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        yscale: f64,
+
+        /// Scaling (> 0.0) in the z-direction.
+        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        zscale: f64,
+
+        /// Translation in the x-direction.
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "TRANSLATE"
+        )]
+        xtranslate: f64,
+
+        /// Translation in the y-direction.
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "TRANSLATE"
+        )]
+        ytranslate: f64,
+
+        /// Translation in the z-direction.
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "TRANSLATE"
+        )]
+        ztranslate: f64,
     },
+
     /// Applies smoothing to an existing mesh file
     Smooth {},
 }
@@ -149,9 +139,7 @@ impl From<String> for ErrorWrapper {
 
 fn main() -> Result<(), ErrorWrapper> {
     let args = Args::parse();
-    match &args.command {
-        // will eventually just send fields from matched structs
-        // match Args::parse().command {
+    match args.command {
         Some(Commands::Convert {}) => {
             todo!()
         }
@@ -159,77 +147,98 @@ fn main() -> Result<(), ErrorWrapper> {
             todo!()
         }
         Some(Commands::Mesh {
-            nelx: _,
-            nely: _,
-            nelz: _,
-        }) => mesh(args),
+            input,
+            output,
+            nelx,
+            nely,
+            nelz,
+            remove,
+            xscale,
+            yscale,
+            zscale,
+            xtranslate,
+            ytranslate,
+            ztranslate,
+        }) => mesh(
+            input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
+            ytranslate, ztranslate, args.quiet,
+        ),
         None => Ok(Err("Need to specify a command".to_string())?),
     }
 }
 
-fn mesh(args: Args) -> Result<(), ErrorWrapper> {
+#[allow(clippy::too_many_arguments)]
+fn mesh(
+    input: String,
+    output: String,
+    nelx: usize,
+    nely: usize,
+    nelz: usize,
+    remove: Option<Vec<u8>>,
+    xscale: f64,
+    yscale: f64,
+    zscale: f64,
+    xtranslate: f64,
+    ytranslate: f64,
+    ztranslate: f64,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
     // should validate args using fns for each subcommand
-    validate(&args)?;
+    // validate(&args)?;
 
     let time_0 = Instant::now();
-    if !args.quiet {
+    if !quiet {
         println!(
             "\x1b[1m    {} {}\x1b[0m",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION")
         );
-        print!("     \x1b[1;96mReading\x1b[0m {}", args.input);
+        print!("     \x1b[1;96mReading\x1b[0m {}", input);
     }
-    let input = match Path::new(&args.input)
-        .extension()
-        .and_then(|ext| ext.to_str())
-    {
+    let input_type = match Path::new(&input).extension().and_then(|ext| ext.to_str()) {
         Some("npy") => {
-            if !args.quiet {
+            if !quiet {
                 println!();
             }
-            Voxels::from_npy(&args.input)?
+            Voxels::from_npy(&input)?
         }
         Some("spn") => {
-            if !args.quiet {
-                println!(
-                    " [nelx: {}, nely: {}, nelz: {}]",
-                    args.nelx, args.nely, args.nelz
-                );
+            if !quiet {
+                println!(" [nelx: {}, nely: {}, nelz: {}]", nelx, nely, nelz);
             }
-            Voxels::from_spn(&args.input, [args.nelx, args.nely, args.nelz])?
+            Voxels::from_spn(&input, [nelx, nely, nelz])?
         }
-        _ => panic!("unreachable since validate() checks"),
+        _ => panic!(),
     };
-    if !args.quiet {
+    if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
-        let entirely_default = args.xscale == 1.0
-            && args.yscale == 1.0
-            && args.zscale == 1.0
-            && args.xtranslate == 0.0
-            && args.ytranslate == 0.0
-            && args.ztranslate == 0.0;
-        print!("     \x1b[1;96mMeshing\x1b[0m {}", args.output);
+        let entirely_default = xscale == 1.0
+            && yscale == 1.0
+            && zscale == 1.0
+            && xtranslate == 0.0
+            && ytranslate == 0.0
+            && ztranslate == 0.0;
+        print!("     \x1b[1;96mMeshing\x1b[0m {}", output);
         if !entirely_default {
             print!(" [");
         }
-        if args.xscale != 1.0 {
-            print!("xscale: {}, ", args.xscale);
+        if xscale != 1.0 {
+            print!("xscale: {}, ", xscale);
         }
-        if args.yscale != 1.0 {
-            print!("yscale: {}, ", args.yscale);
+        if yscale != 1.0 {
+            print!("yscale: {}, ", yscale);
         }
-        if args.zscale != 1.0 {
-            print!("zscale: {}, ", args.zscale);
+        if zscale != 1.0 {
+            print!("zscale: {}, ", zscale);
         }
-        if args.xtranslate != 0.0 {
-            print!("xtranslate: {}, ", args.xtranslate);
+        if xtranslate != 0.0 {
+            print!("xtranslate: {}, ", xtranslate);
         }
-        if args.ytranslate != 0.0 {
-            print!("ytranslate: {}, ", args.ytranslate);
+        if ytranslate != 0.0 {
+            print!("ytranslate: {}, ", ytranslate);
         }
-        if args.ztranslate != 0.0 {
-            print!("ztranslate: {}, ", args.ztranslate);
+        if ztranslate != 0.0 {
+            print!("ztranslate: {}, ", ztranslate);
         }
         if !entirely_default {
             print!("\x1b[2D]");
@@ -237,48 +246,45 @@ fn mesh(args: Args) -> Result<(), ErrorWrapper> {
         println!();
     }
     let time_1 = Instant::now();
-    let fea = input.into_finite_elements(
-        args.remove,
-        &[args.xscale, args.yscale, args.zscale],
-        &[args.xtranslate, args.ytranslate, args.ztranslate],
+    let fea = input_type.into_finite_elements(
+        remove,
+        &[xscale, yscale, zscale],
+        &[xtranslate, ytranslate, ztranslate],
     );
-    match Path::new(&args.output)
-        .extension()
-        .and_then(|ext| ext.to_str())
-    {
+    match Path::new(&output).extension().and_then(|ext| ext.to_str()) {
         Some("inp") => {
-            fea.write_inp(&args.output)?;
+            fea.write_inp(&output)?;
         }
         _ => panic!("unreachable since validate() checks"),
     };
-    if !args.quiet {
+    if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
     }
     Ok(())
 }
 
-fn validate(args: &Args) -> Result<(), String> {
-    assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
-    assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
-    assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
-    let input_path = Path::new(&args.input);
-    let extension = input_path.extension().and_then(|ext| ext.to_str());
-    match extension {
-        Some("npy") => {}
-        Some("spn") => {
-            assert!(args.nelx >= 1, "Need to specify nelx > 0");
-            assert!(args.nely >= 1, "Need to specify nely > 0");
-            assert!(args.nelz >= 1, "Need to specify nelz > 0");
-        }
-        _ => Err("Input must be of type .npy or .spn".to_string())?,
-    }
-    let output_path = Path::new(&args.output);
-    let extension = output_path.extension().and_then(|ext| ext.to_str());
-    match extension {
-        Some("inp") => Ok(()),
-        _ => Err("Output must be of type .inp".to_string()),
-    }
-}
+// fn validate(args: &Args) -> Result<(), String> {
+//     assert!(args.xscale > 0.0, "Need to specify xscale > 0.0");
+//     assert!(args.yscale > 0.0, "Need to specify yscale > 0.0");
+//     assert!(args.zscale > 0.0, "Need to specify zscale > 0.0");
+//     let input_path = Path::new(&args.input);
+//     let extension = input_path.extension().and_then(|ext| ext.to_str());
+//     match extension {
+//         Some("npy") => {}
+//         Some("spn") => {
+//             assert!(args.nelx >= 1, "Need to specify nelx > 0");
+//             assert!(args.nely >= 1, "Need to specify nely > 0");
+//             assert!(args.nelz >= 1, "Need to specify nelz > 0");
+//         }
+//         _ => Err("Input must be of type .npy or .spn".to_string())?,
+//     }
+//     let output_path = Path::new(&args.output);
+//     let extension = output_path.extension().and_then(|ext| ext.to_str());
+//     match extension {
+//         Some("inp") => Ok(()),
+//         _ => Err("Output must be of type .inp".to_string()),
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
