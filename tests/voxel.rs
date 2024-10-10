@@ -1438,4 +1438,18 @@ mod write_spn {
         let voxels_from_spn = Voxels::from_spn("target/letter_f_3d.spn", NEL).unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
+    #[test]
+    #[cfg(not(target_os = "windows"))]
+    #[should_panic(expected = "No such file or directory")]
+    fn no_such_directory() {
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        voxels.write_spn("no_such_directory/foo.spn").unwrap();
+    }
+    #[test]
+    fn sparse() {
+        let voxels_from_npy = Voxels::from_npy("tests/input/sparse.npy").unwrap();
+        voxels_from_npy.write_spn("target/sparse.spn").unwrap();
+        let voxels_from_spn = Voxels::from_spn("target/sparse.spn", [5, 5, 5]).unwrap();
+        assert_data_eq(voxels_from_npy, voxels_from_spn);
+    }
 }
