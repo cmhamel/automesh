@@ -291,7 +291,7 @@ fn mesh(
         remove,
         &[xscale, yscale, zscale],
         &[xtranslate, ytranslate, ztranslate],
-    );
+    )?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }

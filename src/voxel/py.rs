@@ -27,10 +27,14 @@ impl Voxels {
         remove: Option<Vec<u8>>,
         scale: Scale,
         translate: Translate,
-    ) -> FiniteElements {
+    ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate);
-        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
+            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate)?;
+        Ok(FiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]
