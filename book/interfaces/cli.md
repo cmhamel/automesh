@@ -21,9 +21,11 @@ The terminal output:
 
 <pre><code class="language-sh hljs bash"><font color="#EC00FF">    <b>automesh {{#include ../../target/version.txt}}</b></font>
      <font color="#58C7E2"><b>Reading</b></font> single.npy
-        <font color="#54E484"><b>Done</b></font> 703.955µs
+        <font color="#54E484"><b>Done</b></font> 141.917µs
      <font color="#58C7E2"><b>Meshing</b></font> single.inp
-        <font color="#54E484"><b>Done</b></font> 165.883µs
+        <font color="#54E484"><b>Done</b></font> 155.628µs
+     <font color="#58C7E2"><b>Writing</b></font> single.inp
+        <font color="#54E484"><b>Done</b></font> 150.88µs
 </code></pre>
 
 The resulting Abaqus input file:

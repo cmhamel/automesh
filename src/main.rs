@@ -251,6 +251,7 @@ fn mesh(
     ztranslate: f64,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
     let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
     if !quiet {
         let entirely_default = xscale == 1.0
@@ -286,7 +287,6 @@ fn mesh(
         }
         println!();
     }
-    let time = Instant::now();
     let output_type = input_type.into_finite_elements(
         remove,
         &[xscale, yscale, zscale],
