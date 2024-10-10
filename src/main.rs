@@ -1,4 +1,4 @@
-use automesh::{Abaqus, Voxels};
+use automesh::{Abaqus, FiniteElements, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::ReadNpyError;
 use std::{io::Error, path::Path, time::Instant};
@@ -32,7 +32,27 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     /// Converts between segmentation input file types
-    Convert {},
+    Convert {
+        /// Name of the original NumPy (.npy) or SPN (.spn) input file.
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the converted NumPy (.npy) or SPN (.spn) input file.
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Number of voxels in the x-direction.
+        #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
+        nelx: usize,
+
+        /// Number of voxels in the y-direction.
+        #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
+        nely: usize,
+
+        /// Number of voxels in the z-direction.
+        #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
+        nelz: usize,
+    },
 
     /// Creates a finite element mesh from a segmentation
     Mesh {
@@ -136,12 +156,20 @@ impl From<String> for ErrorWrapper {
     }
 }
 
+enum OutputTypes {
+    Abaqus(FiniteElements),
+}
+
 fn main() -> Result<(), ErrorWrapper> {
     let args = Args::parse();
     match args.command {
-        Some(Commands::Convert {}) => {
-            todo!()
-        }
+        Some(Commands::Convert {
+            input,
+            output,
+            nelx,
+            nely,
+            nelz,
+        }) => convert(input, output, nelx, nely, nelz, args.quiet),
         Some(Commands::Smooth {}) => {
             todo!()
         }
@@ -166,6 +194,18 @@ fn main() -> Result<(), ErrorWrapper> {
     }
 }
 
+fn convert(
+    input: String,
+    _output: String,
+    nelx: usize,
+    nely: usize,
+    nelz: usize,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let _input_type = read_input(input, nelx, nely, nelz, quiet)?;
+    Ok(())
+}
+
 #[allow(clippy::too_many_arguments)]
 fn mesh(
     input: String,
@@ -185,32 +225,8 @@ fn mesh(
     // should validate args using fns for each subcommand
     // validate(&args)?;
 
-    let time_0 = Instant::now();
+    let input_type = read_input(input, nelx, nely, nelz, quiet)?;
     if !quiet {
-        println!(
-            "\x1b[1m    {} {}\x1b[0m",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        );
-        print!("     \x1b[1;96mReading\x1b[0m {}", input);
-    }
-    let input_type = match Path::new(&input).extension().and_then(|ext| ext.to_str()) {
-        Some("npy") => {
-            if !quiet {
-                println!();
-            }
-            Voxels::from_npy(&input)?
-        }
-        Some("spn") => {
-            if !quiet {
-                println!(" [nelx: {}, nely: {}, nelz: {}]", nelx, nely, nelz);
-            }
-            Voxels::from_spn(&input, [nelx, nely, nelz])?
-        }
-        _ => panic!(),
-    };
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_0.elapsed());
         let entirely_default = xscale == 1.0
             && yscale == 1.0
             && zscale == 1.0
@@ -244,20 +260,87 @@ fn mesh(
         }
         println!();
     }
-    let time_1 = Instant::now();
-    let fea = input_type.into_finite_elements(
+    let time = Instant::now();
+    let output_type = input_type.into_finite_elements(
         remove,
         &[xscale, yscale, zscale],
         &[xtranslate, ytranslate, ztranslate],
     );
-    match Path::new(&output).extension().and_then(|ext| ext.to_str()) {
-        Some("inp") => {
-            fea.write_inp(&output)?;
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    write_output(output, OutputTypes::Abaqus(output_type), quiet)?;
+    Ok(())
+}
+
+fn read_input(
+    input: String,
+    nelx: usize,
+    nely: usize,
+    nelz: usize,
+    quiet: bool,
+) -> Result<Voxels, ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!(
+            "\x1b[1m    {} {}\x1b[0m",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+        print!("     \x1b[1;96mReading\x1b[0m {}", input);
+    }
+    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+    let result = match input_extension {
+        Some("npy") => {
+            if !quiet {
+                println!();
+            }
+            Voxels::from_npy(&input)?
         }
-        _ => panic!(),
+        Some("spn") => {
+            if !quiet {
+                println!(" [nelx: {}, nely: {}, nelz: {}]", nelx, nely, nelz);
+            }
+            Voxels::from_spn(&input, [nelx, nely, nelz])?
+        }
+        _ => {
+            if !quiet {
+                println!();
+            }
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap(),
+                input
+            ))?
+        }
     };
     if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    Ok(result)
+}
+
+fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mWriting\x1b[0m {}", output);
+    }
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("inp") => match output_type {
+            OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
+        },
+        Some("spn") => {
+            todo!()
+        }
+        _ => Err(format!(
+            "Invalid extension .{} from output file {}",
+            output_extension.unwrap(),
+            output
+        ))?,
+    };
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
     Ok(())
 }
