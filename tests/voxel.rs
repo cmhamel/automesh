@@ -64,7 +64,9 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
     gold: Gold<D, E, N>,
 ) {
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
-    let fem = voxels.into_finite_elements(gold.remove, &gold.scale, &gold.translate);
+    let fem = voxels
+        .into_finite_elements(gold.remove, &gold.scale, &gold.translate)
+        .unwrap();
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
         fem.get_element_node_connectivity(),
@@ -1378,6 +1380,30 @@ mod from_npy {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         assert_data_eq_gold(voxels);
     }
+    #[test]
+    #[should_panic(expected = "Need to specify xscale > 0")]
+    fn xscale_positive() {
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        voxels
+            .into_finite_elements(None, &[0.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Need to specify yscale > 0")]
+    fn yscale_positive() {
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        voxels
+            .into_finite_elements(None, &[1.0, 0.0, 1.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Need to specify zscale > 0")]
+    fn zscale_positive() {
+        let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        voxels
+            .into_finite_elements(None, &[1.0, 1.0, 0.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+    }
 }
 
 mod from_spn {
@@ -1396,6 +1422,21 @@ mod from_spn {
         Voxels::from_spn("tests/input/letter_f_3d.txt", NEL)
             .map_err(|e| e.to_string())
             .unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Need to specify nelx > 0")]
+    fn nelx_positive() {
+        Voxels::from_spn("tests/input/single.spn", [0, 1, 1]).unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Need to specify nely > 0")]
+    fn nely_positive() {
+        Voxels::from_spn("tests/input/single.spn", [1, 0, 1]).unwrap();
+    }
+    #[test]
+    #[should_panic(expected = "Need to specify nelz > 0")]
+    fn nelz_positive() {
+        Voxels::from_spn("tests/input/single.spn", [1, 1, 0]).unwrap();
     }
     #[test]
     fn success() {
