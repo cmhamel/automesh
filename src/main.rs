@@ -21,7 +21,6 @@ env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
 env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
 ), arg_required_else_help = true, long_about = None, version)]
 struct Args {
-    /// ???
     #[command(subcommand)]
     command: Option<Commands>,
 
@@ -255,7 +254,7 @@ fn mesh(
         Some("inp") => {
             fea.write_inp(&output)?;
         }
-        _ => panic!("unreachable since validate() checks"),
+        _ => panic!(),
     };
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time_1.elapsed());
