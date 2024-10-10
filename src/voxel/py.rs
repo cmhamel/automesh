@@ -1,11 +1,11 @@
 use super::{
     finite_element_data_from_npy_data, voxel_data_from_npy, voxel_data_from_spn,
-    write_voxels_to_npy, IntermediateError, Nel, Scale, Translate, VoxelData,
+    write_voxels_to_npy, write_voxels_to_spn, IntermediateError, Nel, Scale, Translate, VoxelData,
 };
 use crate::fem::py::FiniteElements;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use pyo3::{exceptions::PyTypeError, prelude::*};
-use std::convert::From;
+use std::{convert::From, io::Error};
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<Voxels>()?;
@@ -27,10 +27,14 @@ impl Voxels {
         remove: Option<Vec<u8>>,
         scale: Scale,
         translate: Translate,
-    ) -> FiniteElements {
+    ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate);
-        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
+            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate)?;
+        Ok(FiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]
@@ -50,10 +54,22 @@ impl Voxels {
     pub fn write_npy(&self, file_path: &str) -> Result<(), PyIntermediateError> {
         Ok(write_voxels_to_npy(&self.data, file_path)?)
     }
+    /// Writes the internal voxels data to an SPN file.
+    pub fn write_spn(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_voxels_to_spn(&self.data, file_path)?)
+    }
 }
 
 pub struct PyIntermediateError {
     message: String,
+}
+
+impl From<Error> for PyIntermediateError {
+    fn from(error: Error) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
 }
 
 impl From<ReadNpyError> for PyIntermediateError {
