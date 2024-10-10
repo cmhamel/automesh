@@ -1428,3 +1428,14 @@ mod write_npy {
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
 }
+
+mod write_spn {
+    use super::*;
+    #[test]
+    fn letter_f_3d() {
+        let voxels_from_npy = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        voxels_from_npy.write_spn("target/letter_f_3d.spn").unwrap();
+        let voxels_from_spn = Voxels::from_spn("target/letter_f_3d.spn", NEL).unwrap();
+        assert_data_eq(voxels_from_npy, voxels_from_spn);
+    }
+}

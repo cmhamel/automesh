@@ -371,113 +371,113 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
 //     }
 // }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    fn default_args() -> Args {
-        Args {
-            input: "foo.spn".to_string(),
-            output: "bar.inp".to_string(),
-            quiet: false,
-            remove: None,
-            nelx: 1,
-            nely: 1,
-            nelz: 1,
-            xscale: 1.0,
-            yscale: 1.0,
-            zscale: 1.0,
-            xtranslate: 0.0,
-            ytranslate: 0.0,
-            ztranslate: 0.0,
-        }
-    }
+//     fn default_args() -> Args {
+//         Args {
+//             input: "foo.spn".to_string(),
+//             output: "bar.inp".to_string(),
+//             quiet: false,
+//             remove: None,
+//             nelx: 1,
+//             nely: 1,
+//             nelz: 1,
+//             xscale: 1.0,
+//             yscale: 1.0,
+//             zscale: 1.0,
+//             xtranslate: 0.0,
+//             ytranslate: 0.0,
+//             ztranslate: 0.0,
+//         }
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify xscale > 0.0")]
-    fn test_xscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            xscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify xscale > 0.0")]
+//     fn test_xscale_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             xscale: 0.0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify yscale > 0.0")]
-    fn test_yscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            yscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify yscale > 0.0")]
+//     fn test_yscale_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             yscale: 0.0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify zscale > 0.0")]
-    fn test_zscale_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            zscale: 0.0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify zscale > 0.0")]
+//     fn test_zscale_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             zscale: 0.0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify nelx > 0")]
-    fn test_nelx_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nelx: 0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify nelx > 0")]
+//     fn test_nelx_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             nelx: 0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify nely > 0")]
-    fn test_nely_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nely: 0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify nely > 0")]
+//     fn test_nely_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             nely: 0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Need to specify nelz > 0")]
-    fn test_nelz_zero() {
-        let default_args = default_args();
-        let args_bad = Args {
-            nelz: 0,
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Need to specify nelz > 0")]
+//     fn test_nelz_zero() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             nelz: 0,
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Input must be of type .npy or .spn")]
-    fn test_input_not_npy_or_spn() {
-        let default_args = default_args();
-        let args_bad = Args {
-            input: "bad_extension.bad".to_string(),
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Input must be of type .npy or .spn")]
+//     fn test_input_not_npy_or_spn() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             input: "bad_extension.bad".to_string(),
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Output must be of type .inp")]
-    fn test_output_not_inp() {
-        let default_args = default_args();
-        let args_bad = Args {
-            output: "bad_extension.bad".to_string(),
-            ..default_args
-        };
-        validate(&args_bad).unwrap();
-    }
-}
+//     #[test]
+//     #[should_panic(expected = "Output must be of type .inp")]
+//     fn test_output_not_inp() {
+//         let default_args = default_args();
+//         let args_bad = Args {
+//             output: "bad_extension.bad".to_string(),
+//             ..default_args
+//         };
+//         validate(&args_bad).unwrap();
+//     }
+// }

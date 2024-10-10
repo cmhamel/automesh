@@ -13,7 +13,7 @@ use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
     fs::File,
-    io::{BufRead, BufReader, BufWriter, Error},
+    io::{BufRead, BufReader, BufWriter, Error, Write},
 };
 
 type Nel = [usize; 3];
@@ -79,6 +79,10 @@ impl Voxels {
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) -> Result<(), WriteNpyError> {
         write_voxels_to_npy(self.get_data(), file_path)
+    }
+    /// Writes the internal voxels data to a SPN file.
+    pub fn write_spn(&self, file_path: &str) -> Result<(), Error> {
+        write_voxels_to_spn(self.get_data(), file_path)
     }
 }
 
@@ -296,4 +300,14 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
 
 fn write_voxels_to_npy(data: &VoxelData, file_path: &str) -> Result<(), WriteNpyError> {
     data.write_npy(BufWriter::new(File::create(file_path)?))
+}
+
+fn write_voxels_to_spn(data: &VoxelData, file_path: &str) -> Result<(), Error> {
+    let mut file = BufWriter::new(File::create(file_path)?);
+    data.axis_iter(Axis(2)).try_for_each(|entry_2d| {
+        entry_2d
+            .axis_iter(Axis(1))
+            .flatten()
+            .try_for_each(|entry| writeln!(file, "{}", entry))
+    })
 }
