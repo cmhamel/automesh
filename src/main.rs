@@ -206,7 +206,7 @@ fn main() -> Result<(), ErrorWrapper> {
             input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
             ytranslate, ztranslate, quiet,
         ),
-        None => Ok(Err("Need to specify a command".to_string())?),
+        None => Ok(()),
     }
 }
 
