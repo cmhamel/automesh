@@ -16,7 +16,7 @@ automesh mesh --input single.npy --output single.inp
 The terminal output:
 
 <!-- cmdrun wget https://github.com/autotwin/automesh/raw/main/tests/input/single.npy -O ../../target/single_for_cli.npy -->
-<!-- cmdrun automesh --input ../../target/single_for_cli.npy --output ../../target/single_from_cli.inp -q -->
+<!-- cmdrun automesh mesh --input ../../target/single_for_cli.npy --output ../../target/single_from_cli.inp -q -->
 <!-- cmdrun grep version ../../target/single_from_cli.inp | cut -d ' ' -f 2 > ../../target/version.txt -->
 
 <pre><code class="language-sh hljs bash"><font color="#EC00FF">    <b>automesh {{#include ../../target/version.txt}}</b></font>
