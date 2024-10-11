@@ -47,27 +47,7 @@ impl Voxels {
     pub fn get_data(&self) -> &VoxelData {
         &self.data
     }
-    #[doc = svgbobdoc::transform!(
     /// Converts the voxels type into a finite elements type, consuming the voxels type.
-    ///
-    /// The voxel data can be scaled and translated (in that order).
-    ///
-    /// ```math
-    /// x \mapsto s_x x + t_x\qquad y \mapsto s_y y + t_y\qquad z \mapsto s_z z + t_z
-    /// ```
-    ///
-    /// ```svgbob
-    ///                     8       7
-    ///                      *-------*
-    ///                   5 /|    6 /|
-    ///  z                 *-+-----* |
-    ///   ^  y             | |4    | |3
-    ///   | ^              | *-----|-*
-    ///   |/               |/      |/
-    ///   +-----> x        *-------*
-    ///                    1       2
-    /// ```
-    )]
     pub fn into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
