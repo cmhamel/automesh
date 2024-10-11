@@ -133,7 +133,7 @@ impl FiniteElements {
                 .zip(node_element_connectivity.iter().enumerate())
                 .try_for_each(|(connectivity, (node, node_connectivity))| {
                     node_connectivity.iter().try_for_each(|element| {
-                        element_connectivity = element_node_connectivity[element - 1].clone();
+                        element_connectivity.clone_from(&element_node_connectivity[element - 1]);
                         match element_connectivity.iter().position(|&n| n == node + 1) {
                             Some(0) => {
                                 connectivity.push(element_connectivity[1]);
