@@ -8,7 +8,6 @@ use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
     NODE_NUMBERING_OFFSET,
 };
-// use itertools::Itertools;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
@@ -89,24 +88,6 @@ impl Voxels {
         write_voxels_to_spn(self.get_data(), file_path)
     }
 }
-
-// fn element_node_connectivity_node_renumbering(element_node_connectivity: &mut Connectivity) {
-//     element_node_connectivity
-//         .clone()
-//         .into_iter()
-//         .flatten()
-//         .unique()
-//         .sorted()
-//         .enumerate()
-//         .filter(|(index, id)| &(index + 1) != id)
-//         .for_each(|(index, id)| {
-//             element_node_connectivity
-//                 .iter_mut()
-//                 .flatten()
-//                 .filter(|entry| *entry == &id)
-//                 .for_each(|entry| *entry = index + 1)
-//         });
-// }
 
 fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<3>, Blocks) {
     let removed_data = remove.unwrap_or(vec![0]);
@@ -217,77 +198,8 @@ fn finite_element_data_from_npy_data(
             .collect();
         println!("\x1b[1;93mConnectivity\x1b[0m {:?}", time_2.elapsed());
 
-        // let time_3 = std::time::Instant::now();
-        // element_node_connectivity_node_renumbering(&mut element_node_connectivity);
-        // println!(" \x1b[1;93mRenumbering\x1b[0m {:?}", time_3.elapsed());
-
-        // let time_4 = std::time::Instant::now();
-        // let number_of_nodes = element_node_connectivity
-        //     .clone()
-        //     .into_iter()
-        //     .flatten()
-        //     .unique()
-        //     .collect::<Vec<usize>>()
-        //     .len();
-        // println!("      \x1b[1;93mNumber\x1b[0m {:?}", time_4.elapsed());
-
-        // let time_5 = std::time::Instant::now();
-        // let mut nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
-        // println!("  \x1b[1;93mAllocation\x1b[0m {:?}", time_5.elapsed());
-
-        // think this overwrites shared nodal coordinates
-        // but since node numbering is perfect, doesn't matter
-
-        // let time_6 = std::time::Instant::now();
-        // filtered_voxel_data
-        //     .iter()
-        //     .zip(element_node_connectivity.iter())
-        //     .for_each(|(entry, connectivity)| {
-        //         nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64) * xscale + xtranslate,
-        //             (entry[1] as f64) * yscale + ytranslate,
-        //             (entry[2] as f64) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
-        //             (entry[1] as f64) * yscale + ytranslate,
-        //             (entry[2] as f64) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
-        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
-        //             (entry[2] as f64) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64) * xscale + xtranslate,
-        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
-        //             (entry[2] as f64) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64) * xscale + xtranslate,
-        //             (entry[1] as f64) * yscale + ytranslate,
-        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
-        //             (entry[1] as f64) * yscale + ytranslate,
-        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
-        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
-        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
-        //         ];
-        //         nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = vec![
-        //             (entry[0] as f64) * xscale + xtranslate,
-        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
-        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
-        //         ];
-        //     });
-        // println!(" \x1b[1;93mCoordinates\x1b[0m {:?}", time_6.elapsed());
-
         let time_5 = std::time::Instant::now();
-        let mut nodal_coordinates = vec![vec![]; number_of_nodes_unfiltered]; // does it hurt not to allocate vec![0.0; 3]
+        let mut nodal_coordinates = vec![vec![]; number_of_nodes_unfiltered];
         println!("  \x1b[1;93mAllocation\x1b[0m {:?}", time_5.elapsed());
 
         let time_6 = std::time::Instant::now();
@@ -357,9 +269,13 @@ fn finite_element_data_from_npy_data(
         element_node_connectivity
             .iter_mut()
             .for_each(|connectivity| {
-                connectivity.iter_mut().for_each(
-                    |node| *node = renumbering_map[0], // renumbering_map.iter().position(|foo| foo == node).unwrap()
-                )
+                connectivity.iter_mut().for_each(|node| {
+                    *node = renumbering_map
+                        .iter()
+                        .position(|asdf: &usize| asdf == node)
+                        .unwrap()
+                        + NODE_NUMBERING_OFFSET
+                })
             });
         println!(" \x1b[1;93mRenumbering\x1b[0m {:?}", time_9.elapsed());
 
