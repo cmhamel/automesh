@@ -8,7 +8,7 @@ use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
     NODE_NUMBERING_OFFSET,
 };
-use itertools::Itertools;
+// use itertools::Itertools;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
@@ -90,23 +90,23 @@ impl Voxels {
     }
 }
 
-fn element_node_connectivity_node_renumbering(element_node_connectivity: &mut Connectivity) {
-    element_node_connectivity
-        .clone()
-        .into_iter()
-        .flatten()
-        .unique()
-        .sorted()
-        .enumerate()
-        .filter(|(index, id)| &(index + 1) != id)
-        .for_each(|(index, id)| {
-            element_node_connectivity
-                .iter_mut()
-                .flatten()
-                .filter(|entry| *entry == &id)
-                .for_each(|entry| *entry = index + 1)
-        });
-}
+// fn element_node_connectivity_node_renumbering(element_node_connectivity: &mut Connectivity) {
+//     element_node_connectivity
+//         .clone()
+//         .into_iter()
+//         .flatten()
+//         .unique()
+//         .sorted()
+//         .enumerate()
+//         .filter(|(index, id)| &(index + 1) != id)
+//         .for_each(|(index, id)| {
+//             element_node_connectivity
+//                 .iter_mut()
+//                 .flatten()
+//                 .filter(|entry| *entry == &id)
+//                 .for_each(|entry| *entry = index + 1)
+//         });
+// }
 
 fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<3>, Blocks) {
     let removed_data = remove.unwrap_or(vec![0]);
@@ -152,6 +152,8 @@ fn finite_element_data_from_npy_data(
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;
+    let nelzplus1 = shape[2] + 1;
+    let number_of_nodes_unfiltered = nelxplus1 * nelyplus1 * nelzplus1;
     let xscale = scale[0];
     let yscale = scale[1];
     let zscale = scale[2];
@@ -165,7 +167,11 @@ fn finite_element_data_from_npy_data(
     } else if zscale <= 0.0 {
         Err("Need to specify zscale > 0.0".to_string())
     } else {
+        let time_1 = std::time::Instant::now();
         let (filtered_voxel_data, element_blocks) = filter_voxel_data(data, remove);
+        println!("      \x1b[1;93mFilter\x1b[0m {:?}", time_1.elapsed());
+
+        let time_2 = std::time::Instant::now();
         let mut element_node_connectivity: Connectivity = filtered_voxel_data
             .iter()
             .map(|entry| {
@@ -209,15 +215,82 @@ fn finite_element_data_from_npy_data(
                 ]
             })
             .collect();
-        element_node_connectivity_node_renumbering(&mut element_node_connectivity);
-        let number_of_nodes = element_node_connectivity
-            .clone()
-            .into_iter()
-            .flatten()
-            .unique()
-            .collect::<Vec<usize>>()
-            .len();
-        let mut nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
+        println!("\x1b[1;93mConnectivity\x1b[0m {:?}", time_2.elapsed());
+
+        // let time_3 = std::time::Instant::now();
+        // element_node_connectivity_node_renumbering(&mut element_node_connectivity);
+        // println!(" \x1b[1;93mRenumbering\x1b[0m {:?}", time_3.elapsed());
+
+        // let time_4 = std::time::Instant::now();
+        // let number_of_nodes = element_node_connectivity
+        //     .clone()
+        //     .into_iter()
+        //     .flatten()
+        //     .unique()
+        //     .collect::<Vec<usize>>()
+        //     .len();
+        // println!("      \x1b[1;93mNumber\x1b[0m {:?}", time_4.elapsed());
+
+        // let time_5 = std::time::Instant::now();
+        // let mut nodal_coordinates = vec![vec![0.0; 3]; number_of_nodes];
+        // println!("  \x1b[1;93mAllocation\x1b[0m {:?}", time_5.elapsed());
+
+        // think this overwrites shared nodal coordinates
+        // but since node numbering is perfect, doesn't matter
+
+        // let time_6 = std::time::Instant::now();
+        // filtered_voxel_data
+        //     .iter()
+        //     .zip(element_node_connectivity.iter())
+        //     .for_each(|(entry, connectivity)| {
+        //         nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64) * xscale + xtranslate,
+        //             (entry[1] as f64) * yscale + ytranslate,
+        //             (entry[2] as f64) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
+        //             (entry[1] as f64) * yscale + ytranslate,
+        //             (entry[2] as f64) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
+        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
+        //             (entry[2] as f64) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64) * xscale + xtranslate,
+        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
+        //             (entry[2] as f64) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64) * xscale + xtranslate,
+        //             (entry[1] as f64) * yscale + ytranslate,
+        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
+        //             (entry[1] as f64) * yscale + ytranslate,
+        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64 + 1.0) * xscale + xtranslate,
+        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
+        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
+        //         ];
+        //         nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = vec![
+        //             (entry[0] as f64) * xscale + xtranslate,
+        //             (entry[1] as f64 + 1.0) * yscale + ytranslate,
+        //             (entry[2] as f64 + 1.0) * zscale + ztranslate,
+        //         ];
+        //     });
+        // println!(" \x1b[1;93mCoordinates\x1b[0m {:?}", time_6.elapsed());
+
+        let time_5 = std::time::Instant::now();
+        let mut nodal_coordinates = vec![vec![]; number_of_nodes_unfiltered]; // does it hurt not to allocate vec![0.0; 3]
+        println!("  \x1b[1;93mAllocation\x1b[0m {:?}", time_5.elapsed());
+
+        let time_6 = std::time::Instant::now();
         filtered_voxel_data
             .iter()
             .zip(element_node_connectivity.iter())
@@ -263,6 +336,35 @@ fn finite_element_data_from_npy_data(
                     (entry[2] as f64 + 1.0) * zscale + ztranslate,
                 ];
             });
+        println!(" \x1b[1;93mCoordinates\x1b[0m {:?}", time_6.elapsed());
+
+        let time_7 = std::time::Instant::now();
+        let renumbering_map: Vec<usize> = nodal_coordinates
+            .iter()
+            .enumerate()
+            .filter(|&(_, coordinate)| coordinate != &vec![])
+            .map(|(index, _)| index + NODE_NUMBERING_OFFSET)
+            .collect();
+        println!("   \x1b[1;93mEnumerate\x1b[0m {:?}", time_7.elapsed());
+
+        // can you "invert" the map?
+
+        let time_8 = std::time::Instant::now();
+        nodal_coordinates.retain(|coordinate| coordinate != &vec![]);
+        println!("     \x1b[1;93mRemoval\x1b[0m {:?}", time_8.elapsed());
+
+        let time_9 = std::time::Instant::now();
+        element_node_connectivity
+            .iter_mut()
+            .for_each(|connectivity| {
+                connectivity.iter_mut().for_each(
+                    |node| *node = renumbering_map[0], // renumbering_map.iter().position(|foo| foo == node).unwrap()
+                )
+            });
+        println!(" \x1b[1;93mRenumbering\x1b[0m {:?}", time_9.elapsed());
+
+        // try to set up conditional compilation so that you can see this stuff later when you want to
+
         Ok((element_blocks, element_node_connectivity, nodal_coordinates))
     }
 }
