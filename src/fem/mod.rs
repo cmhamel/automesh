@@ -4,6 +4,9 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
+#[cfg(feature = "profile")]
+use std::time::Instant;
+
 use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
 use chrono::Utc;
 use itertools::Itertools;
@@ -285,6 +288,8 @@ fn write_nodal_coordinates_to_inp(
     nodal_coordinates: &Coordinates,
     node_number_width: &usize,
 ) -> Result<(), Error> {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
     file.write_all("*NODE, NSET=ALLNODES".as_bytes())?;
     nodal_coordinates
         .iter()
@@ -297,7 +302,13 @@ fn write_nodal_coordinates_to_inp(
                 file.write_all(format!("{:>15.6e}", coordinate).as_bytes())
             })
         })?;
-    end_section(file)
+    let result = end_section(file);
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Coordinates\x1b[0m {:?}",
+        time.elapsed()
+    );
+    result
 }
 
 fn write_element_node_connectivity_to_inp(
@@ -307,6 +318,8 @@ fn write_element_node_connectivity_to_inp(
     element_number_width: &usize,
     node_number_width: &usize,
 ) -> Result<(), Error> {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
     let mut unique_element_blocks_iter = element_blocks.iter().unique().sorted();
     unique_element_blocks_iter
         .clone()
@@ -335,7 +348,7 @@ fn write_element_node_connectivity_to_inp(
                 })?;
             end_section(file)
         })?;
-    unique_element_blocks_iter.try_for_each(|block| {
+    let result = unique_element_blocks_iter.try_for_each(|block| {
         file.write_all(
             format!(
                 "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",
@@ -343,7 +356,13 @@ fn write_element_node_connectivity_to_inp(
             )
             .as_bytes(),
         )
-    })
+    });
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mConnectivity\x1b[0m {:?}",
+        time.elapsed()
+    );
+    result
 }
 
 fn end_section(file: &mut BufWriter<File>) -> Result<(), Error> {

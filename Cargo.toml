@@ -24,6 +24,7 @@ pyo3 = {version = "=0.22", features = ["extension-module"], optional = true}
 svgbobdoc = { version = "=0.3.0", features = ["enable"] }
 
 [features]
+profile = []
 python = ["dep:pyo3"]
 
 [package.metadata.docs.rs]

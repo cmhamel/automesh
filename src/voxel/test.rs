@@ -1,4 +1,4 @@
-use super::{element_node_connectivity_node_renumbering, filter_voxel_data, Voxels};
+use super::{filter_voxel_data, Voxels};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -44,20 +44,6 @@ const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
     [2, 4, 2],
     [3, 4, 2],
 ];
-
-#[test]
-fn connectivity_node_renumbering() {
-    let mut element_node_connectivity =
-        vec![vec![1, 6, 3, 4], vec![3, 9, 6, 11], vec![13, 17, 16, 19]];
-    let element_node_connectivity_gold =
-        vec![vec![1, 4, 2, 3], vec![2, 5, 4, 6], vec![7, 9, 8, 10]];
-    element_node_connectivity_node_renumbering(&mut element_node_connectivity);
-    element_node_connectivity
-        .iter()
-        .flatten()
-        .zip(element_node_connectivity_gold.iter().flatten())
-        .for_each(|(entry, gold)| assert_eq!(entry, gold));
-}
 
 #[test]
 fn filter() {
