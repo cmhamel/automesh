@@ -16,3 +16,5 @@ edition = "2021"
 
 [preprocessor.katex]
 after = ["links"]
+
+[preprocessor.svgbob]

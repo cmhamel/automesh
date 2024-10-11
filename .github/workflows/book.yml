@@ -20,6 +20,8 @@ jobs:
         run: cargo install --path .
       - name: mdbook
         run: cargo install mdbook mdbook-cmdrun mdbook-katex
+      - name: svgbob
+        run: cargo install --locked mdbook-svgbob
       - name: rust
         run: cargo build --release
       - name: maturin
