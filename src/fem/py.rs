@@ -7,7 +7,7 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-/// The finite elements type.
+/// The finite elements class.
 #[pyclass]
 pub struct FiniteElements {
     element_blocks: Blocks,
