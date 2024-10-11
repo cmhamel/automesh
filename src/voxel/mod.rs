@@ -4,6 +4,9 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
+#[cfg(feature = "profile")]
+use std::time::Instant;
+
 use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
     NODE_NUMBERING_OFFSET,
@@ -14,9 +17,6 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error, Write},
 };
-
-#[cfg(feature = "profile")]
-use std::time::Instant;
 
 type Nel = [usize; 3];
 type Scale = [f64; 3];
@@ -127,10 +127,7 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSiz
         .map(|entry| [entry[0], entry[1], entry[2]])
         .collect();
     #[cfg(feature = "profile")]
-    println!(
-        "           \x1b[1;93m⤷ Filter\x1b[0m       {:?}",
-        time.elapsed()
-    );
+    println!("           \x1b[1;93m⤷ Filter\x1b[0m {:?}", time.elapsed());
     (filtered_voxel_data, element_blocks)
 }
 
@@ -262,7 +259,7 @@ fn initial_nodal_coordinates(
             });
         #[cfg(feature = "profile")]
         println!(
-            "             \x1b[1;93mCoordinates\x1b[0m  {:?}",
+            "             \x1b[1;93mCoordinates\x1b[0m {:?}",
             time.elapsed()
         );
         Ok(nodal_coordinates)
@@ -284,10 +281,7 @@ fn get_mapping(nodal_coordinates: &Coordinates, number_of_nodes_unfiltered: usiz
             }
         });
     #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mMapping\x1b[0m       {:?}",
-        time.elapsed()
-    );
+    println!("             \x1b[1;93mMapping\x1b[0m {:?}", time.elapsed());
     mapping
 }
 
@@ -296,10 +290,7 @@ fn remove_empty_coordinates(nodal_coordinates: &mut Coordinates) {
     let time = std::time::Instant::now();
     nodal_coordinates.retain(|coordinate| coordinate != &vec![]);
     #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mRemoval\x1b[0m       {:?}",
-        time.elapsed()
-    );
+    println!("             \x1b[1;93mRemoval\x1b[0m {:?}", time.elapsed());
 }
 
 fn renumber_nodes(element_node_connectivity: &mut Connectivity, mapping: Vec<usize>) {
@@ -314,7 +305,7 @@ fn renumber_nodes(element_node_connectivity: &mut Connectivity, mapping: Vec<usi
         });
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mRenumbering\x1b[0m   {:?}",
+        "             \x1b[1;93mRenumbering\x1b[0m {:?}",
         time.elapsed()
     );
 }
