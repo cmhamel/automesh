@@ -287,7 +287,7 @@ fn mesh(
         }
         println!();
     }
-    let output_type = input_type.into_finite_elements(
+    let mut output_type = input_type.into_finite_elements(
         remove,
         &[xscale, yscale, zscale],
         &[xtranslate, ytranslate, ztranslate],
@@ -295,6 +295,33 @@ fn mesh(
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
+
+    let time0 = Instant::now();
+    println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+
+    let time1 = Instant::now();
+    output_type.calculate_node_element_connectivity().unwrap();
+    println!(
+        "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
+        time1.elapsed()
+    );
+
+    let time2 = Instant::now();
+    output_type.calculate_node_node_connectivity().unwrap();
+    println!(
+        "             \x1b[1;93mNode-to-node connectivity\x1b[0m {:?} ",
+        time2.elapsed()
+    );
+
+    let time3 = Instant::now();
+    output_type.calculate_nodal_hierarchy().unwrap();
+    println!(
+        "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
+        time3.elapsed()
+    );
+
+    println!("        \x1b[1;92mDone\x1b[0m {:?}", time0.elapsed());
+
     write_output(output, OutputTypes::Abaqus(output_type), quiet)?;
     Ok(())
 }
