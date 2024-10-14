@@ -136,8 +136,13 @@ impl FiniteElements {
                 .zip(node_element_connectivity.iter().enumerate())
                 .try_for_each(|(connectivity, (node, node_connectivity))| {
                     node_connectivity.iter().try_for_each(|element| {
-                        element_connectivity.clone_from(&element_node_connectivity[element - 1]);
-                        match element_connectivity.iter().position(|&n| n == node + 1) {
+                        element_connectivity.clone_from(
+                            &element_node_connectivity[element - ELEMENT_NUMBERING_OFFSET],
+                        );
+                        match element_connectivity
+                            .iter()
+                            .position(|&n| n == node + NODE_NUMBERING_OFFSET)
+                        {
                             Some(0) => {
                                 connectivity.push(element_connectivity[1]);
                                 connectivity.push(element_connectivity[3]);
@@ -296,7 +301,14 @@ fn write_nodal_coordinates_to_inp(
         .enumerate()
         .try_for_each(|(node, coordinates)| {
             indent(file)?;
-            file.write_all(format!("{:>width$}", node + 1, width = node_number_width).as_bytes())?;
+            file.write_all(
+                format!(
+                    "{:>width$}",
+                    node + NODE_NUMBERING_OFFSET,
+                    width = node_number_width
+                )
+                .as_bytes(),
+            )?;
             coordinates.iter().try_for_each(|coordinate| {
                 delimiter(file)?;
                 file.write_all(format!("{:>15.6e}", coordinate).as_bytes())
@@ -334,7 +346,12 @@ fn write_element_node_connectivity_to_inp(
                 .try_for_each(|(element, _)| {
                     indent(file)?;
                     file.write_all(
-                        format!("{:>width$}", element + 1, width = element_number_width).as_bytes(),
+                        format!(
+                            "{:>width$}",
+                            element + ELEMENT_NUMBERING_OFFSET,
+                            width = element_number_width
+                        )
+                        .as_bytes(),
                     )?;
                     element_node_connectivity[element]
                         .iter()
