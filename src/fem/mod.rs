@@ -354,8 +354,11 @@ fn write_element_node_connectivity_to_inp(
 ) -> Result<(), Error> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let mut unique_element_blocks_iter = element_blocks.iter().unique().sorted();
-    unique_element_blocks_iter
+    let mut unique_element_blocks = element_blocks.clone();
+    unique_element_blocks.sort();
+    unique_element_blocks.dedup();
+    unique_element_blocks
+        .iter()
         .clone()
         .try_for_each(|current_block| {
             file.write_all(
@@ -387,7 +390,7 @@ fn write_element_node_connectivity_to_inp(
                 })?;
             end_section(file)
         })?;
-    let result = unique_element_blocks_iter.try_for_each(|block| {
+    let result = unique_element_blocks.iter().try_for_each(|block| {
         file.write_all(
             format!(
                 "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",
