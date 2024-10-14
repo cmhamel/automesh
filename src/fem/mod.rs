@@ -65,6 +65,8 @@ impl FiniteElements {
         if self.calculated_nodal_hierarchy {
             Err("Already calculated and set the nodal hierarchy.")
         } else if self.calculated_node_element_connectivity {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
             let element_blocks = self.get_element_blocks();
             let mut exterior_nodes_unsorted = vec![];
             let mut interface_nodes_unsorted = vec![];
@@ -92,6 +94,11 @@ impl FiniteElements {
             self.interface_nodes = interface_nodes_unsorted.into_iter().sorted().collect();
             self.interior_nodes = interior_nodes_unsorted.into_iter().sorted().collect();
             self.calculated_nodal_hierarchy = true;
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
+                time.elapsed()
+            );
             Ok(())
         } else {
             Err("Need to calculate and set the node-to-element connectivity first.")
@@ -102,22 +109,26 @@ impl FiniteElements {
         if self.calculated_node_element_connectivity {
             Err("Already calculated and set the node-to-element connectivity.")
         } else {
-            let element_node_connectivity = self.get_element_node_connectivity();
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
             let number_of_nodes = self.get_nodal_coordinates().len();
             let mut node_element_connectivity = vec![vec![]; number_of_nodes];
-            node_element_connectivity.iter_mut().enumerate().for_each(
-                |(node, node_connectivity)| {
-                    element_node_connectivity.iter().enumerate().for_each(
-                        |(element, element_connectivity)| {
-                            if element_connectivity.contains(&(node + NODE_NUMBERING_OFFSET)) {
-                                node_connectivity.push(element + ELEMENT_NUMBERING_OFFSET)
-                            }
-                        },
-                    )
-                },
-            );
+            self.get_element_node_connectivity()
+                .iter()
+                .enumerate()
+                .for_each(|(element, connectivity)| {
+                    connectivity.iter().for_each(|node| {
+                        node_element_connectivity[node - NODE_NUMBERING_OFFSET]
+                            .push(element + ELEMENT_NUMBERING_OFFSET)
+                    })
+                });
             self.node_element_connectivity = node_element_connectivity;
             self.calculated_node_element_connectivity = true;
+            #[cfg(feature = "profile")]
+            println!(
+                "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
+                time.elapsed()
+            );
             Ok(())
         }
     }
@@ -126,6 +137,8 @@ impl FiniteElements {
         if self.calculated_node_node_connectivity {
             Err("Already calculated and set the node-to-node connectivity.")
         } else if self.calculated_node_element_connectivity {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
             let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
             let element_node_connectivity = self.get_element_node_connectivity();
             let node_element_connectivity = self.get_node_element_connectivity();
@@ -205,6 +218,11 @@ impl FiniteElements {
                 .map(|connectivity| connectivity.into_iter().unique().sorted().collect())
                 .collect();
             self.calculated_node_node_connectivity = true;
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mNode-to-node connectivity\x1b[0m {:?} ",
+                time.elapsed()
+            );
             Ok(())
         } else {
             Err("Need to calculate and set the node-to-element connectivity first.")
@@ -317,7 +335,7 @@ fn write_nodal_coordinates_to_inp(
     let result = end_section(file);
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Coordinates\x1b[0m {:?}",
+        "           \x1b[1;93m⤷ Nodal coordinates\x1b[0m {:?}",
         time.elapsed()
     );
     result
@@ -376,7 +394,7 @@ fn write_element_node_connectivity_to_inp(
     });
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mConnectivity\x1b[0m {:?}",
+        "             \x1b[1;93mElement-to-node connectivity\x1b[0m {:?}",
         time.elapsed()
     );
     result
