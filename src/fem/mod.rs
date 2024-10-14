@@ -90,9 +90,12 @@ impl FiniteElements {
                         exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            self.exterior_nodes = exterior_nodes_unsorted.into_iter().sorted().collect();
-            self.interface_nodes = interface_nodes_unsorted.into_iter().sorted().collect();
-            self.interior_nodes = interior_nodes_unsorted.into_iter().sorted().collect();
+            exterior_nodes_unsorted.sort();
+            self.exterior_nodes = exterior_nodes_unsorted;
+            interface_nodes_unsorted.sort();
+            self.interface_nodes = interface_nodes_unsorted;
+            interior_nodes_unsorted.sort();
+            self.interior_nodes = interior_nodes_unsorted;
             self.calculated_nodal_hierarchy = true;
             #[cfg(feature = "profile")]
             println!(
@@ -143,8 +146,8 @@ impl FiniteElements {
             let element_node_connectivity = self.get_element_node_connectivity();
             let node_element_connectivity = self.get_node_element_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
-            let mut node_node_connectivity_nonunique_unsorted = vec![vec![]; number_of_nodes];
-            node_node_connectivity_nonunique_unsorted
+            let mut node_node_connectivity = vec![vec![]; number_of_nodes];
+            node_node_connectivity
                 .iter_mut()
                 .zip(node_element_connectivity.iter().enumerate())
                 .try_for_each(|(connectivity, (node, node_connectivity))| {
@@ -213,10 +216,11 @@ impl FiniteElements {
                         }
                     })
                 })?;
-            self.node_node_connectivity = node_node_connectivity_nonunique_unsorted
-                .into_iter()
-                .map(|connectivity| connectivity.into_iter().unique().sorted().collect())
-                .collect();
+            node_node_connectivity.iter_mut().for_each(|connectivity| {
+                connectivity.sort();
+                connectivity.dedup();
+            });
+            self.node_node_connectivity = node_node_connectivity;
             self.calculated_node_node_connectivity = true;
             #[cfg(feature = "profile")]
             println!(
