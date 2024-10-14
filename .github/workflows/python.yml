@@ -65,6 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
+    - uses: actions/setup-python@v5
     - name: wheelhouse
       run: mkdir -p wheelhouse/ && mv ./*-wheel*/*.whl wheelhouse/
     - name: twine
