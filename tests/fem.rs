@@ -54,8 +54,8 @@ fn compare_files(
     let version_prefix_gold = str::from_utf8(&gold.as_bytes()[0..8]).unwrap();
     let version_prefix_line = str::from_utf8(&line.as_bytes()[0..8]).unwrap();
     assert_eq!(version_prefix_gold, version_prefix_line);
-    let version_gold = env!("CARGO_PKG_VERSION");
-    let version_line = str::from_utf8(&line.as_bytes()[8..13]).unwrap();
+    let version_gold = format!("{}\n", env!("CARGO_PKG_VERSION"));
+    let version_line = str::from_utf8(&line.as_bytes()[8..]).unwrap();
     assert_eq!(version_gold, version_line);
     read_both_lines(&mut gold, &mut gold_reader, &mut line, &mut line_reader);
     let time_prefix_gold = str::from_utf8(&gold.as_bytes()[0..17]).unwrap();

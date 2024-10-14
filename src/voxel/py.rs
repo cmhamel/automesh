@@ -1,6 +1,6 @@
 use super::{
-    finite_element_data_from_npy_data, voxel_data_from_npy, voxel_data_from_spn,
-    write_voxels_to_npy, write_voxels_to_spn, IntermediateError, Nel, Scale, Translate, VoxelData,
+    finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
+    write_voxels_to_spn, IntermediateError, Nel, Scale, Translate, VoxelData,
 };
 use crate::fem::py::FiniteElements;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -29,7 +29,7 @@ impl Voxels {
         translate: Translate,
     ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(&self.data, remove, &scale, &translate)?;
+            finite_element_data_from_data(&self.data, remove, &scale, &translate)?;
         Ok(FiniteElements::from_data(
             element_blocks,
             element_node_connectivity,

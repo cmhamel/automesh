@@ -119,6 +119,10 @@ enum Commands {
         )]
         ztranslate: f64,
 
+        /// Pass to enable smoothing.
+        #[arg(action, long, short)]
+        smooth: bool,
+
         /// Pass to quiet the output.
         #[arg(action, long, short)]
         quiet: bool,
@@ -201,10 +205,11 @@ fn main() -> Result<(), ErrorWrapper> {
             xtranslate,
             ytranslate,
             ztranslate,
+            smooth,
             quiet,
         }) => mesh(
             input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, quiet,
+            ytranslate, ztranslate, smooth, quiet,
         ),
         None => Ok(()),
     }
@@ -249,6 +254,7 @@ fn mesh(
     xtranslate: f64,
     ytranslate: f64,
     ztranslate: f64,
+    smooth: bool,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
@@ -287,7 +293,7 @@ fn mesh(
         }
         println!();
     }
-    let output_type = input_type.into_finite_elements(
+    let mut output_type = input_type.into_finite_elements(
         remove,
         &[xscale, yscale, zscale],
         &[xtranslate, ytranslate, ztranslate],
@@ -295,6 +301,21 @@ fn mesh(
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
+
+    // temporary
+    if smooth {
+        let time_smooth = Instant::now();
+        if !quiet {
+            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+        }
+        output_type.calculate_node_element_connectivity().unwrap();
+        output_type.calculate_node_node_connectivity().unwrap();
+        output_type.calculate_nodal_hierarchy().unwrap();
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+        }
+    }
+
     write_output(output, OutputTypes::Abaqus(output_type), quiet)?;
     Ok(())
 }

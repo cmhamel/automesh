@@ -16,6 +16,9 @@ jobs:
         with:
           default: true
           toolchain: stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
       - name: automesh
         run: cargo install --path .
       - name: mdbook

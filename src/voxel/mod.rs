@@ -55,7 +55,7 @@ impl Voxels {
         translate: &Translate,
     ) -> Result<FiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_npy_data(self.get_data(), remove, scale, translate)?;
+            finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
         Ok(FiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
@@ -107,7 +107,10 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSiz
         .map(|entry| [entry[0], entry[1], entry[2]])
         .collect();
     #[cfg(feature = "profile")]
-    println!("           \x1b[1;93m⤷ Filter\x1b[0m {:?}", time.elapsed());
+    println!(
+        "           \x1b[1;93m⤷ Removed voxels\x1b[0m {:?}",
+        time.elapsed()
+    );
     (filtered_voxel_data, element_blocks)
 }
 
@@ -163,7 +166,7 @@ fn initial_element_node_connectivity(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mConnectivity\x1b[0m {:?}",
+        "             \x1b[1;93mElement-to-node connectivity\x1b[0m {:?}",
         time.elapsed()
     );
     element_node_connectivity
@@ -239,14 +242,18 @@ fn initial_nodal_coordinates(
             });
         #[cfg(feature = "profile")]
         println!(
-            "             \x1b[1;93mCoordinates\x1b[0m {:?}",
+            "             \x1b[1;93mNodal coordinates\x1b[0m {:?}",
             time.elapsed()
         );
         Ok(nodal_coordinates)
     }
 }
 
-fn get_mapping(nodal_coordinates: &Coordinates, number_of_nodes_unfiltered: usize) -> Vec<usize> {
+fn renumber_nodes(
+    element_node_connectivity: &mut Connectivity,
+    nodal_coordinates: &mut Coordinates,
+    number_of_nodes_unfiltered: usize,
+) {
     #[cfg(feature = "profile")]
     let time = std::time::Instant::now();
     let mut mapping = vec![0; number_of_nodes_unfiltered];
@@ -260,22 +267,6 @@ fn get_mapping(nodal_coordinates: &Coordinates, number_of_nodes_unfiltered: usiz
                 mapping[index] = node;
             }
         });
-    #[cfg(feature = "profile")]
-    println!("             \x1b[1;93mMapping\x1b[0m {:?}", time.elapsed());
-    mapping
-}
-
-fn remove_empty_coordinates(nodal_coordinates: &mut Coordinates) {
-    #[cfg(feature = "profile")]
-    let time = std::time::Instant::now();
-    nodal_coordinates.retain(|coordinate| coordinate != &vec![]);
-    #[cfg(feature = "profile")]
-    println!("             \x1b[1;93mRemoval\x1b[0m {:?}", time.elapsed());
-}
-
-fn renumber_nodes(element_node_connectivity: &mut Connectivity, mapping: Vec<usize>) {
-    #[cfg(feature = "profile")]
-    let time = std::time::Instant::now();
     element_node_connectivity
         .iter_mut()
         .for_each(|connectivity| {
@@ -283,14 +274,15 @@ fn renumber_nodes(element_node_connectivity: &mut Connectivity, mapping: Vec<usi
                 .iter_mut()
                 .for_each(|node| *node = mapping[*node - NODE_NUMBERING_OFFSET])
         });
+    nodal_coordinates.retain(|coordinate| coordinate != &vec![]);
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mRenumbering\x1b[0m {:?}",
+        "             \x1b[1;93mRenumbered nodes\x1b[0m {:?}",
         time.elapsed()
     );
 }
 
-fn finite_element_data_from_npy_data(
+fn finite_element_data_from_data(
     data: &VoxelData,
     remove: Option<Vec<u8>>,
     scale: &Scale,
@@ -311,9 +303,11 @@ fn finite_element_data_from_npy_data(
         scale,
         translate,
     )?;
-    let mapping = get_mapping(&nodal_coordinates, number_of_nodes_unfiltered);
-    remove_empty_coordinates(&mut nodal_coordinates);
-    renumber_nodes(&mut element_node_connectivity, mapping);
+    renumber_nodes(
+        &mut element_node_connectivity,
+        &mut nodal_coordinates,
+        number_of_nodes_unfiltered,
+    );
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
