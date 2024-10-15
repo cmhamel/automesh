@@ -9,7 +9,6 @@ use std::time::Instant;
 
 use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
 use chrono::Utc;
-use itertools::Itertools;
 use std::{
     fs::File,
     io::{BufWriter, Error, Write},
@@ -68,6 +67,7 @@ impl FiniteElements {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
+            let mut connected_blocks: Vec<usize> = vec![];
             let mut exterior_nodes_unsorted = vec![];
             let mut interface_nodes_unsorted = vec![];
             let mut interior_nodes_unsorted = vec![];
@@ -75,14 +75,13 @@ impl FiniteElements {
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
-                    if connected_elements
+                    connected_blocks = connected_elements
                         .iter()
                         .map(|element| element_blocks[element - ELEMENT_NUMBERING_OFFSET])
-                        .unique()
-                        .collect::<Vec<usize>>()
-                        .len()
-                        > 1
-                    {
+                        .collect();
+                    connected_blocks.sort();
+                    connected_blocks.dedup();
+                    if connected_blocks.len() > 1 {
                         interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     } else if connected_elements.len() == 8 {
                         interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
@@ -90,9 +89,12 @@ impl FiniteElements {
                         exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            self.exterior_nodes = exterior_nodes_unsorted.into_iter().sorted().collect();
-            self.interface_nodes = interface_nodes_unsorted.into_iter().sorted().collect();
-            self.interior_nodes = interior_nodes_unsorted.into_iter().sorted().collect();
+            exterior_nodes_unsorted.sort();
+            self.exterior_nodes = exterior_nodes_unsorted;
+            interface_nodes_unsorted.sort();
+            self.interface_nodes = interface_nodes_unsorted;
+            interior_nodes_unsorted.sort();
+            self.interior_nodes = interior_nodes_unsorted;
             self.calculated_nodal_hierarchy = true;
             #[cfg(feature = "profile")]
             println!(
@@ -143,8 +145,8 @@ impl FiniteElements {
             let element_node_connectivity = self.get_element_node_connectivity();
             let node_element_connectivity = self.get_node_element_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
-            let mut node_node_connectivity_nonunique_unsorted = vec![vec![]; number_of_nodes];
-            node_node_connectivity_nonunique_unsorted
+            let mut node_node_connectivity = vec![vec![]; number_of_nodes];
+            node_node_connectivity
                 .iter_mut()
                 .zip(node_element_connectivity.iter().enumerate())
                 .try_for_each(|(connectivity, (node, node_connectivity))| {
@@ -213,10 +215,11 @@ impl FiniteElements {
                         }
                     })
                 })?;
-            self.node_node_connectivity = node_node_connectivity_nonunique_unsorted
-                .into_iter()
-                .map(|connectivity| connectivity.into_iter().unique().sorted().collect())
-                .collect();
+            node_node_connectivity.iter_mut().for_each(|connectivity| {
+                connectivity.sort();
+                connectivity.dedup();
+            });
+            self.node_node_connectivity = node_node_connectivity;
             self.calculated_node_node_connectivity = true;
             #[cfg(feature = "profile")]
             println!(
@@ -350,8 +353,11 @@ fn write_element_node_connectivity_to_inp(
 ) -> Result<(), Error> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let mut unique_element_blocks_iter = element_blocks.iter().unique().sorted();
-    unique_element_blocks_iter
+    let mut unique_element_blocks = element_blocks.clone();
+    unique_element_blocks.sort();
+    unique_element_blocks.dedup();
+    unique_element_blocks
+        .iter()
         .clone()
         .try_for_each(|current_block| {
             file.write_all(
@@ -383,7 +389,7 @@ fn write_element_node_connectivity_to_inp(
                 })?;
             end_section(file)
         })?;
-    let result = unique_element_blocks_iter.try_for_each(|block| {
+    let result = unique_element_blocks.iter().try_for_each(|block| {
         file.write_all(
             format!(
                 "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",

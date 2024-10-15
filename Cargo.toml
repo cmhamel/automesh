@@ -17,7 +17,6 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 clap = { version = "=4.5.20", features = ["derive"] }
 chrono = "=0.4.38"
-itertools = {version = "=0.13.0"}
 ndarray = {version = "=0.15"}
 ndarray-npy = {version = "=0.8"}
 pyo3 = {version = "=0.22", features = ["extension-module"], optional = true}
