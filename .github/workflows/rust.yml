@@ -7,6 +7,46 @@ on:
 env:
   CARGO_TERM_COLOR: always
 jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: numpy
+        run: pip install numpy
+      - name: npy
+        run: |
+          python -c 'import numpy as np; np.save("benches/block_8.npy", np.ones((8, 8, 8)).astype("uint8"))'
+          python -c 'import numpy as np; np.save("benches/block_16.npy", np.ones((16, 16, 16)).astype("uint8"))'
+          python -c 'import numpy as np; np.save("benches/block_32.npy", np.ones((32, 32, 32)).astype("uint8"))'
+      - name: spn
+        run: |
+          cargo run -qr -- convert -i benches/block_8.npy -o benches/block_8.spn
+          cargo run -qr -- convert -i benches/block_16.npy -o benches/block_16.spn
+          cargo run -qr -- convert -i benches/block_32.npy -o benches/block_32.spn
+      - name: bench
+        run: rustup run nightly cargo bench
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: cleanup
+        run: rm -fr book/ sandbox/ tests/
+      - name: package
+        run: cargo package
+      - name: login
+        if: github.event_name == 'release'
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
+      - name: publish
+        if: github.event_name == 'release'
+        run: cargo publish
   test:
     if: github.event_name != 'release'
     strategy:
@@ -36,18 +76,3 @@ jobs:
         run: cargo fmt --all -- --check
       - name: test
         run: cargo test --release
-  package:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: cleanup
-        run: rm -fr book/ sandbox/ tests/
-      - name: package
-        run: cargo package
-      - name: login
-        if: github.event_name == 'release'
-        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
-      - name: publish
-        if: github.event_name == 'release'
-        run: cargo publish
