@@ -84,23 +84,23 @@ dofset: DofSet = (
 )
 ```
 
-Table: Smoothed configuration `(x', y', z')`.
+Table: Smoothed configuration `(x, y, z)`.
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
-1 | 0.09999999999999999 | 0.09999999999999999 |0.09999999999999999
+1 | 0.1 | 0.1 |0.1
 2 | 1.0 | 0.075 | 0.075
-3 | 1.9 | 0.09999999999999999 |0.09999999999999999
-4 | 0.09999999999999999 | 0.9 | 0.09999999999999999
+3 | 1.9 | 0.1 |0.1
+4 | 0.1 | 0.9 | 0.1
 5 | 1.0 | 0.925 | 0.075
-6 | 1.9 | 0.9 | 0.09999999999999999
-7 | 0.09999999999999999 | 0.09999999999999999 |0.9
+6 | 1.9 | 0.9 | 0.1
+7 | 0.1 | 0.1 |0.9
 8 | 1.0 | 0.075 | 0.925
-9 | 1.9 | 0.09999999999999999 | 0.9
-10 | 0.09999999999999999 | 0.9 | 0.9
+9 | 1.9 | 0.1 | 0.9
+10 | 0.1 | 0.9 | 0.9
 11 | 1.0 | 0.925 | 0.925
 12 | 1.9 | 0.9 | 0.9
 
-![free_laplace.png](free_laplace.png)
+![free_laplace_1.png](free_laplace_1.png)
 
-Figure: Two element test problem subject to one iteration of Laplace smoothing.
+Figure: Two element test problem (left) original configuration, (right) subject to one iteration of Laplace smoothing.

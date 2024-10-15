@@ -5,7 +5,15 @@ file.
 Example
 -------
 source ~/autotwin/automesh/.venv/bin/activate
+cd ~/autotwin/automesh/book/examples/spheres_cont
 python spheres_cont.py
+
+Ouptut
+------
+Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.npy
+Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_2.npy
+Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_3.npy
+Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_4.npy
 """
 
 from pathlib import Path
