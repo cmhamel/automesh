@@ -8,7 +8,7 @@ source ~/autotwin/automesh/.venv/bin/activate
 cd ~/autotwin/automesh/book/examples/spheres_cont
 python spheres_cont.py
 
-Ouptut
+Output
 ------
 Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.npy
 Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_2.npy
