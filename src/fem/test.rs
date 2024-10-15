@@ -23,20 +23,8 @@ fn test_finite_elements(
     finite_elements
         .calculate_node_element_connectivity()
         .unwrap();
-    assert_eq!(
-        finite_elements.calculate_node_element_connectivity(),
-        Err("Already calculated and set the node-to-element connectivity.")
-    );
     finite_elements.calculate_node_node_connectivity().unwrap();
-    assert_eq!(
-        finite_elements.calculate_node_node_connectivity(),
-        Err("Already calculated and set the node-to-node connectivity.")
-    );
     finite_elements.calculate_nodal_hierarchy().unwrap();
-    assert_eq!(
-        finite_elements.calculate_nodal_hierarchy(),
-        Err("Already calculated and set the nodal hierarchy.")
-    );
     assert_eq!(
         finite_elements.get_node_element_connectivity(),
         &node_element_connectivity_gold

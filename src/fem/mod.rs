@@ -16,6 +16,7 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 const ELEMENT_NUM_NODES: usize = 8;
+const EMPTY_VEC: Connectivity = vec![];
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
@@ -24,9 +25,6 @@ pub type Nodes = Vec<usize>;
 
 /// The finite elements type.
 pub struct FiniteElements {
-    calculated_nodal_hierarchy: bool,
-    calculated_node_element_connectivity: bool,
-    calculated_node_node_connectivity: bool,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
     exterior_nodes: Nodes,
@@ -46,9 +44,6 @@ impl FiniteElements {
         nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
-            calculated_nodal_hierarchy: false,
-            calculated_node_element_connectivity: false,
-            calculated_node_node_connectivity: false,
             element_blocks,
             element_node_connectivity,
             exterior_nodes: vec![],
@@ -61,9 +56,7 @@ impl FiniteElements {
     }
     /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
-        if self.calculated_nodal_hierarchy {
-            Err("Already calculated and set the nodal hierarchy.")
-        } else if self.calculated_node_element_connectivity {
+        if self.get_node_node_connectivity() != &EMPTY_VEC {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
@@ -95,7 +88,6 @@ impl FiniteElements {
             self.interface_nodes = interface_nodes_unsorted;
             interior_nodes_unsorted.sort();
             self.interior_nodes = interior_nodes_unsorted;
-            self.calculated_nodal_hierarchy = true;
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
@@ -108,37 +100,30 @@ impl FiniteElements {
     }
     /// Calculates and sets the node-to-element connectivity.
     pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {
-        if self.calculated_node_element_connectivity {
-            Err("Already calculated and set the node-to-element connectivity.")
-        } else {
-            #[cfg(feature = "profile")]
-            let time = Instant::now();
-            let number_of_nodes = self.get_nodal_coordinates().len();
-            let mut node_element_connectivity = vec![vec![]; number_of_nodes];
-            self.get_element_node_connectivity()
-                .iter()
-                .enumerate()
-                .for_each(|(element, connectivity)| {
-                    connectivity.iter().for_each(|node| {
-                        node_element_connectivity[node - NODE_NUMBERING_OFFSET]
-                            .push(element + ELEMENT_NUMBERING_OFFSET)
-                    })
-                });
-            self.node_element_connectivity = node_element_connectivity;
-            self.calculated_node_element_connectivity = true;
-            #[cfg(feature = "profile")]
-            println!(
-                "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
-                time.elapsed()
-            );
-            Ok(())
-        }
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let number_of_nodes = self.get_nodal_coordinates().len();
+        let mut node_element_connectivity = vec![vec![]; number_of_nodes];
+        self.get_element_node_connectivity()
+            .iter()
+            .enumerate()
+            .for_each(|(element, connectivity)| {
+                connectivity.iter().for_each(|node| {
+                    node_element_connectivity[node - NODE_NUMBERING_OFFSET]
+                        .push(element + ELEMENT_NUMBERING_OFFSET)
+                })
+            });
+        self.node_element_connectivity = node_element_connectivity;
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        Ok(())
     }
     /// Calculates and sets the node-to-node connectivity.
     pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
-        if self.calculated_node_node_connectivity {
-            Err("Already calculated and set the node-to-node connectivity.")
-        } else if self.calculated_node_element_connectivity {
+        if self.get_node_element_connectivity() != &EMPTY_VEC {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
@@ -220,7 +205,6 @@ impl FiniteElements {
                 connectivity.dedup();
             });
             self.node_node_connectivity = node_node_connectivity;
-            self.calculated_node_node_connectivity = true;
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mNode-to-node connectivity\x1b[0m {:?} ",
