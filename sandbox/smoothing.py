@@ -54,6 +54,12 @@ def scale(vertex: Vertex, scale_factor: float) -> Vertex:
     return Vertex(x=x, y=y, z=z)
 
 
+def xyz(v1: Vertex) -> tuple[float, float, float]:
+    """Given a vertex, returns the coordinates as (x, y, z)."""
+    aa, bb, cc = v1.x, v1.y, v1.z
+    return (aa, bb, cc)
+
+
 def smooth(vv: Vertices, nn: Neighbors, ds: DofSet, sf: float) -> Vertices:
     """Given an initial position of vertices, the vertex neighbors,
     and the dof classification of each vertex, perform Laplace
@@ -80,42 +86,6 @@ def smooth(vv: Vertices, nn: Neighbors, ds: DofSet, sf: float) -> Vertices:
     return tuple(vertices_new)
 
 
-# vertices: Vertices = (
-#     Vertex(0.0, 0.0, 0.0),
-#     Vertex(1.0, 0.0, 0.0),
-#     Vertex(2.0, 0.0, 0.0),
-#     Vertex(0.0, 1.0, 0.0),
-#     Vertex(1.0, 1.0, 0.0),
-#     Vertex(2.0, 1.0, 0.0),
-#     Vertex(0.0, 0.0, 1.0),
-#     Vertex(1.0, 0.0, 1.0),
-#     Vertex(2.0, 0.0, 1.0),
-#     Vertex(0.0, 1.0, 1.0),
-#     Vertex(1.0, 1.0, 1.0),
-#     Vertex(2.0, 1.0, 1.0),
-# )
-# 
-# dofset: DofSet = (
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-# )
-# 
-# elements: Elements = (
-#     (1, 2, 5, 4, 7, 8, 11, 10),
-#     (2, 3, 6, 5, 8, 9, 12, 11),
-# )
-
-
 def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
     """Given a tuple of form ((a, b), (c, d), ...) orders all the subpairs
     such that the first index drives global order, and the second index
@@ -131,11 +101,11 @@ def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
         else:
             ab_ordered += ((b, a),)
 
-    for a in firsts:
-        print(f"a = {a}")
+    # for a in firsts:
+    #     print(f"a = {a}")
 
-    for b in seconds:
-        print(f"b = {b}")
+    # for b in seconds:
+    #     print(f"b = {b}")
 
     result = tuple(sorted(ab_ordered))
     # breakpoint()

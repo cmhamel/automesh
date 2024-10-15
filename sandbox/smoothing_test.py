@@ -70,6 +70,16 @@ def test_scale():
     assert result.z == 30.0
 
 
+def test_xyz():
+    """Unit test to assure the (x, y, z) coordinate tuple is returned
+    correctly.
+    """
+    vv = Vertex(x=1.1, y=2.2, z=3.3)
+    gold = (1.1, 2.2, 3.3)
+    result = sm.xyz(vv)
+    assert result == gold
+
+
 def test_laplace_smoothing():
     """Unit test for Laplace smoothing with all dofs as FREE_INTERIOR."""
     vv: Vertices = (

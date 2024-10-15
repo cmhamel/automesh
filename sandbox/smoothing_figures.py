@@ -63,7 +63,6 @@ elements: Elements = (
     (2, 3, 6, 5, 8, 9, 12, 11),
 )
 
-
 neighbors: Neighbors = (
     (2, 4, 7),
     (1, 3, 5, 8),
@@ -83,23 +82,27 @@ SCALE_LAMBDA: Final[float] = 0.3  # lambda parameter for Laplace smoothing
 SCALE_MU: Final[float] = -0.4  # mu parameter for Taubin smoothing
 
 # Visualization
+width, height = 10, 5
 # width, height = 8, 4
-width, height = 6, 3
+# width, height = 6, 3
 fig = plt.figure(figsize=(width, height))
 # fig = plt.figure(figsize=(8, 8))
+ax = fig.add_subplot(1, 2, 1, projection="3d")  # r1, c2, 1st subplot
+ax2 = fig.add_subplot(1, 2, 2, projection="3d")  # r1, c2, 2nd subplot
 
 el, az, roll = 63, -110, 0
 cmap = plt.get_cmap(name="tab10")
 # NUM_COLORS = len(spheres)
 NUM_COLORS = 10
 VOXEL_ALPHA: Final[float] = 0.9
+LINE_ALPHA: Final[float] = 0.5
 
 colors = cmap(np.linspace(0, 1, NUM_COLORS))
 lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = True  # turn to True to show the figure on screen
+SHOW: Final[bool] = False  # turn to True to show the figure on screen
 SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
@@ -113,24 +116,40 @@ bb = aa.with_suffix(".png")
 nx, ny, nz = 2, 1, 1
 nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 
-vertices_laplce = sm.smooth(
+vertices_laplace = sm.smooth(
     vv=vertices, nn=neighbors, ds=dofset, sf=SCALE_LAMBDA
 )
-
-ax = fig.add_subplot(1, 2, 1, projection="3d")  # r1, c2, 1st subplot
-ax2 = fig.add_subplot(1, 2, 2, projection="3d")  # r1, c2, 2nd subplot
-
+breakpoint()
+# original vertices
 xs = [v.x for v in vertices]
 ys = [v.y for v in vertices]
 zs = [v.z for v in vertices]
-
-xs_l = [v.x for v in vertices_laplce]
-ys_l = [v.y for v in vertices_laplce]
-zs_l = [v.z for v in vertices_laplce]
-
-# draw edge lines, #TODO
-# xl =
-
+# laplace smoothed vertices
+xs_l = [v.x for v in vertices_laplace]
+ys_l = [v.y for v in vertices_laplace]
+zs_l = [v.z for v in vertices_laplace]
+# draw edge lines
+ep = sm.edge_pairs(elements)  # edge pairs
+line_segments = [
+    (sm.xyz(vertices[p1 - 1]), sm.xyz(vertices[p2 - 1])) for (p1, p2) in ep
+]
+line_segments_laplace = [
+    (sm.xyz(vertices_laplace[p1 - 1]), sm.xyz(vertices_laplace[p2 - 1]))
+    for (p1, p2) in ep
+]
+for ls in line_segments:
+    x0x1 = [pt[0] for pt in ls]
+    y0y1 = [pt[1] for pt in ls]
+    z0z1 = [pt[2] for pt in ls]
+    ax.plot3D(
+        x0x1,
+        y0y1,
+        z0z1,
+        linestyle="solid",
+        linewidth=0.5,
+        color="blue",
+    )
+# draw nodes
 ax.scatter(
     xs,
     ys,
@@ -141,6 +160,31 @@ ax.scatter(
 )
 
 # repeat with lighter color on second axis
+for ls in line_segments:
+    x0x1 = [pt[0] for pt in ls]
+    y0y1 = [pt[1] for pt in ls]
+    z0z1 = [pt[2] for pt in ls]
+    ax2.plot3D(
+        x0x1,
+        y0y1,
+        z0z1,
+        linestyle="dashed",
+        linewidth=0.5,
+        color="blue",
+        alpha=LINE_ALPHA,
+    )
+for ls in line_segments_laplace:
+    x0x1 = [pt[0] for pt in ls]
+    y0y1 = [pt[1] for pt in ls]
+    z0z1 = [pt[2] for pt in ls]
+    ax2.plot3D(
+        x0x1,
+        y0y1,
+        z0z1,
+        linestyle="solid",
+        linewidth=0.5,
+        color="red",
+    )
 ax2.scatter(
     xs,
     ys,
