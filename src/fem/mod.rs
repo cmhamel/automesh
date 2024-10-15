@@ -9,7 +9,6 @@ use std::time::Instant;
 
 use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
 use chrono::Utc;
-use itertools::Itertools;
 use std::{
     fs::File,
     io::{BufWriter, Error, Write},
@@ -68,6 +67,7 @@ impl FiniteElements {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
+            let mut connected_blocks: Vec<usize> = vec![];
             let mut exterior_nodes_unsorted = vec![];
             let mut interface_nodes_unsorted = vec![];
             let mut interior_nodes_unsorted = vec![];
@@ -75,14 +75,13 @@ impl FiniteElements {
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
-                    if connected_elements
+                    connected_blocks = connected_elements
                         .iter()
                         .map(|element| element_blocks[element - ELEMENT_NUMBERING_OFFSET])
-                        .unique()
-                        .collect::<Vec<usize>>()
-                        .len()
-                        > 1
-                    {
+                        .collect();
+                    connected_blocks.sort();
+                    connected_blocks.dedup();
+                    if connected_blocks.len() > 1 {
                         interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     } else if connected_elements.len() == 8 {
                         interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
