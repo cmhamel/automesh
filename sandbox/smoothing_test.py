@@ -7,7 +7,7 @@ Example:
     source .venv/bin/activate.fish  # for fish shell
     .\.venv\Scripts\activate        # for powershell
     cd sandbox
-    python -m pytest test_smoothing.py
+    python -m pytest smoothing_test.py
 Reference: DoubleX unit test
     https://autotwin.github.io/automesh/examples/unit_tests/index.html#double-x
 """
