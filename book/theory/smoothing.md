@@ -14,11 +14,11 @@ For concereteness, consider a node with four neighbors, shown in the figure belo
 
 ![node_p_q](node_p_q.png)
 
-Figure: The subject node $\boldsymbol{p}$ with edge connections (dotted lines) to neighbor nodes $\boldsymbol{q}_i$ with $i \in [1, n]$ (withouth loss of generality, the specific example of $n=4$ is shown).  The average position of all neighbors of $\boldsymbol{p}$ is denoted $\bar{\boldsymbol{q}}$, and the gap $\Delta \boldsymbol{p}$ (dashed line) originates at $\boldsymbol{p}$ and terminates at $\bar{\boldsymbol{q}}$.
+Figure: The subject node $\boldsymbol{p}$ with edge connections (dotted lines) to neighbor nodes $\boldsymbol{q}_{i}$ with $i \in [1, n]$ (withouth loss of generality, the specific example of $n=4$ is shown).  The average position of all neighbors of $\boldsymbol{p}$ is denoted $\bar{\boldsymbol{q}}$, and the gap $\Delta \boldsymbol{p}$ (dashed line) originates at $\boldsymbol{p}$ and terminates at $\bar{\boldsymbol{q}}$.
 
 Define $\bar{\boldsymbol{q}}$ as the average position of all $\boldsymbol{q}_i$ neighbors of $\boldsymbol{p}$,
 
-$$ \bar{\boldsymbol{q}} := \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i.  $$
+$$ \bar{\boldsymbol{q}} := \frac{1}{n} \sum_{i=1}^{n} \boldsymbol{q}_{i}.  $$
 
 Define the gap vector $\Delta\boldsymbol{p}$ as originating at $\boldsymbol{p}$ and terminating at $\bar{\boldsymbol{q}}$ (*viz.*, $\boldsymbol{p} + \Delta\boldsymbol{p} = \bar{\boldsymbol{q}}$),
 
