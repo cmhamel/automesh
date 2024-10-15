@@ -47,26 +47,39 @@ is slow, only the first two resolutions are shown.
 Use `automesh` to convert the segmentations into finite element meshes.
 
 ```sh
-cd ~/autotwin/automesh/book/examples/spheres_cont/
+alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
+```
 
-automesh -i spheres_resolution_1.npy \
+```sh
+cd ~/autotwin/automesh/book/examples/spheres_cont/
+```
+
+
+```sh
+automesh mesh -i spheres_resolution_1.npy \
 -o spheres_resolution_1.inp \
 -x 24 -y 24 -z 24 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
+```
 
-automesh -i spheres_resolution_2.npy \
+```sh
+automesh mesh -i spheres_resolution_2.npy \
 -o spheres_resolution_2.inp \
 -x 48 -y 48 -z 48 \
 --xscale 0.5 --yscale 0.5 --yzscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
+```
 
-automesh -i spheres_resolution_3.npy \
+```sh
+automesh mesh -i spheres_resolution_3.npy \
 -o spheres_resolution_3.inp \
 -x 96 -y 96 -z 96 \
 --xscale 0.25 --yscale 0.25 --zscale 0.25 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
+```
 
-automesh -i spheres_resolution_4.npy \
+```sh
+automesh mesh -i spheres_resolution_4.npy \
 -o spheres_resolution_4.inp \
 -x 240 -y 240 -z 240 \
 --xscale 0.1 --yscale 0.1 --yzscale 0.1 \
@@ -75,19 +88,19 @@ automesh -i spheres_resolution_4.npy \
 
 resolution | 1 vox/cm | 2 vox/cm | 4 vox/cm | 10 vox/cm
 ---------- | -------- | -------- | -------- | ---------
-midline   | ![resolution_1.png](resolution_1.png) | ![resolution_2.png](resolution_2.png) | ![resolution_3.png](resolution_3.png) |
-isometric  | ![resolution_1_iso.png](resolution_1_iso.png) | ![resolution_2_iso.png](resolution_2_iso.png) | ![resolution_3_iso.png](resolution_3_iso.png) |
+midline   | ![resolution_1.png](resolution_1.png) | ![resolution_2.png](resolution_2.png) | ![resolution_3.png](resolution_3.png) | ![resolution_4.png](resolution_4.png)
+isometric  | ![resolution_1_iso.png](resolution_1_iso.png) | ![resolution_2_iso.png](resolution_2_iso.png) | ![resolution_3_iso.png](resolution_3_iso.png) | ![resolution_4_iso.png](resolution_4_iso.png)
 
 Figure: Finite element meshes at various resolutions, shown with half-symmetric cut plane, in front view and isometric view.
 
-Table: Summary of vital results with `automesh` version `0.1.7`.
+Table: Summary of vital results with `automesh` version `0.1.10` on macOS laptop.
 
-resolution (vox/cm) | processing time | `.npy` file size | `.inp` file size (MB) | `.g` file size (MB)
+resolution (vox/cm) | processing time | `.npy` file size | `.inp` file size | `.g` file size
 ---: | ---:     | ---:    | ---:  | ---:
-1    | 3.24s | 14 kB   | 0.962 | 0.557
-2    | 15.2s | 111 kB  |   8.5 |   4.5
-4    | 13.5m | 885 kB  |  73.6 |  36.8
-10   | xxx   | 13.8 MB |  xxxx | xxxxx
+1    | 11.839625ms  | 14 kB   | 0.962 MB | 0.557 MB
+2    | 89.120459ms  | 111 kB  |   8.5 MB |   4.5 MB
+4    | 662.89025ms  | 885 kB  |  73.6 MB |  36.8 MB
+10   | 10.01070525s | 13.8 MB |  1.23 GB | 577 MB
 
 Cubit is used for the visualizations with the following recipe:
 
@@ -124,16 +137,11 @@ Set up reference to the Sculpt binary,
 alias sculpt='/Applications/Cubit-16.14/Cubit.app/Contents/MacOS/sculpt'
 ```
 
-Convert `.npy` files to `.spn` files (see temporary development, https://github.com/hovey/rustschool/tree/main/npy2spn, to be migrated to `automesh` soon as part of the `clap` extension feature, https://github.com/autotwin/automesh/issues/117)
 ```sh
-alias npy2spn='/Users/chovey/rustschool/npy2spn/target/release/npy2spn'
-```
-
-```sh
-npy2spn -i spheres_resolution_1.npy -o spheres_resolution_1.spn
-npy2spn -i spheres_resolution_2.npy -o spheres_resolution_2.spn
-npy2spn -i spheres_resolution_3.npy -o spheres_resolution_3.spn
-npy2spn -i spheres_resolution_4.npy -o spheres_resolution_4.spn
+automesh convert -i spheres_resolution_1.npy -o spheres_resolution_1.spn
+automesh convert -i spheres_resolution_2.npy -o spheres_resolution_2.spn
+automesh convert -i spheres_resolution_3.npy -o spheres_resolution_3.spn
+automesh convert -i spheres_resolution_4.npy -o spheres_resolution_4.spn
 ```
 
 Run Sculpt
@@ -188,9 +196,9 @@ sculpt --num_procs 1 --input_spn "spheres_resolution_4.spn" \
 --stair 1
 ```
 
-test | `nelx` | lines | time `automesh` | time Sculpt | speed up multiple
+test | `nelx` | lines | time `automesh` | time Sculpt | automesh speed up multiple
 :---: | ---: | ---: | ---: | ---: | :---:
-1 |  24 |     13,824 | 3.24s   |  1.101862s | 3x
-2 |  48 |    110,592 | 15.2s   |  3.246166s | 4.7x
-3 |  96 |    884,736 | 13.5m   | 24.414653s | 33x
-4 | 240 | 13,824,000 | no data | 449.339395s | n/a
+1 |  24 |     13,824 | 11.839625ms | 1.101862s | 93x
+2 |  48 |    110,592 | 89.120459ms |  3.246166s | 36x
+3 |  96 |    884,736 | 662.89025ms | 24.414653s | 36x
+4 | 240 | 13,824,000 | 10.01070525s | 449.339395s | 44x
