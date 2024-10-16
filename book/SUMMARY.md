@@ -10,7 +10,6 @@
   - [Spheres](examples/spheres/README.md)
   - [Spheres - continued](examples/spheres_cont/README.md)
   - [Smoothing](examples/smoothing/README.md)
-  - [Temporary](examples/temporary.md)
 
 # Reference Guide
 
