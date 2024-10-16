@@ -8,8 +8,7 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   mdbook:
-    # runs-on: ubuntu-latest
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -24,8 +23,6 @@ jobs:
         run: cargo install --path .
       - name: mdbook
         run: cargo install mdbook mdbook-cmdrun mdbook-katex
-      - name: svgbob
-        run: cargo install --locked mdbook-svgbob
       - name: rust
         run: cargo build --release
       - name: maturin
@@ -51,8 +48,7 @@ jobs:
     permissions:
       id-token: write
       pages: write
-    # runs-on: ubuntu-latest
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
