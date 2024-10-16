@@ -402,7 +402,7 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
     let mut decoder = Decoder::new(BufReader::new(File::open(
         file.to_str().ok_or("asdf".to_string())?,
     )?))?;
-    let (nelx, nely) = decoder.dimensions()?;
+    let (mut nelx, mut nely) = decoder.dimensions()?;
 
     let mut index = 0;
     while file.exists() {
@@ -418,7 +418,7 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
                 File::open(format!("{}/{}_{}.{}", d, a, k, b)).unwrap(),
             ))
             .unwrap();
-            let (nelx, nely) = decoder.dimensions().unwrap();
+            (nelx, nely) = decoder.dimensions().unwrap();
             if nel[0] != nelx as usize || nel[1] != nely as usize {
                 panic!()
             }
