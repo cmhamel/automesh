@@ -418,10 +418,10 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
                 File::open(format!("{}/{}_{}.{}", d, a, k, b)).unwrap(),
             ))
             .unwrap();
-            let (_nelx, _nely) = decoder.dimensions().unwrap();
-            // if nelx != nelx_u32 as usize || nelx != nelx_u32 as usize {
-            //     return Ok(Err("foo".to_string())?)
-            // }
+            let (nelx, nely) = decoder.dimensions().unwrap();
+            if nel[0] != nelx as usize || nel[1] != nely as usize {
+                panic!()
+            }
             match decoder.read_image().unwrap() {
                 DecodingResult::U8(data_flattened) => data_flattened,
                 _ => panic!(),
