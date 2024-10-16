@@ -32,9 +32,9 @@ node | `x` | `y` | `z` | `->` |  |  | dof
 11 | 1.0 | 1.0 | 1.0 | | 31 | 32 | 33
 12 | 2.0 | 1.0 | 1.0 | | 34 | 35 | 36
 
-Table. The node neighbors.
+Table. The *neighborhoods table*. A node, with its neighbors, is considered a single neighborhood.  The table has twelve neighborhoods.
 
-node | neighbor node(s)
+node | node neighbors
 :---: | :---:
 1  | 2, 4, 7
 2  | 1, 3, 5, 8
@@ -84,7 +84,9 @@ dofset: DofSet = (
 )
 ```
 
-Table: Smoothed configuration `(x, y, z)`.
+### Iteration `1`
+
+Table: The smoothed configuration `(x, y, z)` after one iteration of Laplace smoothing.
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
@@ -104,3 +106,7 @@ node | `x` | `y` | `z`
 ![free_laplace_1.png](free_laplace_1.png)
 
 Figure: Two element test problem (left) original configuration, (right) subject to one iteration of Laplace smoothing.
+
+### Iteration `2`
+
+To come.
