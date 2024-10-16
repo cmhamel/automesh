@@ -389,40 +389,50 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
 
 fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> {
     let mut file = std::path::PathBuf::from(file_path);
-    let extension = file.extension().ok_or("asdf".to_string())?;
-    let file_stem = file.file_stem().ok_or("asdf".to_string())?;
-    let path = file.parent().ok_or("asdf".to_string())?;
-
-    let a = file_stem.to_str().ok_or("asf".to_string())?.to_string();
-    let b = extension.to_str().ok_or("asf".to_string())?.to_string();
-    let d = path.to_str().ok_or("asf".to_string())?.to_string();
-
-    file.set_file_name(format!("{}_0.{}", a, b));
-
+    let file_stem = file
+        .file_stem()
+        .ok_or("asdf".to_string())?
+        .to_str()
+        .ok_or("asdf".to_string())?
+        .to_string();
+    let file_extension = file
+        .extension()
+        .ok_or("asdf".to_string())?
+        .to_str()
+        .ok_or("asdf".to_string())?
+        .to_string();
+    let basic_file_path = format!(
+        "{}/{}",
+        file.parent()
+            .ok_or("asdf".to_string())?
+            .to_str()
+            .ok_or("asdf".to_string())?,
+        file_stem
+    );
+    file.set_file_name(format!("{}_0.{}", file_stem, file_extension));
     let mut decoder = Decoder::new(BufReader::new(File::open(
         file.to_str().ok_or("asdf".to_string())?,
     )?))?;
     let (mut nelx, mut nely) = decoder.dimensions()?;
-
     let mut index = 0;
     while file.exists() {
         index += 1;
-        file.set_file_name(format!("{}_{}.{}", a, index, b));
+        file.set_file_name(format!("{}_{}.{}", file_stem, index, file_extension));
     }
     let nel: Nel = [nelx as usize, nely as usize, index as usize];
     let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
     data.axis_iter_mut(Axis(2))
         .enumerate()
-        .for_each(|(k, mut data_k)| {
-            decoder = Decoder::new(BufReader::new(
-                File::open(format!("{}/{}_{}.{}", d, a, k, b)).unwrap(),
-            ))
-            .unwrap();
-            (nelx, nely) = decoder.dimensions().unwrap();
+        .try_for_each(|(k, mut data_k)| {
+            decoder = Decoder::new(BufReader::new(File::open(format!(
+                "{}_{}.{}",
+                basic_file_path, k, file_extension
+            ))?))?;
+            (nelx, nely) = decoder.dimensions()?;
             if nel[0] != nelx as usize || nel[1] != nely as usize {
                 panic!()
             }
-            match decoder.read_image().unwrap() {
+            match decoder.read_image()? {
                 DecodingResult::U8(data_flattened) => data_flattened,
                 _ => panic!(),
             }
@@ -434,7 +444,8 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
                     .zip(data_kj.iter_mut())
                     .for_each(|(a, data_kji)| *data_kji = (*a > 0) as u8)
             });
-        });
+            Ok::<(), IntermediateError>(())
+        })?;
     Ok(data)
 }
 
