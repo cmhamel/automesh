@@ -12,6 +12,7 @@ Elements = ty.Elements
 Neighbors = ty.Neighbors
 Vertex = ty.Vertex
 Vertices = ty.Vertices
+SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 
 def average_position(vv: Vertices) -> Vertex:
@@ -61,7 +62,12 @@ def xyz(v1: Vertex) -> tuple[float, float, float]:
 
 
 def smooth(
-    vv: Vertices, nn: Neighbors, ds: DofSet, sf: float, num_iters: int
+    vv: Vertices,
+    nn: Neighbors,
+    ds: DofSet,
+    sf: float,
+    num_iters: int,
+    algo: SmoothingAlgorithm,
 ) -> Vertices:
     """Given an initial position of vertices, the vertex neighbors,
     and the dof classification of each vertex, perform Laplace
@@ -69,6 +75,8 @@ def smooth(
     coordinates.
     """
     assert num_iters >= 1, "`num_iters` must be 1 or greater"
+
+    print(f"Smoothing algorithm: {algo.value}")
 
     vertices_old = vv
 
@@ -78,7 +86,8 @@ def smooth(
         vertices_new = []
 
         for vertex, neighbors, dof in zip(vertices_old, nn, ds):
-            print(f"vertex {vertex}, dof {dof}, neighbors {neighbors}")
+            # debug vertex by vertex
+            # print(f"vertex {vertex}, dof {dof}, neighbors {neighbors}")
             # for now, no hierarchical smoohing
             # assume all dofs are FREE_INTERIOR
 

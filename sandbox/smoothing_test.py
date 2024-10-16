@@ -26,6 +26,7 @@ Elements = ty.Elements
 Neighbors = ty.Neighbors
 Vertex = ty.Vertex
 Vertices = ty.Vertices
+SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 
 def test_average_position():
@@ -132,7 +133,11 @@ def test_laplace_smoothing():
     # iteration 1
     num_iters = 1  # single iteration of smoothing
 
-    aa = sm.smooth(vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters)
+    algo = SmoothingAlgorithm.LAPLACE
+
+    aa = sm.smooth(
+        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+    )
     cc: Final[float] = scale_lambda / 3.0  # delta corner
     ee: Final[float] = scale_lambda / 4.0  # delta edge
     # define the gold standard fiducial
@@ -158,7 +163,9 @@ def test_laplace_smoothing():
     # iteration 2
     num_iters = 2  # overwrite, double iteration of smoothing
 
-    aa2 = sm.smooth(vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters)
+    aa2 = sm.smooth(
+        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+    )
     # define the gold standard fiducial
     gold2 = (
         (0.19, 0.1775, 0.1775),

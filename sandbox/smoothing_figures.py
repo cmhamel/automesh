@@ -25,6 +25,7 @@ Elements = ty.Elements
 Neighbors = ty.Neighbors
 Vertex = ty.Vertex
 Vertices = ty.Vertices
+SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 # Double X test case
 
@@ -79,7 +80,9 @@ neighbors: Neighbors = (
 )
 
 SCALE_LAMBDA: Final[float] = 0.3  # lambda parameter for Laplace smoothing
-SCALE_MU: Final[float] = -0.4  # mu parameter for Taubin smoothing
+SCALE_MU: Final[float] = -0.33  # mu parameter for Taubin smoothing
+NUM_ITERS: Final[int] = 30  # number of smoothing iterations
+ALGO: Final = SmoothingAlgorithm.LAPLACE
 
 # Visualization
 width, height = 10, 5
@@ -110,16 +113,17 @@ SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 #     Path(output_dir).expanduser().joinpath(output_png_short)
 # )
 
-aa = Path(__file__)
-bb = aa.with_suffix(".png")
-
 nx, ny, nz = 2, 1, 1
 nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 
 vertices_laplace = sm.smooth(
-    vv=vertices, nn=neighbors, ds=dofset, sf=SCALE_LAMBDA
+    vv=vertices,
+    nn=neighbors,
+    ds=dofset,
+    sf=SCALE_LAMBDA,
+    num_iters=NUM_ITERS,
+    algo=ALGO,
 )
-breakpoint()
 # original vertices
 xs = [v.x for v in vertices]
 ys = [v.y for v in vertices]
@@ -243,6 +247,12 @@ ax.view_init(elev=el, azim=az, roll=roll)
 ax2.set_aspect("equal")
 ax2.view_init(elev=el, azim=az, roll=roll)
 
+# File name
+aa = Path(__file__)
+fig_path = Path(__file__).parent
+fig_stem = Path(__file__).stem
+FIG_EXT: Final[str] = ".png"
+bb = fig_path.joinpath(fig_stem + "_iter_" + str(NUM_ITERS) + FIG_EXT)
 # Add a footnote
 # Get the current date and time in UTC
 now_utc = datetime.datetime.now(datetime.UTC)
