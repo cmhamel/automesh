@@ -1450,8 +1450,7 @@ mod from_tiff {
     #[test]
     fn letter_f_3d() {
         let voxels_from_tif = Voxels::from_tif("tests/input/letter_f_3d.tif").unwrap();
-        voxels_from_tif.write_npy("target/letter_f_3d.npy").unwrap();
-        let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy").unwrap();
+        let voxels_from_npy = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_tif);
     }
 }
