@@ -12,6 +12,7 @@ Elements = ty.Elements
 Neighbors = ty.Neighbors
 Vertex = ty.Vertex
 Vertices = ty.Vertices
+SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 
 def average_position(vv: Vertices) -> Vertex:
@@ -60,27 +61,50 @@ def xyz(v1: Vertex) -> tuple[float, float, float]:
     return (aa, bb, cc)
 
 
-def smooth(vv: Vertices, nn: Neighbors, ds: DofSet, sf: float) -> Vertices:
+def smooth(
+    vv: Vertices,
+    nn: Neighbors,
+    ds: DofSet,
+    sf: float,
+    num_iters: int,
+    algo: SmoothingAlgorithm,
+) -> Vertices:
     """Given an initial position of vertices, the vertex neighbors,
     and the dof classification of each vertex, perform Laplace
-    smoothing, and return the updated coordinates.
+    smoothing for num_iter iterations, and return the updated
+    coordinates.
     """
-    vertices_new = []
-    for vertex, neighborhood, dof in zip(vv, nn, ds):
-        print(f"vertex {vertex}, dof {dof}, neighborhood {neighborhood}")
-        # for now, no hierarchical smoohing, assume all dofs are FREE_INTERIOR
+    assert num_iters >= 1, "`num_iters` must be 1 or greater"
 
-        # account for zero-index instead of 1-index:
-        neighbor_vertices = tuple(
-            vv[x - 1] for x in neighborhood
-        )  # zero index
+    print(f"Smoothing algorithm: {algo.value}")
 
-        neighbor_average = average_position(neighbor_vertices)
-        delta = subtract(v1=neighbor_average, v2=vertex)
-        lambda_delta = scale(vertex=delta, scale_factor=sf)
-        vertex_new = add(v1=vertex, v2=lambda_delta)
-        vertices_new.append(vertex_new)
+    vertices_old = vv
+
+    for k in range(num_iters):
+
+        print(f"Iteration: {k+1}")
+        vertices_new = []
+
+        for vertex, neighbors, dof in zip(vertices_old, nn, ds):
+            # debug vertex by vertex
+            # print(f"vertex {vertex}, dof {dof}, neighbors {neighbors}")
+            # for now, no hierarchical smoohing
+            # assume all dofs are FREE_INTERIOR
+
+            # account for zero-index instead of 1-index:
+            neighbor_vertices = tuple(
+                vertices_old[i - 1] for i in neighbors
+            )  # zero index
+
+            neighbor_average = average_position(neighbor_vertices)
+            delta = subtract(v1=neighbor_average, v2=vertex)
+            lambda_delta = scale(vertex=delta, scale_factor=sf)
+            vertex_new = add(v1=vertex, v2=lambda_delta)
+            vertices_new.append(vertex_new)
+            # breakpoint()
+
         # breakpoint()
+        vertices_old = vertices_new  # overwrite for new k loop
 
     # breakpoint()
     return tuple(vertices_new)

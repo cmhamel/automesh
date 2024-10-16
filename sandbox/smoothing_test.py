@@ -26,6 +26,7 @@ Elements = ty.Elements
 Neighbors = ty.Neighbors
 Vertex = ty.Vertex
 Vertices = ty.Vertices
+SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 
 def test_average_position():
@@ -127,11 +128,18 @@ def test_laplace_smoothing():
         (4, 4, 4),
     )
 
-    SCALE_LAMBDA: Final[float] = 0.3  # lambda for Laplace smoothing
+    scale_lambda: Final[float] = 0.3  # lambda for Laplace smoothing
 
-    aa = sm.smooth(vv=vv, nn=nn, ds=ds, sf=SCALE_LAMBDA)
-    cc: Final[float] = SCALE_LAMBDA / 3.0  # delta corner
-    ee: Final[float] = SCALE_LAMBDA / 4.0  # delta edge
+    # iteration 1
+    num_iters = 1  # single iteration of smoothing
+
+    algo = SmoothingAlgorithm.LAPLACE
+
+    aa = sm.smooth(
+        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+    )
+    cc: Final[float] = scale_lambda / 3.0  # delta corner
+    ee: Final[float] = scale_lambda / 4.0  # delta edge
     # define the gold standard fiducial
     gold = (
         Vertex(x=cc, y=cc, z=cc),  # node 1, corner
@@ -151,6 +159,29 @@ def test_laplace_smoothing():
         Vertex(x=2.0 - cc, y=1.0 - cc, z=1 - cc),  # node 12, corner
     )
     assert aa == gold
+
+    # iteration 2
+    num_iters = 2  # overwrite, double iteration of smoothing
+
+    aa2 = sm.smooth(
+        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+    )
+    # define the gold standard fiducial
+    gold2 = (
+        (0.19, 0.1775, 0.1775),
+        (1.0, 0.1425, 0.1425),
+        (1.8099999999999998, 0.1775, 0.1775),
+        (0.19, 0.8225, 0.1775),
+        (1.0, 0.8575, 0.1425),
+        (1.8099999999999998, 0.8225, 0.1775),
+        (0.19, 0.1775, 0.8225),
+        (1.0, 0.1425, 0.8575),
+        (1.8099999999999998, 0.1775, 0.8225),
+        (0.19, 0.8225, 0.8225),
+        (1.0, 0.8575, 0.8575),
+        (1.8099999999999998, 0.8225, 0.8225),
+    )
+    assert aa2 == gold2
 
 
 # def test_taubin_smoothing(

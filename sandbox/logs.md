@@ -4,6 +4,29 @@
 
 *In order of most recent to least recent.*
 
+## 2024-10-16
+
+* benchmarks and bottlenecks
+  * benchmarks only in rust nightly, may not be officially (?) supported
+  * https://doc.rust-lang.org/cargo/commands/cargo-bench.html
+  * prefer .npy to .spn bc .npy is more performant (or figure out how to better do .spn)
+  * our writing of .npy doesn't compress as much as writing a .npy directly from Python (see Issue #140)
+  * example problems where hex meshes could not previously be made
+  * future steps with .stl isosurface and dualization
+  * element quality
+  * doc examples https://katex.org/docs/supported.html
+* standards for smoothing documentation and test prior to implementation
+  * stopped dependency on itertools, as unique is very slow; standard library has sufficient functionality, everything is sorted (a) we want things sorted and (b) when we do a manual unique on our own, we sort it anyway.
+  * number of interations - try it and see what looks good, currently just one iteration
+  * differentiator - node smoothing versus degree of freedom structure
+  * illustration of 7-voxel sphere to a perfect sphere with voxel subdivision
+  * possibly do single cube instead of double cube
+* data structure of a neighborhoods (all nodes with all of the neighbors)
+* node sets and node sets
+* pause sidesets, not needed now, focus on nodesets for hierarchical smoothing
+* possibility of Adam assisting for some short-term cycles
+* svgbob ruined katex rendering, MRB to delete out the svgbob from the mdbook
+
 ## 2024-10-10
 
 Touch base

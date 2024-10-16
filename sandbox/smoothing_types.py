@@ -36,5 +36,5 @@ class DofType(Enum):
 class SmoothingAlgorithm(Enum):
     """The type of smoothing algorithm."""
 
-    LAPLACE = 0
-    TAUBIN = 1
+    LAPLACE = "Laplace"
+    TAUBIN = "Taubin"

@@ -32,9 +32,9 @@ node | `x` | `y` | `z` | `->` |  |  | dof
 11 | 1.0 | 1.0 | 1.0 | | 31 | 32 | 33
 12 | 2.0 | 1.0 | 1.0 | | 34 | 35 | 36
 
-Table. The node neighbors.
+Table. The *neighborhoods table*. A node, with its neighbors, is considered a single neighborhood.  The table has twelve neighborhoods.
 
-node | neighbor node(s)
+node | node neighbors
 :---: | :---:
 1  | 2, 4, 7
 2  | 1, 3, 5, 8
@@ -84,7 +84,9 @@ dofset: DofSet = (
 )
 ```
 
-Table: Smoothed configuration `(x, y, z)`.
+### Iteration `1`
+
+Table: The smoothed configuration `(x, y, z)` after one iteration of Laplace smoothing.
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
@@ -101,6 +103,35 @@ node | `x` | `y` | `z`
 11 | 1.0 | 0.925 | 0.925
 12 | 1.9 | 0.9 | 0.9
 
-![free_laplace_1.png](free_laplace_1.png)
+![free_laplace_iter_1.png](free_laplace_iter_1.png)
 
-Figure: Two element test problem (left) original configuration, (right) subject to one iteration of Laplace smoothing.
+Figure: Two element test problem (left) original configuration, (right) subject to two iterations of Laplace smoothing.
+
+### Iteration `2`
+
+node | `x` | `y` | `z`
+:---: | :--- | :--- | :---
+1  | 0.19 | 0.1775 | 0.1775
+2  | 1.0  | 0.1425 | 0.1425
+3  | 1.81 | 0.1775 | 0.1775
+4  | 0.19 | 0.8225 | 0.1775
+5  | 1.0  | 0.8575 | 0.1425
+6  | 1.81 | 0.8225 | 0.1775
+7  | 0.19 | 0.1775 | 0.8225
+8  | 1.0  | 0.1425 | 0.8575
+9  | 1.81 | 0.1775 | 0.8225
+10 | 0.19 | 0.8225 | 0.8225
+11 | 1.0  | 0.8575 | 0.8575
+12 | 1.81 | 0.8225 | 0.8225
+
+![free_laplace_iter_2.png](free_laplace_iter_2.png)
+
+Figure: Two element test problem (left) original configuration, (right) subject to two iterations of Laplace smoothing.
+
+### Iteration `100`
+
+A known drawback of Laplace smoothing is that it can fail to preserve volumes.  In the limit, volumes get reduced to a point, as illustrated in the figure below.
+
+![free_laplace_iter_100.gif](free_laplace_iter_100.gif)
+
+Figure: Two element test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100` iterations of Laplace smoothing.  Animation created with [Ezgif](https://ezgif.com/).
