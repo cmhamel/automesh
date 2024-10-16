@@ -8,7 +8,7 @@ Taubin smoothing is an extension of Laplacian smoothing that seeks to overcome t
 
 ## Laplacian Smoothing
 
-Consider a subject node with position $\boldsymbol{p} = \boldsymbol{p}(x, y, z)$.  The subject node connects to $n$ neighbor points $\boldsymbol{q}_i$ for $i \in [1, n]$ through $n$ edges.
+Consider a subject node with position $\boldsymbol{p} = \boldsymbol{p}(x, y, z) \in \mathbb{R}^3$.  The subject node connects to $n$ neighbor points $\boldsymbol{q}_i$ for $i \in [1, n]$ through $n$ edges.
 
 For concereteness, consider a node with four neighbors, shown in the figure below.
 
