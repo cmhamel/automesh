@@ -20,6 +20,7 @@ chrono = "=0.4.38"
 ndarray = {version = "=0.15"}
 ndarray-npy = {version = "=0.8"}
 pyo3 = {version = "=0.22", features = ["extension-module"], optional = true}
+tiff = "=0.9.1"
 
 [features]
 profile = []

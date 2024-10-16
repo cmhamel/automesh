@@ -17,11 +17,16 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error, Write},
 };
+use tiff::{
+    decoder::{Decoder, DecodingResult},
+    TiffError,
+};
 
 type Nel = [usize; 3];
 type Scale = [f64; 3];
-type VoxelData = Array3<u8>;
 type Translate = [f64; 3];
+type VoxelData = Array3<u8>;
+type VoxelDataFlattened = Vec<u8>;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
 /// The voxels type.
@@ -41,6 +46,12 @@ impl Voxels {
     pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {
         Ok(Self {
             data: voxel_data_from_spn(file_path, nel)?,
+        })
+    }
+    /// ???
+    pub fn from_tif(file_path: &str) -> Result<Self, String> {
+        Ok(Self {
+            data: voxel_data_from_tif(file_path)?,
         })
     }
     /// Returns a reference to the internal voxels data.
@@ -335,6 +346,14 @@ impl From<String> for IntermediateError {
     }
 }
 
+impl From<TiffError> for IntermediateError {
+    fn from(error: TiffError) -> IntermediateError {
+        IntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
 fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
     VoxelData::read_npy(File::open(file_path)?)
 }
@@ -347,10 +366,10 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
     } else if nel[2] < 1 {
         Err("Need to specify nelz > 0".to_string())?
     } else {
-        let flat = BufReader::new(File::open(file_path)?)
+        let data_flattened = BufReader::new(File::open(file_path)?)
             .lines()
             .map(|line| line.unwrap().parse().unwrap())
-            .collect::<Vec<u8>>();
+            .collect::<VoxelDataFlattened>();
         let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
         data.axis_iter_mut(Axis(2))
             .enumerate()
@@ -360,12 +379,63 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
                     .enumerate()
                     .for_each(|(j, mut data_jk)| {
                         data_jk.iter_mut().enumerate().for_each(|(i, data_ijk)| {
-                            *data_ijk = flat[i + nel[0] * j + nel[0] * nel[1] * k]
+                            *data_ijk = data_flattened[i + nel[0] * j + nel[0] * nel[1] * k]
                         })
                     })
             });
         Ok(data)
     }
+}
+
+fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> {
+    let mut file = std::path::PathBuf::from(file_path);
+    let extension = file.extension().ok_or("asdf".to_string())?;
+    let file_stem = file.file_stem().ok_or("asdf".to_string())?;
+    let path = file.parent().ok_or("asdf".to_string())?;
+
+    let a = file_stem.to_str().ok_or("asf".to_string())?.to_string();
+    let b = extension.to_str().ok_or("asf".to_string())?.to_string();
+    let d = path.to_str().ok_or("asf".to_string())?.to_string();
+
+    file.set_file_name(format!("{}_0.{}", a, b));
+
+    let mut decoder = Decoder::new(BufReader::new(File::open(
+        file.to_str().ok_or("asdf".to_string())?,
+    )?))?;
+    let (nelx, nely) = decoder.dimensions()?;
+
+    let mut index = 0;
+    while file.exists() {
+        index += 1;
+        file.set_file_name(format!("{}_{}.{}", a, index, b));
+    }
+    let nel: Nel = [nelx as usize, nely as usize, index as usize];
+    let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
+    data.axis_iter_mut(Axis(2))
+        .enumerate()
+        .for_each(|(k, mut data_k)| {
+            decoder = Decoder::new(BufReader::new(
+                File::open(format!("{}/{}_{}.{}", d, a, k, b)).unwrap(),
+            ))
+            .unwrap();
+            let (_nelx, _nely) = decoder.dimensions().unwrap();
+            // if nelx != nelx_u32 as usize || nelx != nelx_u32 as usize {
+            //     return Ok(Err("foo".to_string())?)
+            // }
+            match decoder.read_image().unwrap() {
+                DecodingResult::U8(data_flattened) => data_flattened,
+                _ => panic!(),
+            }
+            .chunks(nel[0])
+            .zip(data_k.axis_iter_mut(Axis(1)).rev())
+            .for_each(|(chunk, mut data_kj)| {
+                chunk
+                    .iter()
+                    .zip(data_kj.iter_mut())
+                    .for_each(|(a, data_kji)| *data_kji = (*a > 0) as u8)
+            });
+        });
+    Ok(data)
 }
 
 fn write_voxels_to_npy(data: &VoxelData, file_path: &str) -> Result<(), WriteNpyError> {

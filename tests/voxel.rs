@@ -1445,6 +1445,17 @@ mod from_spn {
     }
 }
 
+mod from_tiff {
+    use super::*;
+    #[test]
+    fn temporary() -> Result<(), String> {
+        let voxels = Voxels::from_tif("tests/input/letter_f_3d.tif")?;
+        println!("{:?}", voxels.get_data());
+        voxels.write_npy("target/foo.npy").unwrap();
+        Ok(())
+    }
+}
+
 mod write_npy {
     use super::*;
     #[test]
