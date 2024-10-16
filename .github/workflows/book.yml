@@ -8,7 +8,8 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   mdbook:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -50,7 +51,8 @@ jobs:
     permissions:
       id-token: write
       pages: write
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
