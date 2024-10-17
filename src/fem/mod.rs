@@ -33,6 +33,7 @@ pub struct FiniteElements {
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
+    // unmovable_nodes: Nodes,
 }
 
 /// Inherent implementation of the finite elements type.
@@ -52,6 +53,38 @@ impl FiniteElements {
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
+            // unmovable_nodes: vec![],
+        }
+    }
+    /// Calculates the average of the neighboring nodal coordinates.
+    pub fn calculate_neighboring_nodal_coordinates_average(&self) -> Result<Coordinates, &str> {
+        //
+        // This is going to need to take into possible hierarchy in an efficient manner,
+        // perhaps by filter() acting on the |node| using a list.
+        //
+        // It might be faster to use a different method than this,
+        // that uses a pre-populated node-to-node connectivity
+        // which is specialized for hierarchical considerations.
+        //
+        if self.get_node_node_connectivity() != &EMPTY_VEC {
+            let nodal_coordinates = self.get_nodal_coordinates();
+            Ok(self
+                .get_node_node_connectivity()
+                .iter()
+                .map(|connectivity| {
+                    (0..3)
+                        .map(|i| {
+                            connectivity
+                                .iter()
+                                .map(|node| nodal_coordinates[node - NODE_NUMBERING_OFFSET][i])
+                                .sum::<f64>()
+                                / (connectivity.len() as f64)
+                        })
+                        .collect()
+                })
+                .collect())
+        } else {
+            Err("Need to calculate and set the node-to-node connectivity first.")
         }
     }
     /// Calculates and sets the nodal hierarchy.

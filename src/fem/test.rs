@@ -1,5 +1,12 @@
 use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes};
 
+const ONE_FOURTH: f64 = 1.0 / 4.0;
+const ONE_THIRD: f64 = 1.0 / 3.0;
+const TWO_THIRDS: f64 = 2.0 / 3.0;
+const THREE_FOURTHS: f64 = 3.0 / 4.0;
+const ONE: f64 = 1.0;
+const FIVE_THIRDS: f64 = 5.0 / 3.0;
+
 fn test_finite_elements(
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
@@ -9,6 +16,7 @@ fn test_finite_elements(
     exterior_nodes_gold: Nodes,
     interface_nodes_gold: Nodes,
     interior_nodes_gold: Nodes,
+    average_neighboring_nodal_coordinates_gold: Option<Coordinates>,
 ) {
     let mut finite_elements =
         FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
@@ -36,6 +44,14 @@ fn test_finite_elements(
     assert_eq!(finite_elements.get_exterior_nodes(), &exterior_nodes_gold);
     assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
     assert_eq!(finite_elements.get_interior_nodes(), &interior_nodes_gold);
+    if let Some(gold) = average_neighboring_nodal_coordinates_gold {
+        assert_eq!(
+            finite_elements
+                .calculate_neighboring_nodal_coordinates_average()
+                .unwrap(),
+            gold
+        );
+    }
 }
 
 #[test]
@@ -66,6 +82,16 @@ fn single() {
     let exterior_nodes_gold = (1..=8).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
+    let average_neighboring_nodal_coordinates_gold = vec![
+        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
+        vec![TWO_THIRDS, ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
+        vec![TWO_THIRDS, TWO_THIRDS, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
+        vec![TWO_THIRDS, ONE_THIRD, TWO_THIRDS],
+        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
+        vec![TWO_THIRDS, TWO_THIRDS, TWO_THIRDS],
+    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -75,6 +101,7 @@ fn single() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        Some(average_neighboring_nodal_coordinates_gold),
     );
 }
 
@@ -130,6 +157,20 @@ fn double_x() {
     let exterior_nodes_gold = (1..=12).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
+    let average_neighboring_nodal_coordinates_gold = vec![
+        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
+        vec![ONE, ONE_FOURTH, ONE_FOURTH],
+        vec![FIVE_THIRDS, ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
+        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
+        vec![FIVE_THIRDS, TWO_THIRDS, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
+        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
+        vec![FIVE_THIRDS, ONE_THIRD, TWO_THIRDS],
+        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
+        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
+        vec![FIVE_THIRDS, TWO_THIRDS, TWO_THIRDS],
+    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -139,6 +180,7 @@ fn double_x() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        Some(average_neighboring_nodal_coordinates_gold),
     );
 }
 
@@ -194,6 +236,20 @@ fn double_y() {
     let exterior_nodes_gold = (1..=12).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
+    let average_neighboring_nodal_coordinates_gold = vec![
+        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
+        vec![TWO_THIRDS, ONE_THIRD, ONE_THIRD],
+        vec![ONE_FOURTH, ONE, ONE_FOURTH],
+        vec![THREE_FOURTHS, ONE, ONE_FOURTH],
+        vec![ONE_THIRD, FIVE_THIRDS, ONE_THIRD],
+        vec![TWO_THIRDS, FIVE_THIRDS, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
+        vec![TWO_THIRDS, ONE_THIRD, TWO_THIRDS],
+        vec![ONE_FOURTH, ONE, THREE_FOURTHS],
+        vec![THREE_FOURTHS, ONE, THREE_FOURTHS],
+        vec![ONE_THIRD, FIVE_THIRDS, TWO_THIRDS],
+        vec![TWO_THIRDS, FIVE_THIRDS, TWO_THIRDS],
+    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -203,6 +259,7 @@ fn double_y() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        Some(average_neighboring_nodal_coordinates_gold),
     );
 }
 
@@ -280,6 +337,7 @@ fn triple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -370,6 +428,7 @@ fn quadruple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -446,6 +505,7 @@ fn quadruple_2_voids() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -536,6 +596,7 @@ fn quadruple_2_blocks() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -625,6 +686,7 @@ fn quadruple_2_blocks_void() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -741,6 +803,7 @@ fn cube() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -845,6 +908,7 @@ fn cube_multi() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -1093,6 +1157,7 @@ fn cube_with_inclusion() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -1235,6 +1300,7 @@ fn letter_f() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -1606,6 +1672,7 @@ fn letter_f_3d() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
 
@@ -2281,5 +2348,6 @@ fn sparse() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
     );
 }
