@@ -6,6 +6,8 @@ const TWO_THIRDS: f64 = 2.0 / 3.0;
 const THREE_FOURTHS: f64 = 3.0 / 4.0;
 const ONE: f64 = 1.0;
 const FIVE_THIRDS: f64 = 5.0 / 3.0;
+const TWO: f64 = 2.0;
+const EIGHT_THIRDS: f64 = 8.0 / 3.0;
 
 fn test_finite_elements(
     element_blocks: Blocks,
@@ -328,6 +330,24 @@ fn triple() {
     let exterior_nodes_gold = (1..=16).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
+    let average_neighboring_nodal_coordinates_gold = vec![
+        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
+        vec![ONE, ONE_FOURTH, ONE_FOURTH],
+        vec![TWO, ONE_FOURTH, ONE_FOURTH],
+        vec![EIGHT_THIRDS, ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
+        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
+        vec![TWO, THREE_FOURTHS, ONE_FOURTH],
+        vec![EIGHT_THIRDS, TWO_THIRDS, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
+        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
+        vec![TWO, ONE_FOURTH, THREE_FOURTHS],
+        vec![EIGHT_THIRDS, ONE_THIRD, TWO_THIRDS],
+        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
+        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
+        vec![TWO, THREE_FOURTHS, THREE_FOURTHS],
+        vec![EIGHT_THIRDS, TWO_THIRDS, TWO_THIRDS],
+    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -337,7 +357,7 @@ fn triple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        None,
+        Some(average_neighboring_nodal_coordinates_gold),
     );
 }
 
