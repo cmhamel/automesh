@@ -157,7 +157,6 @@ numbers.
 
 ## Quadruple with Two Blocks
 
-
 ```sh
 100  #  x:1  y:1  z:1
 101  #    2    1    1
@@ -271,6 +270,34 @@ element), (left) lattice node numbers, (right) mesh node numbers.
 
 Figure: Mesh composed of 26 voxels of (block `11`) and one voxel inslusion
 (block `88`), (left) lattice node numbers, (right) mesh node numbers.
+
+## Bracket
+
+```sh
+1   #  x:1  y:1  z:1
+1   #    2    1    1
+1   #    3    1    1
+1   #  _ 4  _ 1    1
+1   #  x:1  y:2  z:1
+1   #    2    2    1
+1   #    3    2    1
+1   #  _ 4  _ 2    1
+1   #  x:1  y:3  z:1
+1   #    2    3    1
+0   #    3    3    1
+0   #  _ 4  _ 3    1
+1   #  x:1  y:4  z:1
+1   #    2    4    1
+0   #    3    4    1
+0   #  _ 4  _ 4    1
+```
+
+where the segmentation `1` denotes block `1` in the finite element mesh,
+and segmentation `0` is excluded from the mesh.
+
+![bracket.png](bracket.png)
+
+Figure: Mesh composed of a L-shaped bracket in the `xy` plane.
 
 ## Letter F
 
