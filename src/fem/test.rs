@@ -19,7 +19,8 @@ fn test_finite_elements(
     interface_nodes_gold: Nodes,
     interior_nodes_gold: Nodes,
     average_neighboring_nodal_coordinates_gold: Option<Coordinates>,
-    node_node_connectivity_exterior_gold: Option<Connectivity>,
+    node_node_connectivity_boundary_gold: Connectivity,
+    node_node_connectivity_interior_gold: Connectivity,
 ) {
     let mut finite_elements =
         FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
@@ -55,12 +56,20 @@ fn test_finite_elements(
             gold
         );
     }
-    if let Some(gold) = node_node_connectivity_exterior_gold {
-        finite_elements
-            .calculate_node_node_connectivity_exterior()
-            .unwrap();
-        assert_eq!(finite_elements.get_node_node_connectivity_exterior(), &gold);
-    }
+    finite_elements
+        .calculate_node_node_connectivity_boundary()
+        .unwrap();
+    assert_eq!(
+        finite_elements.get_node_node_connectivity_boundary(),
+        &node_node_connectivity_boundary_gold
+    );
+    finite_elements
+        .calculate_node_node_connectivity_interior()
+        .unwrap();
+    assert_eq!(
+        finite_elements.get_node_node_connectivity_interior(),
+        &node_node_connectivity_interior_gold
+    );
 }
 
 #[test]
@@ -101,7 +110,8 @@ fn single() {
         vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
         vec![TWO_THIRDS, TWO_THIRDS, TWO_THIRDS],
     ];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -112,7 +122,8 @@ fn single() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(average_neighboring_nodal_coordinates_gold),
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -182,7 +193,8 @@ fn double_x() {
         vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
         vec![FIVE_THIRDS, TWO_THIRDS, TWO_THIRDS],
     ];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -193,7 +205,8 @@ fn double_x() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(average_neighboring_nodal_coordinates_gold),
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -263,7 +276,8 @@ fn double_y() {
         vec![ONE_THIRD, FIVE_THIRDS, TWO_THIRDS],
         vec![TWO_THIRDS, FIVE_THIRDS, TWO_THIRDS],
     ];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -274,7 +288,8 @@ fn double_y() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(average_neighboring_nodal_coordinates_gold),
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -361,7 +376,8 @@ fn triple() {
         vec![TWO, THREE_FOURTHS, THREE_FOURTHS],
         vec![EIGHT_THIRDS, TWO_THIRDS, TWO_THIRDS],
     ];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -372,7 +388,8 @@ fn triple() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(average_neighboring_nodal_coordinates_gold),
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -454,7 +471,8 @@ fn quadruple() {
     let exterior_nodes_gold = (1..=20).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -465,7 +483,8 @@ fn quadruple() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -533,7 +552,8 @@ fn quadruple_2_voids() {
     let exterior_nodes_gold = (1..=16).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -544,7 +564,8 @@ fn quadruple_2_voids() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -626,7 +647,8 @@ fn quadruple_2_blocks() {
     let exterior_nodes_gold = (1..=20).collect();
     let interface_nodes_gold = vec![2, 4, 7, 9, 12, 14, 17, 19];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -637,7 +659,8 @@ fn quadruple_2_blocks() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -718,7 +741,8 @@ fn quadruple_2_blocks_void() {
     let exterior_nodes_gold = (1..=20).collect();
     let interface_nodes_gold = vec![2, 7, 12, 17];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -729,7 +753,8 @@ fn quadruple_2_blocks_void() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -837,7 +862,7 @@ fn cube() {
     exterior_nodes_gold.remove(13);
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![14];
-    let node_node_connectivity_exterior_gold = vec![
+    let node_node_connectivity_boundary_gold = vec![
         vec![2, 4, 10],
         vec![1, 3, 5, 11],
         vec![2, 6, 12],
@@ -865,6 +890,7 @@ fn cube() {
         vec![17, 23, 25, 27],
         vec![18, 24, 26],
     ];
+    let node_node_connectivity_interior_gold: Vec<Vec<usize>> = vec![vec![5, 11, 13, 15, 17, 23]];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -875,7 +901,8 @@ fn cube() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -971,7 +998,8 @@ fn cube_multi() {
     let exterior_nodes_gold = (1..=24).collect();
     let interface_nodes_gold = vec![2, 4, 5, 11, 12, 13, 14, 15, 17, 18, 21, 22];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -982,7 +1010,8 @@ fn cube_multi() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -1222,6 +1251,8 @@ fn cube_with_inclusion() {
         .filter(|node| !interface_nodes_gold.contains(node))
         .collect();
     let interior_nodes_gold = vec![];
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -1232,7 +1263,8 @@ fn cube_with_inclusion() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        None,
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -1366,7 +1398,8 @@ fn letter_f() {
     let exterior_nodes_gold = (1..=36).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -1377,7 +1410,8 @@ fn letter_f() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -1740,7 +1774,8 @@ fn letter_f_3d() {
     let exterior_nodes_gold = (1..=102).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -1751,7 +1786,8 @@ fn letter_f_3d() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }
 
@@ -2412,7 +2448,8 @@ fn sparse() {
         155, 157, 158, 160, 161, 170, 171, 176, 177, 179, 180, 183, 184, 189,
     ];
     let interior_nodes_gold = vec![];
-    let node_node_connectivity_exterior_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
+    let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -2423,6 +2460,7 @@ fn sparse() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
-        Some(node_node_connectivity_exterior_gold),
+        node_node_connectivity_boundary_gold,
+        node_node_connectivity_interior_gold,
     );
 }

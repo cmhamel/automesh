@@ -34,7 +34,8 @@ pub struct FiniteElements {
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
-    node_node_connectivity_exterior: Connectivity,
+    node_node_connectivity_boundary: Connectivity,
+    node_node_connectivity_interior: Connectivity,
 }
 
 /// Inherent implementation of the finite elements type.
@@ -54,7 +55,8 @@ impl FiniteElements {
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
-            node_node_connectivity_exterior: vec![],
+            node_node_connectivity_boundary: vec![],
+            node_node_connectivity_interior: vec![],
         }
     }
     /// Calculates the average of the neighboring nodal coordinates.
@@ -260,19 +262,38 @@ impl FiniteElements {
             Err("Need to calculate and set the node-to-element connectivity first.")
         }
     }
-    /// Calculates and sets the node-to-node connectivity for exterior nodes.
-    pub fn calculate_node_node_connectivity_exterior(&mut self) -> Result<(), &str> {
+    /// Calculates and sets the node-to-node connectivity for boundary nodes.
+    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
+            let interface_nodes = self.get_interface_nodes();
             let node_node_connectivity = self.get_node_node_connectivity();
-            self.node_node_connectivity_exterior = exterior_nodes
+            self.node_node_connectivity_boundary = exterior_nodes
                 .iter()
                 .map(|exterior_node| {
                     node_node_connectivity[exterior_node - NODE_NUMBERING_OFFSET]
                         .clone()
                         .into_iter()
-                        .filter(|&node| exterior_nodes.contains(&node))
+                        .filter(|&node| {
+                            exterior_nodes.contains(&node) || interface_nodes.contains(&node)
+                        })
                         .collect()
+                })
+                .collect();
+            Ok(())
+        } else {
+            Err("Need to calculate and set the nodal hierarchy first.")
+        }
+    }
+    /// Calculates and sets the node-to-node connectivity for interior nodes.
+    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), &str> {
+        if self.get_exterior_nodes() != &EMPTY_NODES {
+            let node_node_connectivity = self.get_node_node_connectivity();
+            self.node_node_connectivity_interior = self
+                .get_interior_nodes()
+                .iter()
+                .map(|interior_node| {
+                    node_node_connectivity[interior_node - NODE_NUMBERING_OFFSET].clone()
                 })
                 .collect();
             Ok(())
@@ -312,9 +333,13 @@ impl FiniteElements {
     pub fn get_node_node_connectivity(&self) -> &Connectivity {
         &self.node_node_connectivity
     }
-    /// Returns a reference to the node-to-node connectivity for exterior nodes.
-    pub fn get_node_node_connectivity_exterior(&self) -> &Connectivity {
-        &self.node_node_connectivity_exterior
+    /// Returns a reference to the node-to-node connectivity for boundary nodes.
+    pub fn get_node_node_connectivity_boundary(&self) -> &Connectivity {
+        &self.node_node_connectivity_boundary
+    }
+    /// Returns a reference to the node-to-node connectivity for interior nodes.
+    pub fn get_node_node_connectivity_interior(&self) -> &Connectivity {
+        &self.node_node_connectivity_interior
     }
 }
 

@@ -50,13 +50,23 @@ macro_rules! bench_block {
             Ok(())
         }
         #[bench]
-        fn calculate_node_node_connectivity_exterior(bencher: &mut Bencher) -> Result<(), String> {
+        fn calculate_node_node_connectivity_boundary(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_hierarchy()?;
-            bencher.iter(|| fem.calculate_node_node_connectivity_exterior().unwrap());
+            bencher.iter(|| fem.calculate_node_node_connectivity_boundary().unwrap());
+            Ok(())
+        }
+        #[bench]
+        fn calculate_node_node_connectivity_interior(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            fem.calculate_node_element_connectivity()?;
+            fem.calculate_node_node_connectivity()?;
+            fem.calculate_nodal_hierarchy()?;
+            bencher.iter(|| fem.calculate_node_node_connectivity_interior().unwrap());
             Ok(())
         }
         #[bench]
