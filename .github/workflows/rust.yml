@@ -20,6 +20,8 @@ jobs:
           python-version: 3.12
       - name: numpy
         run: pip install numpy
+      - name: pillow
+        run: pip install pillow
       - name: block
         run: ./benches/block.sh
       - name: bench

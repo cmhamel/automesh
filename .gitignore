@@ -48,5 +48,4 @@ Cargo.lock
 **__pycache__
 **.pytest_cache
 book/build/
-benches/*.npy
-benches/*.spn
+benches/block/

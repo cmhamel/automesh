@@ -442,7 +442,7 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
                 chunk
                     .iter()
                     .zip(data_kj.iter_mut())
-                    .for_each(|(a, data_kji)| *data_kji = (*a > 0) as u8)
+                    .for_each(|(a, data_kji)| *data_kji = *a)
             });
             Ok::<(), IntermediateError>(())
         })?;
