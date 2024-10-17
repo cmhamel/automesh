@@ -1445,6 +1445,16 @@ mod from_spn {
     }
 }
 
+mod from_tiff {
+    use super::*;
+    #[test]
+    fn letter_f_3d() {
+        let voxels_from_tif = Voxels::from_tif("tests/input/letter_f_3d.tif").unwrap();
+        let voxels_from_npy = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
+        assert_data_eq(voxels_from_npy, voxels_from_tif);
+    }
+}
+
 mod write_npy {
     use super::*;
     #[test]
