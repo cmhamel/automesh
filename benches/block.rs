@@ -72,7 +72,7 @@ macro_rules! bench_block {
         fn write_npy(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let npy = format!("target/block_{}.npy", $nel);
-            bencher.iter(|| voxels.write_spn(&npy).unwrap());
+            bencher.iter(|| voxels.write_npy(&npy).unwrap());
             Ok(())
         }
         #[bench]
