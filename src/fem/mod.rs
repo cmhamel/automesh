@@ -123,10 +123,10 @@ impl FiniteElements {
                         if number_of_connected_elements < 8 {
                             exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                         }
-                    } else if number_of_connected_elements == 8 {
-                        interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
-                    } else {
+                    } else if number_of_connected_elements < 8 {
                         exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                    } else {
+                        interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
             exterior_nodes_unsorted.sort();
