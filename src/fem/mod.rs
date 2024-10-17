@@ -33,7 +33,6 @@ pub struct FiniteElements {
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
-    // unmovable_nodes: Nodes,
 }
 
 /// Inherent implementation of the finite elements type.
@@ -53,7 +52,6 @@ impl FiniteElements {
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
-            // unmovable_nodes: vec![],
         }
     }
     /// Calculates the average of the neighboring nodal coordinates.
