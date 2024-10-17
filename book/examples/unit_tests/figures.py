@@ -747,6 +747,70 @@ class CubeWithInclusion(Example):
     )
 
 
+class Bracket(Example):
+    """An L-shape bracket in the xy plane."""
+
+    figure_title: str = COMMON_TITLE + "Bracket"
+    file_stem: str = "bracket"
+    segmentation = np.array(
+        [
+            [
+                [1, 1, 1, 1],
+            ],
+            [
+                [1, 1, 1, 1],
+            ],
+            [
+                [1, 1, 0, 0],
+            ],
+            [
+                [1, 1, 0, 0],
+            ],
+        ]
+    )
+    included_ids = (1,)
+    gold_lattice = (
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
+        (11, 12, 17, 16, 21, 22, 27, 26),
+        (12, 13, 18, 17, 22, 23, 28, 27),
+        (13, 14, 19, 18, 23, 24, 29, 28),
+        (14, 15, 20, 19, 24, 25, 30, 29),
+        (21, 22, 27, 26, 31, 32, 37, 36),
+        (22, 23, 28, 27, 32, 33, 38, 37),
+        (23, 24, 29, 28, 33, 34, 39, 38),
+        (24, 25, 30, 29, 34, 35, 40, 39),
+        (31, 32, 37, 36, 41, 42, 47, 46),
+        (32, 33, 38, 37, 42, 43, 48, 47),
+        (33, 34, 39, 38, 43, 44, 49, 48),
+        (34, 35, 40, 39, 44, 45, 50, 49),
+    )
+    gold_mesh_lattice_connectivity = (
+        1,
+        (1, 2, 7, 6, 11, 12, 17, 16),
+        (2, 3, 8, 7, 12, 13, 18, 17),
+        (3, 4, 9, 8, 13, 14, 19, 18),
+        (4, 5, 10, 9, 14, 15, 20, 19),
+        (11, 12, 17, 16, 21, 22, 27, 26),
+        (12, 13, 18, 17, 22, 23, 28, 27),
+        (13, 14, 19, 18, 23, 24, 29, 28),
+        (14, 15, 20, 19, 24, 25, 30, 29),
+        (21, 22, 27, 26, 31, 32, 37, 36),
+        (22, 23, 28, 27, 32, 33, 38, 37),
+        (31, 32, 37, 36, 41, 42, 47, 46),
+        (32, 33, 38, 37, 42, 43, 48, 47),
+    )
+    gold_mesh_element_connectivity = (
+        (
+            1,
+            (1, 2, 4, 3, 19, 20, 22, 21),
+            (3, 4, 6, 5, 21, 22, 24, 23),
+        ),
+    )
+
+
 class LetterF(Example):
     """A minimal letter F example."""
 
@@ -1383,7 +1447,7 @@ def lattice_connectivity(ex: Example) -> NDArray[np.uint8]:
     cs = np.vstack(cvs)
 
     # voxel by voxel comparison
-    # breakpoint()
+    breakpoint()
     vv = ex.gold_lattice == cs
     assert np.all(vv)
     return cs
@@ -1532,8 +1596,8 @@ def main():
     # Create an instance of a specific example
     # user input begin
     examples = [
-        Single(),
-        DoubleX(),
+        # Single(),
+        # DoubleX(),
         # DoubleY(),
         # TripleX(),
         # QuadrupleX(),
@@ -1543,6 +1607,7 @@ def main():
         # Cube(),
         # CubeMulti(),
         # CubeWithInclusion(),
+        Bracket(),
         # LetterF(),
         # LetterF3D(),
         # Sparse(),
@@ -1604,7 +1669,7 @@ def main():
         lc = lattice_connectivity(ex=ex)
 
         mesh_w_lattice_conn = mesh_lattice_connectivity(ex=ex, lattice=lc)
-        # breakpoint()
+        breakpoint()
         err = "Calculated lattice connectivity error."
         assert mesh_w_lattice_conn == ex.gold_mesh_lattice_connectivity, err
 
