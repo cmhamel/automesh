@@ -16,7 +16,8 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 const ELEMENT_NUM_NODES: usize = 8;
-const EMPTY_VEC: Connectivity = vec![];
+const EMPTY_CONNECTIVITY: Connectivity = vec![];
+const EMPTY_NODES: Nodes = vec![];
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
@@ -33,6 +34,7 @@ pub struct FiniteElements {
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
+    node_node_connectivity_exterior: Connectivity,
 }
 
 /// Inherent implementation of the finite elements type.
@@ -52,6 +54,7 @@ impl FiniteElements {
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
+            node_node_connectivity_exterior: vec![],
         }
     }
     /// Calculates the average of the neighboring nodal coordinates.
@@ -64,10 +67,10 @@ impl FiniteElements {
         // that uses a pre-populated node-to-node connectivity
         // which is specialized for hierarchical considerations.
         //
-        if self.get_node_node_connectivity() != &EMPTY_VEC {
+        let node_node_connectivity = self.get_node_node_connectivity();
+        if node_node_connectivity != &EMPTY_CONNECTIVITY {
             let nodal_coordinates = self.get_nodal_coordinates();
-            Ok(self
-                .get_node_node_connectivity()
+            Ok(node_node_connectivity
                 .iter()
                 .map(|connectivity| {
                     (0..3)
@@ -87,7 +90,8 @@ impl FiniteElements {
     }
     /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
-        if self.get_node_node_connectivity() != &EMPTY_VEC {
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
@@ -95,7 +99,7 @@ impl FiniteElements {
             let mut exterior_nodes_unsorted = vec![];
             let mut interface_nodes_unsorted = vec![];
             let mut interior_nodes_unsorted = vec![];
-            self.get_node_element_connectivity()
+            node_element_connectivity
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
@@ -154,12 +158,12 @@ impl FiniteElements {
     }
     /// Calculates and sets the node-to-node connectivity.
     pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
-        if self.get_node_element_connectivity() != &EMPTY_VEC {
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
             let element_node_connectivity = self.get_element_node_connectivity();
-            let node_element_connectivity = self.get_node_element_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
             let mut node_node_connectivity = vec![vec![]; number_of_nodes];
             node_node_connectivity
@@ -246,6 +250,26 @@ impl FiniteElements {
             Err("Need to calculate and set the node-to-element connectivity first.")
         }
     }
+    /// Calculates and sets the node-to-node connectivity for exterior nodes.
+    pub fn calculate_node_node_connectivity_exterior(&mut self) -> Result<(), &str> {
+        let exterior_nodes = self.get_exterior_nodes();
+        if exterior_nodes != &EMPTY_NODES {
+            let node_node_connectivity = self.get_node_node_connectivity();
+            self.node_node_connectivity_exterior = exterior_nodes
+                .iter()
+                .map(|exterior_node| {
+                    node_node_connectivity[exterior_node - NODE_NUMBERING_OFFSET]
+                        .clone()
+                        .into_iter()
+                        .filter(|&node| exterior_nodes.contains(&node))
+                        .collect()
+                })
+                .collect();
+            Ok(())
+        } else {
+            Err("Need to calculate and set the nodal hierarchy first.")
+        }
+    }
     /// Returns a reference to the element blocks.
     pub fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
@@ -277,6 +301,10 @@ impl FiniteElements {
     /// Returns a reference to the node-to-node connectivity.
     pub fn get_node_node_connectivity(&self) -> &Connectivity {
         &self.node_node_connectivity
+    }
+    /// Returns a reference to the node-to-node connectivity for exterior nodes.
+    pub fn get_node_node_connectivity_exterior(&self) -> &Connectivity {
+        &self.node_node_connectivity_exterior
     }
 }
 
