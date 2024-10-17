@@ -60,6 +60,9 @@ impl FiniteElements {
     /// Calculates the average of the neighboring nodal coordinates.
     pub fn calculate_neighboring_nodal_coordinates_average(&self) -> Result<Coordinates, &str> {
         //
+        // Could give option to skip nodes that are fixed in space,
+        // as long as it does not introduce overhead and stuff.
+        //
         // This is going to need to take into possible hierarchy in an efficient manner,
         // perhaps by filter() acting on the |node| using a list.
         //
@@ -99,6 +102,8 @@ impl FiniteElements {
             let mut exterior_nodes_unsorted = vec![];
             let mut interface_nodes_unsorted = vec![];
             let mut interior_nodes_unsorted = vec![];
+            let mut number_of_connected_blocks = 0;
+            let mut number_of_connected_elements = 0;
             node_element_connectivity
                 .iter()
                 .enumerate()
@@ -109,9 +114,14 @@ impl FiniteElements {
                         .collect();
                     connected_blocks.sort();
                     connected_blocks.dedup();
-                    if connected_blocks.len() > 1 {
+                    number_of_connected_blocks = connected_blocks.len();
+                    number_of_connected_elements = connected_elements.len();
+                    if number_of_connected_blocks > 1 {
                         interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
-                    } else if connected_elements.len() == 8 {
+                        if number_of_connected_elements < 8 {
+                            exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                        }
+                    } else if number_of_connected_elements == 8 {
                         interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
                     } else {
                         exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
