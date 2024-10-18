@@ -1,36 +1,13 @@
 # Smoothing
 
-All degrees of freedom in the mesh must be in one, and only one, of the
-following *smoothing categories*:
+## Double X
 
-* Prescribed
-  * Homogeneous
-  * Inhomogeneous
-* Free
-  * Exterior
-  * Interface
-  * Interior
+We examine the most basic type of smoothing, Laplace smoothing
+without hierarchical control, with the [Double X](../unit_tests/README.md#double-x) example.
 
 ![../unit_tests/double_x.png](../unit_tests/double_x.png)
 
-Figure: Two element test problem.
-
-Table: Nodal coordinates 1-12, with x, y, z, degrees of freedom.
-
-node | `x` | `y` | `z` | `->` |  |  | dof
-:---: | :---: | :---: | :---: | :---: | :---: | :---: | :---:
-1  | 0.0 | 0.0 | 0.0 | | 1 | 2 | 3
-2  | 1.0 | 0.0 | 0.0 | | 4 | 5 | 6
-3  | 2.0 | 0.0 | 0.0 | | 7 | 8 | 9
-4  | 0.0 | 1.0 | 0.0 | | 10 | 11 | 12
-5  | 1.0 | 1.0 | 0.0 | | 13 | 14 | 15
-6  | 2.0 | 1.0 | 0.0 | | 16 | 17 | 18
-7  | 0.0 | 0.0 | 1.0 | | 19 | 20 | 21
-8  | 1.0 | 0.0 | 1.0 | | 22 | 23 | 24
-9  | 2.0 | 0.0 | 1.0 | | 25 | 26 | 27
-10 | 0.0 | 1.0 | 1.0 | | 28 | 29 | 30
-11 | 1.0 | 1.0 | 1.0 | | 31 | 32 | 33
-12 | 2.0 | 1.0 | 1.0 | | 34 | 35 | 36
+Figure: The **Double X** two-element example.
 
 Table. The *neighborhoods table*. A node, with its neighbors, is considered a single neighborhood.  The table has twelve neighborhoods.
 
@@ -49,42 +26,31 @@ node | node neighbors
 11 | 5, 8, 10, 12
 12 | 6, 9, 11
 
-## All Free
+### Hierarchy
 
-Following is a test where all degrees of freedom are and
-hierarchical smoothing is `OFF`.
-
-```python
-class DofType(Enum):
-    """All degrees of freedom must belong to one, and only one, of the
-    following smoothing categories.
-    """
-
-    PRESCRIBED_HOMOGENEOUS = 0
-    PRESCRIBED_INHOMOGENEOUS = 1
-    FREE_EXTERIOR = 2
-    FREE_INTERFACE = 3
-    FREE_INTERIOR = 4
-```
+Following is a test where all nodes are `BOUNDARY` from the [`Hierarchy`](../../theory/smoothing.md#the-hierarchy-enum) enum.
 
 ```python
-dofset: DofSet = (
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
+node_smoothing_categories: Hierarchy = (
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
 )
 ```
 
-### Iteration `1`
+> Since there are no `INTERIOR` nodes nor `PRESCRIBED` nodes, the effect of hiearchical smoothing is nill, and the same effect would be observed were all nodes categorized as `INTERIOR` nodes.
+
+
+#### Iteration `1`
 
 Table: The smoothed configuration `(x, y, z)` after one iteration of Laplace smoothing.
 
@@ -107,7 +73,7 @@ node | `x` | `y` | `z`
 
 Figure: Two element test problem (left) original configuration, (right) subject to two iterations of Laplace smoothing.
 
-### Iteration `2`
+#### Iteration `2`
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
@@ -128,10 +94,18 @@ node | `x` | `y` | `z`
 
 Figure: Two element test problem (left) original configuration, (right) subject to two iterations of Laplace smoothing.
 
-### Iteration `100`
+#### Iteration `100`
 
 A known drawback of Laplace smoothing is that it can fail to preserve volumes.  In the limit, volumes get reduced to a point, as illustrated in the figure below.
 
 ![free_laplace_iter_100.gif](free_laplace_iter_100.gif)
 
 Figure: Two element test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100` iterations of Laplace smoothing.  Animation created with [Ezgif](https://ezgif.com/).
+
+## Bracket
+
+To begin to examine hiearchical control, we consider the [Bracket](../unit_tests/README.md#bracket) example.
+
+![../unit_tests/bracket.png](../unit_tests/bracket.png)
+
+Figure: The **Bracket** example.

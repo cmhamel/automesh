@@ -105,23 +105,61 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum
 
 ## Hierarchical Control
 
-Hierarchical control classifies all nodes in a mesh as belonging to a surface $\mathbb{A}$, interface $\mathbb{B}$, or interior $\mathbb{C}$.  These categories are mutually exclusive.  Any and all nodes must belong to one, and only one, of these three categories.  For a given node $\boldsymbol{p}$, let
+As a default, all nodes in the mesh are free nodes, meaning they are subject to updates in position due to smoothing.
 
-* the set of *surface* neighbors be denoted $\boldsymbol{q}_{\mathbb{A}}$,
-* the set of *interface* neighbors be denoted $\boldsymbol{q}_{\mathbb{B}}$, and
-* the set of *interior* neighbors be denoted $\boldsymbol{q}_{\mathbb{C}}$.
+* **Free nodes**
 
-Hierarchical control states that
+For the purpose of *hierarchical* smoothing, we categorize all nodes
+as belonging to one of the following categories.
 
-* for any *surface* node $\boldsymbol{p} \in \mathbb{A}$, only surface nodes $\boldsymbol{q}_{\mathbb{A}}$ connected via edges to $\boldsymbol{p}$ are considered neighbors,
-* for any *interface* node $\boldsymbol{p} \in \mathbb{B}$, only surface nodes $\boldsymbol{q}_{\mathbb{A}}$ and interface nodes $\boldsymbol{q}_{\mathbb{B}}$ connected via edges to $\boldsymbol{p}$ are neighbors, and
-* for any *interior* node $\boldsymbol{p} \in \mathbb{C}$, surface nodes $\boldsymbol{q}_{\mathbb{A}}$, interface nodes $\boldsymbol{q}_{\mathbb{B}}$, and interior nodes $\boldsymbol{q}_{\mathbb{C}}$ connecting via edges to $\boldsymbol{p}$ are neighbors.
+* **Boundary nodes**
+  * Nodes on the **exterior** of the domain and nodes that lie at the **interface** of two different blocks are reclassified from free nodes to boundary nodes.
+  * Like free nodes, these nodes are also subject to updates in position due to smoothing.
+  * Unlike free nodes, which are influenced by positions of neighboring nodes of any category, boundary nodes are only influenced positions of other boundary nodes, or prescribed nodes (described below).
+* **Interior nodes**
+  * The free nodes not categorized as boundary nodes are categorized as interior nodes.
+* **Prescribed nodes**
+  * Finally, we may wish to select nodes, typically but not necessarily from boundary nodes, to move to a specific location, often to match the desired shape of a mesh.  These nodes are reclassified as prescribed nodes.
+  * Prescribed nodes are not subject to updates in position due to smoothing because they are *a prior* prescribed to reside at a given location.
 
-The following figure shows this concept:
+This classification is shown below in figures.  All nodes in the mesh are categorized as `FREE` nodes:
 
-![hierarchy_sets](hierarchy_sets.png)
+![free_nodes.png](free_nodes.png)
 
-Figure: Classification of nodes into categories of surface nodes $\mathbb{A}$, interface nodes $\mathbb{B}$, and interior nodes $\mathbb{C}$.  Hierarchical relationship: a surface node's neighbors are other other edge-connected surface nodes, an interface node's neighbors are other edge-connected interface nodes or surface nodes, and an interior node's neighbors are edge-connected nodes of any category.
+Nodes that lie on the exterior and/or an interface are categoried as `BOUNDARY` nodes.  The remaining free nodes that are not `BOUNDARY` nodes are `INTERIOR` nodes.
+
+![boundary_and_interior_nodes.png](boundary_and_interior_nodes.png)
+
+Some `INTERIOR` and `BOUNDARY` nodes may be recategorized as `PRESCRIBED` nodes.
+
+![prescribed_nodes.png](prescribed_nodes.png)
+
+## The `Hierarchy` enum
+
+These three categories, `INTERIOR`, `BOUNDARY`, and `PRESCRIBED`, compose the hierarchical structure of hierarchical smoothing.  Nodes are classified in code with the following `enum`,
+
+```python
+class Hierarchy(Enum):
+    """All nodes must be categorized as beloning to one, and only one,
+    of the following hierarchical categories.
+    """
+
+    INTERIOR = 0
+    BOUNDARY = 1
+    PRESCRIBED = 2
+```
+
+### Relationship to a `SideSet`
+
+A `SideSet` is a set of nodes, tyically on the exterior of a domain, used to prescribe a boundary condition
+on the finite element mesh.  
+
+* A subset of nodes on the boundary nodes is classified as **exterior nodes**.
+* A different subset of nodes on the boundary is classified as **interface nodes**.
+* A `SideSet` is composed of either exterior nodes or interface nodes.
+* Because a node can lie both on the exterior and on an interface, some nodes (shown in red) are included in both the exterior nodes and the interface nodes.
+
+![exterior_interface_nodes.png](exterior_interface_nodes.png)
 
 ### Chen Example
 
