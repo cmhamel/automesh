@@ -180,6 +180,48 @@ never move), a simple 1D example:
 \label{fig:hierarchy} % label must come after caption
 \end{figure}
 
+
+
+\begin{figure}[htb]
+  \begin{center}
+
+    \begin{tikzpicture}
+      \node[shape=circle,draw=black] (a) at (-6,0) {$\vp \in \mathbb{A}$};
+      \node[shape=circle,draw=black] (b) at (-4,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=black] (c) at (-3.576,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=black] (d) at (-4,-1) {$\vq_{\mathbb{C}}$};
+
+      \node[shape=circle,draw=black] (e) at (-1,0) {$\vp \in \mathbb{B}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (f) at (1,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=black] (g) at (1.424,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=black] (h) at (1,-1) {$\vq_{\mathbb{C}}$};
+
+      \node[shape=circle,draw=black] (i) at (4,0) {$\vp \in \mathbb{C}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (j) at (6,1) {$\vq_{\mathbb{A}}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (k) at (6.424,0) {$\vq_{\mathbb{B}}$};
+      \node[shape=circle,draw=darkgray, dashed, fill=lightgray] (l) at (6,-1) {$\vq_{\mathbb{C}}$};
+
+      \path (a) edge (b);
+      \path (a) edge (c);
+      \path (a) edge (d);
+
+      \path [dashed](e) edge node[align=center]{$\otimes$} (f);
+      \path (e) edge (g);
+      \path (e) edge (h);
+
+      \path [dashed](i) edge node[align=center] {$\otimes$} (j);
+      \path [dashed](i) edge node[align=center] {$\otimes$} (k);
+      \path [dashed](i) edge node[align=center] {$\otimes$} (l);
+    \end{tikzpicture}
+
+  \end{center}
+
+  \caption{Refactored hierarchical classification of nodes based on categories of surface $\mathbb{A}$, interface $\mathbb{B}$, and interior $\mathbb{C}$.}
+\label{fig:hierarchy} % label must come after caption
+\end{figure}
+
+
+
 % \begin{figure}[htb]
 %   \begin{center}
 %

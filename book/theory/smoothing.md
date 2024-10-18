@@ -135,7 +135,7 @@ Some `INTERIOR` and `BOUNDARY` nodes may be recategorized as `PRESCRIBED` nodes.
 
 ![prescribed_nodes.png](prescribed_nodes.png)
 
-## The `Hierarchy` enum
+### The `Hierarchy` enum
 
 These three categories, `INTERIOR`, `BOUNDARY`, and `PRESCRIBED`, compose the hierarchical structure of hierarchical smoothing.  Nodes are classified in code with the following `enum`,
 
@@ -150,10 +150,29 @@ class Hierarchy(Enum):
     PRESCRIBED = 2
 ```
 
+### Hierarchical Control
+
+Hierarchical control classifies all nodes in a mesh as belonging to a interior $\mathbb{A}$, boundary $\mathbb{B}$, or prescribed $\mathbb{C}$.  These categories are mutually exclusive.  Any and all nodes must belong to one, and only one, of these three categories.  For a given node $\boldsymbol{p}$, let
+
+* the set of *interior* neighbors be denoted $\boldsymbol{q}_{\mathbb{A}}$,
+* the set of *boundary* neighbors be denoted $\boldsymbol{q}_{\mathbb{B}}$, and
+* the set of *prescribed* neighbors be denoted $\boldsymbol{q}_{\mathbb{C}}$.
+
+Hierarchical control redefines a node's neighborhood according to the following hierarchical rules:
+
+* for any *interior* node $\boldsymbol{p} \in \mathbb{A}$, nodes $\boldsymbol{q}_{\mathbb{A}}$, $\boldsymbol{q}_{\mathbb{B}}$, and $\boldsymbol{q}_{\mathbb{C}}$ are neighbors; there is no change in the neighborhood,
+* for any *boundary* node $\boldsymbol{p} \in \mathbb{B}$, only boundary nodes $\boldsymbol{q}_{\mathbb{B}}$ and prescribed nodes $\boldsymbol{q}_{\mathbb{C}}$ are neighbors; a boundary node neighborhood exludes interior nodes, and
+* for any *prescribed* node $\boldsymbol{p} \in \mathbb{C}$, all neighbors of any category are excluded; the prescribed node's position does not change during smoothing.
+
+The following figure shows this concept:
+
+![hierarchy_sets_refactored](hierarchy_sets_refactored.png)
+
+Figure: Classification of nodes into categories of interior nodes $\mathbb{A}$, boundary nodes $\mathbb{B}$, and prescribed nodes $\mathbb{C}$.  Hierarchical relationship: prescribed nodes have no smoothing neighbors, a boundary node's smoothing neighbors are other other boundary nodes or prescribed nodes, and an interface node's smoothing neighbors are nodes of any category.
+
 ### Relationship to a `SideSet`
 
-A `SideSet` is a set of nodes, tyically on the exterior of a domain, used to prescribe a boundary condition
-on the finite element mesh.  
+A `SideSet` is a set of nodes on the boundary of a domain, used to prescribe a boundary condition on the finite element mesh.  
 
 * A subset of nodes on the boundary nodes is classified as **exterior nodes**.
 * A different subset of nodes on the boundary is classified as **interface nodes**.
