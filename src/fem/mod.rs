@@ -26,6 +26,7 @@ pub type Nodes = Vec<usize>;
 
 /// The finite elements type.
 pub struct FiniteElements {
+    boundary_nodes: Nodes,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
     exterior_nodes: Nodes,
@@ -47,6 +48,7 @@ impl FiniteElements {
         nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
+            boundary_nodes: vec![],
             element_blocks,
             element_node_connectivity,
             exterior_nodes: vec![],
@@ -101,9 +103,9 @@ impl FiniteElements {
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
             let mut connected_blocks: Vec<usize> = vec![];
-            let mut exterior_nodes_unsorted = vec![];
-            let mut interface_nodes_unsorted = vec![];
-            let mut interior_nodes_unsorted = vec![];
+            let mut exterior_nodes = vec![];
+            let mut interface_nodes = vec![];
+            let mut interior_nodes = vec![];
             let mut number_of_connected_blocks = 0;
             let mut number_of_connected_elements = 0;
             node_element_connectivity
@@ -119,22 +121,29 @@ impl FiniteElements {
                     number_of_connected_blocks = connected_blocks.len();
                     number_of_connected_elements = connected_elements.len();
                     if number_of_connected_blocks > 1 {
-                        interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                        interface_nodes.push(node + NODE_NUMBERING_OFFSET);
                         if number_of_connected_elements < 8 {
-                            exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                            exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                         }
                     } else if number_of_connected_elements < 8 {
-                        exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                        exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     } else {
-                        interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                        interior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            exterior_nodes_unsorted.sort();
-            self.exterior_nodes = exterior_nodes_unsorted;
-            interface_nodes_unsorted.sort();
-            self.interface_nodes = interface_nodes_unsorted;
-            interior_nodes_unsorted.sort();
-            self.interior_nodes = interior_nodes_unsorted;
+            exterior_nodes.sort();
+            interior_nodes.sort();
+            interface_nodes.sort();
+            self.boundary_nodes = exterior_nodes
+                .clone()
+                .into_iter()
+                .chain(interface_nodes.clone())
+                .collect();
+            self.boundary_nodes.sort();
+            self.boundary_nodes.dedup();
+            self.exterior_nodes = exterior_nodes;
+            self.interface_nodes = interface_nodes;
+            self.interior_nodes = interior_nodes;
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
@@ -264,15 +273,12 @@ impl FiniteElements {
     }
     /// Calculates and sets the node-to-node connectivity for boundary nodes.
     pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
+        //
+        // may be faster to use retain() or remove() on a cloned node_node_connectivity
+        //
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
-            let mut boundary_nodes: Nodes = exterior_nodes
-                .clone()
-                .into_iter()
-                .chain(self.get_interface_nodes().clone())
-                .collect();
-            boundary_nodes.sort();
-            boundary_nodes.dedup();
+            let boundary_nodes = self.get_boundary_nodes();
             let node_node_connectivity = self.get_node_node_connectivity();
             self.node_node_connectivity_boundary = boundary_nodes
                 .iter()
@@ -304,6 +310,10 @@ impl FiniteElements {
         } else {
             Err("Need to calculate and set the nodal hierarchy first.")
         }
+    }
+    /// Returns a reference to the boundary nodes.
+    pub fn get_boundary_nodes(&self) -> &Nodes {
+        &self.boundary_nodes
     }
     /// Returns a reference to the element blocks.
     pub fn get_element_blocks(&self) -> &Blocks {
