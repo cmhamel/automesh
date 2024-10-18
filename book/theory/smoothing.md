@@ -172,7 +172,7 @@ Figure: Classification of nodes into categories of interior nodes $\mathbb{A}$, 
 
 ### Relationship to a `SideSet`
 
-A `SideSet` is a set of nodes on the boundary of a domain, used to prescribe a boundary condition on the finite element mesh.  
+A `SideSet` is a set of nodes on the boundary of a domain, used to prescribe a boundary condition on the finite element mesh.
 
 * A subset of nodes on the boundary nodes is classified as **exterior nodes**.
 * A different subset of nodes on the boundary is classified as **interface nodes**.

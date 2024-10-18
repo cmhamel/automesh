@@ -26,7 +26,7 @@ NodeHierarchy = tuple[int, ...]
 #     """All degrees of freedom must belong to one, and only one, of the
 #     following smoothing categories.
 #     """
-# 
+#
 #     PRESCRIBED_HOMOGENEOUS = 0
 #     PRESCRIBED_INHOMOGENEOUS = 1
 #     FREE_EXTERIOR = 2
