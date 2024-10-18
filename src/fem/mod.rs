@@ -266,17 +266,21 @@ impl FiniteElements {
     pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
-            let interface_nodes = self.get_interface_nodes();
+            let mut boundary_nodes: Nodes = exterior_nodes
+                .clone()
+                .into_iter()
+                .chain(self.get_interface_nodes().clone())
+                .collect();
+            boundary_nodes.sort();
+            boundary_nodes.dedup();
             let node_node_connectivity = self.get_node_node_connectivity();
-            self.node_node_connectivity_boundary = exterior_nodes
+            self.node_node_connectivity_boundary = boundary_nodes
                 .iter()
-                .map(|exterior_node| {
-                    node_node_connectivity[exterior_node - NODE_NUMBERING_OFFSET]
+                .map(|boundary_node| {
+                    node_node_connectivity[boundary_node - NODE_NUMBERING_OFFSET]
                         .clone()
                         .into_iter()
-                        .filter(|&node| {
-                            exterior_nodes.contains(&node) || interface_nodes.contains(&node)
-                        })
+                        .filter(|&node| boundary_nodes.contains(&node))
                         .collect()
                 })
                 .collect();
