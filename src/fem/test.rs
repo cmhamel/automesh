@@ -1,16 +1,9 @@
 use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes};
+use std::f64::EPSILON;
 
+const ZERO: f64 = 0.0;
 const ONE_FOURTH: f64 = 1.0 / 4.0;
 const ONE_THIRD: f64 = 1.0 / 3.0;
-const TWO_THIRDS: f64 = 2.0 / 3.0;
-const THREE_FOURTHS: f64 = 3.0 / 4.0;
-const ONE: f64 = 1.0;
-const FIVE_THIRDS: f64 = 5.0 / 3.0;
-const TWO: f64 = 2.0;
-const EIGHT_THIRDS: f64 = 8.0 / 3.0;
-const THREE: f64 = 3.0;
-const TEN_THIRDS: f64 = 10.0 / 3.0;
-const ELEVEN_THIRDS: f64 = 11.0 / 3.0;
 
 fn test_finite_elements(
     element_blocks: Blocks,
@@ -52,7 +45,21 @@ fn test_finite_elements(
     assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
     assert_eq!(finite_elements.get_interior_nodes(), &interior_nodes_gold);
     if let Some(gold) = laplacian_gold {
-        assert_eq!(finite_elements.calculate_laplacian().unwrap(), gold);
+        let laplacian = finite_elements
+            .calculate_laplacian(finite_elements.get_node_node_connectivity())
+            .unwrap();
+        laplacian
+            .iter()
+            .flatten()
+            .zip(gold.iter().flatten())
+            .for_each(|(coordinate, gold_coordinate)| {
+                if (coordinate - gold_coordinate).abs() >= EPSILON {
+                    panic!(
+                        "\n{:?}\nis not approximately equal to\n {:?}",
+                        laplacian, gold
+                    )
+                }
+            });
     }
     finite_elements
         .calculate_node_node_connectivity_boundary()
@@ -101,12 +108,12 @@ fn single() {
     let laplacian_gold = vec![
         vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
         vec![-ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![TWO_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![TWO_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![TWO_THIRDS, TWO_THIRDS, TWO_THIRDS],
+        vec![ONE_THIRD, -ONE_THIRD, ONE_THIRD],
+        vec![-ONE_THIRD, -ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, -ONE_THIRD],
+        vec![-ONE_THIRD, ONE_THIRD, -ONE_THIRD],
+        vec![ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
+        vec![-ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
     ];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
@@ -177,19 +184,19 @@ fn double_x() {
     let exterior_nodes_gold = (1..=12).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
+    let laplacian_gold = vec![
         vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE, ONE_FOURTH, ONE_FOURTH],
-        vec![FIVE_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
-        vec![FIVE_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
-        vec![FIVE_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![FIVE_THIRDS, TWO_THIRDS, TWO_THIRDS],
+        vec![ZERO, ONE_FOURTH, ONE_FOURTH],
+        vec![-ONE_THIRD, ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, -ONE_THIRD, ONE_THIRD],
+        vec![ZERO, -ONE_FOURTH, ONE_FOURTH],
+        vec![-ONE_THIRD, -ONE_THIRD, ONE_THIRD],
+        vec![ONE_THIRD, ONE_THIRD, -ONE_THIRD],
+        vec![ZERO, ONE_FOURTH, -ONE_FOURTH],
+        vec![-ONE_THIRD, ONE_THIRD, -ONE_THIRD],
+        vec![ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
+        vec![ZERO, -ONE_FOURTH, -ONE_FOURTH],
+        vec![-ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
     ];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
@@ -202,7 +209,7 @@ fn double_x() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        Some(laplacian_gold),
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -260,20 +267,6 @@ fn double_y() {
     let exterior_nodes_gold = (1..=12).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![TWO_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_FOURTH, ONE, ONE_FOURTH],
-        vec![THREE_FOURTHS, ONE, ONE_FOURTH],
-        vec![ONE_THIRD, FIVE_THIRDS, ONE_THIRD],
-        vec![TWO_THIRDS, FIVE_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![TWO_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_FOURTH, ONE, THREE_FOURTHS],
-        vec![THREE_FOURTHS, ONE, THREE_FOURTHS],
-        vec![ONE_THIRD, FIVE_THIRDS, TWO_THIRDS],
-        vec![TWO_THIRDS, FIVE_THIRDS, TWO_THIRDS],
-    ];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
@@ -285,7 +278,7 @@ fn double_y() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -356,24 +349,6 @@ fn triple() {
     let exterior_nodes_gold = (1..=16).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE, ONE_FOURTH, ONE_FOURTH],
-        vec![TWO, ONE_FOURTH, ONE_FOURTH],
-        vec![EIGHT_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
-        vec![TWO, THREE_FOURTHS, ONE_FOURTH],
-        vec![EIGHT_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
-        vec![TWO, ONE_FOURTH, THREE_FOURTHS],
-        vec![EIGHT_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![TWO, THREE_FOURTHS, THREE_FOURTHS],
-        vec![EIGHT_THIRDS, TWO_THIRDS, TWO_THIRDS],
-    ];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
@@ -385,7 +360,7 @@ fn triple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -471,28 +446,6 @@ fn quadruple() {
     let interior_nodes_gold = vec![];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE, ONE_FOURTH, ONE_FOURTH],
-        vec![TWO, ONE_FOURTH, ONE_FOURTH],
-        vec![THREE, ONE_FOURTH, ONE_FOURTH],
-        vec![ELEVEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
-        vec![TWO, THREE_FOURTHS, ONE_FOURTH],
-        vec![THREE, THREE_FOURTHS, ONE_FOURTH],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
-        vec![TWO, ONE_FOURTH, THREE_FOURTHS],
-        vec![THREE, ONE_FOURTH, THREE_FOURTHS],
-        vec![ELEVEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![TWO, THREE_FOURTHS, THREE_FOURTHS],
-        vec![THREE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -502,7 +455,7 @@ fn quadruple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -574,24 +527,6 @@ fn quadruple_2_voids() {
     let interior_nodes_gold = vec![];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![TWO_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![TEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ELEVEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![TWO_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![TEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![TWO_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![TEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ELEVEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![TWO_THIRDS, TWO_THIRDS, TWO_THIRDS],
-        vec![TEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -601,7 +536,7 @@ fn quadruple_2_voids() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -687,28 +622,6 @@ fn quadruple_2_blocks() {
     let interior_nodes_gold = vec![];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE, ONE_FOURTH, ONE_FOURTH],
-        vec![TWO, ONE_FOURTH, ONE_FOURTH],
-        vec![THREE, ONE_FOURTH, ONE_FOURTH],
-        vec![ELEVEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
-        vec![TWO, THREE_FOURTHS, ONE_FOURTH],
-        vec![THREE, THREE_FOURTHS, ONE_FOURTH],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
-        vec![TWO, ONE_FOURTH, THREE_FOURTHS],
-        vec![THREE, ONE_FOURTH, THREE_FOURTHS],
-        vec![ELEVEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![TWO, THREE_FOURTHS, THREE_FOURTHS],
-        vec![THREE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -718,7 +631,7 @@ fn quadruple_2_blocks() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -803,28 +716,6 @@ fn quadruple_2_blocks_void() {
     let interior_nodes_gold = vec![];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
-        vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![ONE, ONE_FOURTH, ONE_FOURTH],
-        vec![FIVE_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![TEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ELEVEN_THIRDS, ONE_THIRD, ONE_THIRD],
-        vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
-        vec![ONE, THREE_FOURTHS, ONE_FOURTH],
-        vec![FIVE_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![TEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, ONE_THIRD],
-        vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
-        vec![ONE, ONE_FOURTH, THREE_FOURTHS],
-        vec![FIVE_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![TEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ELEVEN_THIRDS, ONE_THIRD, TWO_THIRDS],
-        vec![ONE_THIRD, TWO_THIRDS, TWO_THIRDS],
-        vec![ONE, THREE_FOURTHS, THREE_FOURTHS],
-        vec![FIVE_THIRDS, TWO_THIRDS, TWO_THIRDS],
-        vec![TEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-        vec![ELEVEN_THIRDS, TWO_THIRDS, TWO_THIRDS],
-    ];
     test_finite_elements(
         element_blocks,
         element_node_connectivity,
@@ -834,7 +725,7 @@ fn quadruple_2_blocks_void() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );

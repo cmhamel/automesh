@@ -22,3 +22,4 @@ pub use voxel::Voxels;
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
 const NODE_NUMBERING_OFFSET: usize = 1;
+const NSD: usize = 3;

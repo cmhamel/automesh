@@ -12,17 +12,13 @@ macro_rules! bench_block {
     ($nel:expr) => {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
         #[bench]
-        fn calculate_neighboring_nodal_coordinates_average(
-            bencher: &mut Bencher,
-        ) -> Result<(), String> {
+        fn calculate_laplacian(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
-            bencher.iter(|| {
-                fem.calculate_neighboring_nodal_coordinates_average()
-                    .unwrap()
-            });
+            let node_node_connectivity = fem.get_node_node_connectivity();
+            bencher.iter(|| fem.calculate_laplacian(node_node_connectivity).unwrap());
             Ok(())
         }
         #[bench]

@@ -7,7 +7,7 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
+use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
 use std::{
     fs::File,
@@ -61,39 +61,28 @@ impl FiniteElements {
             node_node_connectivity_interior: vec![],
         }
     }
-    /// Calculates the average of the neighboring nodal coordinates.
-    pub fn calculate_neighboring_nodal_coordinates_average(&self) -> Result<Coordinates, &str> {
-        //
-        // Could give option to skip nodes that are fixed in space,
-        // as long as it does not introduce overhead and stuff.
-        //
-        // This is going to need to take into possible hierarchy in an efficient manner,
-        // perhaps by filter() acting on the |node| using a list.
-        //
-        // It might be faster to use a different method than this,
-        // that uses a pre-populated node-to-node connectivity
-        // which is specialized for hierarchical considerations.
-        //
-        let node_node_connectivity = self.get_node_node_connectivity();
-        if node_node_connectivity != &EMPTY_CONNECTIVITY {
-            let nodal_coordinates = self.get_nodal_coordinates();
-            Ok(node_node_connectivity
-                .iter()
-                .map(|connectivity| {
-                    (0..3)
-                        .map(|i| {
-                            connectivity
-                                .iter()
-                                .map(|node| nodal_coordinates[node - NODE_NUMBERING_OFFSET][i])
-                                .sum::<f64>()
-                                / (connectivity.len() as f64)
-                        })
-                        .collect()
-                })
-                .collect())
-        } else {
-            Err("Need to calculate and set the node-to-node connectivity first.")
-        }
+    /// Calculates the discrete Laplacian for the given node-to-node connectivity.
+    pub fn calculate_laplacian(
+        &self,
+        node_node_connectivity: &Connectivity,
+    ) -> Result<Coordinates, &str> {
+        let nodal_coordinates = self.get_nodal_coordinates();
+        Ok(node_node_connectivity
+            .iter()
+            .enumerate()
+            .map(|(node, connectivity)| {
+                (0..NSD)
+                    .map(|i| {
+                        connectivity
+                            .iter()
+                            .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET][i])
+                            .sum::<f64>()
+                            / (connectivity.len() as f64)
+                            - nodal_coordinates[node][i]
+                    })
+                    .collect()
+            })
+            .collect())
     }
     /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
