@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
-    NODE_NUMBERING_OFFSET,
+    NODE_NUMBERING_OFFSET, NSD,
 };
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
@@ -22,9 +22,9 @@ use tiff::{
     TiffError,
 };
 
-type Nel = [usize; 3];
-type Scale = [f64; 3];
-type Translate = [f64; 3];
+type Nel = [usize; NSD];
+type Scale = [f64; NSD];
+type Translate = [f64; NSD];
 type VoxelData = Array3<u8>;
 type VoxelDataFlattened = Vec<u8>;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
@@ -83,7 +83,7 @@ impl Voxels {
     }
 }
 
-fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<3>, Blocks) {
+fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<NSD>, Blocks) {
     #[cfg(feature = "profile")]
     let time = Instant::now();
     let removed_data = remove.unwrap_or(vec![0]);
@@ -126,7 +126,7 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSiz
 }
 
 fn initial_element_node_connectivity(
-    filtered_voxel_data: &VoxelDataSized<3>,
+    filtered_voxel_data: &VoxelDataSized<NSD>,
     nelxplus1: &usize,
     nelyplus1: &usize,
 ) -> Connectivity {
@@ -185,7 +185,7 @@ fn initial_element_node_connectivity(
 
 fn initial_nodal_coordinates(
     element_node_connectivity: &Connectivity,
-    filtered_voxel_data: &VoxelDataSized<3>,
+    filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
     scale: &Scale,
     translate: &Translate,

@@ -7,7 +7,7 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET};
+use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
 use std::{
     fs::File,
@@ -16,7 +16,8 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 const ELEMENT_NUM_NODES: usize = 8;
-const EMPTY_VEC: Connectivity = vec![];
+const EMPTY_CONNECTIVITY: Connectivity = vec![];
+const EMPTY_NODES: Nodes = vec![];
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
@@ -25,6 +26,7 @@ pub type Nodes = Vec<usize>;
 
 /// The finite elements type.
 pub struct FiniteElements {
+    boundary_nodes: Nodes,
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
     exterior_nodes: Nodes,
@@ -33,6 +35,13 @@ pub struct FiniteElements {
     nodal_coordinates: Coordinates,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
+    node_node_connectivity_boundary: Connectivity,
+    node_node_connectivity_interior: Connectivity,
+}
+
+/// Possible smoothing methods.
+pub enum Smoothing {
+    Laplacian(usize, f64),
 }
 
 /// Inherent implementation of the finite elements type.
@@ -44,6 +53,7 @@ impl FiniteElements {
         nodal_coordinates: Coordinates,
     ) -> Self {
         Self {
+            boundary_nodes: vec![],
             element_blocks,
             element_node_connectivity,
             exterior_nodes: vec![],
@@ -52,19 +62,44 @@ impl FiniteElements {
             nodal_coordinates,
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
+            node_node_connectivity_boundary: vec![],
+            node_node_connectivity_interior: vec![],
         }
+    }
+    /// Calculates the discrete Laplacian for the given node-to-node connectivity.
+    pub fn calculate_laplacian(&self, node_node_connectivity: &Connectivity) -> Coordinates {
+        let nodal_coordinates = self.get_nodal_coordinates();
+        node_node_connectivity
+            .iter()
+            .enumerate()
+            .map(|(node, connectivity)| {
+                (0..NSD)
+                    .map(|i| {
+                        connectivity
+                            .iter()
+                            .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET][i])
+                            .sum::<f64>()
+                            / (connectivity.len() as f64)
+                            - nodal_coordinates[node][i]
+                    })
+                    .collect()
+            })
+            .collect()
     }
     /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
-        if self.get_node_node_connectivity() != &EMPTY_VEC {
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
             let mut connected_blocks: Vec<usize> = vec![];
-            let mut exterior_nodes_unsorted = vec![];
-            let mut interface_nodes_unsorted = vec![];
-            let mut interior_nodes_unsorted = vec![];
-            self.get_node_element_connectivity()
+            let mut exterior_nodes = vec![];
+            let mut interface_nodes = vec![];
+            let mut interior_nodes = vec![];
+            let mut number_of_connected_blocks = 0;
+            let mut number_of_connected_elements = 0;
+            node_element_connectivity
                 .iter()
                 .enumerate()
                 .for_each(|(node, connected_elements)| {
@@ -74,20 +109,32 @@ impl FiniteElements {
                         .collect();
                     connected_blocks.sort();
                     connected_blocks.dedup();
-                    if connected_blocks.len() > 1 {
-                        interface_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
-                    } else if connected_elements.len() == 8 {
-                        interior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                    number_of_connected_blocks = connected_blocks.len();
+                    number_of_connected_elements = connected_elements.len();
+                    if number_of_connected_blocks > 1 {
+                        interface_nodes.push(node + NODE_NUMBERING_OFFSET);
+                        if number_of_connected_elements < 8 {
+                            exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
+                        }
+                    } else if number_of_connected_elements < 8 {
+                        exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     } else {
-                        exterior_nodes_unsorted.push(node + NODE_NUMBERING_OFFSET);
+                        interior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     }
                 });
-            exterior_nodes_unsorted.sort();
-            self.exterior_nodes = exterior_nodes_unsorted;
-            interface_nodes_unsorted.sort();
-            self.interface_nodes = interface_nodes_unsorted;
-            interior_nodes_unsorted.sort();
-            self.interior_nodes = interior_nodes_unsorted;
+            exterior_nodes.sort();
+            interior_nodes.sort();
+            interface_nodes.sort();
+            self.boundary_nodes = exterior_nodes
+                .clone()
+                .into_iter()
+                .chain(interface_nodes.clone())
+                .collect();
+            self.boundary_nodes.sort();
+            self.boundary_nodes.dedup();
+            self.exterior_nodes = exterior_nodes;
+            self.interface_nodes = interface_nodes;
+            self.interior_nodes = interior_nodes;
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
@@ -123,12 +170,12 @@ impl FiniteElements {
     }
     /// Calculates and sets the node-to-node connectivity.
     pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
-        if self.get_node_element_connectivity() != &EMPTY_VEC {
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
             let element_node_connectivity = self.get_element_node_connectivity();
-            let node_element_connectivity = self.get_node_element_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
             let mut node_node_connectivity = vec![vec![]; number_of_nodes];
             node_node_connectivity
@@ -215,6 +262,47 @@ impl FiniteElements {
             Err("Need to calculate and set the node-to-element connectivity first.")
         }
     }
+    /// Calculates and sets the node-to-node connectivity for boundary nodes.
+    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
+        let exterior_nodes = self.get_exterior_nodes();
+        if exterior_nodes != &EMPTY_NODES {
+            let boundary_nodes = self.get_boundary_nodes();
+            let node_node_connectivity = self.get_node_node_connectivity();
+            self.node_node_connectivity_boundary = boundary_nodes
+                .iter()
+                .map(|boundary_node| {
+                    node_node_connectivity[boundary_node - NODE_NUMBERING_OFFSET]
+                        .clone()
+                        .into_iter()
+                        .filter(|&node| boundary_nodes.contains(&node))
+                        .collect()
+                })
+                .collect();
+            Ok(())
+        } else {
+            Err("Need to calculate and set the nodal hierarchy first.")
+        }
+    }
+    /// Calculates and sets the node-to-node connectivity for interior nodes.
+    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), &str> {
+        if self.get_exterior_nodes() != &EMPTY_NODES {
+            let node_node_connectivity = self.get_node_node_connectivity();
+            self.node_node_connectivity_interior = self
+                .get_interior_nodes()
+                .iter()
+                .map(|interior_node| {
+                    node_node_connectivity[interior_node - NODE_NUMBERING_OFFSET].clone()
+                })
+                .collect();
+            Ok(())
+        } else {
+            Err("Need to calculate and set the nodal hierarchy first.")
+        }
+    }
+    /// Returns a reference to the boundary nodes.
+    pub fn get_boundary_nodes(&self) -> &Nodes {
+        &self.boundary_nodes
+    }
     /// Returns a reference to the element blocks.
     pub fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
@@ -239,6 +327,10 @@ impl FiniteElements {
     pub fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
     }
+    /// Returns a mutable reference to the nodal coordinates.
+    pub fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+        &mut self.nodal_coordinates
+    }
     /// Returns a reference to the node-to-element connectivity.
     pub fn get_node_element_connectivity(&self) -> &Connectivity {
         &self.node_element_connectivity
@@ -246,6 +338,29 @@ impl FiniteElements {
     /// Returns a reference to the node-to-node connectivity.
     pub fn get_node_node_connectivity(&self) -> &Connectivity {
         &self.node_node_connectivity
+    }
+    /// Returns a reference to the node-to-node connectivity for boundary nodes.
+    pub fn get_node_node_connectivity_boundary(&self) -> &Connectivity {
+        &self.node_node_connectivity_boundary
+    }
+    /// Returns a reference to the node-to-node connectivity for interior nodes.
+    pub fn get_node_node_connectivity_interior(&self) -> &Connectivity {
+        &self.node_node_connectivity_interior
+    }
+    /// ???
+    pub fn smooth(&mut self, method: Smoothing) {
+        match method {
+            Smoothing::Laplacian(iterations, scale) => {
+                for _ in 0..iterations {
+                    let laplacian = self.calculate_laplacian(self.get_node_node_connectivity());
+                    self.get_nodal_coordinates_mut()
+                        .iter_mut()
+                        .flatten()
+                        .zip(laplacian.iter().flatten())
+                        .for_each(|(coordinate, entry)| *coordinate += scale * entry)
+                }
+            }
+        }
     }
 }
 
