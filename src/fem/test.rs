@@ -21,7 +21,7 @@ fn test_finite_elements(
     exterior_nodes_gold: Nodes,
     interface_nodes_gold: Nodes,
     interior_nodes_gold: Nodes,
-    average_neighboring_nodal_coordinates_gold: Option<Coordinates>,
+    laplacian_gold: Option<Coordinates>,
     node_node_connectivity_boundary_gold: Connectivity,
     node_node_connectivity_interior_gold: Connectivity,
 ) {
@@ -51,13 +51,8 @@ fn test_finite_elements(
     assert_eq!(finite_elements.get_exterior_nodes(), &exterior_nodes_gold);
     assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
     assert_eq!(finite_elements.get_interior_nodes(), &interior_nodes_gold);
-    if let Some(gold) = average_neighboring_nodal_coordinates_gold {
-        assert_eq!(
-            finite_elements
-                .calculate_neighboring_nodal_coordinates_average()
-                .unwrap(),
-            gold
-        );
+    if let Some(gold) = laplacian_gold {
+        assert_eq!(finite_elements.calculate_laplacian().unwrap(), gold);
     }
     finite_elements
         .calculate_node_node_connectivity_boundary()
@@ -103,9 +98,9 @@ fn single() {
     let exterior_nodes_gold = (1..=8).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let average_neighboring_nodal_coordinates_gold = vec![
+    let laplacian_gold = vec![
         vec![ONE_THIRD, ONE_THIRD, ONE_THIRD],
-        vec![TWO_THIRDS, ONE_THIRD, ONE_THIRD],
+        vec![-ONE_THIRD, ONE_THIRD, ONE_THIRD],
         vec![ONE_THIRD, TWO_THIRDS, ONE_THIRD],
         vec![TWO_THIRDS, TWO_THIRDS, ONE_THIRD],
         vec![ONE_THIRD, ONE_THIRD, TWO_THIRDS],
@@ -124,7 +119,7 @@ fn single() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
-        Some(average_neighboring_nodal_coordinates_gold),
+        Some(laplacian_gold),
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
