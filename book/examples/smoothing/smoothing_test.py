@@ -6,7 +6,7 @@ Example:
     source .venv/bin/activate.csh   # for c shell
     source .venv/bin/activate.fish  # for fish shell
     .\.venv\Scripts\activate        # for powershell
-    cd sandbox
+    cd book/examples/smoothing
     python -m pytest smoothing_test.py
 Reference: DoubleX unit test
     https://autotwin.github.io/automesh/examples/unit_tests/index.html#double-x
@@ -14,16 +14,18 @@ Reference: DoubleX unit test
 
 from typing import Final
 
-# import smoothing as sm
-# import smoothing_types as ty
-import sandbox.smoothing as sm
-import sandbox.smoothing_types as ty
+# import sandbox.smoothing as sm
+# import sandbox.smoothing_types as ty
+import smoothing as sm
+import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-DofSet = ty.DofSet
-Elements = ty.Elements
+# DofSet = ty.DofSet
+# Elements = ty.Elements
+Hexes = ty.Hexes
 Neighbors = ty.Neighbors
+NodeHierarchy = ty.NodeHierarchy
 Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
@@ -113,20 +115,7 @@ def test_laplace_smoothing():
         (6, 9, 11),
     )
 
-    ds: DofSet = (
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-        (4, 4, 4),
-    )
+    nh: NodeHierarchy = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, )
 
     scale_lambda: Final[float] = 0.3  # lambda for Laplace smoothing
 
@@ -136,7 +125,7 @@ def test_laplace_smoothing():
     algo = SmoothingAlgorithm.LAPLACE
 
     aa = sm.smooth(
-        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+        vv=vv, nn=nn, nh=nh, sf=scale_lambda, num_iters=num_iters, algo=algo
     )
     cc: Final[float] = scale_lambda / 3.0  # delta corner
     ee: Final[float] = scale_lambda / 4.0  # delta edge
@@ -164,7 +153,7 @@ def test_laplace_smoothing():
     num_iters = 2  # overwrite, double iteration of smoothing
 
     aa2 = sm.smooth(
-        vv=vv, nn=nn, ds=ds, sf=scale_lambda, num_iters=num_iters, algo=algo
+        vv=vv, nn=nn, nh=nh, sf=scale_lambda, num_iters=num_iters, algo=algo
     )
     # define the gold standard fiducial
     gold2 = (
@@ -267,7 +256,7 @@ def test_edge_pairs():
         (1, 2, 5, 4, 7, 8, 11, 10),
         (2, 3, 6, 5, 8, 9, 12, 11),
     )
-    found = sm.edge_pairs(ees=elements)
+    found = sm.edge_pairs(hexes=elements)
     gold = (
         (1, 2),
         (1, 4),

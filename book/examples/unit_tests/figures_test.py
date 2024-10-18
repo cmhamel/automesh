@@ -11,10 +11,10 @@ Example:
     .\.venv\Scripts\activate        # for powershell
 
     cd book/examples/unit_tests
-    python -m pytest test_figures.py -v  # -v is for verbose
+    python -m pytest figures_test.py -v  # -v is for verbose
 
     to run a single test in this module, for example `test_hello` function:
-    python -m pytest test_figures.py::test_hello -v
+    python -m pytest figures_test.py::test_hello -v
 """
 
 import pytest

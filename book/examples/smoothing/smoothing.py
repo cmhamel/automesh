@@ -7,9 +7,10 @@ import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-DofSet = ty.DofSet
-Elements = ty.Elements
+# DofSet = ty.DofSet
+Hexes = ty.Hexes
 Neighbors = ty.Neighbors
+NodeHierarchy = ty.NodeHierarchy
 Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
@@ -64,7 +65,7 @@ def xyz(v1: Vertex) -> tuple[float, float, float]:
 def smooth(
     vv: Vertices,
     nn: Neighbors,
-    ds: DofSet,
+    nh: NodeHierarchy,
     sf: float,
     num_iters: int,
     algo: SmoothingAlgorithm,
@@ -85,7 +86,7 @@ def smooth(
         print(f"Iteration: {k+1}")
         vertices_new = []
 
-        for vertex, neighbors, dof in zip(vertices_old, nn, ds):
+        for vertex, neighbors, level in zip(vertices_old, nn, nh):
             # debug vertex by vertex
             # print(f"vertex {vertex}, dof {dof}, neighbors {neighbors}")
             # for now, no hierarchical smoohing
@@ -136,14 +137,14 @@ def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
     return result
 
 
-def edge_pairs(ees: Elements):
-    """Returns all the line pairs from element connectivity, for use
+def edge_pairs(hexes: Hexes):
+    """Returns all the line pairs from hex element connectivity, for use
     with drawing edges of elements."""
 
     # almost perfect with collecting unique pairs, but there are some
     # overlapping pairs, not a big dealbptt
     pairs = ()
-    for ee in ees:
+    for ee in hexes:
         # bottom_face = tuple(sorted(list(zip(ee[0:4], ee[1:4] + (ee[0],)))))
         bottom_face = pair_ordered(tuple(zip(ee[0:4], ee[1:4] + (ee[0],))))
         # top_face = tuple(list(zip(ee[4:8], ee[5:8] + (ee[4],))))
