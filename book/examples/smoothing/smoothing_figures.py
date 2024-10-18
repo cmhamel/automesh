@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 import smoothing as sm
+import smoothing_examples as se
 import smoothing_types as ty
 
 # Type alias for functional style methods
@@ -28,64 +29,8 @@ Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
 
-# Double X test case
-
-vertices: Vertices = (
-    Vertex(0.0, 0.0, 0.0),
-    Vertex(1.0, 0.0, 0.0),
-    Vertex(2.0, 0.0, 0.0),
-    Vertex(0.0, 1.0, 0.0),
-    Vertex(1.0, 1.0, 0.0),
-    Vertex(2.0, 1.0, 0.0),
-    Vertex(0.0, 0.0, 1.0),
-    Vertex(1.0, 0.0, 1.0),
-    Vertex(2.0, 0.0, 1.0),
-    Vertex(0.0, 1.0, 1.0),
-    Vertex(1.0, 1.0, 1.0),
-    Vertex(2.0, 1.0, 1.0),
-)
-
-# dofset: DofSet = (
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-#     (4, 4, 4),
-# )
-
-elements: Hexes = (
-    (1, 2, 5, 4, 7, 8, 11, 10),
-    (2, 3, 6, 5, 8, 9, 12, 11),
-)
-
-neighbors: Neighbors = (
-    (2, 4, 7),
-    (1, 3, 5, 8),
-    (2, 6, 9),
-    (1, 5, 10),
-    (2, 4, 6, 11),
-    (3, 5, 12),
-    (1, 8, 10),
-    (2, 7, 9, 11),
-    (3, 8, 12),
-    (4, 7, 11),
-    (5, 8, 10, 12),
-    (6, 9, 11),
-)
-
-nh: NodeHierarchy = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, )
-
-SCALE_LAMBDA: Final[float] = 0.3  # lambda parameter for Laplace smoothing
-SCALE_MU: Final[float] = -0.33  # mu parameter for Taubin smoothing
-NUM_ITERS: Final[int] = 2  # number of smoothing iterations
-ALGO: Final = SmoothingAlgorithm.LAPLACE
+# Double X example
+ex = se.double_x
 
 # Visualization
 width, height = 10, 5
@@ -120,25 +65,26 @@ nx, ny, nz = 2, 1, 1
 nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 
 vertices_laplace = sm.smooth(
-    vv=vertices,
-    nn=neighbors,
-    nh=nh,
-    sf=SCALE_LAMBDA,
-    num_iters=NUM_ITERS,
-    algo=ALGO,
+    vv=ex.vertices,
+    nn=ex.neighbors,
+    nh=ex.hierarchy,
+    sf=ex.scale_lambda,
+    num_iters=ex.num_iters,
+    algo=ex.algorithm,
 )
 # original vertices
-xs = [v.x for v in vertices]
-ys = [v.y for v in vertices]
-zs = [v.z for v in vertices]
+xs = [v.x for v in ex.vertices]
+ys = [v.y for v in ex.vertices]
+zs = [v.z for v in ex.vertices]
 # laplace smoothed vertices
 xs_l = [v.x for v in vertices_laplace]
 ys_l = [v.y for v in vertices_laplace]
 zs_l = [v.z for v in vertices_laplace]
 # draw edge lines
-ep = sm.edge_pairs(elements)  # edge pairs
+ep = sm.edge_pairs(ex.elements)  # edge pairs
 line_segments = [
-    (sm.xyz(vertices[p1 - 1]), sm.xyz(vertices[p2 - 1])) for (p1, p2) in ep
+    (sm.xyz(ex.vertices[p1 - 1]), sm.xyz(ex.vertices[p2 - 1]))
+    for (p1, p2) in ep
 ]
 line_segments_laplace = [
     (sm.xyz(vertices_laplace[p1 - 1]), sm.xyz(vertices_laplace[p2 - 1]))
@@ -255,7 +201,7 @@ aa = Path(__file__)
 fig_path = Path(__file__).parent
 fig_stem = Path(__file__).stem
 FIG_EXT: Final[str] = ".png"
-bb = fig_path.joinpath(fig_stem + "_iter_" + str(NUM_ITERS) + FIG_EXT)
+bb = fig_path.joinpath(fig_stem + "_iter_" + str(ex.num_iters) + FIG_EXT)
 # Add a footnote
 # Get the current date and time in UTC
 now_utc = datetime.datetime.now(datetime.UTC)

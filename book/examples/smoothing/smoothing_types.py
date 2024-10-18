@@ -49,3 +49,17 @@ class SmoothingAlgorithm(Enum):
 
     LAPLACE = "Laplace"
     TAUBIN = "Taubin"
+
+
+class SmoothingExample(NamedTuple):
+    """The prototype for the data necessary to construct a smoothing example.
+    """
+
+    vertices: Vertices
+    elements: Hexes
+    neighbors: Neighbors
+    hierarchy: NodeHierarchy
+    scale_lambda: float
+    scale_mu: float
+    num_iters: int
+    algorithm: SmoothingAlgorithm
