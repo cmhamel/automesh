@@ -109,3 +109,33 @@ To begin to examine hiearchical control, we consider the [Bracket](../unit_tests
 ![../unit_tests/bracket.png](../unit_tests/bracket.png)
 
 Figure: The **Bracket** example.
+
+The goal of this example is to demonstrate `PRESCRIBED` hierarchical smoothing.
+
+```python
+node_smoothing_categories: Hierarchy = (
+    # hierarchy enum, node number, prescribed (x, y, z)
+    2, #  1 -> (0, 0, 0)
+    2, #  2 -> (1, 0, 0)
+    2, #  3 -> (2, 0, 0)
+    2, #  4 -> (3, 0, 0)
+    2, #  5 -> (4, 0, 0)
+    2, #  6 -> (0, 1, 0)
+    1, #  7
+    1, #  8
+    1, #  9
+    2, # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
+    2, # 11 -> *(0, 2, 0)
+    1, # 12
+    1, # 13
+    1, # 14
+    2, # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    2, # 16 -> (0, 3, 0)
+    1, # 17
+    1, # 18
+    2, # 19 -> (0, 4, 0)
+    2, # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
+    2, # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    # similarly repeated for the z=1 layer, nodes 22 to 42
+)
+```
