@@ -1,7 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{Abaqus, Voxels};
+use automesh::{Abaqus, Smoothing, Voxels};
 use test::Bencher;
 
 const REMOVE: Option<Vec<u8>> = None;
@@ -18,7 +18,7 @@ macro_rules! bench_block {
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             let node_node_connectivity = fem.get_node_node_connectivity();
-            bencher.iter(|| fem.calculate_laplacian(node_node_connectivity).unwrap());
+            bencher.iter(|| fem.calculate_laplacian(node_node_connectivity));
             Ok(())
         }
         #[bench]
@@ -89,6 +89,15 @@ macro_rules! bench_block {
                     .into_finite_elements(REMOVE, &SCALE, &TRANSLATE)
                     .unwrap()
             });
+        }
+        #[bench]
+        fn smooth(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            fem.calculate_node_element_connectivity()?;
+            fem.calculate_node_node_connectivity()?;
+            bencher.iter(|| fem.smooth(Smoothing::Laplacian(1, 0.3)));
+            Ok(())
         }
         #[bench]
         fn write_inp(bencher: &mut Bencher) -> Result<(), String> {

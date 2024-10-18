@@ -39,6 +39,11 @@ pub struct FiniteElements {
     node_node_connectivity_interior: Connectivity,
 }
 
+/// Possible smoothing methods.
+pub enum Smoothing {
+    Laplacian(usize, f64),
+}
+
 /// Inherent implementation of the finite elements type.
 impl FiniteElements {
     /// Constructs and returns a new finite elements type from data.
@@ -62,12 +67,9 @@ impl FiniteElements {
         }
     }
     /// Calculates the discrete Laplacian for the given node-to-node connectivity.
-    pub fn calculate_laplacian(
-        &self,
-        node_node_connectivity: &Connectivity,
-    ) -> Result<Coordinates, &str> {
+    pub fn calculate_laplacian(&self, node_node_connectivity: &Connectivity) -> Coordinates {
         let nodal_coordinates = self.get_nodal_coordinates();
-        Ok(node_node_connectivity
+        node_node_connectivity
             .iter()
             .enumerate()
             .map(|(node, connectivity)| {
@@ -82,7 +84,7 @@ impl FiniteElements {
                     })
                     .collect()
             })
-            .collect())
+            .collect()
     }
     /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
@@ -325,6 +327,10 @@ impl FiniteElements {
     pub fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
     }
+    /// Returns a mutable reference to the nodal coordinates.
+    pub fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+        &mut self.nodal_coordinates
+    }
     /// Returns a reference to the node-to-element connectivity.
     pub fn get_node_element_connectivity(&self) -> &Connectivity {
         &self.node_element_connectivity
@@ -340,6 +346,21 @@ impl FiniteElements {
     /// Returns a reference to the node-to-node connectivity for interior nodes.
     pub fn get_node_node_connectivity_interior(&self) -> &Connectivity {
         &self.node_node_connectivity_interior
+    }
+    /// ???
+    pub fn smooth(&mut self, method: Smoothing) {
+        match method {
+            Smoothing::Laplacian(iterations, scale) => {
+                for _ in 0..iterations {
+                    let laplacian = self.calculate_laplacian(self.get_node_node_connectivity());
+                    self.get_nodal_coordinates_mut()
+                        .iter_mut()
+                        .flatten()
+                        .zip(laplacian.iter().flatten())
+                        .for_each(|(coordinate, entry)| *coordinate += scale * entry)
+                }
+            }
+        }
     }
 }
 

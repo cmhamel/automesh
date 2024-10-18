@@ -1,5 +1,6 @@
-use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes};
-use std::f64::EPSILON;
+use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Smoothing};
+
+const EPSILON: f64 = 10.0 * std::f64::EPSILON;
 
 const ZERO: f64 = 0.0;
 const ONE_FOURTH: f64 = 1.0 / 4.0;
@@ -15,11 +16,15 @@ fn test_finite_elements(
     interface_nodes_gold: Nodes,
     interior_nodes_gold: Nodes,
     laplacian_gold: Option<Coordinates>,
+    smoothed_coordinates_gold: Option<Vec<Coordinates>>,
     node_node_connectivity_boundary_gold: Connectivity,
     node_node_connectivity_interior_gold: Connectivity,
 ) {
-    let mut finite_elements =
-        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+    let mut finite_elements = FiniteElements::from_data(
+        element_blocks.clone(),
+        element_node_connectivity.clone(),
+        nodal_coordinates.clone(),
+    );
     assert_eq!(
         finite_elements.calculate_node_node_connectivity(),
         Err("Need to calculate and set the node-to-element connectivity first.")
@@ -44,23 +49,6 @@ fn test_finite_elements(
     assert_eq!(finite_elements.get_exterior_nodes(), &exterior_nodes_gold);
     assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
     assert_eq!(finite_elements.get_interior_nodes(), &interior_nodes_gold);
-    if let Some(gold) = laplacian_gold {
-        let laplacian = finite_elements
-            .calculate_laplacian(finite_elements.get_node_node_connectivity())
-            .unwrap();
-        laplacian
-            .iter()
-            .flatten()
-            .zip(gold.iter().flatten())
-            .for_each(|(coordinate, gold_coordinate)| {
-                if (coordinate - gold_coordinate).abs() >= EPSILON {
-                    panic!(
-                        "\n{:?}\nis not approximately equal to\n {:?}",
-                        laplacian, gold
-                    )
-                }
-            });
-    }
     finite_elements
         .calculate_node_node_connectivity_boundary()
         .unwrap();
@@ -75,6 +63,51 @@ fn test_finite_elements(
         finite_elements.get_node_node_connectivity_interior(),
         &node_node_connectivity_interior_gold
     );
+    if let Some(gold) = laplacian_gold {
+        let laplacian =
+            finite_elements.calculate_laplacian(finite_elements.get_node_node_connectivity());
+        laplacian
+            .iter()
+            .flatten()
+            .zip(gold.iter().flatten())
+            .for_each(|(coordinate, gold_coordinate)| {
+                if (coordinate - gold_coordinate).abs() >= EPSILON {
+                    panic!(
+                        "\n{:?}\nis not approximately equal to\n {:?}",
+                        laplacian, gold
+                    )
+                }
+            });
+    }
+    if let Some(gold_set) = smoothed_coordinates_gold {
+        gold_set.iter().enumerate().for_each(|(index, gold)| {
+            let iterations = index + 1;
+            let mut finite_elements = FiniteElements::from_data(
+                element_blocks.clone(),
+                element_node_connectivity.clone(),
+                nodal_coordinates.clone(),
+            );
+            finite_elements
+                .calculate_node_element_connectivity()
+                .unwrap();
+            finite_elements.calculate_node_node_connectivity().unwrap();
+            finite_elements.calculate_nodal_hierarchy().unwrap();
+            finite_elements.smooth(Smoothing::Laplacian(iterations, 0.3));
+            let smoothed_nodal_coordinates = finite_elements.get_nodal_coordinates();
+            smoothed_nodal_coordinates
+                .iter()
+                .flatten()
+                .zip(gold.iter().flatten())
+                .for_each(|(coordinate, gold_coordinate)| {
+                    if (coordinate - gold_coordinate).abs() >= EPSILON {
+                        panic!(
+                            "\n{:?}\nis not approximately equal to\n {:?}\n from {} iterations",
+                            smoothed_nodal_coordinates, gold, iterations
+                        )
+                    }
+                });
+        })
+    }
 }
 
 #[test]
@@ -127,6 +160,7 @@ fn single() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(laplacian_gold),
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -198,6 +232,36 @@ fn double_x() {
         vec![ZERO, -ONE_FOURTH, -ONE_FOURTH],
         vec![-ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
     ];
+    let smoothed_coordinates_gold = vec![
+        vec![
+            vec![0.1, 0.100, 0.100],
+            vec![1.0, 0.075, 0.075],
+            vec![1.9, 0.100, 0.100],
+            vec![0.1, 0.900, 0.100],
+            vec![1.0, 0.925, 0.075],
+            vec![1.9, 0.900, 0.100],
+            vec![0.1, 0.100, 0.900],
+            vec![1.0, 0.075, 0.925],
+            vec![1.9, 0.100, 0.900],
+            vec![0.1, 0.900, 0.900],
+            vec![1.0, 0.925, 0.925],
+            vec![1.9, 0.900, 0.900],
+        ],
+        vec![
+            vec![0.19, 0.1775, 0.1775],
+            vec![1.00, 0.1425, 0.1425],
+            vec![1.81, 0.1775, 0.1775],
+            vec![0.19, 0.8225, 0.1775],
+            vec![1.00, 0.8575, 0.1425],
+            vec![1.81, 0.8225, 0.1775],
+            vec![0.19, 0.1775, 0.8225],
+            vec![1.00, 0.1425, 0.8575],
+            vec![1.81, 0.1775, 0.8225],
+            vec![0.19, 0.8225, 0.8225],
+            vec![1.00, 0.8575, 0.8575],
+            vec![1.81, 0.8225, 0.8225],
+        ],
+    ];
     let node_node_connectivity_boundary_gold = node_node_connectivity_gold.clone();
     let node_node_connectivity_interior_gold = vec![];
     test_finite_elements(
@@ -210,6 +274,7 @@ fn double_x() {
         interface_nodes_gold,
         interior_nodes_gold,
         Some(laplacian_gold),
+        Some(smoothed_coordinates_gold),
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -278,6 +343,7 @@ fn double_y() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -360,6 +426,7 @@ fn triple() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -456,6 +523,7 @@ fn quadruple() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -536,6 +604,7 @@ fn quadruple_2_voids() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -632,6 +701,7 @@ fn quadruple_2_blocks() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -725,6 +795,7 @@ fn quadruple_2_blocks_void() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -874,6 +945,7 @@ fn cube() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -982,6 +1054,7 @@ fn cube_multi() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -1236,6 +1309,7 @@ fn cube_with_inclusion() {
         interface_nodes_gold,
         interior_nodes_gold,
         None,
+        None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
     );
@@ -1382,6 +1456,7 @@ fn letter_f() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -1758,6 +1833,7 @@ fn letter_f_3d() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,
@@ -2432,6 +2508,7 @@ fn sparse() {
         exterior_nodes_gold,
         interface_nodes_gold,
         interior_nodes_gold,
+        None,
         None,
         node_node_connectivity_boundary_gold,
         node_node_connectivity_interior_gold,

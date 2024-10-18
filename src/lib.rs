@@ -17,7 +17,7 @@ mod fem;
 mod voxel;
 
 pub use abaqus::Abaqus;
-pub use fem::FiniteElements;
+pub use fem::{FiniteElements, Smoothing};
 pub use voxel::Voxels;
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
