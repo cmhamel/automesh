@@ -29,8 +29,9 @@ Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
 
-# Double X example
-ex = se.double_x
+# Examples
+# ex = se.double_x
+ex = se.bracket  # overwrite
 
 # Visualization
 width, height = 10, 5
@@ -53,7 +54,7 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = False  # turn to True to show the figure on screen
+SHOW: Final[bool] = True  # turn to True to show the figure on screen
 SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
@@ -61,8 +62,9 @@ SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 #     Path(output_dir).expanduser().joinpath(output_png_short)
 # )
 
-nx, ny, nz = 2, 1, 1
+nx, ny, nz = ex.nelx, ex.nely, ex.nelz
 nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
+# breakpoint()
 
 vertices_laplace = sm.smooth(
     vv=ex.vertices,
@@ -76,6 +78,7 @@ vertices_laplace = sm.smooth(
 xs = [v.x for v in ex.vertices]
 ys = [v.y for v in ex.vertices]
 zs = [v.z for v in ex.vertices]
+
 # laplace smoothed vertices
 xs_l = [v.x for v in vertices_laplace]
 ys_l = [v.y for v in vertices_laplace]

@@ -57,6 +57,9 @@ class SmoothingExample(NamedTuple):
 
     vertices: Vertices
     elements: Hexes
+    nelx: int
+    nely: int
+    nelz: int
     neighbors: Neighbors
     hierarchy: NodeHierarchy
     scale_lambda: float
