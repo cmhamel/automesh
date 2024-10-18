@@ -273,9 +273,6 @@ impl FiniteElements {
     }
     /// Calculates and sets the node-to-node connectivity for boundary nodes.
     pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
-        //
-        // may be faster to use retain() or remove() on a cloned node_node_connectivity
-        //
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
             let boundary_nodes = self.get_boundary_nodes();
