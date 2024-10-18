@@ -100,7 +100,6 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} 
 
 $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right),} $$
 
-
 > In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not carefully state the second pass update, and so we emphasize it here.
 
 ## Hierarchical Control
@@ -168,7 +167,7 @@ The following figure shows this concept:
 
 ![hierarchy_sets_refactored](hierarchy_sets_refactored.png)
 
-Figure: Classification of nodes into categories of interior nodes $\mathbb{A}$, boundary nodes $\mathbb{B}$, and prescribed nodes $\mathbb{C}$.  Hierarchical relationship: prescribed nodes have no smoothing neighbors, a boundary node's smoothing neighbors are other other boundary nodes or prescribed nodes, and an interface node's smoothing neighbors are nodes of any category.
+Figure: Classification of nodes into categories of interior nodes $\mathbb{A}$, boundary nodes $\mathbb{B}$, and prescribed nodes $\mathbb{C}$.  Hierarchical relationship: An interior node's smooothing neighbors are nodes of any category, a boundary node's smoothing neighbors are other boundary nodes or other prescribed nodes, and prescribed nodes have no smoothing neighbors.
 
 ### Relationship to a `SideSet`
 

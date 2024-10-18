@@ -81,6 +81,7 @@ def smooth(
 
     vertices_old = vv
 
+    # breakpoint()
     for k in range(num_iters):
 
         print(f"Iteration: {k+1}")
@@ -88,7 +89,7 @@ def smooth(
 
         for vertex, neighbors, level in zip(vertices_old, nn, nh):
             # debug vertex by vertex
-            # print(f"vertex {vertex}, dof {dof}, neighbors {neighbors}")
+            # print(f"vertex {vertex}, neighbors {neighbors}")
             # for now, no hierarchical smoohing
             # assume all dofs are FREE_INTERIOR
 
