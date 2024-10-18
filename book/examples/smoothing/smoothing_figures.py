@@ -20,9 +20,10 @@ import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-DofSet = ty.DofSet
-Elements = ty.Elements
+# DofSet = ty.DofSet
+Hexes = ty.Hexes
 Neighbors = ty.Neighbors
+NodeHierarchy = ty.NodeHierarchy
 Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
@@ -44,22 +45,22 @@ vertices: Vertices = (
     Vertex(2.0, 1.0, 1.0),
 )
 
-dofset: DofSet = (
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-    (4, 4, 4),
-)
+# dofset: DofSet = (
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+#     (4, 4, 4),
+# )
 
-elements: Elements = (
+elements: Hexes = (
     (1, 2, 5, 4, 7, 8, 11, 10),
     (2, 3, 6, 5, 8, 9, 12, 11),
 )
@@ -78,6 +79,8 @@ neighbors: Neighbors = (
     (5, 8, 10, 12),
     (6, 9, 11),
 )
+
+nh: NodeHierarchy = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, )
 
 SCALE_LAMBDA: Final[float] = 0.3  # lambda parameter for Laplace smoothing
 SCALE_MU: Final[float] = -0.33  # mu parameter for Taubin smoothing
@@ -105,7 +108,7 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = True # turn to True to show the figure on screen
+SHOW: Final[bool] = False  # turn to True to show the figure on screen
 SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
@@ -119,7 +122,7 @@ nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 vertices_laplace = sm.smooth(
     vv=vertices,
     nn=neighbors,
-    ds=dofset,
+    nh=nh,
     sf=SCALE_LAMBDA,
     num_iters=NUM_ITERS,
     algo=ALGO,
