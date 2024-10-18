@@ -118,6 +118,7 @@ as belonging to one of the following categories.
   * Unlike free nodes, which are influenced by positions of neighboring nodes of any category, boundary nodes are only influenced positions of other boundary nodes, or prescribed nodes (described below).
 * **Interior nodes**
   * The free nodes not categorized as boundary nodes are categorized as interior nodes.
+  * Interior nodes are influenced by the positions of neighboring nodes of all categories.
 * **Prescribed nodes**
   * Finally, we may wish to select nodes, typically but not necessarily from boundary nodes, to move to a specific location, often to match the desired shape of a mesh.  These nodes are reclassified as prescribed nodes.
   * Prescribed nodes are not subject to updates in position due to smoothing because they are *a prior* prescribed to reside at a given location.
