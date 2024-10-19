@@ -118,7 +118,7 @@ As a baseline, let's examine what Laplace smoothing, $\lambda = 0.3$, *without* 
 
 Figure: The `Bracket` test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100`] iterations of Laplace smoothing.  Animation created with [Ezgif](https://ezgif.com/).
 
-As an example, the nodal positions after 10 interations are as follows:
+As an example, the nodal positions after 10 iterations are as follows:
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
