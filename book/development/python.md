@@ -1,10 +1,12 @@
 # Python Development
 
-[Install Rust](rust.md) prior to completing items below.
+[![pypi](https://img.shields.io/pypi/v/automesh?logo=pypi&logoColor=FBE072&label=PyPI&color=4B8BBE)](https://pypi.org/project/automesh)
+[![docs](https://img.shields.io/badge/Docs-API-8CA1AF?logo=readthedocs)](https://automesh.readthedocs.io)
 
 ## Install Python
 
 [Install](https://www.python.org/downloads/) a Python version [supported](https://github.com/autotwin/automesh/blob/main/pyproject.toml) by `automesh`.
+[Install Rust](rust.md) as well.
 
 ## Create a Virtual Environment
 

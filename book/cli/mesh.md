@@ -1,13 +1,13 @@
-# Command Line Interface
+# Mesh
 
 ```sh
-automesh --help
-<!-- cmdrun automesh --help -->
+automesh mesh --help
+<!-- cmdrun automesh mesh --help -->
 ```
 
 ## Example
 
-Convert a Numpy segmentation file to an Abaqus input file:
+Mesh a Numpy segmentation file into an Abaqus input file:
 
 ```sh
 automesh mesh --input single.npy --output single.inp

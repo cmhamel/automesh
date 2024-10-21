@@ -3,8 +3,10 @@ use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use std::{io::Error, path::Path, time::Instant};
 
-#[derive(Parser)]
-#[command(about = format!("
+macro_rules! about {
+    () => {
+        format!(
+            "
 
      @@@@@@@@@@@@@@@@
       @@@@  @@@@@@@@@@
@@ -16,10 +18,15 @@ use std::{io::Error, path::Path, time::Instant};
     @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
     @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
      @@@@@@@@@@@@@@@@     - Scaling is applied before translation.",
-env!("CARGO_PKG_NAME"),
-env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
-env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
-), arg_required_else_help = true, long_about = None, version)]
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
+            env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
+        )
+    };
+}
+
+#[derive(Parser)]
+#[command(about = about!(), arg_required_else_help = true, long_about = None, version)]
 struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -28,6 +35,7 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     /// Converts between segmentation input file types
+    #[command(long_about = about!())]
     Convert {
         /// Name of the original NumPy (.npy) or SPN (.spn) input file.
         #[arg(long, short, value_name = "FILE")]
@@ -55,6 +63,7 @@ enum Commands {
     },
 
     /// Creates a finite element mesh from a segmentation
+    #[command(long_about = about!())]
     Mesh {
         /// Name of the NumPy (.npy) or SPN (.spn) input file.
         #[arg(long, short, value_name = "FILE")]
@@ -129,7 +138,16 @@ enum Commands {
     },
 
     /// Applies smoothing to an existing mesh file
-    Smooth {},
+    #[command(long_about = about!())]
+    Smooth {
+        /// Name of the Abaqus (.inp) input file.
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the Abaqus (.inp) output file.
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+    },
 }
 
 struct ErrorWrapper {
@@ -189,9 +207,6 @@ fn main() -> Result<(), ErrorWrapper> {
             nelz,
             quiet,
         }) => convert(input, output, nelx, nely, nelz, quiet),
-        Some(Commands::Smooth {}) => {
-            todo!()
-        }
         Some(Commands::Mesh {
             input,
             output,
@@ -211,6 +226,9 @@ fn main() -> Result<(), ErrorWrapper> {
             input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
             ytranslate, ztranslate, smooth, quiet,
         ),
+        Some(Commands::Smooth { input, output }) => {
+            todo!("{}, {}", input, output)
+        }
         None => Ok(()),
     }
 }

@@ -13,19 +13,18 @@
 
 # Reference Guide
 
-- [Interfaces](interfaces/README.md)
-  - [Command Line Interface](interfaces/cli.md)
-  - [Python Interface](interfaces/python.md)
-  - [Rust Interface](interfaces/rust.md)
+- [Command Line Interface](cli/README.md)
+  - [Convert](cli/convert.md)
+  - [Mesh](cli/mesh.md)
+  - [Smooth](cli/smooth.md)
 - [Theory](theory/README.md)
   - [Smoothing](theory/smoothing.md)
 
 # Appendices
 
 - [Development](development/README.md)
-    - [Rust Development](development/rust.md)
-    - [Python Development](development/python.md)
-- [Encrypted](encrypted.md)
+    - [Python](development/python.md)
+    - [Rust](development/rust.md)
 
 -----------
 
