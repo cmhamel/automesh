@@ -71,7 +71,7 @@ def smooth(
     prescribed_nodes: PrescribedNodes,
     scale_lambda: float,
     num_iters: int,
-    algo: SmoothingAlgorithm,
+    algorithm: SmoothingAlgorithm,
 ) -> Vertices:
     """Given an initial position of vertices, the vertex neighbors,
     and the dof classification of each vertex, perform Laplace
@@ -87,7 +87,17 @@ def smooth(
         estr += " for (x, y, z) prescribed positions were given."
         assert prescribed_nodes is not None, estr
 
-    print(f"Smoothing algorithm: {algo.value}")
+        n_nodes_prescribed = node_hierarchy.count(Hierarchy.PRESCRIBED)
+        n_prescribed_xyz = len(prescribed_nodes)
+        estr = f"Error: number of PRESCRIBED nodes: {n_nodes_prescribed}"
+        estr += " must match the number of"
+        estr += f" prescribed Vertices(x, y, z): {n_prescribed_xyz}"
+        assert n_nodes_prescribed == n_prescribed_xyz, estr
+
+        breakpoint()
+        bb = 4
+
+    print(f"Smoothing algorithm: {algorithm.value}")
 
     vertices_old = vv
 

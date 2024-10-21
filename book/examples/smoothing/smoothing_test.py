@@ -17,6 +17,7 @@ from typing import Final
 # import sandbox.smoothing as sm
 # import sandbox.smoothing_types as ty
 import smoothing as sm
+import smoothing_examples as examples
 import smoothing_types as ty
 
 # Type alias for functional style methods
@@ -84,9 +85,24 @@ def test_xyz():
     assert result == gold
 
 
+def test_laplace_hierarchical_bracket():
+    """Unit test for Laplace smoothing with hierarhical control
+    on the Bracket example."""
+    bracket = examples.bracket
+    aa = sm.smooth(
+        vv=bracket.vertices,
+        nn=bracket.neighbors,
+        node_hierarchy=bracket.node_hierarchy,
+        prescribed_nodes=bracket.prescribed_nodes,
+        scale_lambda=bracket.scale_lambda,
+        num_iters=bracket.num_iters,
+        algorithm=bracket.algorithm
+    )
+
+
 def test_laplace_smoothing_double_x():
     """Unit test for Laplace smoothing with all dofs as BOUNDARY
-    on the Double X unit test."""
+    on the Double X example."""
     vv: Vertices = (
         Vertex(0.0, 0.0, 0.0),
         Vertex(1.0, 0.0, 0.0),
@@ -146,7 +162,7 @@ def test_laplace_smoothing_double_x():
         prescribed_nodes=None,
         scale_lambda=scale_lambda,
         num_iters=num_iters,
-        algo=algo,
+        algorithm=algo,
     )
     cc: Final[float] = scale_lambda / 3.0  # delta corner
     ee: Final[float] = scale_lambda / 4.0  # delta edge
@@ -180,7 +196,7 @@ def test_laplace_smoothing_double_x():
         prescribed_nodes=None,
         scale_lambda=scale_lambda,
         num_iters=num_iters,
-        algo=algo,
+        algorithm=algo,
     )
     # define the gold standard fiducial
     gold2 = (
