@@ -1,5 +1,8 @@
 """This module contains data for the smoothing examples."""
 
+import math
+from typing import Final
+
 import smoothing_types as ty
 
 # Type alias for functional style methods
@@ -8,7 +11,9 @@ SmoothingAlgorithm = ty.SmoothingAlgorithm
 Example = ty.SmoothingExample
 Vertex = ty.Vertex
 
+DEG2RAD: Final[float] = math.pi / 180.0  # rad/deg
 
+# L-bracket example
 bracket = Example(
     vertices=(
         Vertex(0, 0, 0),
@@ -103,7 +108,7 @@ bracket = Example(
         (3, 23, 25, 29),
         (4, 24, 26, 30),
         (5, 25, 31),
-
+        #
         (6, 22, 28, 32),
         (7, 23, 27, 29, 33),
         (8, 24, 28, 30, 34),
@@ -122,7 +127,7 @@ bracket = Example(
         #
         (19, 37, 41),
         (20, 38, 40, 42),
-        (21, 39, 41)
+        (21, 39, 41),
     ),
     hierarchy=(
         # hierarchy enum, node number, prescribed (x, y, z)
@@ -170,12 +175,73 @@ bracket = Example(
         2,  # 41 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 1)
         2,  # 42 -> (4*cos(45 deg), 4*sin(45 deg), 1)
     ),
+    prescribed=(
+        (1, Vertex(0, 0, 0)),
+        (2, Vertex(1, 0, 0)),
+        (3, Vertex(2, 0, 0)),
+        (4, Vertex(3, 0, 0)),
+        (5, Vertex(4, 0, 0)),
+        (6, Vertex(0, 1, 0)),
+        (
+            10,
+            Vertex(
+                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 0
+            ),
+        ),
+        (11, Vertex(0, 2, 0)),
+        (
+            15,
+            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
+        ),
+        (16, Vertex(0, 3, 0)),
+        (19, Vertex(0, 4, 0)),
+        (
+            20,
+            Vertex(
+                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 0
+            ),
+        ),
+        (
+            21,
+            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
+        ),
+        (22, Vertex(0, 0, 1)),
+        (23, Vertex(1, 0, 1)),
+        (24, Vertex(2, 0, 1)),
+        (25, Vertex(3, 0, 1)),
+        (26, Vertex(4, 0, 1)),
+        (27, Vertex(0, 1, 1)),
+        (
+            31,
+            Vertex(
+                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 1
+            ),
+        ),
+        (32, Vertex(0, 2, 1)),
+        (
+            36,
+            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
+        ),
+        (37, Vertex(0, 3, 1)),
+        (40, Vertex(0, 4, 1)),
+        (
+            41,
+            Vertex(
+                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 1
+            ),
+        ),
+        (
+            42,
+            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
+        ),
+    ),
     scale_lambda=0.3,
     scale_mu=-0.33,
     num_iters=10,
-    algorithm=SmoothingAlgorithm.LAPLACE
+    algorithm=SmoothingAlgorithm.LAPLACE,
 )
 
+# Double X two-element example
 double_x = Example(
     vertices=(
         Vertex(0.0, 0.0, 0.0),
@@ -212,9 +278,23 @@ double_x = Example(
         (5, 8, 10, 12),
         (6, 9, 11),
     ),
-    hierarchy=(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ),
+    hierarchy=(
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+    ),
+    prescribed=None,
     scale_lambda=0.3,
     scale_mu=-0.33,
     num_iters=2,
-    algorithm=SmoothingAlgorithm.LAPLACE
+    algorithm=SmoothingAlgorithm.LAPLACE,
 )

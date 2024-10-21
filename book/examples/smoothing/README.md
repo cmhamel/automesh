@@ -167,7 +167,7 @@ node | `x` | `y` | `z`
 
 ### Hierarchical Control
 
-Next, we illustrate the how hierarchical control changes the smoothing.  
+Next, we illustrate the how hierarchical control changes the smoothing.
 Conside the `PRESCRIBED` hierarchical smoothing below:
 
 ```python

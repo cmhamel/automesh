@@ -20,7 +20,7 @@ Hexes = tuple[Hex, ...]
 Neighbor = tuple[int, ...]
 Neighbors = tuple[Neighbor, ...]
 NodeHierarchy = tuple[int, ...]
-
+PrescribedNodes = tuple[tuple[int, Vertex], ...] | None
 
 # class DofType(Enum):
 #     """All degrees of freedom must belong to one, and only one, of the
@@ -61,6 +61,7 @@ class SmoothingExample(NamedTuple):
     nely: int
     nelz: int
     neighbors: Neighbors
+    prescribed: PrescribedNodes
     hierarchy: NodeHierarchy
     scale_lambda: float
     scale_mu: float
