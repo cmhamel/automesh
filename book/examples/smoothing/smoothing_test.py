@@ -85,6 +85,50 @@ def test_xyz():
     assert result == gold
 
 
+def test_smoothing_neighbors():
+    """Given the Double X test problem with completely made up
+    node hierarchy, assure that `smoothing_neighbors` returns
+    the correct neighbors.
+    """
+    ex = examples.double_x
+    neighbors = ex.neighbors  # borrow the neighbor connections
+
+    node_hierarchy = (
+        Hierarchy.INTERIOR,
+        Hierarchy.BOUNDARY,
+        Hierarchy.PRESCRIBED,
+        Hierarchy.PRESCRIBED,
+        Hierarchy.BOUNDARY,
+        Hierarchy.INTERIOR,
+        Hierarchy.INTERIOR,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.INTERIOR,
+        Hierarchy.INTERIOR,
+        Hierarchy.INTERIOR,
+    )
+
+    result = sm.smoothing_neighbors(
+        neighbors=neighbors, node_hierarchy=node_hierarchy
+    )
+    gold_smoothing_neighbors = (
+        (2, 4, 7),
+        (3, 5, 8),
+        (),
+        (),
+        (2, 4),
+        (3, 5, 12),
+        (1, 8, 10),
+        (2, 9),
+        (3, 8),
+        (4, 7, 11),
+        (5, 8, 10, 12),
+        (6, 9, 11),
+    )
+
+    assert result == gold_smoothing_neighbors
+
+
 def test_laplace_hierarchical_bracket():
     """Unit test for Laplace smoothing with hierarhical control
     on the Bracket example."""
