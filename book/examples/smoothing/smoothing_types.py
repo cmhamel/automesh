@@ -12,6 +12,16 @@ class Vertex(NamedTuple):
     z: float
 
 
+class Hierarchy(Enum):
+    """All nodes must be categorized as beloning to one, and only one,
+    of the following hierarchical categories.
+    """
+
+    INTERIOR = 0
+    BOUNDARY = 1
+    PRESCRIBED = 2
+
+
 Vertices = tuple[Vertex, ...]
 Hex = tuple[int, int, int, int, int, int, int, int]  # only hex elements
 Hexes = tuple[Hex, ...]
@@ -19,7 +29,8 @@ Hexes = tuple[Hex, ...]
 # DofSet = tuple[Dof, ...]  # analong to a SideSet or a NodeSet
 Neighbor = tuple[int, ...]
 Neighbors = tuple[Neighbor, ...]
-NodeHierarchy = tuple[int, ...]
+# NodeHierarchy = tuple[int, ...]
+NodeHierarchy = tuple[Hierarchy, ...]
 PrescribedNodes = tuple[tuple[int, Vertex], ...] | None
 
 # class DofType(Enum):
@@ -32,16 +43,6 @@ PrescribedNodes = tuple[tuple[int, Vertex], ...] | None
 #     FREE_EXTERIOR = 2
 #     FREE_INTERFACE = 3
 #     FREE_INTERIOR = 4
-
-
-class Hierarchy(Enum):
-    """All nodes must be categorized as beloning to one, and only one,
-    of the following hierarchical categories.
-    """
-
-    INTERIOR = 0
-    BOUNDARY = 1
-    PRESCRIBED = 2
 
 
 class SmoothingAlgorithm(Enum):
@@ -61,8 +62,8 @@ class SmoothingExample(NamedTuple):
     nely: int
     nelz: int
     neighbors: Neighbors
-    prescribed: PrescribedNodes
-    hierarchy: NodeHierarchy
+    node_hierarchy: NodeHierarchy
+    prescribed_nodes: PrescribedNodes
     scale_lambda: float
     scale_mu: float
     num_iters: int

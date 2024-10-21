@@ -9,8 +9,10 @@ import smoothing_types as ty
 # https://docs.python.org/3/library/typing.html#type-aliases
 # DofSet = ty.DofSet
 Hexes = ty.Hexes
+Hierarchy = ty.Hierarchy
 Neighbors = ty.Neighbors
 NodeHierarchy = ty.NodeHierarchy
+PrescribedNodes = ty.PrescribedNodes
 Vertex = ty.Vertex
 Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
@@ -65,8 +67,9 @@ def xyz(v1: Vertex) -> tuple[float, float, float]:
 def smooth(
     vv: Vertices,
     nn: Neighbors,
-    nh: NodeHierarchy,
-    sf: float,
+    node_hierarchy: NodeHierarchy,
+    prescribed_nodes: PrescribedNodes,
+    scale_lambda: float,
     num_iters: int,
     algo: SmoothingAlgorithm,
 ) -> Vertices:
@@ -76,6 +79,13 @@ def smooth(
     coordinates.
     """
     assert num_iters >= 1, "`num_iters` must be 1 or greater"
+
+    # if the node_hierarchy contains a Hierarchy.PRESCRIBED type; or
+    # the the PrescribedNodes must not be None
+    if Hierarchy.PRESCRIBED in node_hierarchy:
+        estr = "Error, NodeHierarchy desigates PRESCRIBED nodes, but no values"
+        estr += " for (x, y, z) prescribed positions were given."
+        assert prescribed_nodes is not None, estr
 
     print(f"Smoothing algorithm: {algo.value}")
 
@@ -87,7 +97,7 @@ def smooth(
         print(f"Iteration: {k+1}")
         vertices_new = []
 
-        for vertex, neighbors, level in zip(vertices_old, nn, nh):
+        for vertex, neighbors, level in zip(vertices_old, nn, node_hierarchy):
             # debug vertex by vertex
             # print(f"vertex {vertex}, neighbors {neighbors}")
             # for now, no hierarchical smoohing
@@ -100,7 +110,7 @@ def smooth(
 
             neighbor_average = average_position(neighbor_vertices)
             delta = subtract(v1=neighbor_average, v2=vertex)
-            lambda_delta = scale(vertex=delta, scale_factor=sf)
+            lambda_delta = scale(vertex=delta, scale_factor=scale_lambda)
             vertex_new = add(v1=vertex, v2=lambda_delta)
             vertices_new.append(vertex_new)
             # breakpoint()

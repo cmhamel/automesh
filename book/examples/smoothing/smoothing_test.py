@@ -24,6 +24,7 @@ import smoothing_types as ty
 # DofSet = ty.DofSet
 # Elements = ty.Elements
 Hexes = ty.Hexes
+Hierarchy = ty.Hierarchy
 Neighbors = ty.Neighbors
 NodeHierarchy = ty.NodeHierarchy
 Vertex = ty.Vertex
@@ -83,8 +84,9 @@ def test_xyz():
     assert result == gold
 
 
-def test_laplace_smoothing():
-    """Unit test for Laplace smoothing with all dofs as FREE_INTERIOR."""
+def test_laplace_smoothing_double_x():
+    """Unit test for Laplace smoothing with all dofs as BOUNDARY
+    on the Double X unit test."""
     vv: Vertices = (
         Vertex(0.0, 0.0, 0.0),
         Vertex(1.0, 0.0, 0.0),
@@ -115,7 +117,20 @@ def test_laplace_smoothing():
         (6, 9, 11),
     )
 
-    nh: NodeHierarchy = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, )
+    nh: NodeHierarchy = (
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+        Hierarchy.BOUNDARY,
+    )
 
     scale_lambda: Final[float] = 0.3  # lambda for Laplace smoothing
 
@@ -125,7 +140,13 @@ def test_laplace_smoothing():
     algo = SmoothingAlgorithm.LAPLACE
 
     aa = sm.smooth(
-        vv=vv, nn=nn, nh=nh, sf=scale_lambda, num_iters=num_iters, algo=algo
+        vv=vv,
+        nn=nn,
+        node_hierarchy=nh,
+        prescribed_nodes=None,
+        scale_lambda=scale_lambda,
+        num_iters=num_iters,
+        algo=algo,
     )
     cc: Final[float] = scale_lambda / 3.0  # delta corner
     ee: Final[float] = scale_lambda / 4.0  # delta edge
@@ -153,7 +174,13 @@ def test_laplace_smoothing():
     num_iters = 2  # overwrite, double iteration of smoothing
 
     aa2 = sm.smooth(
-        vv=vv, nn=nn, nh=nh, sf=scale_lambda, num_iters=num_iters, algo=algo
+        vv=vv,
+        nn=nn,
+        node_hierarchy=nh,
+        prescribed_nodes=None,
+        scale_lambda=scale_lambda,
+        num_iters=num_iters,
+        algo=algo,
     )
     # define the gold standard fiducial
     gold2 = (
@@ -171,40 +198,6 @@ def test_laplace_smoothing():
         (1.8099999999999998, 0.8225, 0.8225),
     )
     assert aa2 == gold2
-
-
-# def test_taubin_smoothing(
-#     vv: Vertices,
-#     nn: Neighbors,
-#     ds: DofSet,
-#     sf_lambda: float,
-#     sf_mu: float
-# ):
-#     """Unit test for Taubin smoothing with all dofs as FREE_INTERIOR."""
-#     aa = smooth(vv=vv, nn=nn, ds=ds, sf=sf_lambda)
-#     bb = smooth(vv=aa, nn=nn, ds=ds, sf=sf_mu)
-#     breakpoint()
-#     cc: Final[float] = sf / 3.0  # delta corner
-#     ee: Final[float] = sf / 4.0  # delta edge
-#     # define the gold standard fiducial
-#     gold = (
-#         Vertex(x=cc, y=cc, z=cc),  # node 1, corner
-#         Vertex(x=1.0, y=ee, z=ee),  # node 2, edge
-#         Vertex(x=2.0-cc, y=cc, z=cc),  # node 3, corner
-#         #
-#         Vertex(x=cc, y=1.0-cc, z=cc),  # node 4, corner
-#         Vertex(x=1.0, y=1.0-ee, z=ee),  # node 5, edge
-#         Vertex(x=2.0-cc, y=1.0-cc, z=cc),  # node 6, corner
-#         #
-#         Vertex(x=cc, y=cc, z=1-cc),  # node 7, corner
-#         Vertex(x=1.0, y=ee, z=1-ee),  # node 8, edge
-#         Vertex(x=2.0-cc, y=cc, z=1-cc),  # node 9, corner
-#         #
-#         Vertex(x=cc, y=1.0-cc, z=1-cc),  # node 10, corner
-#         Vertex(x=1.0, y=1.0-ee, z=1-ee),  # node 11, edge
-#         Vertex(x=2.0-cc, y=1.0-cc, z=1-cc),  # node 12, corner
-#     )
-#     assert bb == gold
 
 
 def test_pair_ordered():

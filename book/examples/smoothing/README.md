@@ -32,18 +32,18 @@ Following is a test where all nodes are `BOUNDARY` from the [`Hierarchy`](../../
 
 ```python
 node_smoothing_categories: Hierarchy = (
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,    
 )
 ```
 
