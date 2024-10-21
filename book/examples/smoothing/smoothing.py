@@ -64,6 +64,41 @@ def xyz(v1: Vertex) -> tuple[float, float, float]:
     return (aa, bb, cc)
 
 
+def smoothing_neighbors(neighbors: Neighbors, node_hierarchy: NodeHierarchy):
+    """Given an original neighbors structure, defined from connectivity
+    of the mesh, and given a node_hierarchy, return the neighbors that are
+    used for smoothing, which will be a subset of the original neighbors
+    structure."""
+    neighbors_new = ()
+
+    for node, level in enumerate(node_hierarchy):
+        nei_old = neighbors[node]
+        print(f"Processing node {node+1}, neighbors: {nei_old}")
+        # node_level = level.value
+        levels = [int(node_hierarchy[x - 1].value) for x in nei_old]
+        nei_new = ()
+
+        # breakpoint()
+        match level:
+            case Hierarchy.INTERIOR:
+                print("INTERIOR node")
+                nei_new = nei_old
+            case Hierarchy.BOUNDARY:
+                print("BOUNDARY node")
+                for nn, li in zip(nei_old, levels):
+                    if li >= level.value:
+                        nei_new += (nn,)
+            case Hierarchy.PRESCRIBED:
+                print("PRESCRIBED node")
+                nei_new = ()
+            case _:
+                raise ValueError("Hierarchy value must be in [0, 1, 2]")
+
+        neighbors_new += (nei_new,)
+
+    return neighbors_new
+
+
 def smooth(
     vv: Vertices,
     nn: Neighbors,
@@ -78,11 +113,16 @@ def smooth(
     smoothing for num_iter iterations, and return the updated
     coordinates.
     """
+    print(f"Smoothing algorithm: {algorithm.value}")
+
     assert num_iters >= 1, "`num_iters` must be 1 or greater"
 
     # if the node_hierarchy contains a Hierarchy.PRESCRIBED type; or
     # the the PrescribedNodes must not be None
     if Hierarchy.PRESCRIBED in node_hierarchy:
+        info = "Smoothing algorithm with hierarchical control"
+        info += " and PRESCRIBED node positions."
+        print(info)
         estr = "Error, NodeHierarchy desigates PRESCRIBED nodes, but no values"
         estr += " for (x, y, z) prescribed positions were given."
         assert prescribed_nodes is not None, estr
@@ -94,10 +134,11 @@ def smooth(
         estr += f" prescribed Vertices(x, y, z): {n_prescribed_xyz}"
         assert n_nodes_prescribed == n_prescribed_xyz, estr
 
-        breakpoint()
-        bb = 4
+        # update neighbors
 
-    print(f"Smoothing algorithm: {algorithm.value}")
+        # update vertex positions
+
+        bb = 4
 
     vertices_old = vv
 

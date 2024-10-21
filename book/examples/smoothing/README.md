@@ -31,7 +31,7 @@ node | node neighbors
 Following is a test where all nodes are `BOUNDARY` from the [`Hierarchy`](../../theory/smoothing.md#the-hierarchy-enum) enum.
 
 ```python
-node_smoothing_categories: Hierarchy = (
+node_hierarchy: NodeHierarchy = (
     Hierarchy.BOUNDARY,
     Hierarchy.BOUNDARY,
     Hierarchy.BOUNDARY,
@@ -43,7 +43,7 @@ node_smoothing_categories: Hierarchy = (
     Hierarchy.BOUNDARY,
     Hierarchy.BOUNDARY,
     Hierarchy.BOUNDARY,
-    Hierarchy.BOUNDARY,    
+    Hierarchy.BOUNDARY,
 )
 ```
 
@@ -165,35 +165,56 @@ node | `x` | `y` | `z`
 41 | 1.0071968572512657 | 3.3805688588919414 | 0.5915300441740617
 42 | 1.409074280806729 | 3.3296020281899956 | 0.5783492939376562
 
-### Hierarchical Control
+### Laplace Smoothing with Hierarchical Control
 
-Next, we illustrate the how hierarchical control changes the smoothing.
-Conside the `PRESCRIBED` hierarchical smoothing below:
+We illustrate the how hierarchical control affects the Laplace smoothing.
+Conside the `PRESCRIBED` and `BOUNDARY` node hierarchy below:
 
 ```python
-node_smoothing_categories: Hierarchy = (
+node_hierarchy: NodeHierarchy = (
     # hierarchy enum, node number, prescribed (x, y, z)
-    2, #  1 -> (0, 0, 0)
-    2, #  2 -> (1, 0, 0)
-    2, #  3 -> (2, 0, 0)
-    2, #  4 -> (3, 0, 0)
-    2, #  5 -> (4, 0, 0)
-    2, #  6 -> (0, 1, 0)
-    1, #  7
-    1, #  8
-    1, #  9
-    2, # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
-    2, # 11 -> *(0, 2, 0)
-    1, # 12
-    1, # 13
-    1, # 14
-    2, # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
-    2, # 16 -> (0, 3, 0)
-    1, # 17
-    1, # 18
-    2, # 19 -> (0, 4, 0)
-    2, # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
-    2, # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
-    # similarly repeated for the z=1 layer, nodes 22 to 42
+    Hierarchy.PRESCRIBED,  # 1 -> (0, 0, 0)
+    Hierarchy.PRESCRIBED,  # 2 -> (1, 0, 0)
+    Hierarchy.PRESCRIBED,  # 3 -> (2, 0, 0)
+    Hierarchy.PRESCRIBED,  # 4 -> (3, 0, 0)
+    Hierarchy.PRESCRIBED,  # 5 -> (4, 0, 0)
+    Hierarchy.PRESCRIBED,  # 6 -> (0, 1, 0)
+    Hierarchy.BOUNDARY,  # 7
+    Hierarchy.BOUNDARY,  # 8
+    Hierarchy.BOUNDARY,  # 9
+    Hierarchy.PRESCRIBED,  # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
+    Hierarchy.PRESCRIBED,  # 11 -> *(0, 2, 0)
+    Hierarchy.BOUNDARY,  # 12
+    Hierarchy.BOUNDARY,  # 13
+    Hierarchy.BOUNDARY,  # 14
+    Hierarchy.PRESCRIBED,  # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    Hierarchy.PRESCRIBED,  # 16 -> (0, 3, 0)
+    Hierarchy.BOUNDARY,  # 17
+    Hierarchy.BOUNDARY,  # 18
+    Hierarchy.PRESCRIBED,  # 19 -> (0, 4, 0)
+    Hierarchy.PRESCRIBED,  # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
+    Hierarchy.PRESCRIBED,  # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    #
+    Hierarchy.PRESCRIBED,  # 22 -> (0, 0, 1)
+    Hierarchy.PRESCRIBED,  # 23 -> (1, 0, 1)
+    Hierarchy.PRESCRIBED,  # 24 -> (2, 0, 1)
+    Hierarchy.PRESCRIBED,  # 25 -> (3, 0, 1)
+    Hierarchy.PRESCRIBED,  # 26 -> (4, 0, 1)
+    Hierarchy.PRESCRIBED,  # 27 -> (0, 1, 1)
+    Hierarchy.BOUNDARY,  # 28
+    Hierarchy.BOUNDARY,  # 29
+    Hierarchy.BOUNDARY,  # 30
+    Hierarchy.PRESCRIBED,  # 31 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 1)
+    Hierarchy.PRESCRIBED,  # 32 -> *(0, 2, 1)
+    Hierarchy.BOUNDARY,  # 33
+    Hierarchy.BOUNDARY,  # 34
+    Hierarchy.BOUNDARY,  # 35
+    Hierarchy.PRESCRIBED,  # 36 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+    Hierarchy.PRESCRIBED,  # 37 -> (0, 3, 1)
+    Hierarchy.BOUNDARY,  # 38
+    Hierarchy.BOUNDARY,  # 39
+    Hierarchy.PRESCRIBED,  # 40 -> (0, 4, 1)
+    Hierarchy.PRESCRIBED,  # 41 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 1)
+    Hierarchy.PRESCRIBED,  # 42 -> (4*cos(45 deg), 4*sin(45 deg), 1)
 )
 ```

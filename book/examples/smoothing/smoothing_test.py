@@ -89,6 +89,62 @@ def test_laplace_hierarchical_bracket():
     """Unit test for Laplace smoothing with hierarhical control
     on the Bracket example."""
     bracket = examples.bracket
+
+    node_hierarchy = bracket.node_hierarchy
+    neighbors = bracket.neighbors
+    node_hierarchy = bracket.node_hierarchy
+
+    # If a node is PRESCRIBED, then it has no smoothing neighbors
+    smoothing_neighbors = sm.smoothing_neighbors(
+        neighbors=neighbors, node_hierarchy=node_hierarchy
+    )
+    gold_smoothing_neighbors = (
+        (),  # 1
+        (),  # 2
+        (),  # 3
+        (),  # 4
+        (),  # 5
+        (),  # 6
+        (2, 6, 8, 12, 28),  # 7
+        (3, 7, 9, 13, 29),  # 8
+        (4, 8, 10, 14, 30),  # 9
+        (),  # 10
+        (),  # 11
+        (7, 11, 13, 17, 33),  # 12
+        (8, 12, 14, 18, 34),  # 13
+        (9, 13, 15, 35),  # 14
+        (),  # 15
+        (),  # 16
+        (12, 16, 18, 20, 38),  # 17
+        (13, 17, 21, 39),  # 18
+        (),  # 19
+        (),  # 20
+        (),
+        (),  # 22
+        (),
+        (),  # 24
+        (),
+        (),  # 26
+        (),
+        (7, 23, 27, 29, 33),  # 28
+        (8, 24, 28, 30, 34),  # 29
+        (9, 25, 29, 31, 35),  # 30
+        (),  # 31
+        (),  # 32
+        (12, 28, 32, 34, 38),  # 33
+        (13, 29, 33, 35, 39),  # 34
+        (14, 30, 34, 36),  # 35
+        (),  # 36
+        (),  # 37
+        (17, 33, 37, 39, 41),  # 38
+        (18, 34, 38, 42),  # 39
+        (),  # 40
+        (),  # 41
+        (),  # 42
+    )
+
+    assert smoothing_neighbors == gold_smoothing_neighbors
+
     aa = sm.smooth(
         vv=bracket.vertices,
         nn=bracket.neighbors,
@@ -96,7 +152,7 @@ def test_laplace_hierarchical_bracket():
         prescribed_nodes=bracket.prescribed_nodes,
         scale_lambda=bracket.scale_lambda,
         num_iters=bracket.num_iters,
-        algorithm=bracket.algorithm
+        algorithm=bracket.algorithm,
     )
 
 
