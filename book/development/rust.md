@@ -1,5 +1,8 @@
 # Rust Development
 
+[![crates](https://img.shields.io/crates/v/automesh?logo=rust&logoColor=000000&label=Crates&color=32592f)](https://crates.io/crates/automesh)
+[![docs](https://img.shields.io/badge/Docs-API-e57300?logo=docsdotrs&logoColor=000000)](https://docs.rs/automesh)
+
 ## Install Rust
 
 Install Rust using `rustup` with the default standard installation:
@@ -37,4 +40,10 @@ cargo clippy
 
 ```sh
 cargo rustdoc --open -- --html-in-header docs/katex.html
+```
+
+## Run the Benchmarks
+
+```sh
+rustup run nightly cargo bench
 ```
