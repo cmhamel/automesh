@@ -1,7 +1,6 @@
 # Introduction
 
-`automesh` is an automatic mesh generation tool that converts a segmentation
-into a hexahedral finite element mesh.
+`automesh` can automatically convert a segmentation into a hexahedral finite element mesh.
 
 ## Segmentation
 

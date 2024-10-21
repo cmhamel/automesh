@@ -16,8 +16,8 @@ macro_rules! about {
       @@    @@    @@      {}
     @@@@@@@@@@@@  @@@
     @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
-    @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred.
-     @@@@@@@@@@@@@@@@     - Scaling is applied before translation.",
+    @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred
+     @@@@@@@@@@@@@@@@     - Scaling is applied before translation",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
             env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
@@ -26,7 +26,7 @@ macro_rules! about {
 }
 
 #[derive(Parser)]
-#[command(about = about!(), arg_required_else_help = true, long_about = None, version)]
+#[command(about = about!(), arg_required_else_help = true, version)]
 struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -35,7 +35,6 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     /// Converts between segmentation input file types
-    #[command(long_about = about!())]
     Convert {
         /// Name of the original NumPy (.npy) or SPN (.spn) input file.
         #[arg(long, short, value_name = "FILE")]
@@ -63,7 +62,6 @@ enum Commands {
     },
 
     /// Creates a finite element mesh from a segmentation
-    #[command(long_about = about!())]
     Mesh {
         /// Name of the NumPy (.npy) or SPN (.spn) input file.
         #[arg(long, short, value_name = "FILE")]
@@ -138,7 +136,6 @@ enum Commands {
     },
 
     /// Applies smoothing to an existing mesh file
-    #[command(long_about = about!())]
     Smooth {
         /// Name of the Abaqus (.inp) input file.
         #[arg(long, short, value_name = "FILE")]
