@@ -96,7 +96,7 @@ fn test_finite_elements(
             finite_elements.calculate_node_node_connectivity().unwrap();
             finite_elements.calculate_nodal_hierarchy().unwrap();
             finite_elements
-                .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE))
+                .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE), None)
                 .unwrap();
             let smoothed_nodal_coordinates = finite_elements.get_nodal_coordinates();
             assert!(smoothed_nodal_coordinates.len() == gold.len());
@@ -112,7 +112,25 @@ fn test_finite_elements(
                         )
                     }
                 });
-        })
+        });
+        let mut finite_elements = FiniteElements::from_data(
+            element_blocks.clone(),
+            element_node_connectivity.clone(),
+            nodal_coordinates.clone(),
+        );
+        finite_elements
+            .calculate_node_element_connectivity()
+            .unwrap();
+        finite_elements.calculate_node_node_connectivity().unwrap();
+        finite_elements.calculate_nodal_hierarchy().unwrap();
+        let prescribed_nodes = finite_elements.get_boundary_nodes().clone();
+        finite_elements
+            .smooth(
+                Smoothing::Laplacian(1, SMOOTHING_SCALE),
+                Some(&prescribed_nodes),
+            )
+            .unwrap();
+        assert_eq!(finite_elements.get_nodal_coordinates(), &nodal_coordinates)
     }
 }
 

@@ -348,7 +348,7 @@ impl FiniteElements {
         &self.node_node_connectivity_interior
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
+    pub fn smooth(&mut self, method: Smoothing, prescribed: Option<&Nodes>) -> Result<(), &str> {
         if self.get_node_node_connectivity() != &EMPTY_CONNECTIVITY {
             match method {
                 Smoothing::Laplacian(iterations, scale) => {
@@ -359,12 +359,18 @@ impl FiniteElements {
                     (0..iterations).for_each(|iteration| {
                         #[cfg(feature = "profile")]
                         let time = Instant::now();
-                        let laplacian = self.calculate_laplacian(self.get_node_node_connectivity());
+                        let mut laplacian =
+                            self.calculate_laplacian(self.get_node_node_connectivity());
+                        if let Some(nodes) = &prescribed {
+                            nodes.iter().for_each(|node| {
+                                laplacian[node - NODE_NUMBERING_OFFSET] = vec![0.0, 0.0, 0.0]
+                            });
+                        }
                         self.get_nodal_coordinates_mut()
                             .iter_mut()
                             .flatten()
                             .zip(laplacian.iter().flatten())
-                            .for_each(|(coordinate, entry)| *coordinate += scale * entry);
+                            .for_each(|(coordinate, entry)| *coordinate += entry * scale);
                         #[cfg(feature = "profile")]
                         println!(
                             "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
