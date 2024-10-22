@@ -94,14 +94,34 @@ macro_rules! bench_block {
             });
         }
         #[bench]
-        fn smooth(bencher: &mut Bencher) -> Result<(), String> {
+        fn smooth_free(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             bencher.iter(|| {
-                fem.smooth(Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE))
-                    .unwrap()
+                fem.smooth(
+                    Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE),
+                    None,
+                )
+                .unwrap()
+            });
+            Ok(())
+        }
+        #[bench]
+        fn smooth_prescribed(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            fem.calculate_node_element_connectivity()?;
+            fem.calculate_node_node_connectivity()?;
+            fem.calculate_nodal_hierarchy()?;
+            let prescribed_nodes = fem.get_boundary_nodes().clone();
+            bencher.iter(|| {
+                fem.smooth(
+                    Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE),
+                    Some(&prescribed_nodes),
+                )
+                .unwrap()
             });
             Ok(())
         }

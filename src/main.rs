@@ -386,7 +386,7 @@ fn mesh(
                         // - calculate_nodal_hierarchy()
                         // - calculate_node_node_connectivity_boundary()
                         // - calculate_node_node_connectivity_interior()
-                        output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
+                        output_type.smooth(Smoothing::Laplacian(iterations, scale), None)?;
                         if !quiet {
                             println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
                         }
