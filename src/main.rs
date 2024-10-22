@@ -1,4 +1,4 @@
-use automesh::{Abaqus, FiniteElements, Voxels};
+use automesh::{Abaqus, FiniteElements, Smoothing, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use std::{io::Error, path::Path, time::Instant};
@@ -63,6 +63,9 @@ enum Commands {
 
     /// Creates a finite element mesh from a segmentation
     Mesh {
+        #[command(subcommand)]
+        meshing: Option<MeshingCommands>,
+
         /// Name of the NumPy (.npy) or SPN (.spn) input file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
@@ -72,31 +75,31 @@ enum Commands {
         output: String,
 
         /// Number of voxels in the x-direction.
-        #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
+        #[arg(default_value_t = 0, long, short = 'x', value_name = "NEL")]
         nelx: usize,
 
         /// Number of voxels in the y-direction.
-        #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
+        #[arg(default_value_t = 0, long, short = 'y', value_name = "NEL")]
         nely: usize,
 
         /// Number of voxels in the z-direction.
-        #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
+        #[arg(default_value_t = 0, long, short = 'z', value_name = "NEL")]
         nelz: usize,
 
         /// Voxel IDs to remove from the mesh [default: 0].
-        #[arg(short = 'r', long, value_name = "ID")]
+        #[arg(long, short, value_name = "ID")]
         remove: Option<Vec<u8>>,
 
         /// Scaling (> 0.0) in the x-direction.
-        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         xscale: f64,
 
         /// Scaling (> 0.0) in the y-direction.
-        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         yscale: f64,
 
         /// Scaling (> 0.0) in the z-direction.
-        #[arg(long, default_value_t = 1.0, value_name = "SCALE")]
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         zscale: f64,
 
         /// Translation in the x-direction.
@@ -126,10 +129,6 @@ enum Commands {
         )]
         ztranslate: f64,
 
-        /// Pass to enable smoothing.
-        #[arg(action, long, short)]
-        smooth: bool,
-
         /// Pass to quiet the output.
         #[arg(action, long, short)]
         quiet: bool,
@@ -144,6 +143,22 @@ enum Commands {
         /// Name of the Abaqus (.inp) output file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum MeshingCommands {
+    /// Applies smoothing to the mesh before output
+    Smooth {
+        /// Number of smoothing iterations
+        #[arg(default_value_t = 1, long, short = 'n', value_name = "NUM")]
+        iterations: usize,
+        /// Name of the smoothing method [default: Laplacian]
+        #[arg(long, short, value_name = "NAME")]
+        method: Option<String>,
+        /// Scaling (> 0.0) parameter for smoothing
+        #[arg(default_value_t = 1.0, long, short, value_name = "VAL")]
+        scale: f64,
     },
 }
 
@@ -205,6 +220,7 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
         }) => convert(input, output, nelx, nely, nelz, quiet),
         Some(Commands::Mesh {
+            meshing,
             input,
             output,
             nelx,
@@ -217,11 +233,10 @@ fn main() -> Result<(), ErrorWrapper> {
             xtranslate,
             ytranslate,
             ztranslate,
-            smooth,
             quiet,
         }) => mesh(
-            input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, smooth, quiet,
+            meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
+            ytranslate, ztranslate, quiet,
         ),
         Some(Commands::Smooth { input, output }) => {
             todo!("{}, {}", input, output)
@@ -257,6 +272,7 @@ fn convert(
 
 #[allow(clippy::too_many_arguments)]
 fn mesh(
+    meshing: Option<MeshingCommands>,
     input: String,
     output: String,
     nelx: usize,
@@ -269,7 +285,6 @@ fn mesh(
     xtranslate: f64,
     ytranslate: f64,
     ztranslate: f64,
-    smooth: bool,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
@@ -316,21 +331,39 @@ fn mesh(
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
-
-    // temporary
-    if smooth {
-        let time_smooth = Instant::now();
-        if !quiet {
-            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
-        }
-        output_type.calculate_node_element_connectivity().unwrap();
-        output_type.calculate_node_node_connectivity().unwrap();
-        output_type.calculate_nodal_hierarchy().unwrap();
-        if !quiet {
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+    if let Some(options) = meshing {
+        match options {
+            MeshingCommands::Smooth {
+                iterations,
+                method,
+                scale,
+            } => {
+                let smoothing_method = method.unwrap_or("Laplacian".to_string());
+                match smoothing_method.as_str() {
+                    "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
+                        let time_smooth = Instant::now();
+                        if !quiet {
+                            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+                        }
+                        output_type.calculate_node_element_connectivity()?;
+                        output_type.calculate_node_node_connectivity()?;
+                        // Unless a hierarchical smoothing method is specified, no need to do:
+                        // - calculate_nodal_hierarchy()
+                        // - calculate_node_node_connectivity_boundary()
+                        // - calculate_node_node_connectivity_interior()
+                        output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
+                        if !quiet {
+                            println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+                        }
+                    }
+                    _ => Err(format!(
+                        "Invalid smoothing method {} specified",
+                        smoothing_method
+                    ))?,
+                }
+            }
         }
     }
-
     write_output(output, OutputTypes::Abaqus(output_type), quiet)?;
     Ok(())
 }

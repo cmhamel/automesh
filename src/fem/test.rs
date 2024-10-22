@@ -95,7 +95,9 @@ fn test_finite_elements(
                 .unwrap();
             finite_elements.calculate_node_node_connectivity().unwrap();
             finite_elements.calculate_nodal_hierarchy().unwrap();
-            finite_elements.smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE));
+            finite_elements
+                .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE))
+                .unwrap();
             let smoothed_nodal_coordinates = finite_elements.get_nodal_coordinates();
             assert!(smoothed_nodal_coordinates.len() == gold.len());
             smoothed_nodal_coordinates

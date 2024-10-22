@@ -48,7 +48,7 @@ impl Voxels {
             data: voxel_data_from_spn(file_path, nel)?,
         })
     }
-    /// ???
+    /// Constructs and returns a new voxels type from a TIF file.
     pub fn from_tif(file_path: &str) -> Result<Self, String> {
         Ok(Self {
             data: voxel_data_from_tif(file_path)?,

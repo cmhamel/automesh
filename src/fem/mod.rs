@@ -86,8 +86,8 @@ impl FiniteElements {
             })
             .collect()
     }
-    /// Calculates and sets the nodal hierarchy.
-    pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
+    /// Calculates the nodal hierarchy.
+    pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), String> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
@@ -142,11 +142,11 @@ impl FiniteElements {
             );
             Ok(())
         } else {
-            Err("Need to calculate and set the node-to-element connectivity first.")
+            Err("Need to calculate the node-to-element connectivity first".to_string())
         }
     }
-    /// Calculates and sets the node-to-element connectivity.
-    pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {
+    /// Calculates the node-to-element connectivity.
+    pub fn calculate_node_element_connectivity(&mut self) -> Result<(), String> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let number_of_nodes = self.get_nodal_coordinates().len();
@@ -168,8 +168,8 @@ impl FiniteElements {
         );
         Ok(())
     }
-    /// Calculates and sets the node-to-node connectivity.
-    pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
+    /// Calculates the node-to-node connectivity.
+    pub fn calculate_node_node_connectivity(&mut self) -> Result<(), String> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
@@ -259,11 +259,11 @@ impl FiniteElements {
             );
             Ok(())
         } else {
-            Err("Need to calculate and set the node-to-element connectivity first.")
+            Err("Need to calculate the node-to-element connectivity first".to_string())
         }
     }
-    /// Calculates and sets the node-to-node connectivity for boundary nodes.
-    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
+    /// Calculates the node-to-node connectivity for boundary nodes.
+    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), String> {
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
             let boundary_nodes = self.get_boundary_nodes();
@@ -280,11 +280,11 @@ impl FiniteElements {
                 .collect();
             Ok(())
         } else {
-            Err("Need to calculate and set the nodal hierarchy first.")
+            Err("Need to calculate the nodal hierarchy first".to_string())
         }
     }
-    /// Calculates and sets the node-to-node connectivity for interior nodes.
-    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), &str> {
+    /// Calculates the node-to-node connectivity for interior nodes.
+    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), String> {
         if self.get_exterior_nodes() != &EMPTY_NODES {
             let node_node_connectivity = self.get_node_node_connectivity();
             self.node_node_connectivity_interior = self
@@ -296,7 +296,7 @@ impl FiniteElements {
                 .collect();
             Ok(())
         } else {
-            Err("Need to calculate and set the nodal hierarchy first.")
+            Err("Need to calculate the nodal hierarchy first".to_string())
         }
     }
     /// Returns a reference to the boundary nodes.
@@ -347,19 +347,36 @@ impl FiniteElements {
     pub fn get_node_node_connectivity_interior(&self) -> &Connectivity {
         &self.node_node_connectivity_interior
     }
-    /// ???
-    pub fn smooth(&mut self, method: Smoothing) {
-        match method {
-            Smoothing::Laplacian(iterations, scale) => {
-                for _ in 0..iterations {
-                    let laplacian = self.calculate_laplacian(self.get_node_node_connectivity());
-                    self.get_nodal_coordinates_mut()
-                        .iter_mut()
-                        .flatten()
-                        .zip(laplacian.iter().flatten())
-                        .for_each(|(coordinate, entry)| *coordinate += scale * entry)
+    /// Smooths the nodal coordinates according to the provided smoothing method.
+    pub fn smooth(&mut self, method: Smoothing) -> Result<(), String> {
+        if self.get_node_node_connectivity() != &EMPTY_CONNECTIVITY {
+            match method {
+                Smoothing::Laplacian(iterations, scale) => {
+                    if scale <= 0.0 {
+                        return Err("Need to specify scale > 0.0".to_string());
+                    }
+                    #[allow(unused_variables)]
+                    (0..iterations).for_each(|iteration| {
+                        #[cfg(feature = "profile")]
+                        let time = Instant::now();
+                        let laplacian = self.calculate_laplacian(self.get_node_node_connectivity());
+                        self.get_nodal_coordinates_mut()
+                            .iter_mut()
+                            .flatten()
+                            .zip(laplacian.iter().flatten())
+                            .for_each(|(coordinate, entry)| *coordinate += scale * entry);
+                        #[cfg(feature = "profile")]
+                        println!(
+                            "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
+                            iteration + 1,
+                            time.elapsed()
+                        );
+                    })
                 }
             }
+            Ok(())
+        } else {
+            Err("Need to calculate the node-to-node connectivity first".to_string())
         }
     }
 }
