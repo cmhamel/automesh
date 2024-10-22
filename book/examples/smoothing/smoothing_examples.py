@@ -240,6 +240,7 @@ bracket = Example(
     scale_mu=-0.33,
     num_iters=10,
     algorithm=SmoothingAlgorithm.LAPLACE,
+    file_stem="bracket"
 )
 
 # Double X two-element example
@@ -298,4 +299,5 @@ double_x = Example(
     scale_mu=-0.33,
     num_iters=2,
     algorithm=SmoothingAlgorithm.LAPLACE,
+    file_stem="double_x"
 )

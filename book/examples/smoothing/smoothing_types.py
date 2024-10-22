@@ -68,3 +68,4 @@ class SmoothingExample(NamedTuple):
     scale_mu: float
     num_iters: int
     algorithm: SmoothingAlgorithm
+    file_stem: str

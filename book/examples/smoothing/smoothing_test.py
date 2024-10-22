@@ -189,15 +189,94 @@ def test_laplace_hierarchical_bracket():
 
     assert smoothing_neighbors == gold_smoothing_neighbors
 
-    aa = sm.smooth(
+    # specific test with lambda = 0.3 and num_iters = 10
+    scale_lambda_test = 0.3
+    num_iters_test = 10
+
+    result = sm.smooth(
         vv=bracket.vertices,
         nn=bracket.neighbors,
         node_hierarchy=bracket.node_hierarchy,
         prescribed_nodes=bracket.prescribed_nodes,
-        scale_lambda=bracket.scale_lambda,
-        num_iters=bracket.num_iters,
+        scale_lambda=scale_lambda_test,
+        num_iters=num_iters_test,
         algorithm=bracket.algorithm,
     )
+
+    gold_vertices_10_iter = (
+        Vertex(x=0, y=0, z=0),
+        Vertex(x=1, y=0, z=0),
+        Vertex(x=2, y=0, z=0),
+        Vertex(x=3, y=0, z=0),
+        Vertex(x=4, y=0, z=0),
+        Vertex(x=0, y=1, z=0),
+        Vertex(
+            x=0.9974824535030984, y=0.9974824535030984, z=0.24593434133370803
+        ),
+        Vertex(
+            x=1.9620726956646117, y=1.0109475009958278, z=0.2837944855813176
+        ),
+        Vertex(
+            x=2.848322987789396, y=1.1190213008349328, z=0.24898414051620496
+        ),
+        Vertex(x=3.695518130045147, y=1.5307337294603591, z=0),
+        Vertex(x=0, y=2, z=0),
+        Vertex(
+            x=1.0109475009958275, y=1.9620726956646117, z=0.2837944855813176
+        ),
+        Vertex(
+            x=1.9144176939366933, y=1.9144176939366933, z=0.3332231502067546
+        ),
+        Vertex(
+            x=2.5912759493290007, y=1.961874667390146, z=0.29909606343914835
+        ),
+        Vertex(x=2.8284271247461903, y=2.82842712474619, z=0),
+        Vertex(x=0, y=3, z=0),
+        Vertex(
+            x=1.119021300834933, y=2.848322987789396, z=0.24898414051620493
+        ),
+        Vertex(
+            x=1.9618746673901462, y=2.5912759493290007, z=0.29909606343914835
+        ),
+        Vertex(x=0, y=4, z=0),
+        Vertex(x=1.5307337294603593, y=3.695518130045147, z=0),
+        Vertex(x=2.8284271247461903, y=2.82842712474619, z=0),
+        Vertex(x=0, y=0, z=1),
+        Vertex(x=1, y=0, z=1),
+        Vertex(x=2, y=0, z=1),
+        Vertex(x=3, y=0, z=1),
+        Vertex(x=4, y=0, z=1),
+        Vertex(x=0, y=1, z=1),
+        Vertex(
+            x=0.9974824535030984, y=0.9974824535030984, z=0.7540656586662919
+        ),
+        Vertex(
+            x=1.9620726956646117, y=1.0109475009958278, z=0.7162055144186824
+        ),
+        Vertex(x=2.848322987789396, y=1.119021300834933, z=0.7510158594837951),
+        Vertex(x=3.695518130045147, y=1.5307337294603591, z=1),
+        Vertex(x=0, y=2, z=1),
+        Vertex(
+            x=1.0109475009958275, y=1.9620726956646117, z=0.7162055144186824
+        ),
+        Vertex(
+            x=1.9144176939366933, y=1.9144176939366933, z=0.6667768497932453
+        ),
+        Vertex(
+            x=2.591275949329001, y=1.9618746673901462, z=0.7009039365608517
+        ),
+        Vertex(x=2.8284271247461903, y=2.82842712474619, z=1),
+        Vertex(x=0, y=3, z=1),
+        Vertex(x=1.1190213008349328, y=2.848322987789396, z=0.751015859483795),
+        Vertex(
+            x=1.9618746673901462, y=2.5912759493290007, z=0.7009039365608516
+        ),
+        Vertex(x=0, y=4, z=1),
+        Vertex(x=1.5307337294603593, y=3.695518130045147, z=1),
+        Vertex(x=2.8284271247461903, y=2.82842712474619, z=1),
+    )
+
+    assert result == gold_vertices_10_iter
 
 
 def test_laplace_smoothing_double_x():

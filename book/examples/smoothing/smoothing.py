@@ -73,7 +73,7 @@ def smoothing_neighbors(neighbors: Neighbors, node_hierarchy: NodeHierarchy):
 
     for node, level in enumerate(node_hierarchy):
         nei_old = neighbors[node]
-        print(f"Processing node {node+1}, neighbors: {nei_old}")
+        # print(f"Processing node {node+1}, neighbors: {nei_old}")
         # node_level = level.value
         levels = [int(node_hierarchy[x - 1].value) for x in nei_old]
         nei_new = ()
@@ -81,15 +81,15 @@ def smoothing_neighbors(neighbors: Neighbors, node_hierarchy: NodeHierarchy):
         # breakpoint()
         match level:
             case Hierarchy.INTERIOR:
-                print("INTERIOR node")
+                # print("INTERIOR node")
                 nei_new = nei_old
             case Hierarchy.BOUNDARY:
-                print("BOUNDARY node")
+                # print("BOUNDARY node")
                 for nn, li in zip(nei_old, levels):
                     if li >= level.value:
                         nei_new += (nn,)
             case Hierarchy.PRESCRIBED:
-                print("PRESCRIBED node")
+                # print("PRESCRIBED node")
                 nei_new = ()
             case _:
                 raise ValueError("Hierarchy value must be in [0, 1, 2]")
@@ -135,10 +135,21 @@ def smooth(
         assert n_nodes_prescribed == n_prescribed_xyz, estr
 
         # update neighbors
+        nn = smoothing_neighbors(
+            neighbors=nn,
+            node_hierarchy=node_hierarchy
+        )  # overwrite
 
         # update vertex positions
+        vv_list = list(vv)  # make mutable
+        for (node_id, node_xyz) in prescribed_nodes:
+            # print(f"Update node {node_id}")
+            # print(f"  from {vv_list[node_id-1]}")
+            # print(f"  to {node_xyz}")
+            vv_list[node_id - 1] = node_xyz  # zero index, overwrite xyz
 
-        bb = 4
+        # revert to immutable
+        vv = tuple(vv_list)  # overwrite
 
     vertices_old = vv
 
@@ -148,25 +159,30 @@ def smooth(
         print(f"Iteration: {k+1}")
         vertices_new = []
 
-        for vertex, neighbors, level in zip(vertices_old, nn, node_hierarchy):
+        for vertex, neighbors in zip(vertices_old, nn):
             # debug vertex by vertex
             # print(f"vertex {vertex}, neighbors {neighbors}")
-            # for now, no hierarchical smoohing
-            # assume all dofs are FREE_INTERIOR
 
             # account for zero-index instead of 1-index:
             neighbor_vertices = tuple(
                 vertices_old[i - 1] for i in neighbors
             )  # zero index
 
-            neighbor_average = average_position(neighbor_vertices)
-            delta = subtract(v1=neighbor_average, v2=vertex)
-            lambda_delta = scale(vertex=delta, scale_factor=scale_lambda)
-            vertex_new = add(v1=vertex, v2=lambda_delta)
+            if len(neighbor_vertices) > 0:
+                neighbor_average = average_position(neighbor_vertices)
+                delta = subtract(v1=neighbor_average, v2=vertex)
+                lambda_delta = scale(vertex=delta, scale_factor=scale_lambda)
+                vertex_new = add(v1=vertex, v2=lambda_delta)
+            elif len(neighbor_vertices) == 0:
+                # print("Prescribed node, no smoothing update.")
+                vertex_new = vertex
+            else:
+                estr = "Error: neighbor_vertices negative length"
+                raise ValueError(estr)
+
             vertices_new.append(vertex_new)
             # breakpoint()
 
-        # breakpoint()
         vertices_old = vertices_new  # overwrite for new k loop
 
     # breakpoint()
