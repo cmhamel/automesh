@@ -10,6 +10,7 @@
   - [Spheres](examples/spheres/README.md)
   - [Spheres - continued](examples/spheres_cont/README.md)
   - [Smoothing](examples/smoothing/README.md)
+    - [Python visualization](examples/smoothing/python_visualization.md)
 
 # Reference Guide
 
