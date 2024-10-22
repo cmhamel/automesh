@@ -29,11 +29,11 @@ fn test_finite_elements(
     );
     assert_eq!(
         finite_elements.calculate_node_node_connectivity(),
-        Err("Need to calculate and set the node-to-element connectivity first.")
+        Err("Need to calculate the node-to-element connectivity first")
     );
     assert_eq!(
         finite_elements.calculate_nodal_hierarchy(),
-        Err("Need to calculate and set the node-to-element connectivity first.")
+        Err("Need to calculate the node-to-element connectivity first")
     );
     finite_elements
         .calculate_node_element_connectivity()

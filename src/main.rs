@@ -208,6 +208,14 @@ impl From<String> for ErrorWrapper {
     }
 }
 
+impl From<&str> for ErrorWrapper {
+    fn from(message: &str) -> ErrorWrapper {
+        ErrorWrapper {
+            message: message.to_string(),
+        }
+    }
+}
+
 impl From<WriteNpyError> for ErrorWrapper {
     fn from(error: WriteNpyError) -> ErrorWrapper {
         ErrorWrapper {

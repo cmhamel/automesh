@@ -87,7 +87,7 @@ impl FiniteElements {
             .collect()
     }
     /// Calculates the nodal hierarchy.
-    pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), String> {
+    pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
@@ -142,11 +142,11 @@ impl FiniteElements {
             );
             Ok(())
         } else {
-            Err("Need to calculate the node-to-element connectivity first".to_string())
+            Err("Need to calculate the node-to-element connectivity first")
         }
     }
     /// Calculates the node-to-element connectivity.
-    pub fn calculate_node_element_connectivity(&mut self) -> Result<(), String> {
+    pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let number_of_nodes = self.get_nodal_coordinates().len();
@@ -169,7 +169,7 @@ impl FiniteElements {
         Ok(())
     }
     /// Calculates the node-to-node connectivity.
-    pub fn calculate_node_node_connectivity(&mut self) -> Result<(), String> {
+    pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if node_element_connectivity != &EMPTY_CONNECTIVITY {
             #[cfg(feature = "profile")]
@@ -259,11 +259,11 @@ impl FiniteElements {
             );
             Ok(())
         } else {
-            Err("Need to calculate the node-to-element connectivity first".to_string())
+            Err("Need to calculate the node-to-element connectivity first")
         }
     }
     /// Calculates the node-to-node connectivity for boundary nodes.
-    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), String> {
+    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
         let exterior_nodes = self.get_exterior_nodes();
         if exterior_nodes != &EMPTY_NODES {
             let boundary_nodes = self.get_boundary_nodes();
@@ -280,11 +280,11 @@ impl FiniteElements {
                 .collect();
             Ok(())
         } else {
-            Err("Need to calculate the nodal hierarchy first".to_string())
+            Err("Need to calculate the nodal hierarchy first")
         }
     }
     /// Calculates the node-to-node connectivity for interior nodes.
-    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), String> {
+    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), &str> {
         if self.get_exterior_nodes() != &EMPTY_NODES {
             let node_node_connectivity = self.get_node_node_connectivity();
             self.node_node_connectivity_interior = self
@@ -296,7 +296,7 @@ impl FiniteElements {
                 .collect();
             Ok(())
         } else {
-            Err("Need to calculate the nodal hierarchy first".to_string())
+            Err("Need to calculate the nodal hierarchy first")
         }
     }
     /// Returns a reference to the boundary nodes.
@@ -348,12 +348,12 @@ impl FiniteElements {
         &self.node_node_connectivity_interior
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    pub fn smooth(&mut self, method: Smoothing) -> Result<(), String> {
+    pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
         if self.get_node_node_connectivity() != &EMPTY_CONNECTIVITY {
             match method {
                 Smoothing::Laplacian(iterations, scale) => {
                     if scale <= 0.0 {
-                        return Err("Need to specify scale > 0.0".to_string());
+                        return Err("Need to specify scale > 0.0");
                     }
                     #[allow(unused_variables)]
                     (0..iterations).for_each(|iteration| {
@@ -376,7 +376,7 @@ impl FiniteElements {
             }
             Ok(())
         } else {
-            Err("Need to calculate the node-to-node connectivity first".to_string())
+            Err("Need to calculate the node-to-node connectivity first")
         }
     }
 }
