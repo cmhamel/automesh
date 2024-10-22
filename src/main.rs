@@ -143,6 +143,18 @@ enum Commands {
         /// Name of the Abaqus (.inp) output file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
+
+        /// Number of smoothing iterations
+        #[arg(default_value_t = 1, long, short = 'n', value_name = "NUM")]
+        iterations: usize,
+
+        /// Name of the smoothing method [default: Laplacian]
+        #[arg(long, short, value_name = "NAME")]
+        method: Option<String>,
+
+        /// Scaling (> 0.0) parameter for smoothing
+        #[arg(default_value_t = 1.0, long, short, value_name = "SCALE")]
+        scale: f64,
     },
 }
 
@@ -153,11 +165,13 @@ enum MeshingCommands {
         /// Number of smoothing iterations
         #[arg(default_value_t = 1, long, short = 'n', value_name = "NUM")]
         iterations: usize,
+
         /// Name of the smoothing method [default: Laplacian]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
+
         /// Scaling (> 0.0) parameter for smoothing
-        #[arg(default_value_t = 1.0, long, short, value_name = "VAL")]
+        #[arg(default_value_t = 1.0, long, short, value_name = "SCALE")]
         scale: f64,
     },
 }
@@ -238,8 +252,21 @@ fn main() -> Result<(), ErrorWrapper> {
             meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
             ytranslate, ztranslate, quiet,
         ),
-        Some(Commands::Smooth { input, output }) => {
-            todo!("{}, {}", input, output)
+        Some(Commands::Smooth {
+            input,
+            output,
+            iterations,
+            method,
+            scale,
+        }) => {
+            todo!(
+                "{}, {}, {}, {:?}, {}",
+                input,
+                output,
+                iterations,
+                method,
+                scale
+            )
         }
         None => Ok(()),
     }
