@@ -3,7 +3,7 @@
 ## Double X
 
 We examine the most basic type of smoothing, Laplace smoothing, $\lambda = 0.3$,
-without hierarchical control, with the [Double X](../unit_tests/README.md#double-x) example.
+without hierarchical control, with the **Double X** example.
 
 ![../unit_tests/double_x.png](../unit_tests/double_x.png)
 
@@ -31,19 +31,19 @@ node | node neighbors
 Following is a test where all nodes are `BOUNDARY` from the [`Hierarchy`](../../theory/smoothing.md#the-hierarchy-enum) enum.
 
 ```python
-node_smoothing_categories: Hierarchy = (
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
+node_hierarchy: NodeHierarchy = (
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
+    Hierarchy.BOUNDARY,
 )
 ```
 
@@ -118,7 +118,7 @@ As a baseline, let's examine what Laplace smoothing, $\lambda = 0.3$, *without* 
 
 Figure: The `Bracket` test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100`] iterations of Laplace smoothing.  Animation created with [Ezgif](https://ezgif.com/).
 
-As an example, the nodal positions after 10 interations are as follows:
+As an example, the nodal positions after 10 iterations are as follows:
 
 node | `x` | `y` | `z`
 :---: | :--- | :--- | :---
@@ -165,35 +165,107 @@ node | `x` | `y` | `z`
 41 | 1.0071968572512657 | 3.3805688588919414 | 0.5915300441740617
 42 | 1.409074280806729 | 3.3296020281899956 | 0.5783492939376562
 
-### Hierarchical Control
+### Laplace Smoothing with Hierarchical Control
 
-Next, we illustrate the how hierarchical control changes the smoothing.  
-Conside the `PRESCRIBED` hierarchical smoothing below:
+We illustrate the how hierarchical control affects the Laplace smoothing.
+Conside the `PRESCRIBED` and `BOUNDARY` node hierarchy below:
 
 ```python
-node_smoothing_categories: Hierarchy = (
+node_hierarchy: NodeHierarchy = (
     # hierarchy enum, node number, prescribed (x, y, z)
-    2, #  1 -> (0, 0, 0)
-    2, #  2 -> (1, 0, 0)
-    2, #  3 -> (2, 0, 0)
-    2, #  4 -> (3, 0, 0)
-    2, #  5 -> (4, 0, 0)
-    2, #  6 -> (0, 1, 0)
-    1, #  7
-    1, #  8
-    1, #  9
-    2, # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
-    2, # 11 -> *(0, 2, 0)
-    1, # 12
-    1, # 13
-    1, # 14
-    2, # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
-    2, # 16 -> (0, 3, 0)
-    1, # 17
-    1, # 18
-    2, # 19 -> (0, 4, 0)
-    2, # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
-    2, # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
-    # similarly repeated for the z=1 layer, nodes 22 to 42
+    Hierarchy.PRESCRIBED,  # 1 -> (0, 0, 0)
+    Hierarchy.PRESCRIBED,  # 2 -> (1, 0, 0)
+    Hierarchy.PRESCRIBED,  # 3 -> (2, 0, 0)
+    Hierarchy.PRESCRIBED,  # 4 -> (3, 0, 0)
+    Hierarchy.PRESCRIBED,  # 5 -> (4, 0, 0)
+    Hierarchy.PRESCRIBED,  # 6 -> (0, 1, 0)
+    Hierarchy.BOUNDARY,  # 7
+    Hierarchy.BOUNDARY,  # 8
+    Hierarchy.BOUNDARY,  # 9
+    Hierarchy.PRESCRIBED,  # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
+    Hierarchy.PRESCRIBED,  # 11 -> *(0, 2, 0)
+    Hierarchy.BOUNDARY,  # 12
+    Hierarchy.BOUNDARY,  # 13
+    Hierarchy.BOUNDARY,  # 14
+    Hierarchy.PRESCRIBED,  # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    Hierarchy.PRESCRIBED,  # 16 -> (0, 3, 0)
+    Hierarchy.BOUNDARY,  # 17
+    Hierarchy.BOUNDARY,  # 18
+    Hierarchy.PRESCRIBED,  # 19 -> (0, 4, 0)
+    Hierarchy.PRESCRIBED,  # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
+    Hierarchy.PRESCRIBED,  # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+    #
+    Hierarchy.PRESCRIBED,  # 22 -> (0, 0, 1)
+    Hierarchy.PRESCRIBED,  # 23 -> (1, 0, 1)
+    Hierarchy.PRESCRIBED,  # 24 -> (2, 0, 1)
+    Hierarchy.PRESCRIBED,  # 25 -> (3, 0, 1)
+    Hierarchy.PRESCRIBED,  # 26 -> (4, 0, 1)
+    Hierarchy.PRESCRIBED,  # 27 -> (0, 1, 1)
+    Hierarchy.BOUNDARY,  # 28
+    Hierarchy.BOUNDARY,  # 29
+    Hierarchy.BOUNDARY,  # 30
+    Hierarchy.PRESCRIBED,  # 31 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 1)
+    Hierarchy.PRESCRIBED,  # 32 -> *(0, 2, 1)
+    Hierarchy.BOUNDARY,  # 33
+    Hierarchy.BOUNDARY,  # 34
+    Hierarchy.BOUNDARY,  # 35
+    Hierarchy.PRESCRIBED,  # 36 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+    Hierarchy.PRESCRIBED,  # 37 -> (0, 3, 1)
+    Hierarchy.BOUNDARY,  # 38
+    Hierarchy.BOUNDARY,  # 39
+    Hierarchy.PRESCRIBED,  # 40 -> (0, 4, 1)
+    Hierarchy.PRESCRIBED,  # 41 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 1)
+    Hierarchy.PRESCRIBED,  # 42 -> (4*cos(45 deg), 4*sin(45 deg), 1)
 )
 ```
+
+![bracket_laplace_hc_iter_100.gif](bracket_laplace_hc_iter_100.gif)
+
+Figure: The `Bracket` test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100`] iterations of Laplace smoothing with hierarchical control.  Animation created with [Ezgif](https://ezgif.com/).
+
+As an example, the nodal positions after 10 iterations are as follows:
+
+node | `x` | `y` | `z`
+:---: | :--- | :--- | :---
+1 | 0 | 0 | 0
+2 | 1 | 0 | 0
+3 | 2 | 0 | 0
+4 | 3 | 0 | 0
+5 | 4 | 0 | 0
+6 | 0 | 1 | 0
+7 | 0.9974824535030984 | 0.9974824535030984 | 0.24593434133370803
+8 | 1.9620726956646117 | 1.0109475009958278 | 0.2837944855813176
+9 | 2.848322987789396 | 1.1190213008349328 | 0.24898414051620496
+10 | 3.695518130045147 | 1.5307337294603591 | 0
+11 | 0 | 2 | 0
+12 | 1.0109475009958275 | 1.9620726956646117 | 0.2837944855813176
+13 | 1.9144176939366933 | 1.9144176939366933 | 0.3332231502067546
+14 | 2.5912759493290007 | 1.961874667390146 | 0.29909606343914835
+15 | 2.8284271247461903 | 2.82842712474619 | 0
+16 | 0 | 3 | 0
+17 | 1.119021300834933 | 2.848322987789396 | 0.24898414051620493
+18 | 1.9618746673901462 | 2.5912759493290007 | 0.29909606343914835
+19 | 0 | 4 | 0
+20 | 1.5307337294603593 | 3.695518130045147 | 0
+21 | 2.8284271247461903 | 2.82842712474619 | 0
+22 | 0 | 0 | 1
+23 | 1 | 0 | 1
+24 | 2 | 0 | 1
+25 | 3 | 0 | 1
+26 | 4 | 0 | 1
+27 | 0 | 1 | 1
+28 | 0.9974824535030984 | 0.9974824535030984 | 0.7540656586662919
+29 | 1.9620726956646117 | 1.0109475009958278 | 0.7162055144186824
+30 | 2.848322987789396 | 1.119021300834933 | 0.7510158594837951
+31 | 3.695518130045147 | 1.5307337294603591 | 1
+32 | 0 | 2 | 1
+33 | 1.0109475009958275 | 1.9620726956646117 | 0.7162055144186824
+34 | 1.9144176939366933 | 1.9144176939366933 | 0.6667768497932453
+35 | 2.591275949329001 | 1.9618746673901462 | 0.7009039365608517
+36 | 2.8284271247461903 | 2.82842712474619 | 1
+37 | 0 | 3 | 1
+38 | 1.1190213008349328 | 2.848322987789396 | 0.751015859483795
+39 | 1.9618746673901462 | 2.5912759493290007 | 0.7009039365608516
+40 | 0 | 4 | 1
+41 | 1.5307337294603593 | 3.695518130045147 | 1
+42 | 2.8284271247461903 | 2.82842712474619 | 1

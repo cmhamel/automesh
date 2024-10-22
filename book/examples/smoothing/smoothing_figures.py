@@ -54,7 +54,7 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = True  # turn to True to show the figure on screen
+SHOW: Final[bool] = False  # turn to True to show the figure on screen
 SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
@@ -69,10 +69,11 @@ nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 vertices_laplace = sm.smooth(
     vv=ex.vertices,
     nn=ex.neighbors,
-    nh=ex.hierarchy,
-    sf=ex.scale_lambda,
+    node_hierarchy=ex.node_hierarchy,
+    prescribed_nodes=ex.prescribed_nodes,
+    scale_lambda=ex.scale_lambda,
     num_iters=ex.num_iters,
-    algo=ex.algorithm,
+    algorithm=ex.algorithm,
 )
 # original vertices
 xs = [v.x for v in ex.vertices]
@@ -83,6 +84,8 @@ zs = [v.z for v in ex.vertices]
 xs_l = [v.x for v in vertices_laplace]
 ys_l = [v.y for v in vertices_laplace]
 zs_l = [v.z for v in vertices_laplace]
+# breakpoint()
+
 # draw edge lines
 ep = sm.edge_pairs(ex.elements)  # edge pairs
 line_segments = [
@@ -202,7 +205,9 @@ ax2.view_init(elev=el, azim=az, roll=roll)
 # File name
 aa = Path(__file__)
 fig_path = Path(__file__).parent
-fig_stem = Path(__file__).stem
+# fig_stem = Path(__file__).stem
+fig_stem = ex.file_stem
+# breakpoint()
 FIG_EXT: Final[str] = ".png"
 bb = fig_path.joinpath(fig_stem + "_iter_" + str(ex.num_iters) + FIG_EXT)
 # Add a footnote
