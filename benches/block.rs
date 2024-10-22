@@ -8,6 +8,9 @@ const REMOVE: Option<Vec<u8>> = None;
 const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
 const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
 
+const SMOOTHING_ITERATIONS: usize = 1;
+const SMOOTHING_SCALE: f64 = 0.3;
+
 macro_rules! bench_block {
     ($nel:expr) => {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
@@ -96,7 +99,10 @@ macro_rules! bench_block {
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
-            bencher.iter(|| fem.smooth(Smoothing::Laplacian(1, 0.3)));
+            bencher.iter(|| {
+                fem.smooth(Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE))
+                    .unwrap()
+            });
             Ok(())
         }
         #[bench]

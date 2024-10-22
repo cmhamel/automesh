@@ -29,11 +29,11 @@ fn test_finite_elements(
     );
     assert_eq!(
         finite_elements.calculate_node_node_connectivity(),
-        Err("Need to calculate and set the node-to-element connectivity first.")
+        Err("Need to calculate the node-to-element connectivity first")
     );
     assert_eq!(
         finite_elements.calculate_nodal_hierarchy(),
-        Err("Need to calculate and set the node-to-element connectivity first.")
+        Err("Need to calculate the node-to-element connectivity first")
     );
     finite_elements
         .calculate_node_element_connectivity()
@@ -95,7 +95,9 @@ fn test_finite_elements(
                 .unwrap();
             finite_elements.calculate_node_node_connectivity().unwrap();
             finite_elements.calculate_nodal_hierarchy().unwrap();
-            finite_elements.smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE));
+            finite_elements
+                .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE))
+                .unwrap();
             let smoothed_nodal_coordinates = finite_elements.get_nodal_coordinates();
             assert!(smoothed_nodal_coordinates.len() == gold.len());
             smoothed_nodal_coordinates
