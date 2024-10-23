@@ -16,8 +16,6 @@ use std::{
 
 const ELEMENT_TYPE: &str = "C3D8R";
 const ELEMENT_NUM_NODES: usize = 8;
-const EMPTY_CONNECTIVITY: Connectivity = vec![];
-const EMPTY_NODES: Nodes = vec![];
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
@@ -79,23 +77,29 @@ impl FiniteElements {
             .iter()
             .enumerate()
             .map(|(node, connectivity)| {
-                (0..NSD)
-                    .map(|i| {
-                        connectivity
-                            .iter()
-                            .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET][i])
-                            .sum::<f64>()
-                            / (connectivity.len() as f64)
-                            - nodal_coordinates[node][i]
-                    })
-                    .collect()
+                if connectivity.is_empty() {
+                    vec![0.0, 0.0, 0.0]
+                } else {
+                    (0..NSD)
+                        .map(|i| {
+                            connectivity
+                                .iter()
+                                .map(|neighbor| {
+                                    nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET][i]
+                                })
+                                .sum::<f64>()
+                                / (connectivity.len() as f64)
+                                - nodal_coordinates[node][i]
+                        })
+                        .collect()
+                }
             })
             .collect()
     }
     /// Calculates the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
-        if node_element_connectivity != &EMPTY_CONNECTIVITY {
+        if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
@@ -157,13 +161,15 @@ impl FiniteElements {
         let time = Instant::now();
         let mut nodal_influencers = self.get_node_node_connectivity().clone();
         let prescribed_nodes = self.get_prescribed_nodes();
-        if self.get_exterior_nodes() != &EMPTY_NODES {
+        if !self.get_exterior_nodes().is_empty() {
             let mut boundary_nodes = self.get_boundary_nodes().clone();
             boundary_nodes
                 .retain(|boundary_node| prescribed_nodes.binary_search(boundary_node).is_err());
             boundary_nodes.iter().for_each(|boundary_node| {
-                nodal_influencers[boundary_node - NODE_NUMBERING_OFFSET]
-                    .retain(|node| boundary_nodes.binary_search(node).is_ok())
+                nodal_influencers[boundary_node - NODE_NUMBERING_OFFSET].retain(|node| {
+                    boundary_nodes.binary_search(node).is_ok()
+                        || prescribed_nodes.binary_search(node).is_ok()
+                })
             });
         }
         prescribed_nodes.iter().for_each(|prescribed_node| {
@@ -202,7 +208,7 @@ impl FiniteElements {
     /// Calculates the node-to-node connectivity.
     pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
-        if node_element_connectivity != &EMPTY_CONNECTIVITY {
+        if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let mut element_connectivity = vec![0; ELEMENT_NUM_NODES];
@@ -384,7 +390,7 @@ impl FiniteElements {
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
     pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
-        if self.get_node_node_connectivity() != &EMPTY_CONNECTIVITY {
+        if !self.get_node_node_connectivity().is_empty() {
             match method {
                 Smoothing::Laplacian(iterations, scale) => {
                     if scale <= 0.0 {
