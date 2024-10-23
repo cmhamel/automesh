@@ -241,7 +241,7 @@ def smoothing_neighbors(neighbors: Neighbors, node_hierarchy: NodeHierarchy):
 
 def smooth(
     vv: Vertices,
-    nn: Neighbors,
+    hexes: Hexes,
     node_hierarchy: NodeHierarchy,
     prescribed_nodes: PrescribedNodes,
     scale_lambda: float,
@@ -257,6 +257,8 @@ def smooth(
     print(f"Smoothing algorithm: {algorithm.value}")
 
     assert num_iters >= 1, "`num_iters` must be 1 or greater"
+
+    nn = node_node_connectivity(hexes)
 
     # if the node_hierarchy contains a Hierarchy.PRESCRIBED type; or
     # the the PrescribedNodes must not be None

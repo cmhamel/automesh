@@ -54,8 +54,8 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = False  # turn to True to show the figure on screen
-SAVE: Final[bool] = False  # turn to True to save .png and .npy files
+SHOW: Final[bool] = True  # turn to True to show the figure on screen
+SAVE: Final[bool] = True  # turn to True to save .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
 # output_png: Path = (
@@ -68,7 +68,7 @@ nzp, nyp, nxp = nz + 1, ny + 1, nx + 1
 
 vertices_laplace = sm.smooth(
     vv=ex.vertices,
-    nn=ex.neighbors,
+    hexes=ex.elements,
     node_hierarchy=ex.node_hierarchy,
     prescribed_nodes=ex.prescribed_nodes,
     scale_lambda=ex.scale_lambda,

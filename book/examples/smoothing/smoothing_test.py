@@ -110,7 +110,8 @@ def test_smoothing_neighbors():
     the correct neighbors.
     """
     ex = examples.double_x
-    neighbors = ex.neighbors  # borrow the neighbor connections
+    # neighbors = ex.neighbors  # borrow the neighbor connections
+    neighbors = sm.node_node_connectivity(ex.elements)
 
     node_hierarchy = (
         Hierarchy.INTERIOR,
@@ -167,7 +168,8 @@ def test_laplace_hierarchical_bracket():
     bracket = examples.bracket
 
     node_hierarchy = bracket.node_hierarchy
-    neighbors = bracket.neighbors
+    # neighbors = bracket.neighbors
+    neighbors = sm.node_node_connectivity(bracket.elements)
     node_hierarchy = bracket.node_hierarchy
 
     # If a node is PRESCRIBED, then it has no smoothing neighbors
@@ -227,7 +229,7 @@ def test_laplace_hierarchical_bracket():
 
     result = sm.smooth(
         vv=bracket.vertices,
-        nn=bracket.neighbors,
+        hexes=bracket.elements,
         node_hierarchy=bracket.node_hierarchy,
         prescribed_nodes=bracket.prescribed_nodes,
         scale_lambda=scale_lambda_test,
@@ -329,20 +331,25 @@ def test_laplace_smoothing_double_x():
         Vertex(2.0, 1.0, 1.0),
     )
 
-    nn: Neighbors = (
-        (2, 4, 7),
-        (1, 3, 5, 8),
-        (2, 6, 9),
-        (1, 5, 10),
-        (2, 4, 6, 11),
-        (3, 5, 12),
-        (1, 8, 10),
-        (2, 7, 9, 11),
-        (3, 8, 12),
-        (4, 7, 11),
-        (5, 8, 10, 12),
-        (6, 9, 11),
+    hexes: Hexes = (
+        (1, 2, 5, 4, 7, 8, 11, 10),
+        (2, 3, 6, 5, 8, 9, 12, 11),
     )
+
+    # nn: Neighbors = (
+    #     (2, 4, 7),
+    #     (1, 3, 5, 8),
+    #     (2, 6, 9),
+    #     (1, 5, 10),
+    #     (2, 4, 6, 11),
+    #     (3, 5, 12),
+    #     (1, 8, 10),
+    #     (2, 7, 9, 11),
+    #     (3, 8, 12),
+    #     (4, 7, 11),
+    #     (5, 8, 10, 12),
+    #     (6, 9, 11),
+    # )
 
     nh: NodeHierarchy = (
         Hierarchy.BOUNDARY,
@@ -368,7 +375,7 @@ def test_laplace_smoothing_double_x():
 
     aa = sm.smooth(
         vv=vv,
-        nn=nn,
+        hexes=hexes,
         node_hierarchy=nh,
         prescribed_nodes=None,
         scale_lambda=scale_lambda,
@@ -402,7 +409,7 @@ def test_laplace_smoothing_double_x():
 
     aa2 = sm.smooth(
         vv=vv,
-        nn=nn,
+        hexes=hexes,
         node_hierarchy=nh,
         prescribed_nodes=None,
         scale_lambda=scale_lambda,

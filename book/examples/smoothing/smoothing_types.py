@@ -47,7 +47,7 @@ class SmoothingExample(NamedTuple):
     nelx: int
     nely: int
     nelz: int
-    neighbors: Neighbors
+    # neighbors: Neighbors
     node_hierarchy: NodeHierarchy
     prescribed_nodes: PrescribedNodes
     scale_lambda: float
