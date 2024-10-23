@@ -141,18 +141,18 @@ bracket = Example(
         Hierarchy.BOUNDARY,  # 7
         Hierarchy.BOUNDARY,  # 8
         Hierarchy.BOUNDARY,  # 9
-        Hierarchy.PRESCRIBED,  # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
+        Hierarchy.PRESCRIBED,  # 10 -> (4.5*cos(15 deg), 4.5*sin(15 deg), 0)
         Hierarchy.PRESCRIBED,  # 11 -> *(0, 2, 0)
         Hierarchy.BOUNDARY,  # 12
         Hierarchy.BOUNDARY,  # 13
         Hierarchy.BOUNDARY,  # 14
-        Hierarchy.PRESCRIBED,  # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+        Hierarchy.PRESCRIBED,  # 15 -> (4.5*cos(30 deg), 4.5*sin(30 deg), 0)
         Hierarchy.PRESCRIBED,  # 16 -> (0, 3, 0)
         Hierarchy.BOUNDARY,  # 17
         Hierarchy.BOUNDARY,  # 18
         Hierarchy.PRESCRIBED,  # 19 -> (0, 4, 0)
-        Hierarchy.PRESCRIBED,  # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
-        Hierarchy.PRESCRIBED,  # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+        Hierarchy.PRESCRIBED,  # 20 -> (1.5, 4, 0)
+        Hierarchy.PRESCRIBED,  # 21 -> (3.5, 4, 0)
         #
         Hierarchy.PRESCRIBED,  # 22 -> (0, 0, 1)
         Hierarchy.PRESCRIBED,  # 23 -> (1, 0, 1)
@@ -163,18 +163,18 @@ bracket = Example(
         Hierarchy.BOUNDARY,  # 28
         Hierarchy.BOUNDARY,  # 29
         Hierarchy.BOUNDARY,  # 30
-        Hierarchy.PRESCRIBED,  # 31 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 1)
+        Hierarchy.PRESCRIBED,  # 31 -> (4.5*cos(15 deg), 4.5*sin(15 deg), 1)
         Hierarchy.PRESCRIBED,  # 32 -> *(0, 2, 1)
         Hierarchy.BOUNDARY,  # 33
         Hierarchy.BOUNDARY,  # 34
         Hierarchy.BOUNDARY,  # 35
-        Hierarchy.PRESCRIBED,  # 36 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+        Hierarchy.PRESCRIBED,  # 36 -> (4.5*cos(30 deg), 4.5*sin(30 deg), 1)
         Hierarchy.PRESCRIBED,  # 37 -> (0, 3, 1)
         Hierarchy.BOUNDARY,  # 38
         Hierarchy.BOUNDARY,  # 39
         Hierarchy.PRESCRIBED,  # 40 -> (0, 4, 1)
-        Hierarchy.PRESCRIBED,  # 41 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 1)
-        Hierarchy.PRESCRIBED,  # 42 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+        Hierarchy.PRESCRIBED,  # 41 -> (1.5, 4, 1)
+        Hierarchy.PRESCRIBED,  # 42 -> (3.5, 4, 1)
     ),
     prescribed_nodes=(
         (1, Vertex(0, 0, 0)),
@@ -186,26 +186,20 @@ bracket = Example(
         (
             10,
             Vertex(
-                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 0
+                4.5 * math.cos(15 * DEG2RAD), 4.5 * math.sin(15 * DEG2RAD), 0
             ),
         ),
         (11, Vertex(0, 2, 0)),
         (
             15,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
+            Vertex(
+                4.5 * math.cos(30 * DEG2RAD), 4.5 * math.sin(30 * DEG2RAD), 0
+            ),
         ),
         (16, Vertex(0, 3, 0)),
         (19, Vertex(0, 4, 0)),
-        (
-            20,
-            Vertex(
-                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 0
-            ),
-        ),
-        (
-            21,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
-        ),
+        (20, Vertex(1.5, 4, 0)),
+        (21, Vertex(3.5, 4, 0)),
         (22, Vertex(0, 0, 1)),
         (23, Vertex(1, 0, 1)),
         (24, Vertex(2, 0, 1)),
@@ -215,32 +209,26 @@ bracket = Example(
         (
             31,
             Vertex(
-                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 1
+                4.5 * math.cos(15 * DEG2RAD), 4.5 * math.sin(15 * DEG2RAD), 1
             ),
         ),
         (32, Vertex(0, 2, 1)),
         (
             36,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
+            Vertex(
+                4.5 * math.cos(30 * DEG2RAD), 4.5 * math.sin(30 * DEG2RAD), 1
+            ),
         ),
         (37, Vertex(0, 3, 1)),
         (40, Vertex(0, 4, 1)),
-        (
-            41,
-            Vertex(
-                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 1
-            ),
-        ),
-        (
-            42,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
-        ),
+        (41, Vertex(1.5, 4, 1)),
+        (42, Vertex(3.5, 4, 1)),
     ),
     scale_lambda=0.3,
     scale_mu=-0.33,
     num_iters=10,
     algorithm=SmoothingAlgorithm.LAPLACE,
-    file_stem="bracket"
+    file_stem="bracket",
 )
 
 # Double X two-element example
@@ -299,5 +287,5 @@ double_x = Example(
     scale_mu=-0.33,
     num_iters=2,
     algorithm=SmoothingAlgorithm.LAPLACE,
-    file_stem="double_x"
+    file_stem="double_x",
 )
