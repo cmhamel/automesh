@@ -12,11 +12,9 @@
 #[cfg(feature = "python")]
 mod py;
 
-mod abaqus;
 mod fem;
 mod voxel;
 
-pub use abaqus::Abaqus;
 pub use fem::{FiniteElements, Smoothing};
 pub use voxel::Voxels;
 

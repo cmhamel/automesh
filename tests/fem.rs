@@ -1,4 +1,4 @@
-use automesh::{Abaqus, Voxels};
+use automesh::Voxels;
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},

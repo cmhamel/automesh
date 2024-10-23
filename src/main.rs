@@ -1,4 +1,4 @@
-use automesh::{Abaqus, FiniteElements, Smoothing, Voxels};
+use automesh::{FiniteElements, Smoothing, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use std::{io::Error, path::Path, time::Instant};

@@ -1,4 +1,4 @@
-use super::{write_fem_to_inp, Abaqus, Blocks, Connectivity, Coordinates};
+use super::{write_fem_to_inp, Blocks, Connectivity, Coordinates};
 use pyo3::prelude::*;
 use std::io::Error;
 
@@ -32,12 +32,6 @@ impl FiniteElements {
     }
     /// Writes the finite elements data to a new Abaqus input file.
     pub fn write_inp(&self, file_path: &str) -> Result<(), Error> {
-        Abaqus::write_inp(self, file_path)
-    }
-}
-
-impl Abaqus for FiniteElements {
-    fn write_inp(&self, file_path: &str) -> Result<(), Error> {
         write_fem_to_inp(
             file_path,
             &self.element_blocks,

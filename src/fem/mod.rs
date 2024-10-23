@@ -7,7 +7,7 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{abaqus::Abaqus, ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
+use super::{ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
 use std::{
     fs::File,
@@ -427,11 +427,8 @@ impl FiniteElements {
             Err("Need to calculate the node-to-node connectivity first")
         }
     }
-}
-
-/// Abaqus implementation of the finite elements type.
-impl Abaqus for FiniteElements {
-    fn write_inp(&self, file_path: &str) -> Result<(), Error> {
+    /// Writes the finite elements data to a new Abaqus input file.
+    pub fn write_inp(&self, file_path: &str) -> Result<(), Error> {
         write_fem_to_inp(
             file_path,
             self.get_element_blocks(),
