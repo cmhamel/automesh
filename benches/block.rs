@@ -40,7 +40,7 @@ macro_rules! bench_block {
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_hierarchy()?;
-            bencher.iter(|| fem.calculate_nodal_influencers().unwrap());
+            bencher.iter(|| fem.calculate_nodal_influencers());
             Ok(())
         }
         #[bench]
@@ -90,7 +90,7 @@ macro_rules! bench_block {
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_hierarchy()?;
-            fem.calculate_nodal_influencers()?;
+            fem.calculate_nodal_influencers();
             let prescribed_nodes = fem.get_boundary_nodes().clone();
             bencher.iter(|| {
                 fem.set_prescribed_nodes(Some(prescribed_nodes.clone()), None)
@@ -104,7 +104,7 @@ macro_rules! bench_block {
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
-            fem.calculate_nodal_influencers()?;
+            fem.calculate_nodal_influencers();
             bencher.iter(|| {
                 fem.smooth(Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE))
                     .unwrap()

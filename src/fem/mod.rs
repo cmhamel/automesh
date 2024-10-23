@@ -152,7 +152,9 @@ impl FiniteElements {
         }
     }
     /// Calculates the nodal influencers.
-    pub fn calculate_nodal_influencers(&mut self) -> Result<(), &str> {
+    pub fn calculate_nodal_influencers(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
         let mut nodal_influencers = self.get_node_node_connectivity().clone();
         let prescribed_nodes = self.get_prescribed_nodes();
         if self.get_exterior_nodes() != &EMPTY_NODES {
@@ -168,7 +170,11 @@ impl FiniteElements {
             nodal_influencers[prescribed_node - NODE_NUMBERING_OFFSET].clear()
         });
         self.nodal_influencers = nodal_influencers;
-        Ok(())
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mNodal influencers\x1b[0m {:?} ",
+            time.elapsed()
+        );
     }
     /// Calculates the node-to-element connectivity.
     pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {

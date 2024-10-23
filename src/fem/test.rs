@@ -40,7 +40,7 @@ fn test_finite_elements(
         .unwrap();
     finite_elements.calculate_node_node_connectivity().unwrap();
     finite_elements.calculate_nodal_hierarchy().unwrap();
-    finite_elements.calculate_nodal_influencers().unwrap();
+    finite_elements.calculate_nodal_influencers();
     assert_eq!(
         finite_elements.get_nodal_influencers(),
         &nodal_influencers_gold
@@ -86,7 +86,7 @@ fn test_finite_elements(
                 .unwrap();
             finite_elements.calculate_node_node_connectivity().unwrap();
             finite_elements.calculate_nodal_hierarchy().unwrap();
-            finite_elements.calculate_nodal_influencers().unwrap();
+            finite_elements.calculate_nodal_influencers();
             finite_elements
                 .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE))
                 .unwrap();

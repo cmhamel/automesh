@@ -171,7 +171,7 @@ enum MeshingCommands {
         method: Option<String>,
 
         /// Pass to disable hierarchical control
-        #[arg(default_value_t = true, long, short = 'd')]
+        #[arg(action, long, short = 'd')]
         no_hierarchical: bool,
 
         /// Scaling (> 0.0) parameter for smoothing
@@ -391,7 +391,7 @@ fn mesh(
                         if !no_hierarchical {
                             output_type.calculate_nodal_hierarchy()?;
                         }
-                        output_type.calculate_nodal_influencers()?;
+                        output_type.calculate_nodal_influencers();
                         output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
                         if !quiet {
                             println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
