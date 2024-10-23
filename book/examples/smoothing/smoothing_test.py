@@ -22,8 +22,6 @@ import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-# DofSet = ty.DofSet
-# Elements = ty.Elements
 Hexes = ty.Hexes
 Hierarchy = ty.Hierarchy
 Neighbors = ty.Neighbors
@@ -44,6 +42,10 @@ def test_average_position():
     assert v_ave.y == 5.0
     assert v_ave.z == 6.0
 
+    # docstring example
+    v1, v2 = Vertex(1, 2, 3), Vertex(4, 5, 6)
+    assert sm.average_position((v1, v2)) == Vertex(2.5, 3.5, 4.5)
+
 
 def test_add():
     """Unit test for the addition of Vertex v1 and Vertex v2."""
@@ -53,6 +55,10 @@ def test_add():
     assert vv.x == 5.0
     assert vv.y == 9.0
     assert vv.z == 4.0
+
+    # docstring example
+    v1, v2 = Vertex(1, 2, 3), Vertex(4, 5, 6)
+    assert sm.add(v1, v2) == Vertex(5, 7, 9)
 
 
 def test_subtract():
@@ -64,6 +70,10 @@ def test_subtract():
     assert vv.y == -5.0
     assert vv.z == 2.0
 
+    # docstring example
+    v1, v2 = Vertex(8, 5, 2), Vertex(1, 2, 3)
+    assert sm.subtract(v1, v2) == Vertex(7, 3, -1)
+
 
 def test_scale():
     """Unit test for the scale function."""
@@ -73,6 +83,11 @@ def test_scale():
     assert result.x == 10.0
     assert result.y == 20.0
     assert result.z == 30.0
+
+    # docstring example
+    v = Vertex(1, 2, 3)
+    scale_factor = 2
+    assert sm.scale(v, scale_factor) == Vertex(2, 4, 6)
 
 
 def test_xyz():
@@ -84,6 +99,10 @@ def test_xyz():
     result = sm.xyz(vv)
     assert result == gold
 
+    # docstring example
+    v = Vertex(1, 2, 3)
+    assert sm.xyz(v) == (1, 2, 3)
+
 
 def test_smoothing_neighbors():
     """Given the Double X test problem with completely made up
@@ -91,7 +110,8 @@ def test_smoothing_neighbors():
     the correct neighbors.
     """
     ex = examples.double_x
-    neighbors = ex.neighbors  # borrow the neighbor connections
+    # neighbors = ex.neighbors  # borrow the neighbor connections
+    neighbors = sm.node_node_connectivity(ex.elements)
 
     node_hierarchy = (
         Hierarchy.INTERIOR,
@@ -128,6 +148,19 @@ def test_smoothing_neighbors():
 
     assert result == gold_smoothing_neighbors
 
+    # doctring example
+    neighbors = ((2, 3), (1, 4), (1, 5), (2, 6), (3,), (4,))
+    node_hierarchy = (
+        Hierarchy.INTERIOR,
+        Hierarchy.BOUNDARY,
+        Hierarchy.PRESCRIBED,
+        Hierarchy.BOUNDARY,
+        Hierarchy.INTERIOR,
+        Hierarchy.INTERIOR,
+    )
+    gold = ((2, 3), (4,), (), (2,), (3,), (4,))
+    assert sm.smoothing_neighbors(neighbors, node_hierarchy) == gold
+
 
 def test_laplace_hierarchical_bracket():
     """Unit test for Laplace smoothing with hierarhical control
@@ -135,7 +168,8 @@ def test_laplace_hierarchical_bracket():
     bracket = examples.bracket
 
     node_hierarchy = bracket.node_hierarchy
-    neighbors = bracket.neighbors
+    # neighbors = bracket.neighbors
+    neighbors = sm.node_node_connectivity(bracket.elements)
     node_hierarchy = bracket.node_hierarchy
 
     # If a node is PRESCRIBED, then it has no smoothing neighbors
@@ -195,7 +229,7 @@ def test_laplace_hierarchical_bracket():
 
     result = sm.smooth(
         vv=bracket.vertices,
-        nn=bracket.neighbors,
+        hexes=bracket.elements,
         node_hierarchy=bracket.node_hierarchy,
         prescribed_nodes=bracket.prescribed_nodes,
         scale_lambda=scale_lambda_test,
@@ -297,20 +331,25 @@ def test_laplace_smoothing_double_x():
         Vertex(2.0, 1.0, 1.0),
     )
 
-    nn: Neighbors = (
-        (2, 4, 7),
-        (1, 3, 5, 8),
-        (2, 6, 9),
-        (1, 5, 10),
-        (2, 4, 6, 11),
-        (3, 5, 12),
-        (1, 8, 10),
-        (2, 7, 9, 11),
-        (3, 8, 12),
-        (4, 7, 11),
-        (5, 8, 10, 12),
-        (6, 9, 11),
+    hexes: Hexes = (
+        (1, 2, 5, 4, 7, 8, 11, 10),
+        (2, 3, 6, 5, 8, 9, 12, 11),
     )
+
+    # nn: Neighbors = (
+    #     (2, 4, 7),
+    #     (1, 3, 5, 8),
+    #     (2, 6, 9),
+    #     (1, 5, 10),
+    #     (2, 4, 6, 11),
+    #     (3, 5, 12),
+    #     (1, 8, 10),
+    #     (2, 7, 9, 11),
+    #     (3, 8, 12),
+    #     (4, 7, 11),
+    #     (5, 8, 10, 12),
+    #     (6, 9, 11),
+    # )
 
     nh: NodeHierarchy = (
         Hierarchy.BOUNDARY,
@@ -336,7 +375,7 @@ def test_laplace_smoothing_double_x():
 
     aa = sm.smooth(
         vv=vv,
-        nn=nn,
+        hexes=hexes,
         node_hierarchy=nh,
         prescribed_nodes=None,
         scale_lambda=scale_lambda,
@@ -370,7 +409,7 @@ def test_laplace_smoothing_double_x():
 
     aa2 = sm.smooth(
         vv=vv,
-        nn=nn,
+        hexes=hexes,
         node_hierarchy=nh,
         prescribed_nodes=None,
         scale_lambda=scale_lambda,
@@ -435,7 +474,10 @@ def test_pair_ordered():
     )  # overwrite
     found = sm.pair_ordered(given)  # overwrite
     assert found == gold
-    # breakpoint()
+
+    # docstring example
+    pairs = ((3, 1), (2, 4), (5, 0))
+    assert sm.pair_ordered(pairs) == ((0, 5), (1, 3), (2, 4))
 
 
 def test_edge_pairs():
@@ -468,3 +510,139 @@ def test_edge_pairs():
         (11, 12),
     )
     assert found == gold
+
+
+def test_node_node_connectivity():
+    """Tests that the node_node_connectivity function is properly
+    implemented.
+    """
+
+    # from the Double X unit test
+
+    hexes = (
+        (1, 2, 5, 4, 7, 8, 11, 10),
+        (2, 3, 6, 5, 8, 9, 12, 11),
+    )
+
+    gold_neighbors = (
+        (2, 4, 7),
+        (1, 3, 5, 8),
+        (2, 6, 9),
+        (1, 5, 10),
+        (2, 4, 6, 11),
+        (3, 5, 12),
+        (1, 8, 10),
+        (2, 7, 9, 11),
+        (3, 8, 12),
+        (4, 7, 11),
+        (5, 8, 10, 12),
+        (6, 9, 11),
+    )
+
+    result = sm.node_node_connectivity(hexes)
+
+    assert gold_neighbors == result
+
+    # now with node number modifications to assure the
+    # algorithm does not assume sequential node numbers:
+    # 2 -> 22
+    # 5 -> 55
+    # 8 -> 88
+    # 11 -> 111
+    hexes_2 = (
+        (1, 22, 55, 4, 7, 88, 111, 10),
+        (22, 3, 6, 55, 88, 9, 12, 111),
+    )
+
+    gold_neighbors_2 = (
+        (4, 7, 22),  # 1
+        (6, 9, 22),  # 3
+        (1, 10, 55),  # 4
+        (3, 12, 55),  # 6
+        (1, 10, 88),  # 7
+        (3, 12, 88),  # 9
+        (4, 7, 111),  # 10
+        (6, 9, 111),  # 12
+        (1, 3, 55, 88),  # 2 -> 22
+        (4, 6, 22, 111),  # 5 -> 55
+        (7, 9, 22, 111),  # 8 -> 88
+        (10, 12, 55, 88),  # 11 -> 111
+    )
+
+    result_2 = sm.node_node_connectivity(hexes_2)
+
+    assert gold_neighbors_2 == result_2
+
+    # example from the L-bracket example
+    hexes_bracket = (
+        (1, 2, 7, 6, 22, 23, 28, 27),
+        (2, 3, 8, 7, 23, 24, 29, 28),
+        (3, 4, 9, 8, 24, 25, 30, 29),
+        (4, 5, 10, 9, 25, 26, 31, 30),
+        (6, 7, 12, 11, 27, 28, 33, 32),
+        (7, 8, 13, 12, 28, 29, 34, 33),
+        (8, 9, 14, 13, 29, 30, 35, 34),
+        (9, 10, 15, 14, 30, 31, 36, 35),
+        (11, 12, 17, 16, 32, 33, 38, 37),
+        (12, 13, 18, 17, 33, 34, 39, 38),
+        (16, 17, 20, 19, 37, 38, 41, 40),
+        (17, 18, 21, 20, 38, 39, 42, 41),
+    )
+
+    gold_neighbors_bracket = (
+        (2, 6, 22),
+        (1, 3, 7, 23),
+        (2, 4, 8, 24),
+        (3, 5, 9, 25),
+        (4, 10, 26),
+        #
+        (1, 7, 11, 27),
+        (2, 6, 8, 12, 28),
+        (3, 7, 9, 13, 29),
+        (4, 8, 10, 14, 30),
+        (5, 9, 15, 31),
+        #
+        (6, 12, 16, 32),
+        (7, 11, 13, 17, 33),
+        (8, 12, 14, 18, 34),
+        (9, 13, 15, 35),
+        (10, 14, 36),
+        #
+        (11, 17, 19, 37),
+        (12, 16, 18, 20, 38),
+        (13, 17, 21, 39),
+        #
+        (16, 20, 40),
+        (17, 19, 21, 41),
+        (18, 20, 42),
+        # top layer
+        (1, 23, 27),
+        (2, 22, 24, 28),
+        (3, 23, 25, 29),
+        (4, 24, 26, 30),
+        (5, 25, 31),
+        #
+        (6, 22, 28, 32),
+        (7, 23, 27, 29, 33),
+        (8, 24, 28, 30, 34),
+        (9, 25, 29, 31, 35),
+        (10, 26, 30, 36),
+        #
+        (11, 27, 33, 37),
+        (12, 28, 32, 34, 38),
+        (13, 29, 33, 35, 39),
+        (14, 30, 34, 36),
+        (15, 31, 35),
+        #
+        (16, 32, 38, 40),
+        (17, 33, 37, 39, 41),
+        (18, 34, 38, 42),
+        #
+        (19, 37, 41),
+        (20, 38, 40, 42),
+        (21, 39, 41),
+    )
+
+    result_bracket = sm.node_node_connectivity(hexes_bracket)
+
+    assert gold_neighbors_bracket == result_bracket

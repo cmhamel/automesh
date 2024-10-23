@@ -77,59 +77,59 @@ bracket = Example(
     nelx=4,
     nely=4,
     nelz=1,
-    neighbors=(
-        (2, 6, 22),
-        (1, 3, 7, 23),
-        (2, 4, 8, 24),
-        (3, 5, 9, 25),
-        (4, 10, 26),
-        #
-        (1, 7, 11, 27),
-        (2, 6, 8, 12, 28),
-        (3, 7, 9, 13, 29),
-        (4, 8, 10, 14, 30),
-        (5, 9, 15, 31),
-        #
-        (6, 12, 16, 32),
-        (7, 11, 13, 17, 33),
-        (8, 12, 14, 18, 34),
-        (9, 13, 15, 35),
-        (10, 14, 36),
-        #
-        (11, 17, 19, 37),
-        (12, 16, 18, 20, 38),
-        (13, 17, 21, 39),
-        #
-        (16, 20, 40),
-        (17, 19, 21, 41),
-        (18, 20, 42),
-        # top layer
-        (1, 23, 27),
-        (2, 22, 24, 28),
-        (3, 23, 25, 29),
-        (4, 24, 26, 30),
-        (5, 25, 31),
-        #
-        (6, 22, 28, 32),
-        (7, 23, 27, 29, 33),
-        (8, 24, 28, 30, 34),
-        (9, 25, 29, 31, 35),
-        (10, 26, 30, 36),
-        #
-        (11, 27, 33, 37),
-        (12, 28, 32, 34, 38),
-        (13, 29, 33, 35, 39),
-        (14, 30, 34, 36),
-        (15, 31, 35),
-        #
-        (16, 32, 38, 40),
-        (17, 33, 37, 39, 41),
-        (18, 34, 38, 42),
-        #
-        (19, 37, 41),
-        (20, 38, 40, 42),
-        (21, 39, 41),
-    ),
+    # neighbors=(
+    #     (2, 6, 22),
+    #     (1, 3, 7, 23),
+    #     (2, 4, 8, 24),
+    #     (3, 5, 9, 25),
+    #     (4, 10, 26),
+    #     #
+    #     (1, 7, 11, 27),
+    #     (2, 6, 8, 12, 28),
+    #     (3, 7, 9, 13, 29),
+    #     (4, 8, 10, 14, 30),
+    #     (5, 9, 15, 31),
+    #     #
+    #     (6, 12, 16, 32),
+    #     (7, 11, 13, 17, 33),
+    #     (8, 12, 14, 18, 34),
+    #     (9, 13, 15, 35),
+    #     (10, 14, 36),
+    #     #
+    #     (11, 17, 19, 37),
+    #     (12, 16, 18, 20, 38),
+    #     (13, 17, 21, 39),
+    #     #
+    #     (16, 20, 40),
+    #     (17, 19, 21, 41),
+    #     (18, 20, 42),
+    #     # top layer
+    #     (1, 23, 27),
+    #     (2, 22, 24, 28),
+    #     (3, 23, 25, 29),
+    #     (4, 24, 26, 30),
+    #     (5, 25, 31),
+    #     #
+    #     (6, 22, 28, 32),
+    #     (7, 23, 27, 29, 33),
+    #     (8, 24, 28, 30, 34),
+    #     (9, 25, 29, 31, 35),
+    #     (10, 26, 30, 36),
+    #     #
+    #     (11, 27, 33, 37),
+    #     (12, 28, 32, 34, 38),
+    #     (13, 29, 33, 35, 39),
+    #     (14, 30, 34, 36),
+    #     (15, 31, 35),
+    #     #
+    #     (16, 32, 38, 40),
+    #     (17, 33, 37, 39, 41),
+    #     (18, 34, 38, 42),
+    #     #
+    #     (19, 37, 41),
+    #     (20, 38, 40, 42),
+    #     (21, 39, 41),
+    # ),
     node_hierarchy=(
         # hierarchy enum, node number, prescribed (x, y, z)
         Hierarchy.PRESCRIBED,  # 1 -> (0, 0, 0)
@@ -141,18 +141,18 @@ bracket = Example(
         Hierarchy.BOUNDARY,  # 7
         Hierarchy.BOUNDARY,  # 8
         Hierarchy.BOUNDARY,  # 9
-        Hierarchy.PRESCRIBED,  # 10 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 0)
+        Hierarchy.PRESCRIBED,  # 10 -> (4.5*cos(15 deg), 4.5*sin(15 deg), 0)
         Hierarchy.PRESCRIBED,  # 11 -> *(0, 2, 0)
         Hierarchy.BOUNDARY,  # 12
         Hierarchy.BOUNDARY,  # 13
         Hierarchy.BOUNDARY,  # 14
-        Hierarchy.PRESCRIBED,  # 15 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+        Hierarchy.PRESCRIBED,  # 15 -> (4.5*cos(30 deg), 4.5*sin(30 deg), 0)
         Hierarchy.PRESCRIBED,  # 16 -> (0, 3, 0)
         Hierarchy.BOUNDARY,  # 17
         Hierarchy.BOUNDARY,  # 18
         Hierarchy.PRESCRIBED,  # 19 -> (0, 4, 0)
-        Hierarchy.PRESCRIBED,  # 20 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 0)
-        Hierarchy.PRESCRIBED,  # 21 -> (4*cos(45 deg), 4*sin(45 deg), 0)
+        Hierarchy.PRESCRIBED,  # 20 -> (1.5, 4, 0)
+        Hierarchy.PRESCRIBED,  # 21 -> (3.5, 4, 0)
         #
         Hierarchy.PRESCRIBED,  # 22 -> (0, 0, 1)
         Hierarchy.PRESCRIBED,  # 23 -> (1, 0, 1)
@@ -163,18 +163,18 @@ bracket = Example(
         Hierarchy.BOUNDARY,  # 28
         Hierarchy.BOUNDARY,  # 29
         Hierarchy.BOUNDARY,  # 30
-        Hierarchy.PRESCRIBED,  # 31 -> (4*cos(22.5 deg), 4*sin(22.5 deg), 1)
+        Hierarchy.PRESCRIBED,  # 31 -> (4.5*cos(15 deg), 4.5*sin(15 deg), 1)
         Hierarchy.PRESCRIBED,  # 32 -> *(0, 2, 1)
         Hierarchy.BOUNDARY,  # 33
         Hierarchy.BOUNDARY,  # 34
         Hierarchy.BOUNDARY,  # 35
-        Hierarchy.PRESCRIBED,  # 36 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+        Hierarchy.PRESCRIBED,  # 36 -> (4.5*cos(30 deg), 4.5*sin(30 deg), 1)
         Hierarchy.PRESCRIBED,  # 37 -> (0, 3, 1)
         Hierarchy.BOUNDARY,  # 38
         Hierarchy.BOUNDARY,  # 39
         Hierarchy.PRESCRIBED,  # 40 -> (0, 4, 1)
-        Hierarchy.PRESCRIBED,  # 41 -> (4*cos(67.5 deg), 4*sin(67.5 deg), 1)
-        Hierarchy.PRESCRIBED,  # 42 -> (4*cos(45 deg), 4*sin(45 deg), 1)
+        Hierarchy.PRESCRIBED,  # 41 -> (1.5, 4, 1)
+        Hierarchy.PRESCRIBED,  # 42 -> (3.5, 4, 1)
     ),
     prescribed_nodes=(
         (1, Vertex(0, 0, 0)),
@@ -186,26 +186,20 @@ bracket = Example(
         (
             10,
             Vertex(
-                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 0
+                4.5 * math.cos(15 * DEG2RAD), 4.5 * math.sin(15 * DEG2RAD), 0
             ),
         ),
         (11, Vertex(0, 2, 0)),
         (
             15,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
+            Vertex(
+                4.5 * math.cos(30 * DEG2RAD), 4.5 * math.sin(30 * DEG2RAD), 0
+            ),
         ),
         (16, Vertex(0, 3, 0)),
         (19, Vertex(0, 4, 0)),
-        (
-            20,
-            Vertex(
-                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 0
-            ),
-        ),
-        (
-            21,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 0),
-        ),
+        (20, Vertex(1.5, 4, 0)),
+        (21, Vertex(3.5, 4, 0)),
         (22, Vertex(0, 0, 1)),
         (23, Vertex(1, 0, 1)),
         (24, Vertex(2, 0, 1)),
@@ -215,32 +209,26 @@ bracket = Example(
         (
             31,
             Vertex(
-                4 * math.cos(22.5 * DEG2RAD), 4 * math.sin(22.5 * DEG2RAD), 1
+                4.5 * math.cos(15 * DEG2RAD), 4.5 * math.sin(15 * DEG2RAD), 1
             ),
         ),
         (32, Vertex(0, 2, 1)),
         (
             36,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
+            Vertex(
+                4.5 * math.cos(30 * DEG2RAD), 4.5 * math.sin(30 * DEG2RAD), 1
+            ),
         ),
         (37, Vertex(0, 3, 1)),
         (40, Vertex(0, 4, 1)),
-        (
-            41,
-            Vertex(
-                4 * math.cos(67.5 * DEG2RAD), 4 * math.sin(67.5 * DEG2RAD), 1
-            ),
-        ),
-        (
-            42,
-            Vertex(4 * math.cos(45 * DEG2RAD), 4 * math.sin(45 * DEG2RAD), 1),
-        ),
+        (41, Vertex(1.5, 4, 1)),
+        (42, Vertex(3.5, 4, 1)),
     ),
     scale_lambda=0.3,
     scale_mu=-0.33,
     num_iters=10,
     algorithm=SmoothingAlgorithm.LAPLACE,
-    file_stem="bracket"
+    file_stem="bracket",
 )
 
 # Double X two-element example
@@ -266,20 +254,20 @@ double_x = Example(
     nelx=2,
     nely=1,
     nelz=1,
-    neighbors=(
-        (2, 4, 7),
-        (1, 3, 5, 8),
-        (2, 6, 9),
-        (1, 5, 10),
-        (2, 4, 6, 11),
-        (3, 5, 12),
-        (1, 8, 10),
-        (2, 7, 9, 11),
-        (3, 8, 12),
-        (4, 7, 11),
-        (5, 8, 10, 12),
-        (6, 9, 11),
-    ),
+    # neighbors=(
+    #     (2, 4, 7),
+    #     (1, 3, 5, 8),
+    #     (2, 6, 9),
+    #     (1, 5, 10),
+    #     (2, 4, 6, 11),
+    #     (3, 5, 12),
+    #     (1, 8, 10),
+    #     (2, 7, 9, 11),
+    #     (3, 8, 12),
+    #     (4, 7, 11),
+    #     (5, 8, 10, 12),
+    #     (6, 9, 11),
+    # ),
     node_hierarchy=(
         Hierarchy.BOUNDARY,
         Hierarchy.BOUNDARY,
@@ -299,5 +287,5 @@ double_x = Example(
     scale_mu=-0.33,
     num_iters=2,
     algorithm=SmoothingAlgorithm.LAPLACE,
-    file_stem="double_x"
+    file_stem="double_x",
 )
