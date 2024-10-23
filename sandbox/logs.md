@@ -4,6 +4,21 @@
 
 *In order of most recent to least recent.*
 
+## 2024-10-23
+
+* Review smoothing theory and nomenclature
+* Smoothing roadmap
+  * Unmerge the visuals in inhomogeneous bracket example
+* Python - node neighbor algorithm
+  * `src/fem/mod.rs`,
+    * `/// Calculates and sets the node-to-node connectivity.`
+    * `pub fn calculate_node_node_connectivity(&mut self) -> Result<(), &str> {`
+  * `src/fem/test.rs`
+    * `let node_node_connectivity_gold = vec![`
+* Rust - smoothing algorithms architecture
+  * Pause CLI support of prescribed inhomogeneous until have `.stl` support, do algorithmically not with sidesets
+* vtk file type (for visualization in https://www.hexalab.net) (.mesh is not as interesting as .vtk)
+
 ## 2024-10-16
 
 * benchmarks and bottlenecks
