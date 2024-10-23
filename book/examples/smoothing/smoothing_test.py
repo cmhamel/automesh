@@ -503,3 +503,65 @@ def test_edge_pairs():
         (11, 12),
     )
     assert found == gold
+
+
+def test_node_node_connectivity():
+    """Tests that the node_node_connectivity function is properly
+    implemented.
+    """
+
+    # from the Double X unit test
+
+    hexes = (
+        (1, 2, 5, 4, 7, 8, 11, 10),
+        (2, 3, 6, 5, 8, 9, 12, 11),
+    )
+
+    gold_neighbors = (
+        (2, 4, 7),
+        (1, 3, 5, 8),
+        (2, 6, 9),
+        (1, 5, 10),
+        (2, 4, 6, 11),
+        (3, 5, 12),
+        (1, 8, 10),
+        (2, 7, 9, 11),
+        (3, 8, 12),
+        (4, 7, 11),
+        (5, 8, 10, 12),
+        (6, 9, 11),
+    )
+
+    result = sm.node_node_connectivity(hexes)
+
+    assert gold_neighbors == result
+
+    # now with node number modifications to assure the
+    # algorithm does not assume sequential node numbers:
+    # 2 -> 22
+    # 5 -> 55
+    # 8 -> 88
+    # 11 -> 111
+    hexes_2 = (
+        (1, 22, 55, 4, 7, 88, 111, 10),
+        (22, 3, 6, 55, 88, 9, 12, 111),
+    )
+
+    gold_neighbors_2 = (
+        (4, 7, 22),  # 1
+        (6, 9, 22),  # 3
+        (1, 10, 55),  # 4
+        (3, 12, 55),  # 6
+        (1, 10, 88),  # 7
+        (3, 12, 88),  # 9
+        (4, 7, 111),  # 10
+        (6, 9, 111),  # 12
+        (1, 3, 55, 88),  # 2 -> 22
+        (4, 6, 22, 111),  # 5 -> 55
+        (7, 9, 22, 111),  # 8 -> 88
+        (10, 12, 55, 88),  # 11 -> 111
+    )
+
+    result_2 = sm.node_node_connectivity(hexes_2)
+
+    assert gold_neighbors_2 == result_2

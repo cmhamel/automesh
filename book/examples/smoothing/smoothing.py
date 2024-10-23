@@ -248,7 +248,8 @@ def smooth(
     num_iters: int,
     algorithm: SmoothingAlgorithm,
 ) -> Vertices:
-    """Given an initial position of vertices, the vertex neighbors,
+    """
+    Given an initial position of vertices, the vertex neighbors,
     and the dof classification of each vertex, perform Laplace
     smoothing for num_iter iterations, and return the updated
     coordinates.
@@ -276,13 +277,12 @@ def smooth(
 
         # update neighbors
         nn = smoothing_neighbors(
-            neighbors=nn,
-            node_hierarchy=node_hierarchy
+            neighbors=nn, node_hierarchy=node_hierarchy
         )  # overwrite
 
         # update vertex positions
         vv_list = list(vv)  # make mutable
-        for (node_id, node_xyz) in prescribed_nodes:
+        for node_id, node_xyz in prescribed_nodes:
             # print(f"Update node {node_id}")
             # print(f"  from {vv_list[node_id-1]}")
             # print(f"  to {node_xyz}")
@@ -333,17 +333,17 @@ def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
     """
     Order pairs of integers based on their values.
 
-    Given a tuple of pairs in the form ((a, b), (c, d), ...), this 
-    function orders each pair such that the smaller integer comes 
-    first. It then sorts the resulting pairs primarily by the first 
+    Given a tuple of pairs in the form ((a, b), (c, d), ...), this
+    function orders each pair such that the smaller integer comes
+    first. It then sorts the resulting pairs primarily by the first
     element and secondarily by the second element.
 
     Parameters:
     ab (tuple[tuple[int, int], ...]): A tuple containing pairs of integers.
 
     Returns:
-    tuple: A new tuple containing the ordered pairs, where each pair 
-           is sorted internally and the entire collection is sorted 
+    tuple: A new tuple containing the ordered pairs, where each pair
+           is sorted internally and the entire collection is sorted
            based on the first and second elements.
 
     Example:
@@ -410,3 +410,50 @@ def edge_pairs(hexes: Hexes):
         # breakpoint()
 
     return tuple(sorted(set(pairs)))
+
+
+def node_node_connectivity(hexes: Hexes) -> Neighbors:
+    """
+    Determine the connectivity of nodes to other nodes from
+    a list of hexahedral elements.
+
+    This function takes a list of hexahedral elements and returns a
+    list of nodes connected to each node based on the edges define
+    by the hexahedral elements. Each node's connectivity is represented
+    as a tuple of neighboring nodes.
+
+    Parameters:
+    hexes (Hexes): A collection of hexahedral elements, where each
+                   element is represented by a tuple of node indices.
+
+    Returns:
+    Neighbors: A tuple of tuples, where each inner tuple contains the
+               indices of nodes connected to the corresponding node
+               in the input list.
+    """
+
+    # create an empty dictionary from the node numbers
+    edict = {item: () for sublist in hexes for item in sublist}
+
+    ep = edge_pairs(hexes)
+
+    for edge in ep:
+        aa, bb = edge
+        # existing value at edict[a] is a_old
+        a_old = edict[aa]
+        # existing value at edict[b] is b_old
+        b_old = edict[bb]
+
+        # new value
+        a_new = (bb,)
+        b_new = (aa,)
+
+        # update dictionary
+        edict[aa] = a_old + a_new
+        edict[bb] = b_old + b_new
+
+    # create a new dictionary, sorted by keys
+    sorted_edict = dict(sorted(edict.items()))
+    neighbors = tuple(sorted_edict.values())
+    return neighbors
+
