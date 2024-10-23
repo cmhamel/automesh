@@ -22,8 +22,6 @@ import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-# DofSet = ty.DofSet
-# Elements = ty.Elements
 Hexes = ty.Hexes
 Hierarchy = ty.Hierarchy
 Neighbors = ty.Neighbors
@@ -44,6 +42,10 @@ def test_average_position():
     assert v_ave.y == 5.0
     assert v_ave.z == 6.0
 
+    # docstring example
+    v1, v2 = Vertex(1, 2, 3), Vertex(4, 5, 6)
+    assert sm.average_position((v1, v2)) == Vertex(2.5, 3.5, 4.5)
+
 
 def test_add():
     """Unit test for the addition of Vertex v1 and Vertex v2."""
@@ -53,6 +55,10 @@ def test_add():
     assert vv.x == 5.0
     assert vv.y == 9.0
     assert vv.z == 4.0
+
+    # docstring example
+    v1, v2 = Vertex(1, 2, 3), Vertex(4, 5, 6)
+    assert sm.add(v1, v2) == Vertex(5, 7, 9)
 
 
 def test_subtract():
@@ -64,6 +70,10 @@ def test_subtract():
     assert vv.y == -5.0
     assert vv.z == 2.0
 
+    # docstring example
+    v1, v2 = Vertex(8, 5, 2), Vertex(1, 2, 3)
+    assert sm.subtract(v1, v2) == Vertex(7, 3, -1)
+
 
 def test_scale():
     """Unit test for the scale function."""
@@ -74,6 +84,11 @@ def test_scale():
     assert result.y == 20.0
     assert result.z == 30.0
 
+    # docstring example
+    v = Vertex(1, 2, 3)
+    scale_factor = 2
+    assert sm.scale(v, scale_factor) == Vertex(2, 4, 6)
+
 
 def test_xyz():
     """Unit test to assure the (x, y, z) coordinate tuple is returned
@@ -83,6 +98,10 @@ def test_xyz():
     gold = (1.1, 2.2, 3.3)
     result = sm.xyz(vv)
     assert result == gold
+
+    # docstring example
+    v = Vertex(1, 2, 3)
+    assert sm.xyz(v) == (1, 2, 3)
 
 
 def test_smoothing_neighbors():
@@ -127,6 +146,19 @@ def test_smoothing_neighbors():
     )
 
     assert result == gold_smoothing_neighbors
+
+    # doctring example
+    neighbors = ((2, 3), (1, 4), (1, 5), (2, 6), (3,), (4,))
+    node_hierarchy = (
+        Hierarchy.INTERIOR,
+        Hierarchy.BOUNDARY,
+        Hierarchy.PRESCRIBED,
+        Hierarchy.BOUNDARY,
+        Hierarchy.INTERIOR,
+        Hierarchy.INTERIOR,
+    )
+    gold = ((2, 3), (4,), (), (2,), (3,), (4,))
+    assert sm.smoothing_neighbors(neighbors, node_hierarchy) == gold
 
 
 def test_laplace_hierarchical_bracket():
@@ -435,7 +467,10 @@ def test_pair_ordered():
     )  # overwrite
     found = sm.pair_ordered(given)  # overwrite
     assert found == gold
-    # breakpoint()
+
+    # docstring example
+    pairs = ((3, 1), (2, 4), (5, 0))
+    assert sm.pair_ordered(pairs) == ((0, 5), (1, 3), (2, 4))
 
 
 def test_edge_pairs():

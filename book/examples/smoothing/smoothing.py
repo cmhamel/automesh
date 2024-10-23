@@ -7,7 +7,6 @@ import smoothing_types as ty
 
 # Type alias for functional style methods
 # https://docs.python.org/3/library/typing.html#type-aliases
-# DofSet = ty.DofSet
 Hexes = ty.Hexes
 Hierarchy = ty.Hierarchy
 Neighbors = ty.Neighbors
@@ -18,15 +17,39 @@ Vertices = ty.Vertices
 SmoothingAlgorithm = ty.SmoothingAlgorithm
 
 
-def average_position(vv: Vertices) -> Vertex:
-    """Give a list of vertices, returns the average position of the
-    vertices."""
+def average_position(vertices: Vertices) -> Vertex:
+    """Calculate the average position of a list of vertices.
 
-    n_vertices = len(vv)
+    This function computes the average coordinates (x, y, z) of a given
+    list of Vertex objects. It raises an assertion error if the input
+    list is empty.
+
+    Parameters:
+    vertices (Vertices): A list or collection of Vertex objects, where
+                         each Vertex has x, y, and z attributes
+                         representing its coordinates in 3D space.
+
+    Returns:
+    Vertex: A new Vertex object representing the average position of the
+            input vertices, with x, y, and z attributes set to the
+            average coordinates.
+
+    Raises:
+    AssertionError: If the number of vertices is zero, indicating that
+                    the input list must contain at least one vertex.
+
+    Example:
+    >>> v1 = Vertex(1, 2, 3)
+    >>> v2 = Vertex(4, 5, 6)
+    >>> average_position([v1, v2])
+    Vertex(x=2.5, y=3.5, z=4.5)
+    """
+
+    n_vertices = len(vertices)
     assert n_vertices > 0, "Error: number of vertices must be positive."
-    xs = [v.x for v in vv]
-    ys = [v.y for v in vv]
-    zs = [v.z for v in vv]
+    xs = [v.x for v in vertices]
+    ys = [v.y for v in vertices]
+    zs = [v.z for v in vertices]
     x_ave = sum(xs) / n_vertices
     y_ave = sum(ys) / n_vertices
     z_ave = sum(zs) / n_vertices
@@ -35,7 +58,28 @@ def average_position(vv: Vertices) -> Vertex:
 
 
 def add(v1: Vertex, v2: Vertex) -> Vertex:
-    """Returns the Vertex addition of (v1 + v2)."""
+    """
+    Add two Vertex objects component-wise.
+
+    This function takes two Vertex objects and returns a new Vertex
+    object that represents the component-wise addition of the two
+    input vertices.
+
+    Parameters:
+    v1 (Vertex): The first Vertex object to be added.
+    v2 (Vertex): The second Vertex object to be added.
+
+    Returns:
+    Vertex: A new Vertex object representing the result of the addition,
+            with x, y, and z attributes set to the sum of the corresponding
+            attributes of v1 and v2.
+
+    Example:
+    >>> v1 = Vertex(1, 2, 3)
+    >>> v2 = Vertex(4, 5, 6)
+    >>> add(v1, v2)
+    Vertex(x=5, y=7, z=9)
+    """
     dx = v1.x + v2.x
     dy = v1.y + v2.y
     dz = v1.z + v2.z
@@ -43,7 +87,28 @@ def add(v1: Vertex, v2: Vertex) -> Vertex:
 
 
 def subtract(v1: Vertex, v2: Vertex) -> Vertex:
-    """Returns the Vertex subtraction of (v1 - v2)."""
+    """
+    Subtract one Vertex object from another component-wise.
+
+    This function takes two Vertex objects and returns a new Vertex
+    object that represents the component-wise subtraction of the second
+    vertex from the first.
+
+    Parameters:
+    v1 (Vertex): The Vertex object from which v2 will be subtracted.
+    v2 (Vertex): The Vertex object to be subtracted from v1.
+
+    Returns:
+    Vertex: A new Vertex object representing the result of the subtraction,
+            (v1 - v2), with x, y, and z attributes set to the difference
+            of the corresponding attributes of v1 and v2.
+
+    Example:
+    >>> v1 = Vertex(8, 5, 2)
+    >>> v2 = Vertex(1, 2, 3)
+    >>> subtract(v1, v2)
+    Vertex(x=7, y=3, z=-1)
+    """
     dx = v1.x - v2.x
     dy = v1.y - v2.y
     dz = v1.z - v2.z
@@ -51,7 +116,30 @@ def subtract(v1: Vertex, v2: Vertex) -> Vertex:
 
 
 def scale(vertex: Vertex, scale_factor: float) -> Vertex:
-    """Scales a vertex by a scale factor."""
+    """
+    Scale a Vertex object by a given scale factor.
+
+    This function takes a Vertex object and a scale factor, and returns
+    a new Vertex object that represents the original vertex scaled by
+    the specified factor.
+
+    Parameters:
+    vertex (Vertex): The Vertex object to be scaled.
+    scale_factor (float): The factor by which to scale the vertex.
+                          This can be any real number, including
+                          positive, negative, or zero.
+
+    Returns:
+    Vertex: A new Vertex object representing the scaled vertex, with
+            x, y, and z attributes set to the original coordinates
+            multiplied by the scale factor.
+
+    Example:
+    >>> v = Vertex(1, 2, 3)
+    >>> scale_factor = 2
+    >>> scale(v, scale_factor)
+    Vertex(x=2, y=4, z=6)
+    """
     x = scale_factor * vertex.x
     y = scale_factor * vertex.y
     z = scale_factor * vertex.z
@@ -59,22 +147,74 @@ def scale(vertex: Vertex, scale_factor: float) -> Vertex:
 
 
 def xyz(v1: Vertex) -> tuple[float, float, float]:
-    """Given a vertex, returns the coordinates as (x, y, z)."""
+    """
+    Extract the coordinates of a Vertex object.
+
+    This function takes a Vertex object and returns its coordinates
+    as a tuple in the form (x, y, z).
+
+    Parameters:
+    v1 (Vertex): The Vertex object from which to extract the coordinates.
+
+    Returns:
+    tuple[float, float, float]: A tuple containing the x, y, and z
+                                 coordinates of the vertex.
+
+    Example:
+    >>> v = Vertex(1, 2, 3)
+    >>> xyz(v)
+    (1, 2, 3)
+    """
     aa, bb, cc = v1.x, v1.y, v1.z
     return (aa, bb, cc)
 
 
 def smoothing_neighbors(neighbors: Neighbors, node_hierarchy: NodeHierarchy):
-    """Given an original neighbors structure, defined from connectivity
-    of the mesh, and given a node_hierarchy, return the neighbors that are
-    used for smoothing, which will be a subset of the original neighbors
-    structure."""
+    """
+    Determine the smoothing neighbors for each node based on its
+    hierarchy level.
+
+    This function takes an original neighbors structure, which is defined
+    by the connectivity of a mesh, and a node hierarchy. It returns a
+    subset of the original neighbors that are used for smoothing, based
+    on the hierarchy levels of the nodes.
+
+    Parameters:
+    neighbors (Neighbors): A structure containing the original neighbors
+                           for each node in the mesh.
+    node_hierarchy (NodeHierarchy): A structure that defines the hierarchy
+                                     levels of the nodes, which can be
+                                     INTERIOR, BOUNDARY, or PRESCRIBED.
+
+    Returns:
+    tuple: A new structure containing the neighbors used for smoothing,
+           which is a subset of the original neighbors based on the
+           hierarchy levels.
+
+    Raises:
+    ValueError: If a hierarchy value is not in the expected range
+                of [INTERIOR, BOUNDAR, PRESCRIBED, or [0, 1, 2],
+                respectively.
+
+    Example:
+    INTERIOR     PRESCRIBED      INTERIOR
+       (1) -------- (3) ----------- (5)
+        |
+       (2) -------- (4) ----------- (6)
+    BOUNDARY     BOUNDARY        INTERIOR
+
+    >>> neighbors = ((2, 3), (1, 4), (1, 5), (2, 6), (3,), (4,))
+    >>> node_hierarchy = (Hierarchy.INTERIOR, Hierarchy.BOUNDARY,
+                          Hierarchy.PRESCRIBED, Hierarchy.BOUNDARY,
+                          Hierarchy.INTERIOR, Hierarchy.INTERIOR)
+    >>> smoothing_neighbors(neighbors, node_hierarchy)
+    ((2, 3), (4,), (), (2,), (3,), (4,))
+    """
     neighbors_new = ()
 
     for node, level in enumerate(node_hierarchy):
         nei_old = neighbors[node]
         # print(f"Processing node {node+1}, neighbors: {nei_old}")
-        # node_level = level.value
         levels = [int(node_hierarchy[x - 1].value) for x in nei_old]
         nei_new = ()
 
@@ -190,9 +330,26 @@ def smooth(
 
 
 def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
-    """Given a tuple of form ((a, b), (c, d), ...) orders all the subpairs
-    such that the first index drives global order, and the second index
-    drives secondary order.
+    """
+    Order pairs of integers based on their values.
+
+    Given a tuple of pairs in the form ((a, b), (c, d), ...), this 
+    function orders each pair such that the smaller integer comes 
+    first. It then sorts the resulting pairs primarily by the first 
+    element and secondarily by the second element.
+
+    Parameters:
+    ab (tuple[tuple[int, int], ...]): A tuple containing pairs of integers.
+
+    Returns:
+    tuple: A new tuple containing the ordered pairs, where each pair 
+           is sorted internally and the entire collection is sorted 
+           based on the first and second elements.
+
+    Example:
+    >>> pairs = ((3, 1), (2, 4), (5, 0))
+    >>> pair_ordered(pairs)
+    ((0, 5), (1, 3), (2, 4))
     """
     firsts, seconds = zip(*ab)
 
@@ -211,16 +368,29 @@ def pair_ordered(ab: tuple[tuple[int, int], ...]) -> tuple:
     #     print(f"b = {b}")
 
     result = tuple(sorted(ab_ordered))
-    # breakpoint()
     return result
 
 
 def edge_pairs(hexes: Hexes):
-    """Returns all the line pairs from hex element connectivity, for use
-    with drawing edges of elements."""
+    """
+    Extract unique edge pairs from hex element connectivity.
 
-    # almost perfect with collecting unique pairs, but there are some
-    # overlapping pairs, not a big dealbptt
+    This function takes a collection of hex elements and returns all
+    unique line pairs that represent the edges of the hex elements.
+    The edges are derived from the connectivity of the hex elements,
+    including both the horizontal edges (bottom and top faces) and
+    the vertical edges.
+
+    Used for drawing edges of finite elements.
+
+    Parameters:
+    hexes (Hexes): A collection of hex elements, where each hex is
+                   represented by a tuple of vertex indices.
+
+    Returns:
+    tuple: A sorted tuple of unique edge pairs, where each pair is
+           represented as a tuple of two vertex indices.
+    """
     pairs = ()
     for ee in hexes:
         # bottom_face = tuple(sorted(list(zip(ee[0:4], ee[1:4] + (ee[0],)))))
