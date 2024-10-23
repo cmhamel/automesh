@@ -1,6 +1,8 @@
 # Smoothing
 
-## Double X
+## Laplace Smoothing
+
+### Double X
 
 We examine the most basic type of smoothing, Laplace smoothing, $\lambda = 0.3$,
 without hierarchical control, with the **Double X** example.
@@ -101,6 +103,14 @@ A known drawback of Laplace smoothing is that it can fail to preserve volumes.  
 ![free_laplace_iter_100.gif](free_laplace_iter_100.gif)
 
 Figure: Two element test problem (left) original configuration, (right) subject to `[1, 2, 3, 4, 5, 10, 20, 30, 100` iterations of Laplace smoothing.  Animation created with [Ezgif](https://ezgif.com/).
+
+## Laplace Smoothing, Hierarchical Control, Prescribed Homogeneous
+
+* Cube with Inclusion
+
+![../unit_tests/cube_with_inclusion.png](../unit_tests/cube_with_inclusion.png)
+
+## Laplace Smoothing, Hierarchical Control, Prescribed Inhomogeneous
 
 ## Bracket
 
