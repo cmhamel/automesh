@@ -25,24 +25,10 @@ class Hierarchy(Enum):
 Vertices = tuple[Vertex, ...]
 Hex = tuple[int, int, int, int, int, int, int, int]  # only hex elements
 Hexes = tuple[Hex, ...]
-# Dof = tuple[int, int, int]
-# DofSet = tuple[Dof, ...]  # analong to a SideSet or a NodeSet
 Neighbor = tuple[int, ...]
 Neighbors = tuple[Neighbor, ...]
-# NodeHierarchy = tuple[int, ...]
 NodeHierarchy = tuple[Hierarchy, ...]
 PrescribedNodes = tuple[tuple[int, Vertex], ...] | None
-
-# class DofType(Enum):
-#     """All degrees of freedom must belong to one, and only one, of the
-#     following smoothing categories.
-#     """
-#
-#     PRESCRIBED_HOMOGENEOUS = 0
-#     PRESCRIBED_INHOMOGENEOUS = 1
-#     FREE_EXTERIOR = 2
-#     FREE_INTERFACE = 3
-#     FREE_INTERIOR = 4
 
 
 class SmoothingAlgorithm(Enum):
