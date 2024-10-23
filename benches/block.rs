@@ -1,7 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{Abaqus, Smoothing, Voxels};
+use automesh::{Smoothing, Voxels};
 use test::Bencher;
 
 const REMOVE: Option<Vec<u8>> = None;
