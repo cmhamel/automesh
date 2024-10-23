@@ -458,4 +458,3 @@ def node_node_connectivity(hexes: Hexes) -> Neighbors:
     sorted_edict = dict(sorted(edict.items()))
     neighbors = tuple(sorted_edict.values())
     return neighbors
-

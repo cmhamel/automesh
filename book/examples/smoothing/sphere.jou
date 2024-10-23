@@ -34,9 +34,9 @@ reset
 
 # {str_export_exodus = 'export mesh   "'//str_exodus// '" overwrite '}
 # example:
-# export mesh   "/Users/chovey/autotwin/basis/data/cubit/spheres_e_len_0.01m.e" overwrite 
-# export mesh   "/Users/chovey/autotwin/basis/data/cubit/spheres_e_len_0.01m.g" overwrite 
-# export mesh   "/Users/chovey/autotwin/basis/scratch/smooth_1cm.g" overwrite 
+# export mesh   "/Users/chovey/autotwin/basis/data/cubit/spheres_e_len_0.01m.e" overwrite
+# export mesh   "/Users/chovey/autotwin/basis/data/cubit/spheres_e_len_0.01m.g" overwrite
+# export mesh   "/Users/chovey/autotwin/basis/scratch/smooth_1cm.g" overwrite
 
 # {str_export_abaqus = 'export abaqus "'//str_abaqus// '" overwrite everything'}
 # example:
@@ -95,12 +95,12 @@ volume with name "outer_vol" redistribute nodes off
 # surface 19 is at the inner_vol radius
 # surface 21 is at the outer_vol radius
 volume with name "outer_vol" scheme sweep source surface 19    target surface 21    sweep transform least squares
-volume with name "outer_vol"  autosmooth target on  fixed imprints off  smart smooth off 
+volume with name "outer_vol"  autosmooth target on  fixed imprints off  smart smooth off
 mesh volume with name "outer_vol"
 
-Volume all copy reflect x 
-Volume all copy reflect y 
-Volume all copy reflect z 
+Volume all copy reflect x
+Volume all copy reflect y
+Volume all copy reflect z
 
 block 1 volume with name "inner_vol*"
 block 2 volume with name "outer_vol*"
@@ -108,22 +108,22 @@ block 2 volume with name "outer_vol*"
 
 # quality volume all shape global draw mesh
 
-# export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged" + {ELEMENT_SIZE}.e  overwrite 
-# export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged.e"  overwrite 
-# export mesh "/Users/chovey/autotwin/basis/scratch/unmerged.e"  overwrite 
+# export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged" + {ELEMENT_SIZE}.e  overwrite
+# export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged.e"  overwrite
+# export mesh "/Users/chovey/autotwin/basis/scratch/unmerged.e"  overwrite
 export mesh "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp.g" overwrite
 
 reset
 
-# import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_SIZE/100} 
-# import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE} 
-# import mesh geometry "/Users/chovey/autotwin/basis/scratch/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE} 
+# import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_SIZE/100}
+# import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE}
+# import mesh geometry "/Users/chovey/autotwin/basis/scratch/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE}
 import mesh geometry "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp.g" merge  merge_nodes {ELEMENT_TOLERANCE}
 
-sideset 1 add surface 1 
-sideset 2 add surface 2 
+sideset 1 add surface 1
+sideset 2 add surface 2
 
-# export mesh "/Users/chovey/autotwin/basis/scratch/smooth_1cm.g"  overwrite 
+# export mesh "/Users/chovey/autotwin/basis/scratch/smooth_1cm.g"  overwrite
 # export abaqus "/Users/chovey/autotwin/basis/scratch/smooth_1cm.inp" overwrite everything
 # inner_vol = block 1: 7,168 elements
 # outer_vol = block 2: 3,072 elements
