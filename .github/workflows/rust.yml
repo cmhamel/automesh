@@ -62,7 +62,9 @@ jobs:
       - name: build
         run: cargo build --release
       - name: clippy
-        run: cargo clippy --release -- -D warnings
+        run: cargo clippy -- -D warnings
+      - name: clippy
+        run: cargo clippy --tests
       - name: doc
         run: cargo rustdoc --release -- --html-in-header docs/katex.html
       - name: fmt

@@ -170,6 +170,10 @@ enum MeshingCommands {
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
+        /// Pass to disable hierarchical control
+        #[arg(default_value_t = true, long, short = 'd')]
+        no_hierarchical: bool,
+
         /// Scaling (> 0.0) parameter for smoothing
         #[arg(default_value_t = 1.0, long, short, value_name = "SCALE")]
         scale: f64,
@@ -224,6 +228,7 @@ impl From<WriteNpyError> for ErrorWrapper {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 enum OutputTypes {
     Abaqus(FiniteElements),
     Npy(Voxels),
@@ -371,6 +376,7 @@ fn mesh(
             MeshingCommands::Smooth {
                 iterations,
                 method,
+                no_hierarchical,
                 scale,
             } => {
                 let smoothing_method = method.unwrap_or("Laplacian".to_string());
@@ -382,11 +388,11 @@ fn mesh(
                         }
                         output_type.calculate_node_element_connectivity()?;
                         output_type.calculate_node_node_connectivity()?;
-                        // Unless a hierarchical smoothing method is specified, no need to do:
-                        // - calculate_nodal_hierarchy()
-                        // - calculate_node_node_connectivity_boundary()
-                        // - calculate_node_node_connectivity_interior()
-                        output_type.smooth(Smoothing::Laplacian(iterations, scale), None)?;
+                        if !no_hierarchical {
+                            output_type.calculate_nodal_hierarchy()?;
+                        }
+                        output_type.calculate_nodal_influencers()?;
+                        output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
                         if !quiet {
                             println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
                         }
