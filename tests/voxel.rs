@@ -38,7 +38,7 @@ fn assert_data_eq_gold(spn: Voxels) {
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
 }
 
-fn assert_data_eq_gold_1d<T>(data: &Vec<T>, gold: &[T])
+fn assert_data_eq_gold_1d<T>(data: &[T], gold: &[T])
 where
     T: std::fmt::Debug + std::cmp::PartialEq,
 {
@@ -48,7 +48,7 @@ where
         .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry));
 }
 
-fn assert_data_eq_gold_2d<const N: usize, T>(data: &Vec<Vec<T>>, gold: &[[T; N]])
+fn assert_data_eq_gold_2d<const N: usize, T>(data: &[Vec<T>], gold: &[[T; N]])
 where
     T: std::fmt::Debug + std::cmp::PartialEq,
 {

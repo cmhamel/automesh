@@ -33,10 +33,13 @@ pub struct FiniteElements {
     interface_nodes: Nodes,
     interior_nodes: Nodes,
     nodal_coordinates: Coordinates,
+    nodal_influencers: Connectivity,
     node_element_connectivity: Connectivity,
     node_node_connectivity: Connectivity,
-    node_node_connectivity_boundary: Connectivity,
-    node_node_connectivity_interior: Connectivity,
+    prescribed_nodes: Nodes,
+    prescribed_nodes_homogeneous: Nodes,
+    prescribed_nodes_inhomogeneous: Nodes,
+    prescribed_nodes_inhomogeneous_coordinates: Coordinates,
 }
 
 /// Possible smoothing methods.
@@ -60,10 +63,13 @@ impl FiniteElements {
             interface_nodes: vec![],
             interior_nodes: vec![],
             nodal_coordinates,
+            nodal_influencers: vec![],
             node_element_connectivity: vec![],
             node_node_connectivity: vec![],
-            node_node_connectivity_boundary: vec![],
-            node_node_connectivity_interior: vec![],
+            prescribed_nodes: vec![],
+            prescribed_nodes_homogeneous: vec![],
+            prescribed_nodes_inhomogeneous: vec![],
+            prescribed_nodes_inhomogeneous_coordinates: vec![],
         }
     }
     /// Calculates the discrete Laplacian for the given node-to-node connectivity.
@@ -144,6 +150,31 @@ impl FiniteElements {
         } else {
             Err("Need to calculate the node-to-element connectivity first")
         }
+    }
+    /// Calculates the nodal influencers.
+    pub fn calculate_nodal_influencers(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let mut nodal_influencers = self.get_node_node_connectivity().clone();
+        let prescribed_nodes = self.get_prescribed_nodes();
+        if self.get_exterior_nodes() != &EMPTY_NODES {
+            let mut boundary_nodes = self.get_boundary_nodes().clone();
+            boundary_nodes
+                .retain(|boundary_node| prescribed_nodes.binary_search(boundary_node).is_err());
+            boundary_nodes.iter().for_each(|boundary_node| {
+                nodal_influencers[boundary_node - NODE_NUMBERING_OFFSET]
+                    .retain(|node| boundary_nodes.binary_search(node).is_ok())
+            });
+        }
+        prescribed_nodes.iter().for_each(|prescribed_node| {
+            nodal_influencers[prescribed_node - NODE_NUMBERING_OFFSET].clear()
+        });
+        self.nodal_influencers = nodal_influencers;
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mNodal influencers\x1b[0m {:?} ",
+            time.elapsed()
+        );
     }
     /// Calculates the node-to-element connectivity.
     pub fn calculate_node_element_connectivity(&mut self) -> Result<(), &str> {
@@ -262,43 +293,6 @@ impl FiniteElements {
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
-    /// Calculates the node-to-node connectivity for boundary nodes.
-    pub fn calculate_node_node_connectivity_boundary(&mut self) -> Result<(), &str> {
-        let exterior_nodes = self.get_exterior_nodes();
-        if exterior_nodes != &EMPTY_NODES {
-            let boundary_nodes = self.get_boundary_nodes();
-            let node_node_connectivity = self.get_node_node_connectivity();
-            self.node_node_connectivity_boundary = boundary_nodes
-                .iter()
-                .map(|boundary_node| {
-                    node_node_connectivity[boundary_node - NODE_NUMBERING_OFFSET]
-                        .clone()
-                        .into_iter()
-                        .filter(|&node| boundary_nodes.contains(&node))
-                        .collect()
-                })
-                .collect();
-            Ok(())
-        } else {
-            Err("Need to calculate the nodal hierarchy first")
-        }
-    }
-    /// Calculates the node-to-node connectivity for interior nodes.
-    pub fn calculate_node_node_connectivity_interior(&mut self) -> Result<(), &str> {
-        if self.get_exterior_nodes() != &EMPTY_NODES {
-            let node_node_connectivity = self.get_node_node_connectivity();
-            self.node_node_connectivity_interior = self
-                .get_interior_nodes()
-                .iter()
-                .map(|interior_node| {
-                    node_node_connectivity[interior_node - NODE_NUMBERING_OFFSET].clone()
-                })
-                .collect();
-            Ok(())
-        } else {
-            Err("Need to calculate the nodal hierarchy first")
-        }
-    }
     /// Returns a reference to the boundary nodes.
     pub fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
@@ -331,6 +325,10 @@ impl FiniteElements {
     pub fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
         &mut self.nodal_coordinates
     }
+    /// Returns a reference to the nodal influencers.
+    pub fn get_nodal_influencers(&self) -> &Connectivity {
+        &self.nodal_influencers
+    }
     /// Returns a reference to the node-to-element connectivity.
     pub fn get_node_element_connectivity(&self) -> &Connectivity {
         &self.node_element_connectivity
@@ -339,33 +337,77 @@ impl FiniteElements {
     pub fn get_node_node_connectivity(&self) -> &Connectivity {
         &self.node_node_connectivity
     }
-    /// Returns a reference to the node-to-node connectivity for boundary nodes.
-    pub fn get_node_node_connectivity_boundary(&self) -> &Connectivity {
-        &self.node_node_connectivity_boundary
+    /// Returns a reference to the prescribed nodes.
+    pub fn get_prescribed_nodes(&self) -> &Nodes {
+        &self.prescribed_nodes
     }
-    /// Returns a reference to the node-to-node connectivity for interior nodes.
-    pub fn get_node_node_connectivity_interior(&self) -> &Connectivity {
-        &self.node_node_connectivity_interior
+    /// Returns a reference to the homogeneously-prescribed nodes.
+    pub fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_homogeneous
+    }
+    /// Returns a reference to the inhomogeneously-prescribed nodes.
+    pub fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_inhomogeneous
+    }
+    /// Returns a reference to the coordinates of the inhomogeneously-prescribed nodes.
+    pub fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
+        &self.prescribed_nodes_inhomogeneous_coordinates
+    }
+    /// Sets the prescribed nodes if opted to do so.
+    pub fn set_prescribed_nodes(
+        &mut self,
+        homogeneous: Option<Nodes>,
+        inhomogeneous: Option<(Coordinates, Nodes)>,
+    ) -> Result<(), &str> {
+        if let Some(homogeneous_nodes) = homogeneous {
+            self.prescribed_nodes_homogeneous = homogeneous_nodes;
+            self.prescribed_nodes_homogeneous.sort();
+            self.prescribed_nodes_homogeneous.dedup();
+        }
+        if let Some(inhomogeneous_nodes) = inhomogeneous {
+            self.prescribed_nodes_inhomogeneous = inhomogeneous_nodes.1;
+            self.prescribed_nodes_inhomogeneous_coordinates = inhomogeneous_nodes.0;
+            let mut sorted_unique = self.prescribed_nodes_inhomogeneous.clone();
+            sorted_unique.sort();
+            sorted_unique.dedup();
+            if sorted_unique != self.prescribed_nodes_inhomogeneous {
+                return Err("Inhomogeneously-prescribed nodes must be sorted and unique.");
+            }
+        }
+        self.prescribed_nodes = self
+            .prescribed_nodes_homogeneous
+            .clone()
+            .into_iter()
+            .chain(self.prescribed_nodes_inhomogeneous.clone())
+            .collect();
+        Ok(())
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    pub fn smooth(&mut self, method: Smoothing, prescribed: Option<&Nodes>) -> Result<(), &str> {
+    pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
         if self.get_node_node_connectivity() != &EMPTY_CONNECTIVITY {
             match method {
                 Smoothing::Laplacian(iterations, scale) => {
                     if scale <= 0.0 {
                         return Err("Need to specify scale > 0.0");
                     }
+                    let prescribed_nodes_inhomogeneous =
+                        self.get_prescribed_nodes_inhomogeneous().clone();
+                    let prescribed_nodes_inhomogeneous_coordinates = self
+                        .get_prescribed_nodes_inhomogeneous_coordinates()
+                        .clone();
+                    let nodal_coordinates_mut = self.get_nodal_coordinates_mut();
+                    prescribed_nodes_inhomogeneous
+                        .iter()
+                        .zip(prescribed_nodes_inhomogeneous_coordinates.iter())
+                        .for_each(|(node, coordinates)| {
+                            nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] =
+                                coordinates.clone()
+                        });
                     #[allow(unused_variables)]
                     (0..iterations).for_each(|iteration| {
                         #[cfg(feature = "profile")]
                         let time = Instant::now();
-                        let mut laplacian =
-                            self.calculate_laplacian(self.get_node_node_connectivity());
-                        if let Some(nodes) = &prescribed {
-                            nodes.iter().for_each(|node| {
-                                laplacian[node - NODE_NUMBERING_OFFSET] = vec![0.0, 0.0, 0.0]
-                            });
-                        }
+                        let laplacian = self.calculate_laplacian(self.get_nodal_influencers());
                         self.get_nodal_coordinates_mut()
                             .iter_mut()
                             .flatten()

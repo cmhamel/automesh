@@ -86,7 +86,9 @@ impl Voxels {
 fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<NSD>, Blocks) {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let removed_data = remove.unwrap_or(vec![0]);
+    let mut removed_data = remove.unwrap_or(vec![0]);
+    removed_data.sort();
+    removed_data.dedup();
     let filtered_voxel_data_combo: VoxelDataSized<4> = data
         .axis_iter(Axis(2))
         .enumerate()
@@ -98,7 +100,7 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSiz
                     data_kj
                         .iter()
                         .enumerate()
-                        .filter(|(_, &data_kji)| !removed_data.contains(&data_kji))
+                        .filter(|(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
                         .map(|(i, data_kji)| [i, j, k, *data_kji as usize])
                         .collect()
                 })

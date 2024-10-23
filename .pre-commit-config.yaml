@@ -12,6 +12,9 @@ repos:
     -   id: clippy
         args: ['--', '-D',  'warnings']
     -   id: clippy
+        name: cargo clippy --tests
+        args: ['--tests', '--', '-D',  'warnings']
+    -   id: clippy
         name: cargo clippy --features python
         args: ['--features', 'python', '--', '-D',  'warnings']
     -   id: fmt
