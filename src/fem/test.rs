@@ -1598,9 +1598,9 @@ fn bracket() {
         ],
     ];
     test_finite_elements(
-        element_blocks,
-        element_node_connectivity,
-        nodal_coordinates,
+        element_blocks.clone(),
+        element_node_connectivity.clone(),
+        nodal_coordinates.clone(),
         node_element_connectivity_gold,
         node_node_connectivity_gold,
         exterior_nodes_gold,
@@ -1610,6 +1610,91 @@ fn bracket() {
         Some(smoothed_coordinates_gold),
         nodal_influencers_gold,
     );
+    let cos_15 = 15.0_f64.to_radians().cos();
+    let cos_30 = 30.0_f64.to_radians().cos();
+    let sin_15 = 15.0_f64.to_radians().sin();
+    let sin_30 = 30.0_f64.to_radians().sin();
+    let prescribed_nodes_homogeneous = vec![
+        1, 2, 3, 4, 5, 6, 11, 16, 19, 22, 23, 24, 25, 26, 27, 32, 37, 40,
+    ];
+    let prescribed_nodes_inhomogeneous = vec![10, 15, 20, 21, 31, 36, 41, 42];
+    let prescribed_nodes_inhomogeneous_coordinates = vec![
+        vec![4.5 * cos_15, 4.5 * sin_15, 0.0],
+        vec![4.5 * cos_30, 4.5 * sin_30, 0.0],
+        vec![1.5, 4.0, 0.0],
+        vec![3.5, 4.0, 0.0],
+        vec![4.5 * cos_15, 4.5 * sin_15, 1.0],
+        vec![4.5 * cos_30, 4.5 * sin_30, 1.0],
+        vec![1.5, 4.0, 1.0],
+        vec![3.5, 4.0, 1.0],
+    ];
+    let mut finite_elements =
+        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
+    finite_elements
+        .calculate_node_element_connectivity()
+        .unwrap();
+    finite_elements.calculate_node_node_connectivity().unwrap();
+    finite_elements.calculate_nodal_hierarchy().unwrap();
+    finite_elements
+        .set_prescribed_nodes(
+            Some(prescribed_nodes_homogeneous),
+            Some((
+                prescribed_nodes_inhomogeneous_coordinates,
+                prescribed_nodes_inhomogeneous,
+            )),
+        )
+        .unwrap();
+    finite_elements.calculate_nodal_influencers();
+    finite_elements
+        .smooth(Smoothing::Laplacian(10, SMOOTHING_SCALE))
+        .unwrap();
+    assert_eq!(
+        finite_elements.get_nodal_coordinates(),
+        &vec![
+            vec![0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0],
+            vec![2.0, 0.0, 0.0],
+            vec![3.0, 0.0, 0.0],
+            vec![4.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0],
+            vec![1.0076218690550747, 0.9988829259123082, 0.24593434133370803],
+            vec![2.0218051968023, 0.993985105791881, 0.2837944855813176],
+            vec![3.0816593568068398, 0.9931227966186256, 0.24898414051620496],
+            vec![4.346666218300808, 1.1646857029613433, 0.0],
+            vec![0.0, 2.0, 0.0],
+            vec![1.0346002406957664, 1.992982526945126, 0.2837944855813176],
+            vec![2.0408618916639916, 1.9528647520642073, 0.3332231502067546],
+            vec![2.9955771790244468, 1.7619821132207711, 0.29909606343914835],
+            vec![3.897114317029974, 2.2499999999999996, 0.0],
+            vec![0.0, 3.0, 0.0],
+            vec![1.157261281731803, 2.9982665159532105, 0.24898414051620493],
+            vec![2.1973691292662734, 2.991054895165017, 0.29909606343914835],
+            vec![0.0, 4.0, 0.0],
+            vec![1.5, 4.0, 0.0],
+            vec![3.5, 4.0, 0.0],
+            vec![0.0, 0.0, 1.0],
+            vec![1.0, 0.0, 1.0],
+            vec![2.0, 0.0, 1.0],
+            vec![3.0, 0.0, 1.0],
+            vec![4.0, 0.0, 1.0],
+            vec![0.0, 1.0, 1.0],
+            vec![1.0076218690550747, 0.9988829259123082, 0.7540656586662919],
+            vec![2.0218051968023, 0.993985105791881, 0.7162055144186824],
+            vec![3.0816593568068398, 0.9931227966186257, 0.7510158594837951],
+            vec![4.346666218300808, 1.1646857029613433, 1.0],
+            vec![0.0, 2.0, 1.0],
+            vec![1.0346002406957664, 1.9929825269451262, 0.7162055144186824],
+            vec![2.0408618916639916, 1.9528647520642073, 0.6667768497932453],
+            vec![2.9955771790244468, 1.7619821132207711, 0.7009039365608517],
+            vec![3.897114317029974, 2.2499999999999996, 1.0],
+            vec![0.0, 3.0, 1.0],
+            vec![1.157261281731803, 2.9982665159532105, 0.751015859483795],
+            vec![2.1973691292662734, 2.991054895165017, 0.7009039365608516],
+            vec![0.0, 4.0, 1.0],
+            vec![1.5, 4.0, 1.0],
+            vec![3.5, 4.0, 1.0],
+        ]
+    )
 }
 
 #[test]
