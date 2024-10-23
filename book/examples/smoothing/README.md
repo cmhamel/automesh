@@ -28,7 +28,7 @@ node | node neighbors
 11 | 5, 8, 10, 12
 12 | 6, 9, 11
 
-### Hierarchy
+#### Hierarchy
 
 Following is a test where all nodes are `BOUNDARY` from the [`Hierarchy`](../../theory/smoothing.md#the-hierarchy-enum) enum.
 
@@ -106,13 +106,15 @@ Figure: Two element test problem (left) original configuration, (right) subject 
 
 ## Laplace Smoothing, Hierarchical Control, Prescribed Homogeneous
 
-* Cube with Inclusion
+### Cube with Inclusion
 
 ![../unit_tests/cube_with_inclusion.png](../unit_tests/cube_with_inclusion.png)
 
+To come.
+
 ## Laplace Smoothing, Hierarchical Control, Prescribed Inhomogeneous
 
-## Bracket
+### Bracket
 
 To begin to examine hiearchical control, we consider the [Bracket](../unit_tests/README.md#bracket) example.
 
@@ -120,7 +122,7 @@ To begin to examine hiearchical control, we consider the [Bracket](../unit_tests
 
 Figure: The **Bracket** example.
 
-### Laplace Smoothing without Hierarchical Control
+#### Laplace Smoothing without Hierarchical Control
 
 As a baseline, let's examine what Laplace smoothing, $\lambda = 0.3$, *without* hierarchical control performs.
 
@@ -175,7 +177,7 @@ node | `x` | `y` | `z`
 41 | 1.0071968572512657 | 3.3805688588919414 | 0.5915300441740617
 42 | 1.409074280806729 | 3.3296020281899956 | 0.5783492939376562
 
-### Laplace Smoothing with Hierarchical Control
+#### Laplace Smoothing with Hierarchical Control
 
 We illustrate the how hierarchical control affects the Laplace smoothing.
 Conside the `PRESCRIBED` and `BOUNDARY` node hierarchy below:
