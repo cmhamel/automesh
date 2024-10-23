@@ -1,3 +1,6 @@
+# 2024-10-23
+# Cubit 16.14 on macOS
+
 reset
 
 # ----------------
@@ -126,23 +129,20 @@ sideset 2 add surface 2
 # outer_vol = block 2: 3,072 elements
 # total: 10,240 elements
 
-# export mesh "/Users/chovey/autotwin/basis/scratch/smooth_0.5cm.g"  overwrite 
-# export abaqus "/Users/chovey/autotwin/basis/scratch/smooth_0.5cm.inp" overwrite everything
-# inner_vol = block 1: 57,344 elements
-# outer_vol = block 2: 18,432 elements
-# total: 75,766 elements
-
-export mesh "/Users/chovey/autotwin/basis/scratch/smooth_0.25cm.g"  overwrite 
-export abaqus "/Users/chovey/autotwin/basis/scratch/smooth_0.25cm.inp" overwrite everything
-# inner_vol = block 1: 458,752 elements
-# outer_vol = block 2: 122,880 elements
-# total: 581,632 elements
-
-# export mesh "/Users/chovey/autotwin/basis/scratch/smooth_0.1cm.g"  overwrite 
-# export abaqus "/Users/chovey/autotwin/basis/scratch/smooth_0.1cm.inp" overwrite everything
-
 {rescan(str_export_exodus)}
 {rescan(str_export_abaqus)}
 
+# view iso
+# graphics clip on plane xplane location 0 0 0 direction 0 0 1
+graphics scale off
+graphics scale on
+
+graphics clip off
 view iso
-graphics clip on plane xplane location 0 0 0 direction 0 0 1
+graphics clip on plane location 0 0 0 direction 0 1 0
+view up 0 0 1
+view from 100 -100 100
+
+graphics clip manipulation off
+
+view bottom

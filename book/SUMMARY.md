@@ -11,6 +11,7 @@
   - [Spheres - continued](examples/spheres_cont/README.md)
   - [Smoothing](examples/smoothing/README.md)
     - [Python visualization](examples/smoothing/python_visualization.md)
+  - [Smoothing - continued](examples/smoothing/taubin.md)
 
 # Reference Guide
 
