@@ -2,7 +2,7 @@ use automesh::{FiniteElements, Smoothing, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
-use std::{io::Error, path::Path, time::Instant};
+use std::{io::Error as ErrorIO, path::Path, time::Instant};
 
 macro_rules! about {
     () => {
@@ -191,8 +191,8 @@ impl std::fmt::Debug for ErrorWrapper {
     }
 }
 
-impl From<Error> for ErrorWrapper {
-    fn from(error: Error) -> ErrorWrapper {
+impl From<ErrorIO> for ErrorWrapper {
+    fn from(error: ErrorIO) -> ErrorWrapper {
         ErrorWrapper {
             message: error.to_string(),
         }
