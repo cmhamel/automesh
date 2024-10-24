@@ -434,7 +434,7 @@ impl FiniteElements {
             Err("Need to calculate the node-to-node connectivity first")
         }
     }
-    /// Writes the finite elements data to a new Abaqus input file.
+    /// Writes the finite elements data to a new Abaqus file.
     pub fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_fem_to_inp(
             file_path,
@@ -443,7 +443,7 @@ impl FiniteElements {
             self.get_nodal_coordinates(),
         )
     }
-
+    /// Writes the finite elements data to a new Exodus file.
     pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
         write_fem_to_exo(
             file_path,
