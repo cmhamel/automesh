@@ -37,11 +37,11 @@ struct Args {
 enum Commands {
     /// Converts between segmentation input file types
     Convert {
-        /// Name of the original NumPy (.npy) or SPN (.spn) input file.
+        /// Name of the original NumPy (.npy) or SPN (.spn) file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the converted NumPy (.npy) or SPN (.spn) input file.
+        /// Name of the converted NumPy (.npy) or SPN (.spn) file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -67,11 +67,11 @@ enum Commands {
         #[command(subcommand)]
         meshing: Option<MeshingCommands>,
 
-        /// Name of the NumPy (.npy) or SPN (.spn) input file.
+        /// Name of the NumPy (.npy) or SPN (.spn) file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) or Exodus (.exo) output file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -137,11 +137,11 @@ enum Commands {
 
     /// Applies smoothing to an existing mesh file
     Smooth {
-        /// Name of the Abaqus (.inp) or Exodus (.exo) input file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) or Exodus (.exo) output file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
