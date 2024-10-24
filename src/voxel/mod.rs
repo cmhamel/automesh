@@ -324,8 +324,8 @@ fn finite_element_data_from_data(
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
-struct IntermediateError {
-    message: String,
+pub struct IntermediateError {
+    pub message: String,
 }
 
 impl From<Error> for IntermediateError {

@@ -112,6 +112,14 @@ macro_rules! bench_block {
             Ok(())
         }
         #[bench]
+        fn write_exo(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let exo = format!("target/block_{}.exo", $nel);
+            bencher.iter(|| fem.write_exo(&exo).unwrap());
+            Ok(())
+        }
+        #[bench]
         fn write_inp(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;

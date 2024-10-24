@@ -9,9 +9,10 @@ use std::time::Instant;
 
 use super::{ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
+use netcdf::{create, Error as ErrorNetCDF};
 use std::{
     fs::File,
-    io::{BufWriter, Error, Write},
+    io::{BufWriter, Error as ErrorIO, Write},
 };
 
 const ELEMENT_TYPE: &str = "C3D8R";
@@ -434,8 +435,17 @@ impl FiniteElements {
         }
     }
     /// Writes the finite elements data to a new Abaqus input file.
-    pub fn write_inp(&self, file_path: &str) -> Result<(), Error> {
+    pub fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_fem_to_inp(
+            file_path,
+            self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+
+    pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
+        write_fem_to_exo(
             file_path,
             self.get_element_blocks(),
             self.get_element_node_connectivity(),
@@ -444,12 +454,99 @@ impl FiniteElements {
     }
 }
 
+fn write_fem_to_exo(
+    file_path: &str,
+    element_blocks: &Blocks,
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
+) -> Result<(), ErrorNetCDF> {
+    let mut file = create(file_path)?;
+    file.add_attribute::<f32>("api_version", 8.25)?;
+    file.add_attribute::<i32>("file_size", 1)?;
+    file.add_attribute::<i32>("floating_point_word_size", 8)?;
+    file.add_attribute::<f32>("version", 8.25)?;
+    let mut element_blocks_unique = element_blocks.clone();
+    element_blocks_unique.sort();
+    element_blocks_unique.dedup();
+    file.add_dimension("num_dim", NSD)?;
+    file.add_dimension("num_elem", element_blocks.len())?;
+    file.add_dimension("num_el_blk", element_blocks_unique.len())?;
+    let mut eb_prop1 = file.add_variable::<i32>("eb_prop1", &["num_el_blk"])?;
+    element_blocks_unique
+        .iter()
+        .enumerate()
+        .try_for_each(|(index, unique_block)| eb_prop1.put_value(*unique_block as i32, index))?;
+    let mut block_renumbered = 0;
+    let mut num_el_in_blk = "num_el_in_blk0".to_string();
+    let mut num_nod_per_el = "num_nod_per_el0".to_string();
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    element_blocks_unique
+        .into_iter()
+        .try_for_each(|unique_block| {
+            block_renumbered += 1;
+            num_el_in_blk = format!("num_el_in_blk{}", block_renumbered);
+            num_nod_per_el = format!("num_nod_per_el{}", block_renumbered);
+            file.add_dimension(
+                &num_el_in_blk,
+                element_blocks
+                    .iter()
+                    .filter(|&block| block == &unique_block)
+                    .count(),
+            )?;
+            file.add_dimension(&num_nod_per_el, ELEMENT_NUM_NODES)?;
+            let mut connectivities = file.add_variable::<i32>(
+                format!("connect{}", block_renumbered).as_str(),
+                &[&num_el_in_blk, &num_nod_per_el],
+            )?;
+            element_blocks
+                .iter()
+                .enumerate()
+                .filter(|(_, &block)| block == unique_block)
+                .enumerate()
+                .try_for_each(|(index, (element, _))| {
+                    connectivities.put_attribute("elem_type", "HEX8")?;
+                    connectivities.put_values(
+                        &element_node_connectivity[element]
+                            .iter()
+                            .map(|entry| *entry as i32)
+                            .collect::<Vec<i32>>(),
+                        (index, ..),
+                    )
+                })?;
+            Ok::<_, ErrorNetCDF>(())
+        })?;
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mElement-to-node connectivity\x1b[0m {:?}",
+        time.elapsed()
+    );
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    let xs: Vec<f64> = nodal_coordinates.iter().map(|coords| coords[0]).collect();
+    let ys: Vec<f64> = nodal_coordinates.iter().map(|coords| coords[1]).collect();
+    let zs: Vec<f64> = nodal_coordinates.iter().map(|coords| coords[2]).collect();
+    file.add_dimension("num_nodes", nodal_coordinates.len())?;
+    file.add_variable::<f64>("coordx", &["num_nodes"])?
+        .put_values(&xs, 0..)?;
+    file.add_variable::<f64>("coordy", &["num_nodes"])?
+        .put_values(&ys, 0..)?;
+    file.add_variable::<f64>("coordz", &["num_nodes"])?
+        .put_values(&zs, 0..)?;
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Nodal coordinates\x1b[0m {:?}",
+        time.elapsed()
+    );
+    Ok(())
+}
+
 fn write_fem_to_inp(
     file_path: &str,
     element_blocks: &Blocks,
     element_node_connectivity: &Connectivity,
     nodal_coordinates: &Coordinates,
-) -> Result<(), Error> {
+) -> Result<(), ErrorIO> {
     let element_number_width = get_width(element_node_connectivity);
     let node_number_width = get_width(nodal_coordinates);
     let inp_file = File::create(file_path)?;
@@ -466,7 +563,7 @@ fn write_fem_to_inp(
     file.flush()
 }
 
-fn write_heading_to_inp(file: &mut BufWriter<File>) -> Result<(), Error> {
+fn write_heading_to_inp(file: &mut BufWriter<File>) -> Result<(), ErrorIO> {
     let heading = format!(
         "*HEADING\nautotwin.automesh\nversion {}\nautogenerated on {}",
         env!("CARGO_PKG_VERSION"),
@@ -480,7 +577,7 @@ fn write_nodal_coordinates_to_inp(
     file: &mut BufWriter<File>,
     nodal_coordinates: &Coordinates,
     node_number_width: &usize,
-) -> Result<(), Error> {
+) -> Result<(), ErrorIO> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
     file.write_all("*NODE, NSET=ALLNODES".as_bytes())?;
@@ -517,13 +614,13 @@ fn write_element_node_connectivity_to_inp(
     element_node_connectivity: &Connectivity,
     element_number_width: &usize,
     node_number_width: &usize,
-) -> Result<(), Error> {
+) -> Result<(), ErrorIO> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let mut unique_element_blocks = element_blocks.clone();
-    unique_element_blocks.sort();
-    unique_element_blocks.dedup();
-    unique_element_blocks
+    let mut element_blocks_unique = element_blocks.clone();
+    element_blocks_unique.sort();
+    element_blocks_unique.dedup();
+    element_blocks_unique
         .iter()
         .clone()
         .try_for_each(|current_block| {
@@ -556,7 +653,7 @@ fn write_element_node_connectivity_to_inp(
                 })?;
             end_section(file)
         })?;
-    let result = unique_element_blocks.iter().try_for_each(|block| {
+    let result = element_blocks_unique.iter().try_for_each(|block| {
         file.write_all(
             format!(
                 "*SOLID SECTION, ELSET=EB{}, MATERIAL=Default-Steel\n",
@@ -573,15 +670,15 @@ fn write_element_node_connectivity_to_inp(
     result
 }
 
-fn end_section(file: &mut BufWriter<File>) -> Result<(), Error> {
+fn end_section(file: &mut BufWriter<File>) -> Result<(), ErrorIO> {
     file.write_all(&[10, 42, 42, 10])
 }
 
-fn delimiter(file: &mut BufWriter<File>) -> Result<(), Error> {
+fn delimiter(file: &mut BufWriter<File>) -> Result<(), ErrorIO> {
     file.write_all(&[44, 32])
 }
 
-fn indent(file: &mut BufWriter<File>) -> Result<(), Error> {
+fn indent(file: &mut BufWriter<File>) -> Result<(), ErrorIO> {
     file.write_all(&[10, 32, 32, 32, 32])
 }
 

@@ -1,4 +1,8 @@
-use pyo3::prelude::*;
+use super::voxel::IntermediateError;
+use ndarray_npy::{ReadNpyError, WriteNpyError};
+use netcdf::Error as ErrorNetCDF;
+use pyo3::{exceptions::PyTypeError, prelude::*};
+use std::{convert::From, io::Error as ErrorIO};
 
 /// [![book](https://img.shields.io/badge/automesh-Book-blue?logo=mdbook&logoColor=000000)](https://autotwin.github.io/automesh)
 /// [![crates](https://img.shields.io/crates/v/automesh?logo=rust&logoColor=000000&label=Crates&color=32592f)](https://crates.io/crates/automesh)
@@ -13,4 +17,60 @@ fn automesh(m: &Bound<'_, PyModule>) -> PyResult<()> {
     super::fem::py::register_module(m)?;
     super::voxel::py::register_module(m)?;
     Ok(())
+}
+
+pub struct PyIntermediateError {
+    message: String,
+}
+
+impl From<ErrorIO> for PyIntermediateError {
+    fn from(error: ErrorIO) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<ErrorNetCDF> for PyIntermediateError {
+    fn from(error: ErrorNetCDF) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<ReadNpyError> for PyIntermediateError {
+    fn from(error: ReadNpyError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<String> for PyIntermediateError {
+    fn from(message: String) -> PyIntermediateError {
+        PyIntermediateError { message }
+    }
+}
+
+impl From<WriteNpyError> for PyIntermediateError {
+    fn from(error: WriteNpyError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<PyIntermediateError> for PyErr {
+    fn from(error: PyIntermediateError) -> PyErr {
+        PyTypeError::new_err(error.message)
+    }
+}
+
+impl From<IntermediateError> for PyIntermediateError {
+    fn from(error: IntermediateError) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.message,
+        }
+    }
 }

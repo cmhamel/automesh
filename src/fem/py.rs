@@ -1,6 +1,8 @@
-use super::{write_fem_to_inp, Blocks, Connectivity, Coordinates};
+use super::{
+    super::py::PyIntermediateError, write_fem_to_exo, write_fem_to_inp, Blocks, Connectivity,
+    Coordinates,
+};
 use pyo3::prelude::*;
-use std::io::Error;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<FiniteElements>()?;
@@ -30,13 +32,22 @@ impl FiniteElements {
             nodal_coordinates,
         }
     }
-    /// Writes the finite elements data to a new Abaqus input file.
-    pub fn write_inp(&self, file_path: &str) -> Result<(), Error> {
-        write_fem_to_inp(
+    /// Writes the finite elements data to a new Exodus input file.
+    pub fn write_exo(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_fem_to_exo(
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
             &self.nodal_coordinates,
-        )
+        )?)
+    }
+    /// Writes the finite elements data to a new Abaqus input file.
+    pub fn write_inp(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_fem_to_inp(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates,
+        )?)
     }
 }

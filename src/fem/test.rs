@@ -804,7 +804,7 @@ fn quadruple_2_blocks_void() {
 
 #[test]
 fn cube() {
-    let element_blocks = vec![11; 9];
+    let element_blocks = vec![11; 8];
     let element_node_connectivity = vec![
         vec![1, 2, 5, 4, 10, 11, 14, 13],
         vec![2, 3, 6, 5, 11, 12, 15, 14],

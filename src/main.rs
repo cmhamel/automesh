@@ -1,7 +1,8 @@
 use automesh::{FiniteElements, Smoothing, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
-use std::{io::Error, path::Path, time::Instant};
+use netcdf::Error as ErrorNetCDF;
+use std::{io::Error as ErrorIO, path::Path, time::Instant};
 
 macro_rules! about {
     () => {
@@ -70,7 +71,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) output file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) output file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -136,11 +137,11 @@ enum Commands {
 
     /// Applies smoothing to an existing mesh file
     Smooth {
-        /// Name of the Abaqus (.inp) input file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) input file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) output file.
+        /// Name of the Abaqus (.inp) or Exodus (.exo) output file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -190,8 +191,16 @@ impl std::fmt::Debug for ErrorWrapper {
     }
 }
 
-impl From<Error> for ErrorWrapper {
-    fn from(error: Error) -> ErrorWrapper {
+impl From<ErrorIO> for ErrorWrapper {
+    fn from(error: ErrorIO) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<ErrorNetCDF> for ErrorWrapper {
+    fn from(error: ErrorNetCDF) -> ErrorWrapper {
         ErrorWrapper {
             message: error.to_string(),
         }
@@ -231,6 +240,7 @@ impl From<WriteNpyError> for ErrorWrapper {
 #[allow(clippy::large_enum_variant)]
 enum OutputTypes {
     Abaqus(FiniteElements),
+    Exodus(FiniteElements),
     Npy(Voxels),
     Spn(Voxels),
 }
@@ -405,7 +415,16 @@ fn mesh(
             }
         }
     }
-    write_output(output, OutputTypes::Abaqus(output_type), quiet)?;
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        _ => Err(format!(
+            "Invalid extension .{} from output file {}",
+            output_extension.unwrap(),
+            output
+        ))?,
+    }
     Ok(())
 }
 
@@ -463,6 +482,10 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
     }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
+        Some("exo") => match output_type {
+            OutputTypes::Exodus(fem) => fem.write_exo(&output)?,
+            _ => panic!(),
+        },
         Some("inp") => match output_type {
             OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
             _ => panic!(),
