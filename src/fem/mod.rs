@@ -471,49 +471,61 @@ fn write_fem_to_exo(
     file.add_dimension("num_dim", NSD)?;
     file.add_dimension("num_elem", element_blocks.len())?;
     file.add_dimension("num_el_blk", element_blocks_unique.len())?;
+
     let mut eb_prop1 = file.add_variable::<i32>("eb_prop1", &["num_el_blk"])?;
     element_blocks_unique
         .iter()
         .enumerate()
         .try_for_each(|(index, unique_block)| eb_prop1.put_value(*unique_block as i32, index))?;
-    let mut block_renumbered = 0;
-    let mut num_el_in_blk = "num_el_in_blk0".to_string();
-    let mut num_nod_per_el = "num_nod_per_el0".to_string();
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    element_blocks_unique
-        .into_iter()
-        .try_for_each(|unique_block| {
-            block_renumbered += 1;
-            num_el_in_blk = format!("num_el_in_blk{}", block_renumbered);
-            num_nod_per_el = format!("num_nod_per_el{}", block_renumbered);
-            file.add_dimension(
-                &num_el_in_blk,
-                element_blocks
-                    .iter()
-                    .filter(|&block| block == &unique_block)
-                    .count(),
-            )?;
-            file.add_dimension(&num_nod_per_el, ELEMENT_NUM_NODES)?;
-            let mut connectivities = file.add_variable::<i32>(
-                format!("connect{}", block_renumbered).as_str(),
-                &[&num_el_in_blk, &num_nod_per_el],
-            )?;
+    let block_connectivities = element_blocks_unique
+        .iter()
+        .map(|unique_block| {
             element_blocks
                 .iter()
                 .enumerate()
-                .filter(|(_, &block)| block == unique_block)
-                .enumerate()
-                .try_for_each(|(index, (element, _))| {
-                    connectivities.put_attribute("elem_type", "HEX8")?;
-                    connectivities.put_values(
-                        &element_node_connectivity[element]
-                            .iter()
-                            .map(|entry| *entry as i32)
-                            .collect::<Vec<i32>>(),
-                        (index, ..),
-                    )
-                })?;
+                .filter(|(_, &block)| &block == unique_block)
+                .flat_map(|(element, _)| {
+                    element_node_connectivity[element]
+                        .iter()
+                        .map(|entry| *entry as i32)
+                        .collect::<Vec<i32>>()
+                })
+                .collect::<Vec<i32>>()
+        })
+        .collect::<Vec<Vec<i32>>>();
+    let mut block_num_nodes = "block_num_nodes0".to_string();
+    let mut current_block = 0;
+    let mut number_of_elements = 0;
+    element_blocks_unique
+        .iter()
+        .zip(block_connectivities.into_iter())
+        .try_for_each(|(unique_block, block_connectivity)| {
+            current_block += 1;
+            number_of_elements = element_blocks
+                .iter()
+                .filter(|&block| block == unique_block)
+                .count();
+            file.add_dimension(
+                format!("num_el_in_blk{}", current_block).as_str(),
+                number_of_elements,
+            )?;
+            file.add_dimension(
+                format!("num_nod_per_el{}", current_block).as_str(),
+                ELEMENT_NUM_NODES,
+            )?;
+            block_num_nodes = format!("block_num_nodes{}", current_block);
+            file.add_dimension(
+                block_num_nodes.as_str(),
+                number_of_elements * ELEMENT_NUM_NODES,
+            )?;
+            let mut connectivities = file.add_variable::<i32>(
+                format!("connect{}", current_block).as_str(),
+                &[block_num_nodes.as_str()],
+            )?;
+            connectivities.put_attribute("elem_type", "HEX8")?;
+            connectivities.put_values(&block_connectivity, 0)?;
             Ok::<_, ErrorNetCDF>(())
         })?;
     #[cfg(feature = "profile")]
