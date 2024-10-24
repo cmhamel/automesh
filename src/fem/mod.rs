@@ -656,21 +656,16 @@ fn write_fem_to_exo (
     // so I'm just writing to a single block for now.
     file.add_dimension("num_node_per_el1", 8)?; // 8 for 8 noded hex
     file.add_dimension("num_el_per_blk1", element_node_connectivity.len())?; 
-    let mut conn = file.add_variable::<usize>("connect1", &["num_elem"])?;
-    element_node_connectivity
-        .iter()
-        .enumerate()
-        .try_for_each(|(element, connectivity)| {
-            let n = 8 * element;
-            conn.put_values(&connectivity, (n, ..));
-            Ok::<(), netcdf::Error>(())
-        });
-
-    // element_blocks
+    
+    // this is giving an issue below
+    // then we're stuck choosing an integer type
+    // let mut conn = file.add_variable::<usize>("connect1", &["num_elem"])?;
+    // element_node_connectivity
     //     .iter()
     //     .enumerate()
-    //     .try_for_each(|(block_id, block)| {
-            
+    //     .try_for_each(|(element, connectivity)| {
+    //         let n = 8 * element;
+    //         conn.put_values(&connectivity, (n, ..));
     //         Ok::<(), netcdf::Error>(())
     //     });
     
