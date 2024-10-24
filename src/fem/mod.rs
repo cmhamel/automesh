@@ -671,32 +671,3 @@ fn write_fem_to_exo (
     
     Ok(())
 }
-
-// fn write_nodal_coordinates_to_exo(
-//     file: &mut netcdf::File,
-//     nodal_coordinates: &Coordinates,
-//     node_number_width: &usize
-// ) -> Result<(), Error> {
-//     // nodal_coordinates
-//     //     .iter()
-//     //     .enumerate()
-//     let coords_x = nodal_coordinates
-//         .iter()
-//         .into_iter()
-//         .nth(0);
-//     let coords_y = nodal_coordinates
-//         .iter()
-//         .into_iter()
-//         .nth(1);
-//     let coords_z = nodal_coordinates
-//         .iter()
-//         .into_iter()
-//         .nth(2);
-    
-// }
-
-// fn write_nodal_coordinates_to_exo(
-
-// ) -> Result<(), Error> {
-
-// }
