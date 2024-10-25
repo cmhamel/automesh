@@ -153,9 +153,13 @@ enum Commands {
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Scaling (> 0.0) parameter for smoothing
-        #[arg(default_value_t = 1.0, long, short, value_name = "SCALE")]
-        scale: f64,
+        /// Pass to disable hierarchical control
+        #[arg(action, long, short = 'd')]
+        no_hierarchical: bool,
+
+        /// Scaling (> 0.0) parameter(s) for smoothing
+        #[arg(allow_negative_numbers = true, long, num_args = 1.., short, value_delimiter = ' ', value_name = "SCALE")]
+        scale: Vec<f64>,
     },
 }
 
@@ -167,7 +171,7 @@ enum MeshingCommands {
         #[arg(default_value_t = 2, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
-        /// Name of the smoothing method [default: Taubin]
+        /// Name of the smoothing method [default: Laplacian]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
@@ -280,14 +284,16 @@ fn main() -> Result<(), ErrorWrapper> {
             output,
             iterations,
             method,
+            no_hierarchical,
             scale,
         }) => {
             todo!(
-                "{}, {}, {}, {:?}, {:?}",
+                "{}, {}, {}, {:?}, {}, {:?}",
                 input,
                 output,
                 iterations,
                 method,
+                no_hierarchical,
                 scale,
             )
         }
@@ -389,7 +395,10 @@ fn mesh(
                 no_hierarchical,
                 scale,
             } => {
-                let smoothing_method = method.unwrap_or("Taubin".to_string());
+                if scale.is_empty() {
+                    Err("Need to specify smoothing scale(s).")?;
+                }
+                let smoothing_method = method.unwrap_or("Laplace".to_string());
                 let time_smooth = Instant::now();
                 match smoothing_method.as_str() {
                     "Laplacian" | "Laplace" | "laplacian" | "laplace" | "Taubin" | "taubin" => {
@@ -403,16 +412,21 @@ fn mesh(
                         }
                         output_type.calculate_nodal_influencers();
                     }
-                    _ => Err(format!(
-                        "Invalid smoothing method {} specified",
-                        smoothing_method
-                    ))?,
+                    _ => {
+                        return Err(format!(
+                            "Invalid smoothing method {} specified",
+                            smoothing_method
+                        ))?
+                    }
                 }
                 match smoothing_method.as_str() {
                     "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
                         output_type.smooth(Smoothing::Laplacian(iterations, scale[0]))?;
                     }
                     "Taubin" | "taubin" => {
+                        if scale.len() != 2 {
+                            Err("Need to specify 2 smoothing scales.")?;
+                        }
                         output_type.smooth(Smoothing::Taubin(iterations, scale[0], scale[1]))?;
                     }
                     _ => panic!(),
