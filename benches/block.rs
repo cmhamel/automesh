@@ -9,7 +9,8 @@ const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
 const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
 
 const SMOOTHING_ITERATIONS: usize = 1;
-const SMOOTHING_SCALE: f64 = 0.3;
+const SMOOTHING_SCALE_DEFLATE: f64 = 0.3;
+const SMOOTHING_SCALE_INFLATE: f64 = -0.3;
 
 macro_rules! bench_block {
     ($nel:expr) => {
@@ -99,15 +100,35 @@ macro_rules! bench_block {
             Ok(())
         }
         #[bench]
-        fn smooth(bencher: &mut Bencher) -> Result<(), String> {
+        fn smooth_laplace(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_influencers();
             bencher.iter(|| {
-                fem.smooth(Smoothing::Laplacian(SMOOTHING_ITERATIONS, SMOOTHING_SCALE))
-                    .unwrap()
+                fem.smooth(Smoothing::Laplacian(
+                    SMOOTHING_ITERATIONS,
+                    SMOOTHING_SCALE_DEFLATE,
+                ))
+                .unwrap()
+            });
+            Ok(())
+        }
+        #[bench]
+        fn smooth_taubin(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            fem.calculate_node_element_connectivity()?;
+            fem.calculate_node_node_connectivity()?;
+            fem.calculate_nodal_influencers();
+            bencher.iter(|| {
+                fem.smooth(Smoothing::Taubin(
+                    SMOOTHING_ITERATIONS,
+                    SMOOTHING_SCALE_DEFLATE,
+                    SMOOTHING_SCALE_INFLATE,
+                ))
+                .unwrap()
             });
             Ok(())
         }

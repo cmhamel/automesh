@@ -45,6 +45,7 @@ pub struct FiniteElements {
 /// Possible smoothing methods.
 pub enum Smoothing {
     Laplacian(usize, f64),
+    Taubin(usize, f64, f64),
 }
 
 /// Inherent implementation of the finite elements type.
@@ -392,52 +393,11 @@ impl FiniteElements {
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
     pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
-        if !self.get_node_node_connectivity().is_empty() {
-            match method {
-                Smoothing::Laplacian(iterations, scale) => {
-                    if scale <= 0.0 {
-                        return Err("Need to specify scale > 0.0");
-                    }
-                    let prescribed_nodes_inhomogeneous =
-                        self.get_prescribed_nodes_inhomogeneous().clone();
-                    let prescribed_nodes_inhomogeneous_coordinates = self
-                        .get_prescribed_nodes_inhomogeneous_coordinates()
-                        .clone();
-                    let nodal_coordinates_mut = self.get_nodal_coordinates_mut();
-                    prescribed_nodes_inhomogeneous
-                        .iter()
-                        .zip(prescribed_nodes_inhomogeneous_coordinates.iter())
-                        .for_each(|(node, coordinates)| {
-                            nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] =
-                                coordinates.clone()
-                        });
-                    #[allow(unused_variables)]
-                    (0..iterations).for_each(|iteration| {
-                        #[cfg(feature = "profile")]
-                        let time = Instant::now();
-                        let laplacian = self.calculate_laplacian(self.get_nodal_influencers());
-                        self.get_nodal_coordinates_mut()
-                            .iter_mut()
-                            .flatten()
-                            .zip(laplacian.iter().flatten())
-                            .for_each(|(coordinate, entry)| *coordinate += entry * scale);
-                        #[cfg(feature = "profile")]
-                        println!(
-                            "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
-                            iteration + 1,
-                            time.elapsed()
-                        );
-                    })
-                }
-            }
-            Ok(())
-        } else {
-            Err("Need to calculate the node-to-node connectivity first")
-        }
+        smooth_finite_elements(self, method)
     }
     /// Writes the finite elements data to a new Abaqus file.
     pub fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
-        write_fem_to_inp(
+        write_finite_elements_to_abaqus(
             file_path,
             self.get_element_blocks(),
             self.get_element_node_connectivity(),
@@ -446,7 +406,7 @@ impl FiniteElements {
     }
     /// Writes the finite elements data to a new Exodus file.
     pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
-        write_fem_to_exo(
+        write_finite_elements_to_exodus(
             file_path,
             self.get_element_blocks(),
             self.get_element_node_connectivity(),
@@ -478,7 +438,83 @@ fn reorder_connectivity(
         .collect()
 }
 
-fn write_fem_to_exo(
+fn smooth_finite_elements(
+    finite_elements: &mut FiniteElements,
+    method: Smoothing,
+) -> Result<(), &str> {
+    if !finite_elements.get_node_node_connectivity().is_empty() {
+        let smoothing_iterations;
+        let smoothing_scale_deflate;
+        let mut smoothing_scale_inflate = 0.0;
+        match method {
+            Smoothing::Laplacian(iterations, scale) => {
+                if scale <= 0.0 {
+                    return Err("Need to specify scale >= 0.0");
+                } else {
+                    smoothing_iterations = iterations;
+                    smoothing_scale_deflate = scale;
+                }
+            }
+            Smoothing::Taubin(iterations, scale_deflate, scale_inflate) => {
+                if scale_deflate <= 0.0 {
+                    return Err("Need to specify first scale > 0.0");
+                } else if scale_inflate >= 0.0 {
+                    return Err("Need to specify second scale < 0.0");
+                } else {
+                    smoothing_iterations = iterations;
+                    smoothing_scale_deflate = scale_deflate;
+                    smoothing_scale_inflate = scale_inflate;
+                }
+            }
+        }
+        let prescribed_nodes_inhomogeneous =
+            finite_elements.get_prescribed_nodes_inhomogeneous().clone();
+        let prescribed_nodes_inhomogeneous_coordinates = finite_elements
+            .get_prescribed_nodes_inhomogeneous_coordinates()
+            .clone();
+        let nodal_coordinates_mut = finite_elements.get_nodal_coordinates_mut();
+        prescribed_nodes_inhomogeneous
+            .iter()
+            .zip(prescribed_nodes_inhomogeneous_coordinates.iter())
+            .for_each(|(node, coordinates)| {
+                nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] = coordinates.clone()
+            });
+        #[allow(unused_variables)]
+        (0..smoothing_iterations).for_each(|iteration| {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
+            let laplacian =
+                finite_elements.calculate_laplacian(finite_elements.get_nodal_influencers());
+            finite_elements
+                .get_nodal_coordinates_mut()
+                .iter_mut()
+                .flatten()
+                .zip(laplacian.iter().flatten())
+                .for_each(|(coordinate, entry)| *coordinate += entry * smoothing_scale_deflate);
+            if smoothing_scale_inflate < 0.0 {
+                let laplacian =
+                    finite_elements.calculate_laplacian(finite_elements.get_nodal_influencers());
+                finite_elements
+                    .get_nodal_coordinates_mut()
+                    .iter_mut()
+                    .flatten()
+                    .zip(laplacian.iter().flatten())
+                    .for_each(|(coordinate, entry)| *coordinate += entry * smoothing_scale_inflate);
+            }
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
+                iteration + 1,
+                time.elapsed()
+            );
+        });
+        Ok(())
+    } else {
+        Err("Need to calculate the node-to-node connectivity first")
+    }
+}
+
+fn write_finite_elements_to_exodus(
     file_path: &str,
     element_blocks: &Blocks,
     element_node_connectivity: &Connectivity,
@@ -565,7 +601,7 @@ fn write_fem_to_exo(
     Ok(())
 }
 
-fn write_fem_to_inp(
+fn write_finite_elements_to_abaqus(
     file_path: &str,
     element_blocks: &Blocks,
     element_node_connectivity: &Connectivity,
