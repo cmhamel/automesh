@@ -22,6 +22,7 @@ pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
 pub type Coordinates = Vec<Vec<f64>>;
 pub type Nodes = Vec<usize>;
+pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
 /// The finite elements type.
 pub struct FiniteElements {
@@ -454,6 +455,29 @@ impl FiniteElements {
     }
 }
 
+fn reorder_connectivity(
+    element_blocks: &Blocks,
+    element_blocks_unique: &Blocks,
+    element_node_connectivity: &Connectivity,
+) -> ReorderedConnectivity {
+    element_blocks_unique
+        .iter()
+        .map(|unique_block| {
+            element_blocks
+                .iter()
+                .enumerate()
+                .filter(|(_, &block)| &block == unique_block)
+                .flat_map(|(element, _)| {
+                    element_node_connectivity[element]
+                        .iter()
+                        .map(|entry| *entry as i32)
+                        .collect::<Vec<i32>>()
+                })
+                .collect::<Vec<i32>>()
+        })
+        .collect()
+}
+
 fn write_fem_to_exo(
     file_path: &str,
     element_blocks: &Blocks,
@@ -471,7 +495,6 @@ fn write_fem_to_exo(
     file.add_dimension("num_dim", NSD)?;
     file.add_dimension("num_elem", element_blocks.len())?;
     file.add_dimension("num_el_blk", element_blocks_unique.len())?;
-
     let mut eb_prop1 = file.add_variable::<i32>("eb_prop1", &["num_el_blk"])?;
     element_blocks_unique
         .iter()
@@ -479,22 +502,11 @@ fn write_fem_to_exo(
         .try_for_each(|(index, unique_block)| eb_prop1.put_value(*unique_block as i32, index))?;
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let block_connectivities = element_blocks_unique
-        .iter()
-        .map(|unique_block| {
-            element_blocks
-                .iter()
-                .enumerate()
-                .filter(|(_, &block)| &block == unique_block)
-                .flat_map(|(element, _)| {
-                    element_node_connectivity[element]
-                        .iter()
-                        .map(|entry| *entry as i32)
-                        .collect::<Vec<i32>>()
-                })
-                .collect::<Vec<i32>>()
-        })
-        .collect::<Vec<Vec<i32>>>();
+    let block_connectivities = reorder_connectivity(
+        element_blocks,
+        &element_blocks_unique,
+        element_node_connectivity,
+    );
     let mut block_num_nodes = "block_num_nodes0".to_string();
     let mut current_block = 0;
     let mut number_of_elements = 0;
