@@ -25,11 +25,12 @@ def has_e_plus_minus(string_in: str) -> bool:
     """Utility function, if the input string has the format
     "E+", "e+", "E-", or "E-", then return True, otherwise False.
     """
-    aa = "E+" in string_in
-    bb = "e+" in string_in
-    cc = "E-" in string_in
-    dd = "e-" in string_in
-    return aa or bb or cc or dd
+    return (
+        "E+" in string_in
+        or "e+" in string_in
+        or "E-" in string_in
+        or "e-" in string_in
+    )
 
 
 def has_four_entries(string_in: str) -> bool:
