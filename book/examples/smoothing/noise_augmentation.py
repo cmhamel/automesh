@@ -17,15 +17,19 @@ FILE_OUTPUT: Final[Path] = Path(__file__).parent.joinpath(
 )
 SEED_VALUE: Final[int] = 42  # set a seed value for reproducibility
 random.seed(SEED_VALUE)
-# AMP: Final[float] = 0.5  # the amplitude of the noise
-AMP: Final[float] = 0.0  # the amplitude of the noise
+# AMP: Final[float] = 0.0  # the amplitude of the noise, debug
+AMP: Final[float] = 0.5  # the amplitude of the noise
 
 
-def has_e_plus(string_in: str) -> bool:
-    """Utility function, if the input string has the format "e+"
-    or "E+" then return True, otherwise False.
+def has_e_plus_minus(string_in: str) -> bool:
+    """Utility function, if the input string has the format
+    "E+", "e+", "E-", or "E-", then return True, otherwise False.
     """
-    return "E+" in string_in or "e+" in string_in
+    aa = "E+" in string_in
+    bb = "e+" in string_in
+    cc = "E-" in string_in
+    dd = "e-" in string_in
+    return aa or bb or cc or dd
 
 
 def has_four_entries(string_in: str) -> bool:
@@ -46,8 +50,8 @@ with (
             items = line.split(",")
             node, px, py, pz = tuple(i.strip() for i in items)
 
-            # if all coordinates have the e+ notation
-            if all(has_e_plus(k) for k in [px, py, pz]):
+            # if all coordinates have the E+/e+ or E-/e- notation
+            if all(has_e_plus_minus(k) for k in [px, py, pz]):
 
                 # we noise only coordinates on the positive x half-space
                 if float(px) > 0.0:
@@ -67,10 +71,5 @@ with (
                         f"{node:>8}, {qx:>15.6e}, {qy:>15.6e}, {qz:>15.6e}\n"
                     )
                     line = formatted_line  # overwrite with new noised line
-                    fout.write(line)
-                else:
-                    # fout.write(line)
-                    _ = 4
-        else:
-            # fout.write(line)
-            _ = 4
+
+        fout.write(line)
