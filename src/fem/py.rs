@@ -1,6 +1,6 @@
 use super::{
-    super::py::PyIntermediateError, write_fem_to_exo, write_fem_to_inp, Blocks, Connectivity,
-    Coordinates,
+    super::py::PyIntermediateError, write_finite_elements_to_abaqus,
+    write_finite_elements_to_exodus, Blocks, Connectivity, Coordinates,
 };
 use pyo3::prelude::*;
 
@@ -32,9 +32,16 @@ impl FiniteElements {
             nodal_coordinates,
         }
     }
+    /// Smooths the nodal coordinates according to the provided smoothing method.
+    pub fn smooth(&mut self, method: String) -> Result<(), PyIntermediateError> {
+        Ok(Err(format!(
+            "Invalid smoothing method {} specified.",
+            method
+        ))?)
+    }
     /// Writes the finite elements data to a new Exodus file.
     pub fn write_exo(&self, file_path: &str) -> Result<(), PyIntermediateError> {
-        Ok(write_fem_to_exo(
+        Ok(write_finite_elements_to_exodus(
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
@@ -43,7 +50,7 @@ impl FiniteElements {
     }
     /// Writes the finite elements data to a new Abaqus file.
     pub fn write_inp(&self, file_path: &str) -> Result<(), PyIntermediateError> {
-        Ok(write_fem_to_inp(
+        Ok(write_finite_elements_to_abaqus(
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,

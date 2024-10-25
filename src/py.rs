@@ -53,6 +53,14 @@ impl From<String> for PyIntermediateError {
     }
 }
 
+impl From<&str> for PyIntermediateError {
+    fn from(error: &str) -> PyIntermediateError {
+        PyIntermediateError {
+            message: error.to_string(),
+        }
+    }
+}
+
 impl From<WriteNpyError> for PyIntermediateError {
     fn from(error: WriteNpyError) -> PyIntermediateError {
         PyIntermediateError {
