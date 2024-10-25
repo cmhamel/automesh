@@ -15,10 +15,11 @@ reset
 #
 # {UNITS = "cm"}
 
-# {savefolder = "/users/chovey/autotwin/basis/data/cubit/"}
-# {savefolder = "/users/chovey/autotwin/basis/scratch/"}
+# {savefolder = "/Users/chovey/autotwin/basis/data/cubit/"}
+# {savefolder = "/Users/chovey/autotwin/basis/scratch/"}
+# {savefolder = "/Users/chovey/autotwin/automesh/book/examples/smoothing/"}
 
-# {basename = "sphere_"}
+# {basename = "sphere_res_"}
 
 # {str_exodus = savefolder//basename//tostring(ELEMENT_SIZE)//UNITS//".e"}
 # {str_exodus = savefolder//basename//tostring(ELEMENT_SIZE)//UNITS//".g"}
