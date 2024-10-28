@@ -108,7 +108,7 @@ We follow the recommendations of Taubin[^Taubin_1995b] for selecting values of $
 
 $$f(k) = (1 - \lambda k) (1 - \mu k),$$
 
-with $0 < k < 2$ as the domain of interest since the eigenvalues of the discrete Laplacian being approximated all are within $[0, 2]$.[^Taubin_1995b] 
+with $0 < k < 2$ as the domain of interest since the eigenvalues of the discrete Laplacian being approximated all are within $[0, 2]$.[^Taubin_1995b]
 
 There is a value of $k$ called the *pass-band frequency*, $k_{\rm{\tiny PB}}$,
 
