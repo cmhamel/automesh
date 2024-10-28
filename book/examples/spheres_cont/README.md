@@ -54,7 +54,6 @@ alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
 cd ~/autotwin/automesh/book/examples/spheres_cont/
 ```
 
-
 ```sh
 automesh mesh -i spheres_resolution_1.npy \
 -o spheres_resolution_1.inp \
@@ -66,7 +65,7 @@ automesh mesh -i spheres_resolution_1.npy \
 automesh mesh -i spheres_resolution_2.npy \
 -o spheres_resolution_2.inp \
 -x 48 -y 48 -z 48 \
---xscale 0.5 --yscale 0.5 --yzscale 0.5 \
+--xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
 ```
 
@@ -82,7 +81,40 @@ automesh mesh -i spheres_resolution_3.npy \
 automesh mesh -i spheres_resolution_4.npy \
 -o spheres_resolution_4.inp \
 -x 240 -y 240 -z 240 \
---xscale 0.1 --yscale 0.1 --yzscale 0.1 \
+--xscale 0.1 --yscale 0.1 --zscale 0.1 \
+--xtranslate -12 --ytranslate -12 --ztranslate -12
+```
+
+**Remark:** Instead of of the Abaqus output format (`.inp`), the Exodus II output format (`.exo`) can be used, which can result in faster mesh creation and smaller file sizes due to compression. The Exodus output files are created with the following,
+
+```sh
+automesh mesh -i spheres_resolution_1.npy \
+-o spheres_resolution_1.exo \
+-x 24 -y 24 -z 24 \
+--xtranslate -12 --ytranslate -12 --ztranslate -12
+```
+
+```sh
+automesh mesh -i spheres_resolution_2.npy \
+-o spheres_resolution_2.exo \
+-x 48 -y 48 -z 48 \
+--xscale 0.5 --yscale 0.5 --zscale 0.5 \
+--xtranslate -12 --ytranslate -12 --ztranslate -12
+```
+
+```sh
+automesh mesh -i spheres_resolution_3.npy \
+-o spheres_resolution_3.exo \
+-x 96 -y 96 -z 96 \
+--xscale 0.25 --yscale 0.25 --zscale 0.25 \
+--xtranslate -12 --ytranslate -12 --ztranslate -12
+```
+
+```sh
+automesh mesh -i spheres_resolution_4.npy \
+-o spheres_resolution_4.exo \
+-x 240 -y 240 -z 240 \
+--xscale 0.1 --yscale 0.1 --zscale 0.1 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
 ```
 

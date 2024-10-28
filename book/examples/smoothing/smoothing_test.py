@@ -1,15 +1,14 @@
 r"""This module tests the smoothing modules.
 Example:
-    cd ~/autotwin/automesh
-    Activate the venv with one of the following:
-    source .venv/bin/activate       # for bash shell
-    source .venv/bin/activate.csh   # for c shell
-    source .venv/bin/activate.fish  # for fish shell
-    .\.venv\Scripts\activate        # for powershell
-    cd book/examples/smoothing
-    python -m pytest smoothing_test.py
-Reference: DoubleX unit test
-    https://autotwin.github.io/automesh/examples/unit_tests/index.html#double-x
+--------
+source ~/autotwin/automesh/.venv/bin/activate
+cd ~/autotwin/automesh/book/examples/smoothing
+python -m pytest smoothing_test.py
+
+Reference:
+----------
+DoubleX unit test
+https://autotwin.github.io/automesh/examples/unit_tests/index.html#double-x
 """
 
 from typing import Final
