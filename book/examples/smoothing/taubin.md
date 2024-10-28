@@ -15,5 +15,5 @@ iso | iso midplane | `xz` midplane
 ## Reference
 
 ```python
-<!-- cmdrun noise_augmentation.py -->
+<!-- cmdrun cat noise_augmentation.py -->
 ```
