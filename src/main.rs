@@ -149,7 +149,7 @@ enum Commands {
         #[arg(default_value_t = 1, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
-        /// Name of the smoothing method [default: Laplacian]
+        /// Name of the smoothing method [default: Taubin]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
@@ -159,7 +159,7 @@ enum Commands {
 
         /// Scaling (> 0.0) parameter(s) for smoothing
         #[arg(allow_negative_numbers = true, long, num_args = 1.., short, value_delimiter = ' ', value_name = "SCALE")]
-        scale: Vec<f64>,
+        scale: Option<Vec<f64>>,
     },
 }
 
@@ -181,7 +181,7 @@ enum MeshingCommands {
 
         /// Scaling (> 0.0) parameter(s) for smoothing
         #[arg(allow_negative_numbers = true, long, num_args = 1.., short, value_delimiter = ' ', value_name = "SCALE")]
-        scale: Vec<f64>,
+        scale: Option<Vec<f64>>,
     },
 }
 
@@ -395,10 +395,7 @@ fn mesh(
                 no_hierarchical,
                 scale,
             } => {
-                if scale.is_empty() {
-                    Err("Need to specify smoothing scale(s).")?;
-                }
-                let smoothing_method = method.unwrap_or("Laplace".to_string());
+                let smoothing_method = method.unwrap_or("Taubin".to_string());
                 let time_smooth = Instant::now();
                 match smoothing_method.as_str() {
                     "Laplacian" | "Laplace" | "laplacian" | "laplace" | "Taubin" | "taubin" => {
@@ -421,13 +418,35 @@ fn mesh(
                 }
                 match smoothing_method.as_str() {
                     "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
-                        output_type.smooth(Smoothing::Laplacian(iterations, scale[0]))?;
+                        output_type.smooth(Smoothing::Laplacian(
+                            iterations,
+                            scale.unwrap_or(vec![0.5])[0],
+                        ))?;
                     }
                     "Taubin" | "taubin" => {
-                        if scale.len() != 2 {
-                            Err("Need to specify 2 smoothing scales.")?;
+                        let k_pb = 0.1; // 0 < k_pb < 1
+                        let mut scale_deflate = 0.6307;
+                        let mut scale_inflate = scale_deflate / (k_pb * scale_deflate - 1.0);
+                        if let Some(scales) = scale {
+                            if scales.len() == 1 {
+                                scale_deflate = scales[0];
+                                scale_inflate = scale_deflate / (k_pb * scale_deflate - 1.0);
+                            } else if scales.len() == 2 {
+                                scale_deflate = scales[0];
+                                scale_inflate = scales[1];
+                            } else {
+                                Err("Need to specify 1 or 2 smoothing scales")?;
+                            }
                         }
-                        output_type.smooth(Smoothing::Taubin(iterations, scale[0], scale[1]))?;
+                        //
+                        // just take 1 scale no matter what?
+                        //
+                        println!("{:?}", (scale_deflate, scale_inflate));
+                        output_type.smooth(Smoothing::Taubin(
+                            iterations,
+                            scale_deflate,
+                            scale_inflate,
+                        ))?;
                     }
                     _ => panic!(),
                 }
