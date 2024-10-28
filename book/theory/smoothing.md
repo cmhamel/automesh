@@ -102,6 +102,34 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum
 
 > In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not carefully state the second pass update, and so we emphasize it here.
 
+### Taubin Parameters
+
+We follow the recommendations of Taubin[^Taubin_1995b] for selecting values of $\lambda$ and $\mu$, with specific details noted as follows:  We use the second degree polynomial transfer function,
+
+$$f(k) = (1 - \lambda k) (1 - \mu k),$$
+
+with $0 < k < 2$ as the domain of interest since the eigenvalues of the discrete Laplacian being approximated all are within $[0, 2]$.[^Taubin_1995b]
+
+There is a value of $k$ called the *pass-band frequency*, $k_{\rm{\tiny PB}}$,
+
+$$ k_{\rm{\tiny PB}} := \frac{1}{\lambda} + \frac{1}{\mu}$$
+
+such that $f(k_{\rm{\tiny PB}}) = 1$ for all values of $\lambda$ and $\mu$.
+
+Given that $k > 0$, the pass-band $k_{\rm{\tiny PB}} > 0$ and
+
+$$ \frac{1}{\lambda} + \frac{1}{\mu} > 0 \hspace{0.5cm} \implies \hspace{0.5cm} \lambda < -\mu.  $$
+
+Taubin noted that values of $k_{\rm{\tiny PB}}$ "...from 0.01 to 0.1 produce good results, and all examples shown in this paper were computed with $k_{\rm{\tiny PB}} \approx 0.1$."  Taubin also noted that for $k_{\rm{\tiny PB}} < 1$, choice of $\lambda$ such that $f(1) = -f(2)$ "...ensures a stable and fast filter."
+
+We implement the following:
+
+* $k_{\rm{\tiny PB}} = 0.1$
+* $\lambda = 0.6307$,
+* $\mu = \displaystyle\frac{\lambda}{\lambda \; k_{\rm{\tiny PB}} - 1} = -0.6732$
+
+which provides $f(1) = 0.6179$ and $f(2) = -0.6133$.
+
 ## Hierarchical Control
 
 As a default, all nodes in the mesh are free nodes, meaning they are subject to updates in position due to smoothing.
