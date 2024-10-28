@@ -102,6 +102,16 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum
 
 > In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not carefully state the second pass update, and so we emphasize it here.
 
+To enforce an even number of iterations in our implementation, we take a single iteration to mean a single application of the above-stated two-pass scheme.
+
+For example,
+
+```sh
+smooth -n 50
+```
+
+would be the equivalent of specifying $k_{\rm{max}} = 100$ in the formulation above.
+
 ### Taubin Parameters
 
 We follow the recommendations of Taubin[^Taubin_1995b] for selecting values of $\lambda$ and $\mu$, with specific details noted as follows:  We use the second degree polynomial transfer function,
@@ -122,7 +132,7 @@ $$ \frac{1}{\lambda} + \frac{1}{\mu} > 0 \hspace{0.5cm} \implies \hspace{0.5cm} 
 
 Taubin noted that values of $k_{\rm{\tiny PB}}$ "...from 0.01 to 0.1 produce good results, and all examples shown in this paper were computed with $k_{\rm{\tiny PB}} \approx 0.1$."  Taubin also noted that for $k_{\rm{\tiny PB}} < 1$, choice of $\lambda$ such that $f(1) = -f(2)$ "...ensures a stable and fast filter."
 
-We implement the following:
+We implement the following default values:
 
 * $k_{\rm{\tiny PB}} = 0.1$
 * $\lambda = 0.6307$,
