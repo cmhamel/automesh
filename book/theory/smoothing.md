@@ -128,7 +128,7 @@ We implement the following:
 * $\lambda = 0.6307$,
 * $\mu = \displaystyle\frac{\lambda}{\lambda \; k_{\rm{\tiny PB}} - 1} = -0.6732$
 
-which provides $f(1) = 0.6189$ and $f(2) = -0.6133$.
+which provides $f(1) = 0.6179$ and $f(2) = -0.6133$.
 
 ## Hierarchical Control
 
