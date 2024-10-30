@@ -126,6 +126,10 @@ impl FiniteElements {
                     number_of_connected_elements = connected_elements.len();
                     if number_of_connected_blocks > 1 {
                         interface_nodes.push(node + NODE_NUMBERING_OFFSET);
+                        //
+                        // THIS IS WHERE IT IS ASSUMED THAT THE MESH IS PERFECTLY STRUCTURED
+                        // ONLY AFFECTS HIERARCHICAL SMOOTHING
+                        //
                         if number_of_connected_elements < 8 {
                             exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                         }
@@ -230,6 +234,10 @@ impl FiniteElements {
                             .iter()
                             .position(|&n| n == node + NODE_NUMBERING_OFFSET)
                         {
+                            //
+                            // THIS CAN BE GENERALIZED TO ARBITRARY ELEMENTS
+                            //
+                            //
                             Some(0) => {
                                 connectivity.push(element_connectivity[1]);
                                 connectivity.push(element_connectivity[3]);
@@ -448,22 +456,25 @@ fn smooth_finite_elements(
         let mut smoothing_scale_inflate = 0.0;
         match method {
             Smoothing::Laplacian(iterations, scale) => {
-                if scale <= 0.0 {
-                    return Err("Need to specify scale >= 0.0");
+                if scale <= 0.0 || scale >= 1.0 {
+                    return Err("Need to specify 0.0 > scale > 1.0");
                 } else {
                     smoothing_iterations = iterations;
                     smoothing_scale_deflate = scale;
                 }
             }
-            Smoothing::Taubin(iterations, scale_deflate, scale_inflate) => {
-                if scale_deflate <= 0.0 {
-                    return Err("Need to specify first scale > 0.0");
-                } else if scale_inflate >= 0.0 {
-                    return Err("Need to specify second scale < 0.0");
+            Smoothing::Taubin(iterations, pass_band, scale) => {
+                if pass_band <= 0.0 || pass_band >= 1.0 {
+                    return Err("Need to specify 0.0 > pass-band > 1.0");
+                } else if scale <= 0.0 || scale >= 1.0 {
+                    return Err("Need to specify 0.0 > scale > 1.0");
                 } else {
                     smoothing_iterations = iterations;
-                    smoothing_scale_deflate = scale_deflate;
-                    smoothing_scale_inflate = scale_inflate;
+                    smoothing_scale_deflate = scale;
+                    smoothing_scale_inflate = scale / (pass_band * scale - 1.0);
+                    if smoothing_scale_deflate >= -smoothing_scale_inflate {
+                        return Err("Inflation scale must be larger than deflation scale.");
+                    }
                 }
             }
         }

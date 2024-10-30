@@ -9,8 +9,8 @@ const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
 const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
 
 const SMOOTHING_ITERATIONS: usize = 1;
-const SMOOTHING_SCALE_DEFLATE: f64 = 0.3;
-const SMOOTHING_SCALE_INFLATE: f64 = -0.3;
+const SMOOTHING_PASS_BAND: f64 = 0.1;
+const SMOOTHING_SCALE_DEFLATE: f64 = 0.6307;
 
 macro_rules! bench_block {
     ($nel:expr) => {
@@ -126,7 +126,7 @@ macro_rules! bench_block {
                 fem.smooth(Smoothing::Taubin(
                     SMOOTHING_ITERATIONS,
                     SMOOTHING_SCALE_DEFLATE,
-                    SMOOTHING_SCALE_INFLATE,
+                    SMOOTHING_PASS_BAND,
                 ))
                 .unwrap()
             });
