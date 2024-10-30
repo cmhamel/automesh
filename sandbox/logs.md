@@ -4,6 +4,47 @@
 
 *In order of most recent to least recent.*
 
+## 2024-10-30
+
+* Portland
+  * IMECE conference - November 17-21, 2024
+  * What is the `automesh` milestone for the presentation?
+  * smooth existing meshes
+    * `.inp` reader
+      * hierarchical smoothing, for now, won't work for non-perfect hex meshes
+  * 1-2 weeks from now: finish Taubin smoothing, with hierarchichal option
+  * remaining: CLI for inhomogenous hierarchical is paused
+* Exodus
+  * bug (#168) may actually not be a bug, it may just need documentation
+  * status: to Chad as TODO
+* Taubin smoothing
+  * default values specification
+    * kPB = 0.1
+    * lambda = 0.6307
+    * mdbooks: add bounds for all variables
+  * command line interface (CLI) specification (except for any prescribed nodes)
+  * compare spheres in #169 to result of Sculpt smoothing
+  * Python implementation
+    * visualization
+    * gold standards
+  * `.inp` and `.exo` as (non-smoothed) input files exist?
+  * #TODO later: automatically calculate frequency content of the mesh surface
+* Hierarchical smoothing
+  * Homoegeneous and inhomogeneous both exist
+  * Inhomomgeneous paused until Projection step
+* ------ Future ------
+* VTK file type - Hexalab.net
+  * VTK crate exists
+* Dualization
+  * Octree
+* Projection
+  * STL
+  * applies to inhomogeneous hierarchical
+* Untangling - internal energy
+  * has connections with smoothing
+  * Mesh quality
+  * Minimum scaled Jacobian (MSJ)
+
 ## 2024-10-23
 
 * Review smoothing theory and nomenclature

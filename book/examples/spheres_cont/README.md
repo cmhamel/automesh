@@ -205,8 +205,8 @@ sculpt --num_procs 1 --input_spn "spheres_resolution_1.spn" \
 sculpt --num_procs 1 --input_spn "spheres_resolution_2.spn" \
 -x 48 -y 48 -z 48 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
---xtranslate -12 --ytranslate -12 --ztranslate -12
---spn_xyz_order 5
+--xtranslate -12 --ytranslate -12 --ztranslate -12 \
+--spn_xyz_order 5 \
 --stair 1
 ```
 
