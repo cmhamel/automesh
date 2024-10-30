@@ -66,6 +66,23 @@ fn compare_files(
 }
 
 #[cfg(not(target_os = "windows"))]
+mod read_inp {
+    use automesh::FiniteElements;
+
+    use super::*;
+    #[test]
+    fn letter_f_3d() {
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
+        let fem = voxels
+            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+        fem.write_inp("target/letter_f_3d.inp").unwrap();
+        let read = FiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
+        assert_eq!(fem.get_element_blocks(), read.get_element_blocks());
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
 mod write_inp {
     use super::*;
     #[test]

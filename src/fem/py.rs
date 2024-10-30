@@ -35,8 +35,13 @@ impl FiniteElements {
     /// Constructs and returns a new finite elements type from an Abaqus file.
     #[staticmethod]
     pub fn from_inp(file_path: &str) -> Result<Self, PyIntermediateError> {
-        finite_element_data_from_inp(file_path)?;
-        todo!()
+        let (element_blocks, element_node_connectivity, nodal_coordinates) =
+            finite_element_data_from_inp(file_path)?;
+        Ok(Self::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
     pub fn smooth(&mut self, method: String) -> Result<(), PyIntermediateError> {

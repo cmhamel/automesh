@@ -164,6 +164,10 @@ enum Commands {
         /// Scaling parameter for smoothing
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
+
+        /// Pass to quiet the output.
+        #[arg(action, long, short)]
+        quiet: bool,
     },
 }
 
@@ -295,17 +299,62 @@ fn main() -> Result<(), ErrorWrapper> {
             hierarchical,
             pass_band,
             scale,
+            quiet,
         }) => {
-            todo!(
-                "{}, {}, {}, {:?}, {}, {}, {}",
-                input,
-                output,
-                iterations,
-                method,
-                hierarchical,
-                pass_band,
-                scale,
-            )
+            let time = Instant::now();
+            if !quiet {
+                println!(
+                    "\x1b[1m    {} {}\x1b[0m",
+                    env!("CARGO_PKG_NAME"),
+                    env!("CARGO_PKG_VERSION")
+                );
+                println!("     \x1b[1;96mReading\x1b[0m {}", input);
+            }
+            let mut output_type = FiniteElements::from_inp(&input)?;
+            if !quiet {
+                println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+            }
+            let time_smooth = Instant::now();
+            let (smoothing_method_is_valid, smoothing_method) = check_smoothing_method(method)?;
+            if smoothing_method_is_valid {
+                if !quiet {
+                    println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+                }
+                output_type.calculate_node_element_connectivity()?;
+                output_type.calculate_node_node_connectivity()?;
+                if hierarchical {
+                    output_type.calculate_nodal_hierarchy()?;
+                }
+                output_type.calculate_nodal_influencers();
+                match smoothing_method.as_str() {
+                    "Laplace" => {
+                        output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
+                    }
+                    "Taubin" => {
+                        output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
+                    }
+                    _ => panic!(),
+                }
+                if !quiet {
+                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+                }
+            } else {
+                Err(format!(
+                    "Invalid smoothing method {} specified",
+                    smoothing_method
+                ))?;
+            }
+            let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+            match output_extension {
+                Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+                Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+                _ => Err(format!(
+                    "Invalid extension .{} from output file {}",
+                    output_extension.unwrap(),
+                    output
+                ))?,
+            }
+            Ok(())
         }
         None => Ok(()),
     }
