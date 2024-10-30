@@ -40,7 +40,7 @@
 * Projection
   * STL
   * applies to inhomogeneous hierarchical
-* Untangling - internal energy
+* Untangling - internal energy - unsmoothing
   * has connections with smoothing
   * Mesh quality
   * Minimum scaled Jacobian (MSJ)
