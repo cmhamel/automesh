@@ -310,6 +310,11 @@ impl FiniteElements {
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
+    /// Constructs and returns a new voxels type from an NPY file.
+    pub fn from_inp(file_path: &str) -> Result<Self, String> {
+        finite_element_data_from_inp(file_path)?;
+        todo!()
+    }
     /// Returns a reference to the boundary nodes.
     pub fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
@@ -523,6 +528,12 @@ fn smooth_finite_elements(
     } else {
         Err("Need to calculate the node-to-node connectivity first")
     }
+}
+
+fn finite_element_data_from_inp(
+    _file_path: &str,
+) -> Result<(Blocks, Connectivity, Coordinates), String> {
+    todo!()
 }
 
 fn write_finite_elements_to_exodus(
