@@ -310,6 +310,11 @@ impl FiniteElements {
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
+    /// Constructs and returns a new voxels type from an NPY file.
+    pub fn from_inp(file_path: &str) -> Result<Self, String> {
+        finite_element_data_from_inp(file_path)?;
+        todo!()
+    }
     /// Returns a reference to the boundary nodes.
     pub fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
@@ -457,7 +462,7 @@ fn smooth_finite_elements(
         match method {
             Smoothing::Laplacian(iterations, scale) => {
                 if scale <= 0.0 || scale >= 1.0 {
-                    return Err("Need to specify 0.0 > scale > 1.0");
+                    return Err("Need to specify 0.0 < scale < 1.0");
                 } else {
                     smoothing_iterations = iterations;
                     smoothing_scale_deflate = scale;
@@ -465,9 +470,9 @@ fn smooth_finite_elements(
             }
             Smoothing::Taubin(iterations, pass_band, scale) => {
                 if pass_band <= 0.0 || pass_band >= 1.0 {
-                    return Err("Need to specify 0.0 > pass-band > 1.0");
+                    return Err("Need to specify 0.0 < pass-band < 1.0");
                 } else if scale <= 0.0 || scale >= 1.0 {
-                    return Err("Need to specify 0.0 > scale > 1.0");
+                    return Err("Need to specify 0.0 < scale < 1.0");
                 } else {
                     smoothing_iterations = iterations;
                     smoothing_scale_deflate = scale;
@@ -523,6 +528,12 @@ fn smooth_finite_elements(
     } else {
         Err("Need to calculate the node-to-node connectivity first")
     }
+}
+
+fn finite_element_data_from_inp(
+    _file_path: &str,
+) -> Result<(Blocks, Connectivity, Coordinates), String> {
+    todo!()
 }
 
 fn write_finite_elements_to_exodus(
