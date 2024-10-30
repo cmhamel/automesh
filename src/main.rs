@@ -137,6 +137,10 @@ enum Commands {
 
     /// Applies smoothing to an existing mesh file
     Smooth {
+        /// Pass to enable hierarchical control
+        #[arg(action, long, short = 'c')]
+        hierarchical: bool,
+
         /// Name of the Abaqus (.inp) or Exodus (.exo) file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
@@ -146,20 +150,20 @@ enum Commands {
         output: String,
 
         /// Number of smoothing iterations
-        #[arg(default_value_t = 1, long, short = 'n', value_name = "NUM")]
+        #[arg(default_value_t = 10, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
         /// Name of the smoothing method [default: Taubin]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Pass to disable hierarchical control
-        #[arg(action, long, short = 'd')]
-        no_hierarchical: bool,
+        /// Pass-band frequency for Taubin smoothing
+        #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
+        pass_band: f64,
 
-        /// Scaling (> 0.0) parameter(s) for smoothing
-        #[arg(allow_negative_numbers = true, long, num_args = 1.., short, value_delimiter = ' ', value_name = "SCALE")]
-        scale: Option<Vec<f64>>,
+        /// Scaling parameter for smoothing
+        #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
+        scale: f64,
     },
 }
 
@@ -167,21 +171,25 @@ enum Commands {
 enum MeshingCommands {
     /// Applies smoothing to the mesh before output
     Smooth {
+        /// Pass to enable hierarchical control
+        #[arg(action, long, short = 'c')]
+        hierarchical: bool,
+
         /// Number of smoothing iterations
-        #[arg(default_value_t = 2, long, short = 'n', value_name = "NUM")]
+        #[arg(default_value_t = 10, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
-        /// Name of the smoothing method [default: Laplacian]
+        /// Name of the smoothing method [default: Taubin]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Pass to disable hierarchical control
-        #[arg(action, long, short = 'd')]
-        no_hierarchical: bool,
+        /// Pass-band frequency for Taubin smoothing
+        #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
+        pass_band: f64,
 
-        /// Scaling (> 0.0) parameter(s) for smoothing
-        #[arg(allow_negative_numbers = true, long, num_args = 1.., short, value_delimiter = ' ', value_name = "SCALE")]
-        scale: Option<Vec<f64>>,
+        /// Scaling parameter for smoothing
+        #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
+        scale: f64,
     },
 }
 
@@ -284,16 +292,18 @@ fn main() -> Result<(), ErrorWrapper> {
             output,
             iterations,
             method,
-            no_hierarchical,
+            hierarchical,
+            pass_band,
             scale,
         }) => {
             todo!(
-                "{}, {}, {}, {:?}, {}, {:?}",
+                "{}, {}, {}, {:?}, {}, {}, {}",
                 input,
                 output,
                 iterations,
                 method,
-                no_hierarchical,
+                hierarchical,
+                pass_band,
                 scale,
             )
         }
@@ -392,66 +402,39 @@ fn mesh(
             MeshingCommands::Smooth {
                 iterations,
                 method,
-                no_hierarchical,
+                hierarchical,
+                pass_band,
                 scale,
             } => {
-                let smoothing_method = method.unwrap_or("Taubin".to_string());
                 let time_smooth = Instant::now();
-                match smoothing_method.as_str() {
-                    "Laplacian" | "Laplace" | "laplacian" | "laplace" | "Taubin" | "taubin" => {
-                        if !quiet {
-                            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+                let (smoothing_method_is_valid, smoothing_method) = check_smoothing_method(method)?;
+                if smoothing_method_is_valid {
+                    if !quiet {
+                        println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+                    }
+                    output_type.calculate_node_element_connectivity()?;
+                    output_type.calculate_node_node_connectivity()?;
+                    if hierarchical {
+                        output_type.calculate_nodal_hierarchy()?;
+                    }
+                    output_type.calculate_nodal_influencers();
+                    match smoothing_method.as_str() {
+                        "Laplace" => {
+                            output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
                         }
-                        output_type.calculate_node_element_connectivity()?;
-                        output_type.calculate_node_node_connectivity()?;
-                        if !no_hierarchical {
-                            output_type.calculate_nodal_hierarchy()?;
+                        "Taubin" => {
+                            output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
                         }
-                        output_type.calculate_nodal_influencers();
+                        _ => panic!(),
                     }
-                    _ => {
-                        return Err(format!(
-                            "Invalid smoothing method {} specified",
-                            smoothing_method
-                        ))?
+                    if !quiet {
+                        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
                     }
-                }
-                match smoothing_method.as_str() {
-                    "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
-                        output_type.smooth(Smoothing::Laplacian(
-                            iterations,
-                            scale.unwrap_or(vec![0.5])[0],
-                        ))?;
-                    }
-                    "Taubin" | "taubin" => {
-                        let k_pb = 0.1; // 0 < k_pb < 1
-                        let mut scale_deflate = 0.6307;
-                        let mut scale_inflate = scale_deflate / (k_pb * scale_deflate - 1.0);
-                        if let Some(scales) = scale {
-                            if scales.len() == 1 {
-                                scale_deflate = scales[0];
-                                scale_inflate = scale_deflate / (k_pb * scale_deflate - 1.0);
-                            } else if scales.len() == 2 {
-                                scale_deflate = scales[0];
-                                scale_inflate = scales[1];
-                            } else {
-                                Err("Need to specify 1 or 2 smoothing scales")?;
-                            }
-                        }
-                        //
-                        // just take 1 scale no matter what?
-                        //
-                        println!("{:?}", (scale_deflate, scale_inflate));
-                        output_type.smooth(Smoothing::Taubin(
-                            iterations,
-                            scale_deflate,
-                            scale_inflate,
-                        ))?;
-                    }
-                    _ => panic!(),
-                }
-                if !quiet {
-                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+                } else {
+                    Err(format!(
+                        "Invalid smoothing method {} specified",
+                        smoothing_method
+                    ))?;
                 }
             }
         }
@@ -467,6 +450,32 @@ fn mesh(
         ))?,
     }
     Ok(())
+}
+
+fn check_smoothing_method(method: Option<String>) -> Result<(bool, String), ErrorWrapper> {
+    let smoothing_method = method.unwrap_or("Taubin".to_string());
+    let valid = matches!(
+        smoothing_method.as_str(),
+        "Gauss"
+            | "gauss"
+            | "Gaussian"
+            | "gaussian"
+            | "Laplacian"
+            | "Laplace"
+            | "laplacian"
+            | "laplace"
+            | "Taubin"
+            | "taubin"
+    );
+    match smoothing_method.as_str() {
+        "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
+        | "laplace" => Ok((valid, "Laplace".to_string())),
+        "Taubin" | "taubin" => Ok((valid, "Taubin".to_string())),
+        _ => Ok(Err(format!(
+            "Invalid smoothing method {} specified",
+            smoothing_method
+        ))?),
+    }
 }
 
 fn read_input(
