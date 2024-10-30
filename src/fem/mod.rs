@@ -457,7 +457,7 @@ fn smooth_finite_elements(
         match method {
             Smoothing::Laplacian(iterations, scale) => {
                 if scale <= 0.0 || scale >= 1.0 {
-                    return Err("Need to specify 0.0 > scale > 1.0");
+                    return Err("Need to specify 0.0 < scale < 1.0");
                 } else {
                     smoothing_iterations = iterations;
                     smoothing_scale_deflate = scale;
@@ -465,9 +465,9 @@ fn smooth_finite_elements(
             }
             Smoothing::Taubin(iterations, pass_band, scale) => {
                 if pass_band <= 0.0 || pass_band >= 1.0 {
-                    return Err("Need to specify 0.0 > pass-band > 1.0");
+                    return Err("Need to specify 0.0 < pass-band < 1.0");
                 } else if scale <= 0.0 || scale >= 1.0 {
-                    return Err("Need to specify 0.0 > scale > 1.0");
+                    return Err("Need to specify 0.0 < scale < 1.0");
                 } else {
                     smoothing_iterations = iterations;
                     smoothing_scale_deflate = scale;
