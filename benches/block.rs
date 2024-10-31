@@ -1,7 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{Smoothing, Voxels};
+use automesh::{FiniteElements, Smoothing, Voxels};
 use test::Bencher;
 
 const REMOVE: Option<Vec<u8>> = None;
@@ -57,6 +57,15 @@ macro_rules! bench_block {
             let mut fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
             fem.calculate_node_element_connectivity()?;
             bencher.iter(|| fem.calculate_node_node_connectivity().unwrap());
+            Ok(())
+        }
+        #[bench]
+        fn from_inp(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let inp = format!("target/block_{}.inp", $nel);
+            fem.write_inp(&inp).unwrap();
+            bencher.iter(|| FiniteElements::from_inp(&inp).unwrap());
             Ok(())
         }
         #[bench]
