@@ -1,6 +1,6 @@
-"""This module builds on the `spheres.py` module to create high resolution,
-three-material, concentric spheres and export the voxelization as a .npy
-file.
+r"""This module, spheres_cont.py, builds on the spheres.py module to create
+high resolution, three-material, concentric spheres and export the
+voxelization as a .npy file.
 
 Example
 -------

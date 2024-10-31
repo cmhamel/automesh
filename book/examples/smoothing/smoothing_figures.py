@@ -1,4 +1,6 @@
-"""This module illustrates test cases for smoothing algorithms.
+r"""This module, smoothing_figures.py, illustrates test cases for
+smoothing algorithms.
+
 Example:
 --------
 source ~/autotwin/automesh/.venv/bin/activate

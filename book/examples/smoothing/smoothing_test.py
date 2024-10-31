@@ -1,4 +1,5 @@
-r"""This module tests the smoothing modules.
+r"""This module, smoothing_test.py, tests the smoothing modules.
+
 Example:
 --------
 source ~/autotwin/automesh/.venv/bin/activate

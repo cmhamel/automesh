@@ -6,7 +6,7 @@ For a complete listing of the unit sets, see
 [voxels.rs](https://github.com/autotwin/automesh/blob/main/tests/voxel.rs)
 and [voxel.py](https://github.com/autotwin/automesh/blob/main/tests/voxel.py).
 
-The Python script used to generate the figures is included [below](#source).
+The Python code used to generate the figures is included [below](#source).
 
 **Remark:** We use the convention `np` when importing `numpy` as follows:
 
@@ -71,6 +71,8 @@ $S_{\rm{local}} = \{1, 2, 4, 3, 5, 6, 8, 7\}$ and $S_{\rm{local}} = S_{\rm{globa
 
 which is a special case not typically observed, as shown in more complex
 examples below.
+
+**Remark:** Input `.npy` and `.spn` files for the examples below can be found on the repository at [tests/input](https://github.com/autotwin/automesh/tree/main/tests/input).
 
 ## Double
 
@@ -550,12 +552,16 @@ Figure: Sparse mesh composed of two materials at random voxel locations, shown w
 ## Source
 
 The figures were created with [figures.py](figures.py) and tested with
-[test_figures.py](test_figures.py):
+[figures_test.py](figures_test.py).
+
+### `figures.py`
 
 ```python
 <!-- cmdrun cat figures.py -->
 ```
 
+### `figures_test.py`
+
 ```python
-<!-- cmdrun cat test_figures.py -->
+<!-- cmdrun cat figures_test.py -->
 ```

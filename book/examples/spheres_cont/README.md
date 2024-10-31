@@ -30,11 +30,7 @@ to create finite element meshes.
 
 ### Python Segmentation
 
-Use [spheres_cont.py](spheres_cont.py) to create segmentations,
-
-```python
-<!-- cmdrun cat spheres_cont.py -->
-```
+The Python code used to generate the figures is included [below](#source).
 
 ![spheres_cont](spheres_cont.png)
 
@@ -205,8 +201,8 @@ sculpt --num_procs 1 --input_spn "spheres_resolution_1.spn" \
 sculpt --num_procs 1 --input_spn "spheres_resolution_2.spn" \
 -x 48 -y 48 -z 48 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
---xtranslate -12 --ytranslate -12 --ztranslate -12
---spn_xyz_order 5
+--xtranslate -12 --ytranslate -12 --ztranslate -12 \
+--spn_xyz_order 5 \
 --stair 1
 ```
 
@@ -234,3 +230,11 @@ test | `nelx` | lines | time `automesh` | time Sculpt | automesh speed up multip
 2 |  48 |    110,592 | 89.120459ms |  3.246166s | 36x
 3 |  96 |    884,736 | 662.89025ms | 24.414653s | 36x
 4 | 240 | 13,824,000 | 10.01070525s | 449.339395s | 44x
+
+## Source
+
+The figures were created with [spheres_cont.py](spheres_cont.py).
+
+```python
+<!-- cmdrun cat spheres_cont.py -->
+```

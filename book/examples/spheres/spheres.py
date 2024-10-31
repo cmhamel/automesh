@@ -1,4 +1,5 @@
-"""This module creates a voxelized sphere and exports it as a .npy file.
+r"""This module, spheres.py, creates a voxelized sphere and exports
+it as a .npy file.
 
 Example
 -------

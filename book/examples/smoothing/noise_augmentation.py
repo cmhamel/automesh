@@ -1,9 +1,11 @@
-r"""This module adds noise to a finite element mesh in the .inp format.
+r"""This module, noise_augmentation.py, adds noise to a finite element mesh
+in the .inp format.
+
 Example:
 --------
 source ~/autotwin/automesh/.venv/bin/activate
 cd ~/autotwin/automesh/book/examples/smoothing
-python -m pytest noise_augmentation.py
+python noise_augmentation.py
 """
 
 from pathlib import Path
@@ -45,7 +47,7 @@ with (
     open(FILE_OUTPUT, "w", encoding="utf-8") as fout,
 ):
     for line in fin:
-        print(line)
+        # print(line)  # debugging
         if has_four_entries(line):
             # This might be a coordinate, investigate further.
             items = line.split(",")
@@ -74,3 +76,6 @@ with (
                     line = formatted_line  # overwrite with new noised line
 
         fout.write(line)
+
+print(f"Wrote {FILE_OUTPUT}")
+print("Done.")

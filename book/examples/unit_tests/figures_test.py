@@ -1,4 +1,4 @@
-r"""This module tests functionality of the included module.
+r"""This module, figures_test.py, tests functionality of the included module.
 
 Example:
 
@@ -20,11 +20,6 @@ Example:
 import pytest
 
 import figures as ff
-
-
-def test_hello():
-    """This is a minimum working example (MWE) test."""
-    assert ff.hello_world() == "Hello world!"
 
 
 def test_renumber():

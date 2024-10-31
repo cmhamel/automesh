@@ -1,4 +1,4 @@
-"""This module demonstrates creating a pixel slice in the (x, y)
+r"""This module, figures.py, demonstrates creating a pixel slice in the (x, y)
 plane, and then appending layers in the z axis, to create a 3D
 voxel lattice, as a precursor for a hexahedral finite element mesh.
 
@@ -15,8 +15,8 @@ Example:
 
 Ouput:
 
-    The `output_npy` file data structure
-    The `output_png` file visualization
+    The `output_npy` segmentation data files
+    The `output_png` visualization files
 """
 
 # standard library
@@ -29,19 +29,6 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource
 import numpy as np
 from numpy.typing import NDArray
-
-# module library
-# import sandbox.figures_data as fd  # why doesn't this work?
-
-
-def hello_world() -> str:
-    """Simple example of a function hooked to a command line entry point.
-
-    Returns:
-        The canonical "Hello world!" string.
-    """
-
-    return "Hello world!"
 
 
 class Example(NamedTuple):

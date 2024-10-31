@@ -100,8 +100,19 @@ volume with name "outer_vol"  autosmooth target on  fixed imprints off  smart sm
 mesh volume with name "outer_vol"
 
 Volume all copy reflect x
+
+imprint vol all
+merge vol all
+
 Volume all copy reflect y
+
+imprint vol all
+merge vol all
+
 Volume all copy reflect z
+
+imprint vol all
+merge vol all
 
 block 1 volume with name "inner_vol*"
 block 2 volume with name "outer_vol*"
@@ -112,14 +123,14 @@ block 2 volume with name "outer_vol*"
 # export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged" + {ELEMENT_SIZE}.e  overwrite
 # export mesh "/Users/chovey/autotwin/basis/data/cubit/unmerged.e"  overwrite
 # export mesh "/Users/chovey/autotwin/basis/scratch/unmerged.e"  overwrite
-export mesh "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp.g" overwrite
+export mesh "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp_unmerged.g" overwrite
 
 reset
 
 # import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_SIZE/100}
 # import mesh geometry "/Users/chovey/autotwin/basis/data/cubit/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE}
 # import mesh geometry "/Users/chovey/autotwin/basis/scratch/unmerged.e" feature_angle 135.00  merge  merge_nodes {ELEMENT_TOLERANCE}
-import mesh geometry "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp.g" merge  merge_nodes {ELEMENT_TOLERANCE}
+import mesh geometry "/Users/chovey/autotwin/automesh/book/examples/smoothing/sphere_temp_unmerged.g" merge  merge_nodes {ELEMENT_TOLERANCE}
 
 sideset 1 add surface 1
 sideset 2 add surface 2
