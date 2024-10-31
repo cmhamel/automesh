@@ -566,14 +566,15 @@ fn finite_element_data_from_inp(
     buffer.clear();
     file.read_line(&mut buffer)?;
     let mut current_block = 0;
-    let mut element_blocks: Blocks = vec![];
-    let mut element_node_connectivity: Connectivity = vec![];
+    let mut element_blocks_unsorted: Blocks = vec![];
+    let mut element_node_connectivity_unsorted: Connectivity = vec![];
+    let mut element_numbers: Blocks = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
             current_block = buffer.trim().chars().last().unwrap().to_digit(10).unwrap() as usize;
         } else {
-            element_blocks.push(current_block);
-            element_node_connectivity.push(
+            element_blocks_unsorted.push(current_block);
+            element_node_connectivity_unsorted.push(
                 buffer
                     .trim()
                     .split(",")
@@ -581,10 +582,32 @@ fn finite_element_data_from_inp(
                     .map(|entry| entry.trim().parse::<usize>().unwrap())
                     .collect(),
             );
+            element_numbers.push(
+                buffer
+                    .trim()
+                    .split(",")
+                    .take(1)
+                    .next()
+                    .unwrap()
+                    .parse::<usize>()
+                    .unwrap(),
+            );
         }
         buffer.clear();
         file.read_line(&mut buffer)?;
     }
+    let number_of_elements = element_numbers.len();
+    let mut element_blocks: Blocks = vec![0; number_of_elements];
+    let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; number_of_elements];
+    let mut mapped_index = 0;
+    (0..number_of_elements).for_each(|index| {
+        mapped_index = element_numbers
+            .iter()
+            .position(|&element| element - ELEMENT_NUMBERING_OFFSET == index)
+            .unwrap();
+        element_blocks[index] = element_blocks_unsorted[mapped_index];
+        element_node_connectivity[index] = element_node_connectivity_unsorted[mapped_index].clone();
+    });
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
