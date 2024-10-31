@@ -86,7 +86,7 @@ Figure: Convergence of position $\boldsymbol{p}$ toward $0.5$ as a function of i
 Taubin smoothing is a two-parameter, two-pass iterative variation of Laplace smoothing.
 Specifically with the definitions used in Laplacian smoothing, a second negative parameter $\mu$ is used, where
 
-$$ \lambda \in \mathbb{R}^+ \subset (0, 1) \hspace{0.5cm} \rm{and} \hspace{0.5cm} \lambda < -\mu. $$
+$$ \mu \in \mathbb{R}^- \subset (-1, 0) \hspace{0.75cm} \lambda \in \mathbb{R}^+ \subset (0, 1) \hspace{0.75cm} \rm{and} \hspace{0.5cm} \lambda < -\mu. $$
 
 The first parameter, $\lambda$, tends to smooth (and shrink) the domain.  The second parameter, $\mu$, tends to expand the domain.
 
@@ -104,13 +104,13 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum
 
 To enforce an even number of iterations in our implementation, we take a single iteration to mean a single application of the above-stated two-pass scheme.
 
-For example,
+For example, in the `automesh` command line interface,
 
 ```sh
-smooth -n 50
+automesh smooth -n 50
 ```
 
-would be the equivalent of specifying $k_{\rm{max}} = 100$ in the formulation above.
+the `-n 50` would be the equivalent of specifying $k_{\rm{max}} = 100$ in the formulation above.
 
 ### Taubin Parameters
 
