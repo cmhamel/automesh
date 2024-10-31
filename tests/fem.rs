@@ -79,6 +79,26 @@ mod read_inp {
         fem.write_inp("target/letter_f_3d.inp").unwrap();
         let read = FiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
         assert_eq!(fem.get_element_blocks(), read.get_element_blocks());
+        assert_eq!(
+            fem.get_element_node_connectivity(),
+            read.get_element_node_connectivity()
+        );
+        assert_eq!(fem.get_nodal_coordinates(), read.get_nodal_coordinates());
+    }
+    #[test]
+    fn sparse() {
+        let voxels = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]).unwrap();
+        let fem = voxels
+            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+        fem.write_inp("target/sparse.inp").unwrap();
+        let read = FiniteElements::from_inp("target/sparse.inp").unwrap();
+        assert_eq!(fem.get_element_blocks(), read.get_element_blocks());
+        assert_eq!(
+            fem.get_element_node_connectivity(),
+            read.get_element_node_connectivity()
+        );
+        assert_eq!(fem.get_nodal_coordinates(), read.get_nodal_coordinates());
     }
 }
 
