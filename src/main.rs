@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use std::{io::Error as ErrorIO, path::Path, time::Instant};
+use vtkio::Error as ErrorVtk;
 
 macro_rules! about {
     () => {
@@ -71,7 +72,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
+        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -141,11 +142,11 @@ enum Commands {
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
+        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the Abaqus (.inp) or Exodus (.exo) file.
+        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -223,6 +224,14 @@ impl From<ErrorNetCDF> for ErrorWrapper {
     }
 }
 
+impl From<ErrorVtk> for ErrorWrapper {
+    fn from(error: ErrorVtk) -> ErrorWrapper {
+        ErrorWrapper {
+            message: error.to_string(),
+        }
+    }
+}
+
 impl From<ReadNpyError> for ErrorWrapper {
     fn from(error: ReadNpyError) -> ErrorWrapper {
         ErrorWrapper {
@@ -259,6 +268,7 @@ enum OutputTypes {
     Exodus(FiniteElements),
     Npy(Voxels),
     Spn(Voxels),
+    Vtk(FiniteElements),
 }
 
 fn main() -> Result<(), ErrorWrapper> {
@@ -348,6 +358,7 @@ fn main() -> Result<(), ErrorWrapper> {
             match output_extension {
                 Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
                 Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+                Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
                 _ => Err(format!(
                     "Invalid extension .{} from output file {}",
                     output_extension.unwrap(),
@@ -492,6 +503,7 @@ fn mesh(
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
         _ => Err(format!(
             "Invalid extension .{} from output file {}",
             output_extension.unwrap(),
@@ -595,6 +607,10 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
         },
         Some("spn") => match output_type {
             OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
+            _ => panic!(),
+        },
+        Some("vtk") => match output_type {
+            OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
             _ => panic!(),
         },
         _ => Err(format!(
