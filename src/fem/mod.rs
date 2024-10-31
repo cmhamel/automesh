@@ -549,7 +549,19 @@ fn finite_element_data_from_inp(
     buffer.clear();
     file.read_line(&mut buffer)?;
     let mut nodal_coordinates: Coordinates = vec![];
+    let mut inverse_mapping: Vec<usize> = vec![];
     while buffer != "**\n" {
+        inverse_mapping.push(
+            buffer
+                .trim()
+                .split(",")
+                .take(1)
+                .next()
+                .unwrap()
+                .trim()
+                .parse()
+                .unwrap(),
+        );
         nodal_coordinates.push(
             buffer
                 .trim()
@@ -561,20 +573,25 @@ fn finite_element_data_from_inp(
         buffer.clear();
         file.read_line(&mut buffer)?;
     }
+    let mut mapping = vec![0_usize; *inverse_mapping.iter().max().unwrap()];
+    inverse_mapping
+        .iter()
+        .enumerate()
+        .for_each(|(new, old)| mapping[old - NODE_NUMBERING_OFFSET] = new + NODE_NUMBERING_OFFSET);
     buffer.clear();
     file.read_line(&mut buffer)?;
     buffer.clear();
     file.read_line(&mut buffer)?;
     let mut current_block = 0;
-    let mut element_blocks_unsorted: Blocks = vec![];
-    let mut element_node_connectivity_unsorted: Connectivity = vec![];
+    let mut element_blocks: Blocks = vec![];
+    let mut element_node_connectivity: Connectivity = vec![];
     let mut element_numbers: Blocks = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
             current_block = buffer.trim().chars().last().unwrap().to_digit(10).unwrap() as usize;
         } else {
-            element_blocks_unsorted.push(current_block);
-            element_node_connectivity_unsorted.push(
+            element_blocks.push(current_block);
+            element_node_connectivity.push(
                 buffer
                     .trim()
                     .split(",")
@@ -596,18 +613,13 @@ fn finite_element_data_from_inp(
         buffer.clear();
         file.read_line(&mut buffer)?;
     }
-    let number_of_elements = element_numbers.len();
-    let mut element_blocks: Blocks = vec![0; number_of_elements];
-    let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; number_of_elements];
-    let mut mapped_index = 0;
-    (0..number_of_elements).for_each(|index| {
-        mapped_index = element_numbers
-            .iter()
-            .position(|&element| element - ELEMENT_NUMBERING_OFFSET == index)
-            .unwrap();
-        element_blocks[index] = element_blocks_unsorted[mapped_index];
-        element_node_connectivity[index] = element_node_connectivity_unsorted[mapped_index].clone();
-    });
+    element_node_connectivity
+        .iter_mut()
+        .for_each(|connectivity| {
+            connectivity
+                .iter_mut()
+                .for_each(|node| *node = mapping[*node - NODE_NUMBERING_OFFSET])
+        });
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
