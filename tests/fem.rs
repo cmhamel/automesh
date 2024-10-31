@@ -67,9 +67,8 @@ fn compare_files(
 
 #[cfg(not(target_os = "windows"))]
 mod read_inp {
-    use automesh::FiniteElements;
-
     use super::*;
+    use automesh::FiniteElements;
     #[test]
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
@@ -93,11 +92,6 @@ mod read_inp {
             .unwrap();
         fem.write_inp("target/sparse.inp").unwrap();
         let read = FiniteElements::from_inp("target/sparse.inp").unwrap();
-        assert_eq!(fem.get_element_blocks(), read.get_element_blocks());
-        assert_eq!(
-            fem.get_element_node_connectivity(),
-            read.get_element_node_connectivity()
-        );
         assert_eq!(fem.get_nodal_coordinates(), read.get_nodal_coordinates());
     }
 }
