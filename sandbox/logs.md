@@ -15,13 +15,13 @@
   * 1-2 weeks from now: finish Taubin smoothing, with hierarchichal option
   * remaining: CLI for inhomogenous hierarchical is paused
 * Exodus
-  * bug (#168) may actually not be a bug, it may just need documentation
-  * status: to Chad as TODO
+  * bug (#168) may actually not be a bug, it may just need documentation - done
+  * status: to Chad as TODO - done
 * Taubin smoothing
-  * default values specification
+  * default values specification - done
     * kPB = 0.1
     * lambda = 0.6307
-    * mdbooks: add bounds for all variables
+    * mdbooks: add bounds for all variables - done
   * command line interface (CLI) specification (except for any prescribed nodes)
   * compare spheres in #169 to result of Sculpt smoothing
   * Python implementation
