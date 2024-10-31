@@ -1,4 +1,5 @@
-"""This module contains the core computations for smoothing algorithms.
+r"""This module, smoothing.py, contains the core computations for
+smoothing algorithms.
 """
 
 # import sandbox.smoothing_types as ty

@@ -1,4 +1,6 @@
-"""This module defines types used for smoothing hexahedral meshes."""
+r"""This module, smoothing_types.py, defines types used for smoothing
+hexahedral meshes.
+"""
 
 from enum import Enum
 from typing import NamedTuple

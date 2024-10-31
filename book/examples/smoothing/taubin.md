@@ -1,7 +1,6 @@
 # Taubin Smoothing
 
-* [`sphere.jou`](sphere.jou), see [code](#cubit) below.
-* [`noise_augmentation.py`](noise_augmentation.py), see [code](#python) below.
+The Cubit and Python code used to generate the figures is included [below](#source).
 
 iso | iso midplane | `xz` midplane
 :---: | :---: | :---:
@@ -26,7 +25,7 @@ automesh smooth -i sphere_res_1cm_noised.inp -o s10.exo -n 10
 
 ![sphere_surface_w_noise.png](sphere_surface_w_noise.png)
 
-## Reference
+## Source
 
 ### Cubit
 

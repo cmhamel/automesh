@@ -1,4 +1,6 @@
-"""This module contains data for the smoothing examples."""
+r"""This module, smoothing_examples.py contains data for the
+smoothing examples.
+"""
 
 import math
 from typing import Final

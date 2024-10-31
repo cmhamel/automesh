@@ -1,4 +1,6 @@
-r"""This module adds noise to a finite element mesh in the .inp format.
+r"""This module, noise_augmentation.py, adds noise to a finite element mesh
+in the .inp format.
+
 Example:
 --------
 source ~/autotwin/automesh/.venv/bin/activate

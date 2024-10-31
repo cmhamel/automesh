@@ -1,14 +1,10 @@
 # Spheres
 
 We segment a sphere into coarse voxel meshes.
+The Python code used to generate the figures is included [below](#source).
 
 ## Segmentation
 
-Using [spheres.py](spheres.py),
-
-```python
-<!-- cmdrun cat spheres.py -->
-```
 
 create very coarse spheres of varying
 resolution (`radius=1`, `radius=3`, and `radius=5`), as shown below:
@@ -136,3 +132,13 @@ The `spheres_radius_3.inp` file:
 ```
 
 Because of its large size, the mesh structure for `sphere_5` is not shown here.
+
+## Source
+
+These figures were created with [spheres.py](spheres.py).
+
+### `spheres.py`
+
+```python
+<!-- cmdrun cat spheres.py -->
+```
