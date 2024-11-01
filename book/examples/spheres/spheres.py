@@ -86,7 +86,6 @@ width, height = 10, 5
 # width, height = 8, 4
 # width, height = 6, 3
 fig = plt.figure(figsize=(width, height))
-# fig = plt.figure(figsize=(8, 8))
 
 el, az, roll = 63, -110, 0
 cmap = plt.get_cmap(name="tab10")
