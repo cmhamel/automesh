@@ -64,18 +64,10 @@ The `spheres_radius_1.inp` file:
 <!-- cmdrun cat spheres_radius_1.inp -->
 ```
 
-The `spheres_radius_3.inp` file:
-
-```sh
-<!-- cmdrun cat spheres_radius_3.inp -->
-```
-
 Because of large size, the mesh structures for `sphere_3` and
 `sphere_5` are not shown here.
 
 ## Source
-
-These figures were created with [spheres.py](spheres.py).
 
 ### `spheres.py`
 
