@@ -4,6 +4,12 @@
 
 *In order of most recent to least recent.*
 
+## 2024-11-05
+
+* Look at https://github.com/beartype/beartype
+* compare `.exo` and `.e` in HDFView 3.3.1
+* hd5 expert Jay Lofstead
+
 ## 2024-10-30
 
 * Portland
