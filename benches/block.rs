@@ -174,6 +174,14 @@ macro_rules! bench_block {
             Ok(())
         }
         #[bench]
+        fn write_mesh(bencher: &mut Bencher) -> Result<(), String> {
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let mesh = format!("target/block_{}.mesh", $nel);
+            bencher.iter(|| fem.write_mesh(&mesh).unwrap());
+            Ok(())
+        }
+        #[bench]
         fn write_vtk(bencher: &mut Bencher) -> Result<(), String> {
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;

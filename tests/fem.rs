@@ -113,6 +113,18 @@ mod write_inp {
     }
 }
 
+mod write_mesh {
+    use super::*;
+    #[test]
+    fn letter_f_3d() {
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
+        let fem = voxels
+            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .unwrap();
+        fem.write_mesh("target/letter_f_3d.mesh").unwrap();
+    }
+}
+
 mod write_vtk {
     use super::*;
     #[test]
