@@ -20,6 +20,7 @@ share/python-wheels/
 MANIFEST
 
 # ignore input/output files by default
+*.exo
 *.g
 *.inp
 *.npy
