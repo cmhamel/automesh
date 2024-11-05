@@ -19,6 +19,11 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# ignore input/output files by default
+*.g
+*.inp
+*.npy
+
 # ignore build binaries
 *.so
 
