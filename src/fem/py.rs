@@ -1,7 +1,7 @@
 use super::{
     super::py::PyIntermediateError, finite_element_data_from_inp, write_finite_elements_to_abaqus,
-    write_finite_elements_to_exodus, write_finite_elements_to_vtk, Blocks, Connectivity,
-    Coordinates,
+    write_finite_elements_to_exodus, write_finite_elements_to_mesh, write_finite_elements_to_vtk,
+    Blocks, Connectivity, Coordinates,
 };
 use pyo3::prelude::*;
 
@@ -63,6 +63,15 @@ impl FiniteElements {
     /// Writes the finite elements data to a new Abaqus file.
     pub fn write_inp(&self, file_path: &str) -> Result<(), PyIntermediateError> {
         Ok(write_finite_elements_to_abaqus(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates,
+        )?)
+    }
+    /// Writes the finite elements data to a new mesh file.
+    pub fn write_mesh(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_to_mesh(
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,

@@ -12,7 +12,7 @@ use chrono::Utc;
 use netcdf::{create, Error as ErrorNetCDF};
 use std::{
     fs::File,
-    io::{BufRead, BufReader, BufWriter, Error as ErrorIO, LineWriter, Write},
+    io::{BufRead, BufReader, BufWriter, Error as ErrorIO, Write},
     path::PathBuf,
 };
 use vtkio::{
@@ -902,7 +902,7 @@ fn write_finite_elements_to_mesh(
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let mesh_file = File::create(file_path)?;
-    let mut file = LineWriter::new(mesh_file);
+    let mut file = BufWriter::new(mesh_file);
     file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
     file.write_all(format!("{}\n", nodal_coordinates.len()).as_bytes())?;
     nodal_coordinates.iter().try_for_each(|coordinates| {
