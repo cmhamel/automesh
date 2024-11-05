@@ -266,6 +266,7 @@ impl From<WriteNpyError> for ErrorWrapper {
 enum OutputTypes {
     Abaqus(FiniteElements),
     Exodus(FiniteElements),
+    Mesh(FiniteElements),
     Npy(Voxels),
     Spn(Voxels),
     Vtk(FiniteElements),
@@ -358,6 +359,7 @@ fn main() -> Result<(), ErrorWrapper> {
             match output_extension {
                 Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
                 Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+                Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
                 Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
                 _ => Err(format!(
                     "Invalid extension .{} from output file {}",
@@ -503,6 +505,7 @@ fn mesh(
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
         _ => Err(format!(
             "Invalid extension .{} from output file {}",
@@ -599,6 +602,10 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
         },
         Some("inp") => match output_type {
             OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
+            _ => panic!(),
+        },
+        Some("mesh") => match output_type {
+            OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
             _ => panic!(),
         },
         Some("npy") => match output_type {
