@@ -82,22 +82,23 @@ aa = Path(__file__)
 bb = aa.with_suffix(".png")
 
 # Visualize the elements.
+width, height = 10, 5
 # width, height = 8, 4
-width, height = 6, 3
+# width, height = 6, 3
 fig = plt.figure(figsize=(width, height))
-# fig = plt.figure(figsize=(8, 8))
 
 el, az, roll = 63, -110, 0
 cmap = plt.get_cmap(name="tab10")
-num_colors = len(spheres)
-voxel_alpha: Final[float] = 0.9
+# NUM_COLORS = len(spheres)
+NUM_COLORS = 10  # consistent with tab10 color scheme
+VOXEL_ALPHA: Final[float] = 0.9
 
-colors = cmap(np.linspace(0, 1, num_colors))
+colors = cmap(np.linspace(0, 1, NUM_COLORS))
 lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
-dpi: Final[int] = 300  # resolution, dots per inch
-visualize: Final[bool] = False  # turn to True to show the figure on screen
-serialize: Final[bool] = False  # turn to True to save .png and .npy files
+DPI: Final[int] = 300  # resolution, dots per inch
+SHOW: Final[bool] = False  # turn to True to show the figure on screen
+SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 # User input end
 
 
@@ -109,9 +110,9 @@ for index, (key, value) in enumerate(spheres.items()):
         value,
         facecolors=colors[index],
         edgecolor=colors[index],
-        alpha=voxel_alpha,
+        alpha=VOXEL_ALPHA,
         lightsource=lightsource)
-    ax.set_title(key)
+    ax.set_title(key.replace("_", "="))
     IDX += 1
 
     # Set labels for the axes
@@ -123,7 +124,7 @@ for index, (key, value) in enumerate(spheres.items()):
     ax.set_aspect("equal")
     ax.view_init(elev=el, azim=az, roll=roll)
 
-    if serialize:
+    if SAVE:
         cc = aa.with_stem("spheres_" + key)
         dd = cc.with_suffix(".npy")
         # Save the data in .npy format
@@ -131,9 +132,9 @@ for index, (key, value) in enumerate(spheres.items()):
         print(f"Saved: {dd}")
 
 fig.tight_layout()
-if visualize:
+if SHOW:
     plt.show()
 
-if serialize:
-    fig.savefig(bb, dpi=dpi)
+if SAVE:
+    fig.savefig(bb, dpi=DPI)
     print(f"Saved: {bb}")

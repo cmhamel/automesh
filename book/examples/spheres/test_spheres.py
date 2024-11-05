@@ -1,10 +1,9 @@
-"""This module performs point testing of the sphere module.
+r"""This module, test_spheres.py, performs point testing of the sphere module.
 
 Example
 -------
-
-> python -m pytest book/examples/spheres/test_spheres.py
-
+source ~/autotwin/automesh/.venv/bin/activate
+python -m pytest book/examples/spheres/test_spheres.py
 """
 
 import numpy as np
