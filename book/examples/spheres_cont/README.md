@@ -233,7 +233,7 @@ test | `nelx` | lines | time `automesh` | time Sculpt | automesh speed up multip
 
 ## Source
 
-The figures were created with [spheres_cont.py](spheres_cont.py).
+### `spheres_cont.py`
 
 ```python
 <!-- cmdrun cat spheres_cont.py -->

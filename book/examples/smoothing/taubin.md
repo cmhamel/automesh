@@ -27,13 +27,13 @@ automesh smooth -i sphere_res_1cm_noised.inp -o s10.exo -n 10
 
 ## Source
 
-### Cubit
+### `sphere.jou`
 
 ```sh
 <!-- cmdrun cat sphere.jou -->
 ```
 
-### Python
+### `noise_augmentation.py`
 
 ```python
 <!-- cmdrun cat noise_augmentation.py -->

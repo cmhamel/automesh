@@ -2,31 +2,31 @@
 
 Following are files to support the Python visualization.
 
-## Smoothing Types
+## `smoothing_types.py`
 
 ```python
 <!-- cmdrun cat smoothing_types.py -->
 ```
 
-## Smoothing Test
+## `smoothing_test.py`
 
 ```python
 <!-- cmdrun cat smoothing_test.py -->
 ```
 
-## Smoothing
+## `smoothing.py`
 
 ```python
 <!-- cmdrun cat smoothing.py -->
 ```
 
-## Smoothing Examples
+## `smoothing_examples.py`
 
 ```python
 <!-- cmdrun cat smoothing_examples.py -->
 ```
 
-## Smoothing Figures
+## `smoothing_figures.py`
 
 ```python
 <!-- cmdrun cat smoothing_figures.py -->
