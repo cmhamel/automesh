@@ -388,7 +388,14 @@ fn mesh(
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
-        _ => panic!(),
+        _ => {
+            let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap(),
+                input
+            ))?
+        }
     };
     if !quiet {
         let entirely_default = xscale == 1.0
