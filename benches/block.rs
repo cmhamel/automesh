@@ -2,6 +2,10 @@
 
 extern crate test;
 use automesh::{FiniteElements, Smoothing, Voxels};
+use std::{
+    fs::{read_dir, remove_file},
+    path::Path,
+};
 use test::Bencher;
 
 const REMOVE: Option<Vec<u8>> = None;
@@ -12,8 +16,22 @@ const SMOOTHING_ITERATIONS: usize = 1;
 const SMOOTHING_PASS_BAND: f64 = 0.1;
 const SMOOTHING_SCALE_DEFLATE: f64 = 0.6307;
 
+macro_rules! remove_files_with_extension {
+    ($ext: expr) => {
+        let mut file;
+        let mut extension;
+        for path in read_dir("target/").unwrap() {
+            file = path.unwrap().path();
+            extension = Path::new(&file).extension().and_then(|ext| ext.to_str());
+            if let Some($ext) = extension {
+                remove_file(file).unwrap();
+            }
+        }
+    };
+}
+
 macro_rules! bench_block {
-    ($nel:expr) => {
+    ($nel: expr) => {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
         #[bench]
         fn calculate_laplacian(bencher: &mut Bencher) -> Result<(), String> {
@@ -141,52 +159,82 @@ macro_rules! bench_block {
             });
             Ok(())
         }
-        // Something odd going on with this, possible a lock on the file or something.
-        //
-        // #[bench]
-        // fn write_exo(bencher: &mut Bencher) -> Result<(), String> {
-        //     let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-        //     let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
-        //     let exo = format!("target/block_{}.exo", $nel);
-        //     bencher.iter(|| fem.write_exo(&exo).unwrap());
-        //     Ok(())
-        // }
         #[bench]
-        fn write_inp(bencher: &mut Bencher) -> Result<(), String> {
+        fn write_exo(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("exo");
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
-            let inp = format!("target/block_{}.inp", $nel);
-            bencher.iter(|| fem.write_inp(&inp).unwrap());
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_exo(&format!("target/block_{}_{}.exo", $nel, count))
+                    .unwrap();
+                count += 1;
+            });
             Ok(())
         }
         #[bench]
-        fn write_npy(bencher: &mut Bencher) -> Result<(), String> {
+        fn write_inp(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("inp");
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let npy = format!("target/block_{}.npy", $nel);
-            bencher.iter(|| voxels.write_npy(&npy).unwrap());
-            Ok(())
-        }
-        #[bench]
-        fn write_spn(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let spn = format!("target/block_{}.spn", $nel);
-            bencher.iter(|| voxels.write_spn(&spn).unwrap());
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_inp(&format!("target/block_{}_{}.inp", $nel, count))
+                    .unwrap();
+                count += 1;
+            });
             Ok(())
         }
         #[bench]
         fn write_mesh(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("mesh");
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
-            let mesh = format!("target/block_{}.mesh", $nel);
-            bencher.iter(|| fem.write_mesh(&mesh).unwrap());
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_mesh(&format!("target/block_{}_{}.mesh", $nel, count))
+                    .unwrap();
+                count += 1
+            });
+            Ok(())
+        }
+        #[bench]
+        fn write_npy(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("npy");
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut count = 0;
+            bencher.iter(|| {
+                voxels
+                    .write_npy(&format!("target/block_{}_{}.npy", $nel, count))
+                    .unwrap();
+                count += 1;
+            });
+            Ok(())
+        }
+        #[bench]
+        fn write_spn(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("spn");
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let mut count = 0;
+            bencher.iter(|| {
+                voxels
+                    .write_spn(&format!("target/block_{}_{}.spn", $nel, count))
+                    .unwrap();
+                count += 1;
+            });
             Ok(())
         }
         #[bench]
         fn write_vtk(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("vtk");
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
             let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
-            let vtk = format!("target/block_{}.vtk", $nel);
-            bencher.iter(|| fem.write_vtk(&vtk).unwrap());
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_vtk(&format!("target/block_{}_{}.vtk", $nel, count))
+                    .unwrap();
+                count += 1;
+            });
             Ok(())
         }
     };
