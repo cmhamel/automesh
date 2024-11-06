@@ -440,7 +440,7 @@ impl FiniteElements {
             self.get_nodal_coordinates(),
         )
     }
-    /// Writes the finite elements data to a new mesh file.
+    /// Writes the finite elements data to a new Mesh file.
     pub fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_mesh(
             file_path,

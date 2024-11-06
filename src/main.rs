@@ -36,29 +36,29 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Converts between segmentation input file types
+    /// Converts between mesh or segmentation file types
     Convert {
-        /// Name of the original NumPy (.npy) or SPN (.spn) file.
+        /// Name of the original mesh or segmentation file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the converted NumPy (.npy) or SPN (.spn) file.
+        /// Name of the converted mesh or segmentation file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
-        /// Number of voxels in the x-direction.
-        #[arg(short = 'x', long, default_value_t = 0, value_name = "NEL")]
-        nelx: usize,
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
 
-        /// Number of voxels in the y-direction.
-        #[arg(short = 'y', long, default_value_t = 0, value_name = "NEL")]
-        nely: usize,
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
 
-        /// Number of voxels in the z-direction.
-        #[arg(short = 'z', long, default_value_t = 0, value_name = "NEL")]
-        nelz: usize,
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
 
-        /// Pass to quiet the output.
+        /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
     },
@@ -68,85 +68,85 @@ enum Commands {
         #[command(subcommand)]
         meshing: Option<MeshingCommands>,
 
-        /// Name of the NumPy (.npy) or SPN (.spn) file.
+        /// Name of the segmentation input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
+        /// Name of the mesh output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
-        /// Number of voxels in the x-direction.
-        #[arg(default_value_t = 0, long, short = 'x', value_name = "NEL")]
-        nelx: usize,
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
 
-        /// Number of voxels in the y-direction.
-        #[arg(default_value_t = 0, long, short = 'y', value_name = "NEL")]
-        nely: usize,
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
 
-        /// Number of voxels in the z-direction.
-        #[arg(default_value_t = 0, long, short = 'z', value_name = "NEL")]
-        nelz: usize,
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
 
-        /// Voxel IDs to remove from the mesh [default: 0].
+        /// Voxel IDs to remove from the mesh [default: 0]
         #[arg(long, short, value_name = "ID")]
         remove: Option<Vec<u8>>,
 
-        /// Scaling (> 0.0) in the x-direction.
+        /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         xscale: f64,
 
-        /// Scaling (> 0.0) in the y-direction.
+        /// Scaling (> 0.0) in the y-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         yscale: f64,
 
-        /// Scaling (> 0.0) in the z-direction.
+        /// Scaling (> 0.0) in the z-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         zscale: f64,
 
-        /// Translation in the x-direction.
+        /// Translation in the x-direction
         #[arg(
             long,
             default_value_t = 0.0,
             allow_negative_numbers = true,
-            value_name = "TRANSLATE"
+            value_name = "VAL"
         )]
         xtranslate: f64,
 
-        /// Translation in the y-direction.
+        /// Translation in the y-direction
         #[arg(
             long,
             default_value_t = 0.0,
             allow_negative_numbers = true,
-            value_name = "TRANSLATE"
+            value_name = "VAL"
         )]
         ytranslate: f64,
 
-        /// Translation in the z-direction.
+        /// Translation in the z-direction
         #[arg(
             long,
             default_value_t = 0.0,
             allow_negative_numbers = true,
-            value_name = "TRANSLATE"
+            value_name = "VAL"
         )]
         ztranslate: f64,
 
-        /// Pass to quiet the output.
+        /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
     },
 
-    /// Applies smoothing to an existing mesh file
+    /// Applies smoothing to an existing finite element mesh
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
+        /// Name of the original mesh file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Abaqus (.inp), Exodus (.exo), or VTK (.vtk) file.
+        /// Name of the smoothed mesh file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -166,7 +166,7 @@ enum Commands {
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
 
-        /// Pass to quiet the output.
+        /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
     },
@@ -263,6 +263,13 @@ impl From<WriteNpyError> for ErrorWrapper {
 }
 
 #[allow(clippy::large_enum_variant)]
+enum InputTypes {
+    Abaqus(FiniteElements),
+    Npy(Voxels),
+    Spn(Voxels),
+}
+
+#[allow(clippy::large_enum_variant)]
 enum OutputTypes {
     Abaqus(FiniteElements),
     Exodus(FiniteElements),
@@ -270,6 +277,14 @@ enum OutputTypes {
     Npy(Voxels),
     Spn(Voxels),
     Vtk(FiniteElements),
+}
+
+fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
+    Ok(Err(format!(
+        "Invalid extension .{} from output file {}",
+        extension.unwrap(),
+        file
+    ))?)
 }
 
 fn main() -> Result<(), ErrorWrapper> {
@@ -311,64 +326,16 @@ fn main() -> Result<(), ErrorWrapper> {
             pass_band,
             scale,
             quiet,
-        }) => {
-            let time = Instant::now();
-            if !quiet {
-                println!(
-                    "\x1b[1m    {} {}\x1b[0m",
-                    env!("CARGO_PKG_NAME"),
-                    env!("CARGO_PKG_VERSION")
-                );
-                println!("     \x1b[1;96mReading\x1b[0m {}", input);
-            }
-            let mut output_type = FiniteElements::from_inp(&input)?;
-            if !quiet {
-                println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-            }
-            let time_smooth = Instant::now();
-            let (smoothing_method_is_valid, smoothing_method) = check_smoothing_method(method)?;
-            if smoothing_method_is_valid {
-                if !quiet {
-                    println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
-                }
-                output_type.calculate_node_element_connectivity()?;
-                output_type.calculate_node_node_connectivity()?;
-                if hierarchical {
-                    output_type.calculate_nodal_hierarchy()?;
-                }
-                output_type.calculate_nodal_influencers();
-                match smoothing_method.as_str() {
-                    "Laplace" => {
-                        output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
-                    }
-                    "Taubin" => {
-                        output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
-                    }
-                    _ => panic!(),
-                }
-                if !quiet {
-                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
-                }
-            } else {
-                Err(format!(
-                    "Invalid smoothing method {} specified",
-                    smoothing_method
-                ))?;
-            }
-            let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-            match output_extension {
-                Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-                Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-                Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-                Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-                _ => Err(format!(
-                    "Invalid extension .{} from output file {}",
-                    output_extension.unwrap(),
-                    output
-                ))?,
-            }
-            Ok(())
-        }
+        }) => smooth(
+            input,
+            output,
+            iterations,
+            method,
+            hierarchical,
+            pass_band,
+            scale,
+            quiet,
+        ),
         None => Ok(()),
     }
 }
@@ -376,26 +343,28 @@ fn main() -> Result<(), ErrorWrapper> {
 fn convert(
     input: String,
     output: String,
-    nelx: usize,
-    nely: usize,
-    nelz: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
-    match (input_extension, output_extension) {
-        (Some("npy"), Some("spn")) => write_output(output, OutputTypes::Spn(input_type), quiet)?,
-        (Some("spn"), Some("npy")) => write_output(output, OutputTypes::Npy(input_type), quiet)?,
-        _ => Err(format!(
-            "Invalid extensions .{} and .{} from input and output files {} and {}",
-            input_extension.unwrap(),
-            output_extension.unwrap(),
-            input,
-            output
-        ))?,
+    match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Abaqus(finite_elements) => match output_extension {
+            Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+            Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+            Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
+            _ => invalid_output(&output, output_extension),
+        },
+        InputTypes::Npy(voxels) => match output_extension {
+            Some("spn") => write_output(output, OutputTypes::Spn(voxels), quiet),
+            _ => invalid_output(&output, output_extension),
+        },
+        InputTypes::Spn(voxels) => match output_extension {
+            Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
+            _ => invalid_output(&output, output_extension),
+        },
     }
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -403,9 +372,9 @@ fn mesh(
     meshing: Option<MeshingCommands>,
     input: String,
     output: String,
-    nelx: usize,
-    nely: usize,
-    nelz: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
     remove: Option<Vec<u8>>,
     xscale: f64,
     yscale: f64,
@@ -416,7 +385,11 @@ fn mesh(
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
-    let input_type = read_input(&input, nelx, nely, nelz, quiet)?;
+    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Npy(voxels) => voxels,
+        InputTypes::Spn(voxels) => voxels,
+        _ => panic!(),
+    };
     if !quiet {
         let entirely_default = xscale == 1.0
             && yscale == 1.0
@@ -468,36 +441,16 @@ fn mesh(
                 pass_band,
                 scale,
             } => {
-                let time_smooth = Instant::now();
-                let (smoothing_method_is_valid, smoothing_method) = check_smoothing_method(method)?;
-                if smoothing_method_is_valid {
-                    if !quiet {
-                        println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
-                    }
-                    output_type.calculate_node_element_connectivity()?;
-                    output_type.calculate_node_node_connectivity()?;
-                    if hierarchical {
-                        output_type.calculate_nodal_hierarchy()?;
-                    }
-                    output_type.calculate_nodal_influencers();
-                    match smoothing_method.as_str() {
-                        "Laplace" => {
-                            output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
-                        }
-                        "Taubin" => {
-                            output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
-                        }
-                        _ => panic!(),
-                    }
-                    if !quiet {
-                        println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
-                    }
-                } else {
-                    Err(format!(
-                        "Invalid smoothing method {} specified",
-                        smoothing_method
-                    ))?;
-                }
+                apply_smoothing_method(
+                    &mut output_type,
+                    &output,
+                    iterations,
+                    method,
+                    hierarchical,
+                    pass_band,
+                    scale,
+                    quiet,
+                )?;
             }
         }
     }
@@ -507,18 +460,78 @@ fn mesh(
         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
         Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => Err(format!(
-            "Invalid extension .{} from output file {}",
-            output_extension.unwrap(),
-            output
-        ))?,
+        _ => invalid_output(&output, output_extension)?,
     }
     Ok(())
 }
 
-fn check_smoothing_method(method: Option<String>) -> Result<(bool, String), ErrorWrapper> {
+#[allow(clippy::too_many_arguments)]
+fn smooth(
+    input: String,
+    output: String,
+    iterations: usize,
+    method: Option<String>,
+    hierarchical: bool,
+    pass_band: f64,
+    scale: f64,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!(
+            "\x1b[1m    {} {}\x1b[0m",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        );
+        println!("     \x1b[1;96mReading\x1b[0m {}", input);
+    }
+    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+    let mut output_type = match input_extension {
+        Some("inp") => FiniteElements::from_inp(&input)?,
+        _ => Err(format!(
+            "Invalid extension .{} from input file {}",
+            input_extension.unwrap(),
+            input
+        ))?,
+    };
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    apply_smoothing_method(
+        &mut output_type,
+        &output,
+        iterations,
+        method,
+        hierarchical,
+        pass_band,
+        scale,
+        quiet,
+    )?;
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+        _ => invalid_output(&output, output_extension)?,
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn apply_smoothing_method(
+    output_type: &mut FiniteElements,
+    output: &str,
+    iterations: usize,
+    method: Option<String>,
+    hierarchical: bool,
+    pass_band: f64,
+    scale: f64,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let time_smooth = Instant::now();
     let smoothing_method = method.unwrap_or("Taubin".to_string());
-    let valid = matches!(
+    if matches!(
         smoothing_method.as_str(),
         "Gauss"
             | "gauss"
@@ -530,25 +543,45 @@ fn check_smoothing_method(method: Option<String>) -> Result<(bool, String), Erro
             | "laplace"
             | "Taubin"
             | "taubin"
-    );
-    match smoothing_method.as_str() {
-        "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
-        | "laplace" => Ok((valid, "Laplace".to_string())),
-        "Taubin" | "taubin" => Ok((valid, "Taubin".to_string())),
-        _ => Ok(Err(format!(
+    ) {
+        if !quiet {
+            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+        }
+        output_type.calculate_node_element_connectivity()?;
+        output_type.calculate_node_node_connectivity()?;
+        if hierarchical {
+            output_type.calculate_nodal_hierarchy()?;
+        }
+        output_type.calculate_nodal_influencers();
+        match smoothing_method.as_str() {
+            "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
+            | "laplace" => {
+                output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
+            }
+            "Taubin" | "taubin" => {
+                output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
+            }
+            _ => panic!(),
+        }
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time_smooth.elapsed());
+        }
+        Ok(())
+    } else {
+        Err(format!(
             "Invalid smoothing method {} specified",
             smoothing_method
-        ))?),
+        ))?
     }
 }
 
 fn read_input(
     input: &str,
-    nelx: usize,
-    nely: usize,
-    nelz: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
     quiet: bool,
-) -> Result<Voxels, ErrorWrapper> {
+) -> Result<InputTypes, ErrorWrapper> {
     let time = Instant::now();
     if !quiet {
         println!(
@@ -560,17 +593,39 @@ fn read_input(
     }
     let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let result = match input_extension {
+        Some("inp") => {
+            if !quiet {
+                println!();
+            }
+            InputTypes::Abaqus(FiniteElements::from_inp(input)?)
+        }
         Some("npy") => {
             if !quiet {
                 println!();
             }
-            Voxels::from_npy(input)?
+            InputTypes::Npy(Voxels::from_npy(input)?)
         }
         Some("spn") => {
-            if !quiet {
-                println!(" [nelx: {}, nely: {}, nelz: {}]", nelx, nely, nelz);
+            if nelx.is_none() {
+                Err("Argument nelx was required but was not provided")?
+            } else if nely.is_none() {
+                Err("Argument nely was required but was not provided")?
+            } else if nelz.is_none() {
+                Err("Argument nelz was required but was not provided")?
+            } else {
+                if !quiet {
+                    println!(
+                        " [nelx: {}, nely: {}, nelz: {}]",
+                        nelx.unwrap(),
+                        nely.unwrap(),
+                        nelz.unwrap()
+                    );
+                }
+                InputTypes::Spn(Voxels::from_spn(
+                    input,
+                    [nelx.unwrap(), nely.unwrap(), nelz.unwrap()],
+                )?)
             }
-            Voxels::from_spn(input, [nelx, nely, nelz])?
         }
         _ => {
             if !quiet {
@@ -594,37 +649,13 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
     if !quiet {
         println!("     \x1b[1;96mWriting\x1b[0m {}", output);
     }
-    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match output_extension {
-        Some("exo") => match output_type {
-            OutputTypes::Exodus(fem) => fem.write_exo(&output)?,
-            _ => panic!(),
-        },
-        Some("inp") => match output_type {
-            OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
-            _ => panic!(),
-        },
-        Some("mesh") => match output_type {
-            OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
-            _ => panic!(),
-        },
-        Some("npy") => match output_type {
-            OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
-            _ => panic!(),
-        },
-        Some("spn") => match output_type {
-            OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
-            _ => panic!(),
-        },
-        Some("vtk") => match output_type {
-            OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
-            _ => panic!(),
-        },
-        _ => Err(format!(
-            "Invalid extension .{} from output file {}",
-            output_extension.unwrap(),
-            output
-        ))?,
+    match output_type {
+        OutputTypes::Abaqus(fem) => fem.write_inp(&output)?,
+        OutputTypes::Exodus(fem) => fem.write_exo(&output)?,
+        OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
+        OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
+        OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
+        OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
     }
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
