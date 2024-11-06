@@ -4,6 +4,22 @@
 
 *In order of most recent to least recent.*
 
+## 2024-11-06
+
+* Answer questions from email 2024-11-05 14:28
+* `.mesh`
+  * CLI for `.mesh` output
+  * Open brain model in hexalab
+* `.exo` writer comparison with HDF5 https://www.hdfgroup.org/download-hdfview/
+* brain models
+  * Emma's Google Drive for brain models
+  * https://drive.google.com/drive/folders/158MXz03QCuockuRoSBpY-YuO4fni3RVD?usp=sharing
+* smoothing
+  * Hierarchical smoothing https://github.com/autotwin/automesh/issues/184
+  * Define in words hierarchical control based on code implementation
+* Quality metrics
+  * https://github.com/autotwin/automesh/issues/185
+
 ## 2024-11-05
 
 * Look at https://github.com/beartype/beartype
