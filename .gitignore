@@ -23,7 +23,9 @@ MANIFEST
 *.exo
 *.g
 *.inp
+*.mesh
 *.npy
+*.vtk
 
 # ignore build binaries
 *.so
