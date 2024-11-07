@@ -136,8 +136,8 @@ enum Commands {
         quiet: bool,
     },
 
-    /// ???
-    Quality {
+    /// Quality metrics for an existing finite element mesh
+    Metrics {
         /// Name of the mesh input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
@@ -145,6 +145,10 @@ enum Commands {
         /// Name of the quality output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
     },
 
     /// Applies smoothing to an existing finite element mesh
@@ -328,7 +332,11 @@ fn main() -> Result<(), ErrorWrapper> {
             meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
             ytranslate, ztranslate, quiet,
         ),
-        Some(Commands::Quality { input, output }) => quality(input, output),
+        Some(Commands::Metrics {
+            input,
+            output,
+            quiet,
+        }) => metrics(input, output, quiet),
         Some(Commands::Smooth {
             input,
             output,
@@ -484,8 +492,15 @@ fn mesh(
     Ok(())
 }
 
-fn quality(input: String, output: String) -> Result<(), ErrorWrapper> {
-    todo!("{}{}", input, output)
+fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+    match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Abaqus(finite_elements) => finite_elements,
+        InputTypes::Npy(_) | InputTypes::Spn(_) => {
+            Err(format!("No metrics for segmentation file {}", input))?
+        }
+    }
+    .write_metrics(&output)?;
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -502,7 +517,7 @@ fn smooth(
     let mut output_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
-            Err(format!("Cannot smooth segmentation file {}", input))?
+            Err(format!("No smoothing for segmentation file {}", input))?
         }
     };
     apply_smoothing_method(
@@ -517,13 +532,12 @@ fn smooth(
     )?;
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => invalid_output(&output, output_extension)?,
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet),
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet),
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet),
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet),
+        _ => invalid_output(&output, output_extension),
     }
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]

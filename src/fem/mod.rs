@@ -9,11 +9,12 @@ use std::time::Instant;
 
 use super::{ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
+use flavio::math::{Tensor, TensorRank1};
 use netcdf::{create, Error as ErrorNetCDF};
 use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error as ErrorIO, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 use vtkio::{
     model::{
@@ -243,10 +244,6 @@ impl FiniteElements {
                             .iter()
                             .position(|&n| n == node + NODE_NUMBERING_OFFSET)
                         {
-                            //
-                            // THIS CAN BE GENERALIZED TO ARBITRARY ELEMENTS
-                            //
-                            //
                             Some(0) => {
                                 connectivity.push(element_connectivity[1]);
                                 connectivity.push(element_connectivity[3]);
@@ -445,6 +442,14 @@ impl FiniteElements {
         write_finite_elements_to_mesh(
             file_path,
             self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Writes the finite elements quality metrics to a new file.
+    pub fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
+        write_finite_elements_metrics(
+            file_path,
             self.get_element_node_connectivity(),
             self.get_nodal_coordinates(),
         )
@@ -972,4 +977,158 @@ fn write_finite_elements_to_vtk(
         }),
     }
     .export_be(&file)
+}
+
+fn write_finite_elements_metrics(
+    file_path: &str,
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
+) -> Result<(), ErrorIO> {
+    let mut u = TensorRank1::<3, 1>::zero();
+    let mut v = TensorRank1::zero();
+    let mut w = TensorRank1::zero();
+    let mut n = TensorRank1::zero();
+    let minimum_scaled_jacobians = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            connectivity
+                .iter()
+                .enumerate()
+                .map(|(index, node)| {
+                    match index {
+                        0 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        1 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        2 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        3 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        4 => {}
+                        5 => {}
+                        6 => {}
+                        7 => {}
+                        _ => panic!(),
+                    }
+                    n = u.cross(&v);
+                    (&n * &w) / n.norm() / w.norm()
+                })
+                .collect::<Vec<f64>>()
+                .into_iter()
+                .reduce(f64::min)
+                .unwrap()
+        })
+        .collect::<Vec<f64>>();
+    let mut file = BufWriter::new(File::create(file_path)?);
+    let input_extension = Path::new(&file_path)
+        .extension()
+        .and_then(|ext| ext.to_str());
+    match input_extension {
+        Some("csv") => {
+            minimum_scaled_jacobians
+                .iter()
+                .try_for_each(|minimum_scaled_jacobian| {
+                    file.write_all(format!("{}\n", minimum_scaled_jacobian).as_bytes())
+                })?;
+            file.flush()
+        }
+        Some("npy") => todo!(),
+        _ => panic!("print error message with input and extension"),
+    }
 }
