@@ -10,6 +10,8 @@ use std::time::Instant;
 use super::{ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
 use chrono::Utc;
 use flavio::math::{Tensor, TensorRank1};
+use ndarray::Array1;
+use ndarray_npy::WriteNpyExt;
 use netcdf::{create, Error as ErrorNetCDF};
 use std::{
     fs::File,
@@ -31,6 +33,7 @@ pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
 pub type Coordinate = Vec<f64>;
 pub type Coordinates = Vec<Coordinate>;
+pub type Jacobians = Array1<f64>;
 pub type Nodes = Vec<usize>;
 pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
@@ -984,11 +987,13 @@ fn write_finite_elements_metrics(
     element_node_connectivity: &Connectivity,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
     let mut u = TensorRank1::<3, 1>::zero();
     let mut v = TensorRank1::zero();
     let mut w = TensorRank1::zero();
     let mut n = TensorRank1::zero();
-    let minimum_scaled_jacobians = element_node_connectivity
+    let minimum_scaled_jacobians: Jacobians = element_node_connectivity
         .iter()
         .map(|connectivity| {
             connectivity
@@ -1100,10 +1105,110 @@ fn write_finite_elements_metrics(
                                 .map(|(a, b)| b - a)
                                 .collect();
                         }
-                        4 => {}
-                        5 => {}
-                        6 => {}
-                        7 => {}
+                        4 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        5 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        6 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
+                        7 => {
+                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
+                                .iter()
+                                .zip(
+                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                        .iter(),
+                                )
+                                .map(|(a, b)| b - a)
+                                .collect();
+                        }
                         _ => panic!(),
                     }
                     n = u.cross(&v);
@@ -1114,7 +1219,14 @@ fn write_finite_elements_metrics(
                 .reduce(f64::min)
                 .unwrap()
         })
-        .collect::<Vec<f64>>();
+        .collect();
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
+        time.elapsed()
+    );
+    #[cfg(feature = "profile")]
+    let time2 = Instant::now();
     let mut file = BufWriter::new(File::create(file_path)?);
     let input_extension = Path::new(&file_path)
         .extension()
@@ -1126,9 +1238,17 @@ fn write_finite_elements_metrics(
                 .try_for_each(|minimum_scaled_jacobian| {
                     file.write_all(format!("{}\n", minimum_scaled_jacobian).as_bytes())
                 })?;
-            file.flush()
+            file.flush()?
         }
-        Some("npy") => todo!(),
+        Some("npy") => {
+            minimum_scaled_jacobians.write_npy(file).unwrap();
+        }
         _ => panic!("print error message with input and extension"),
     }
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mWriting metrics to file\x1b[0m {:?}",
+        time2.elapsed()
+    );
+    Ok(())
 }

@@ -131,6 +131,10 @@ enum Commands {
         )]
         ztranslate: f64,
 
+        /// Name of the quality metrics file
+        #[arg(long, value_name = "FILE")]
+        metrics: Option<String>,
+
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
@@ -142,7 +146,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the quality output file
+        /// Name of the quality metrics output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -180,6 +184,10 @@ enum Commands {
         /// Scaling parameter for smoothing
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
+
+        /// Name of the quality metrics file
+        #[arg(long, value_name = "FILE")]
+        metrics: Option<String>,
 
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
@@ -327,10 +335,11 @@ fn main() -> Result<(), ErrorWrapper> {
             xtranslate,
             ytranslate,
             ztranslate,
+            metrics,
             quiet,
         }) => mesh(
             meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, quiet,
+            ytranslate, ztranslate, metrics, quiet,
         ),
         Some(Commands::Metrics {
             input,
@@ -345,6 +354,7 @@ fn main() -> Result<(), ErrorWrapper> {
             hierarchical,
             pass_band,
             scale,
+            metrics,
             quiet,
         }) => smooth(
             input,
@@ -354,6 +364,7 @@ fn main() -> Result<(), ErrorWrapper> {
             hierarchical,
             pass_band,
             scale,
+            metrics,
             quiet,
         ),
         None => Ok(()),
@@ -402,9 +413,9 @@ fn mesh(
     xtranslate: f64,
     ytranslate: f64,
     ztranslate: f64,
+    metrics: Option<String>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -417,6 +428,7 @@ fn mesh(
             ))?
         }
     };
+    let time = Instant::now();
     if !quiet {
         let entirely_default = xscale == 1.0
             && yscale == 1.0
@@ -481,6 +493,9 @@ fn mesh(
             }
         }
     }
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
@@ -493,13 +508,24 @@ fn mesh(
 }
 
 fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
-    match read_input(&input, None, None, None, quiet)? {
+    let output_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No metrics for segmentation file {}", input))?
         }
+    };
+    metrics_inner(&output_type, output, quiet)
+}
+
+fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
     }
-    .write_metrics(&output)?;
+    fem.write_metrics(&output)?;
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
     Ok(())
 }
 
@@ -512,6 +538,7 @@ fn smooth(
     hierarchical: bool,
     pass_band: f64,
     scale: f64,
+    metrics: Option<String>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let mut output_type = match read_input(&input, None, None, None, quiet)? {
@@ -530,6 +557,9 @@ fn smooth(
         scale,
         quiet,
     )?;
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet),

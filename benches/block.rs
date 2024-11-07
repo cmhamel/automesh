@@ -199,6 +199,32 @@ macro_rules! bench_block {
             Ok(())
         }
         #[bench]
+        fn write_metrics_csv(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("csv");
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_metrics(&format!("target/block_{}_{}.csv", $nel, count))
+                    .unwrap();
+                count += 1
+            });
+            Ok(())
+        }
+        #[bench]
+        fn write_metrics_npy(bencher: &mut Bencher) -> Result<(), String> {
+            remove_files_with_extension!("npy");
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let fem = voxels.into_finite_elements(REMOVE, &SCALE, &TRANSLATE)?;
+            let mut count = 0;
+            bencher.iter(|| {
+                fem.write_metrics(&format!("target/block_{}_{}.npy", $nel, count))
+                    .unwrap();
+                count += 1
+            });
+            Ok(())
+        }
+        #[bench]
         fn write_npy(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("npy");
             let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
