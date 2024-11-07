@@ -293,7 +293,7 @@ enum OutputTypes {
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
     Ok(Err(format!(
         "Invalid extension .{} from output file {}",
-        extension.unwrap(),
+        extension.unwrap_or("UNDEFINED"),
         file
     ))?)
 }
@@ -404,7 +404,7 @@ fn mesh(
             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
             Err(format!(
                 "Invalid extension .{} from input file {}",
-                input_extension.unwrap(),
+                input_extension.unwrap_or("UNDEFINED"),
                 input
             ))?
         }
@@ -641,7 +641,7 @@ fn read_input(
             }
             Err(format!(
                 "Invalid extension .{} from input file {}",
-                input_extension.unwrap(),
+                input_extension.unwrap_or("UNDEFINED"),
                 input
             ))?
         }
