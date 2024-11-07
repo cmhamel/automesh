@@ -1,7 +1,7 @@
 use super::{
-    super::py::PyIntermediateError, finite_element_data_from_inp, write_finite_elements_to_abaqus,
-    write_finite_elements_to_exodus, write_finite_elements_to_mesh, write_finite_elements_to_vtk,
-    Blocks, Connectivity, Coordinates,
+    super::py::PyIntermediateError, finite_element_data_from_inp, write_finite_elements_metrics,
+    write_finite_elements_to_abaqus, write_finite_elements_to_exodus,
+    write_finite_elements_to_mesh, write_finite_elements_to_vtk, Blocks, Connectivity, Coordinates,
 };
 use pyo3::prelude::*;
 
@@ -74,6 +74,14 @@ impl FiniteElements {
         Ok(write_finite_elements_to_mesh(
             file_path,
             &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates,
+        )?)
+    }
+    /// Writes the finite elements quality metrics to a new file.
+    pub fn write_metrics(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_metrics(
+            file_path,
             &self.element_node_connectivity,
             &self.nodal_coordinates,
         )?)
