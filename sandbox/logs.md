@@ -4,21 +4,43 @@
 
 *In order of most recent to least recent.*
 
-## 2024-11-06
+## 2024-11-07
+
+### IO
+
+#### mdbook items
+
+* convert
+  * spn -> npy
+  * npy -> spn
+  * inp -> exo | vtk | mesh
+  * (todo) mesh -> inp | exo | vtk
+* mesh [optional smoothing]
+  * spn -> inp | exo | vtk | mesh
+  * npy -> inp | exo | vtk | mesh
+  * (beta development) tif -> inp | exo | vtk | mesh 
+* smooth
+  * inp -> inp | exo | vtk | mesh
 
 * Answer questions from email 2024-11-05 14:28
 * `.mesh`
   * CLI for `.mesh` output
   * Open brain model in hexalab
 * `.exo` writer comparison with HDF5 https://www.hdfgroup.org/download-hdfview/
+* binary version for exodus /netcdf/bin (ncdump)
 * brain models
   * Emma's Google Drive for brain models
   * https://drive.google.com/drive/folders/158MXz03QCuockuRoSBpY-YuO4fni3RVD?usp=sharing
 * smoothing
   * Hierarchical smoothing https://github.com/autotwin/automesh/issues/184
   * Define in words hierarchical control based on code implementation
+  * this is an open research question bc too much smoothing destroys element quality
 * Quality metrics
   * https://github.com/autotwin/automesh/issues/185
+  * automesh quality -i foo.inp -o foo.csv
+    * # element, msj, skew, aspect ratio
+    * (element 1) 0.953, etc.
+* Repo clean up, delete: __init__.py, deprecated_pyproject.toml, hello.py, test_hello.py
 
 ## 2024-11-05
 
@@ -58,7 +80,10 @@
 * VTK file type - Hexalab.net
   * VTK crate exists
 * Dualization
-  * Octree
+  * Ingredients - stepping stones
+    * Quadtree
+      * Chad to put links to existing dualization
+    * Octree
 * Projection
   * STL
   * applies to inhomogeneous hierarchical
