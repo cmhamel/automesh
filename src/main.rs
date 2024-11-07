@@ -136,6 +136,17 @@ enum Commands {
         quiet: bool,
     },
 
+    /// ???
+    Quality {
+        /// Name of the mesh input file
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the quality output file
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+    },
+
     /// Applies smoothing to an existing finite element mesh
     Smooth {
         /// Pass to enable hierarchical control
@@ -317,6 +328,7 @@ fn main() -> Result<(), ErrorWrapper> {
             meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
             ytranslate, ztranslate, quiet,
         ),
+        Some(Commands::Quality { input, output }) => quality(input, output),
         Some(Commands::Smooth {
             input,
             output,
@@ -472,6 +484,10 @@ fn mesh(
     Ok(())
 }
 
+fn quality(input: String, output: String) -> Result<(), ErrorWrapper> {
+    todo!("{}{}", input, output)
+}
+
 #[allow(clippy::too_many_arguments)]
 fn smooth(
     input: String,
@@ -483,27 +499,12 @@ fn smooth(
     scale: f64,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
-    if !quiet {
-        println!(
-            "\x1b[1m    {} {}\x1b[0m",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        );
-        println!("     \x1b[1;96mReading\x1b[0m {}", input);
-    }
-    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
-    let mut output_type = match input_extension {
-        Some("inp") => FiniteElements::from_inp(&input)?,
-        _ => Err(format!(
-            "Invalid extension .{} from input file {}",
-            input_extension.unwrap(),
-            input
-        ))?,
+    let mut output_type = match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Abaqus(finite_elements) => finite_elements,
+        InputTypes::Npy(_) | InputTypes::Spn(_) => {
+            Err(format!("Cannot smooth segmentation file {}", input))?
+        }
     };
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
     apply_smoothing_method(
         &mut output_type,
         &output,
