@@ -18,6 +18,7 @@
 - [Command Line Interface](cli/README.md)
   - [Convert](cli/convert.md)
   - [Mesh](cli/mesh.md)
+  - [Metrics](cli/metrics.md)
   - [Smooth](cli/smooth.md)
 - [Theory](theory/README.md)
   - [Smoothing](theory/smoothing.md)

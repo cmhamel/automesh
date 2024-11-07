@@ -131,6 +131,25 @@ enum Commands {
         )]
         ztranslate: f64,
 
+        /// Name of the quality metrics file
+        #[arg(long, value_name = "FILE")]
+        metrics: Option<String>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
+
+    /// Quality metrics for an existing finite element mesh
+    Metrics {
+        /// Name of the mesh input file
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the quality metrics output file
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
@@ -165,6 +184,10 @@ enum Commands {
         /// Scaling parameter for smoothing
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
+
+        /// Name of the quality metrics file
+        #[arg(long, value_name = "FILE")]
+        metrics: Option<String>,
 
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
@@ -282,7 +305,7 @@ enum OutputTypes {
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
     Ok(Err(format!(
         "Invalid extension .{} from output file {}",
-        extension.unwrap(),
+        extension.unwrap_or("UNDEFINED"),
         file
     ))?)
 }
@@ -312,11 +335,17 @@ fn main() -> Result<(), ErrorWrapper> {
             xtranslate,
             ytranslate,
             ztranslate,
+            metrics,
             quiet,
         }) => mesh(
             meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, quiet,
+            ytranslate, ztranslate, metrics, quiet,
         ),
+        Some(Commands::Metrics {
+            input,
+            output,
+            quiet,
+        }) => metrics(input, output, quiet),
         Some(Commands::Smooth {
             input,
             output,
@@ -325,6 +354,7 @@ fn main() -> Result<(), ErrorWrapper> {
             hierarchical,
             pass_band,
             scale,
+            metrics,
             quiet,
         }) => smooth(
             input,
@@ -334,6 +364,7 @@ fn main() -> Result<(), ErrorWrapper> {
             hierarchical,
             pass_band,
             scale,
+            metrics,
             quiet,
         ),
         None => Ok(()),
@@ -382,9 +413,9 @@ fn mesh(
     xtranslate: f64,
     ytranslate: f64,
     ztranslate: f64,
+    metrics: Option<String>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -392,11 +423,12 @@ fn mesh(
             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
             Err(format!(
                 "Invalid extension .{} from input file {}",
-                input_extension.unwrap(),
+                input_extension.unwrap_or("UNDEFINED"),
                 input
             ))?
         }
     };
+    let time = Instant::now();
     if !quiet {
         let entirely_default = xscale == 1.0
             && yscale == 1.0
@@ -461,6 +493,9 @@ fn mesh(
             }
         }
     }
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
@@ -468,6 +503,28 @@ fn mesh(
         Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
         _ => invalid_output(&output, output_extension)?,
+    }
+    Ok(())
+}
+
+fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+    let output_type = match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Abaqus(finite_elements) => finite_elements,
+        InputTypes::Npy(_) | InputTypes::Spn(_) => {
+            Err(format!("No metrics for segmentation file {}", input))?
+        }
+    };
+    metrics_inner(&output_type, output, quiet)
+}
+
+fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
+    }
+    fem.write_metrics(&output)?;
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
     Ok(())
 }
@@ -481,29 +538,15 @@ fn smooth(
     hierarchical: bool,
     pass_band: f64,
     scale: f64,
+    metrics: Option<String>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
-    if !quiet {
-        println!(
-            "\x1b[1m    {} {}\x1b[0m",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        );
-        println!("     \x1b[1;96mReading\x1b[0m {}", input);
-    }
-    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
-    let mut output_type = match input_extension {
-        Some("inp") => FiniteElements::from_inp(&input)?,
-        _ => Err(format!(
-            "Invalid extension .{} from input file {}",
-            input_extension.unwrap(),
-            input
-        ))?,
+    let mut output_type = match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Abaqus(finite_elements) => finite_elements,
+        InputTypes::Npy(_) | InputTypes::Spn(_) => {
+            Err(format!("No smoothing for segmentation file {}", input))?
+        }
     };
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
     apply_smoothing_method(
         &mut output_type,
         &output,
@@ -514,15 +557,17 @@ fn smooth(
         scale,
         quiet,
     )?;
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => invalid_output(&output, output_extension)?,
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet),
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet),
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet),
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet),
+        _ => invalid_output(&output, output_extension),
     }
-    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -640,7 +685,7 @@ fn read_input(
             }
             Err(format!(
                 "Invalid extension .{} from input file {}",
-                input_extension.unwrap(),
+                input_extension.unwrap_or("UNDEFINED"),
                 input
             ))?
         }
