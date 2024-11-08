@@ -1,6 +1,6 @@
-# Spheres - Continued
+# Sphere with Shells
 
-Use the fundamentals learned in the [previous example](../spheres/README.md) to create a more sophisticated example:  Concentric, high-resolution spheres consisting of three materials.
+Use the fundamentals learned in the previous example to create a more sophisticated example:  A high-resolution, three-material model consisting of a sphere with two concentric shells.
 
 ## Problem Statement
 
@@ -47,7 +47,7 @@ alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
 ```
 
 ```sh
-cd ~/autotwin/automesh/book/examples/spheres_cont/
+cd ~/autotwin/automesh/book/examples/sphere_with_shells/
 ```
 
 ```sh
@@ -134,14 +134,14 @@ Cubit is used for the visualizations with the following recipe:
 
 ```sh
 reset
-import abaqus  "/Users/chovey/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.inp"
+import abaqus  "/Users/chovey/autotwin/automesh/book/examples/sphere_with_shells/spheres_resolution_1.inp"
 
 set exodus netcdf4 off
 set large exodus file on
-export mesh "/Users/chovey/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.g"  overwrite
+export mesh "/Users/chovey/autotwin/automesh/book/examples/sphere_with_shells/spheres_resolution_1.g"  overwrite
 
 reset
-import mesh "/Users/chovey/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.g" lite
+import mesh "/Users/chovey/autotwin/automesh/book/examples/sphere_with_shells/spheres_resolution_1.g" lite
 
 graphics scale off
 graphics scale on
@@ -186,7 +186,7 @@ sculpt --num_procs 1 --input_spn "test_f.spn" \
 Elapsed Time            0.025113 sec. (0.000419 min.)
 
 ```sh
-cd ~/autotwin/automesh/book/examples/spheres_cont/
+cd ~/autotwin/automesh/book/examples/sphere_with_shells/
 ```
 
 ```sh
