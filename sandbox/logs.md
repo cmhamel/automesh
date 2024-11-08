@@ -18,7 +18,7 @@
 * mesh [optional smoothing]
   * spn -> inp | exo | vtk | mesh
   * npy -> inp | exo | vtk | mesh
-  * (beta development) tif -> inp | exo | vtk | mesh 
+  * (beta development) tif -> inp | exo | vtk | mesh
 * smooth
   * inp -> inp | exo | vtk | mesh
 

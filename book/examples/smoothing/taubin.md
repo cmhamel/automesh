@@ -20,7 +20,7 @@ Figure: Excerpt from Taubin[^Taubin_1995b], Figure 3, showing a surface mesh ori
 
 ## automesh
 
-We compare our volumetric results to the surface mesh presented by Taubin.[^Taubin_1995b]  Taubin defined a *step* as either a "shrinking step" (deflating, smoothing $\lambda$ step) or an "un-shrinking step" (reinflating $\mu$ step).  
+We compare our volumetric results to the surface mesh presented by Taubin.[^Taubin_1995b]  Taubin defined a *step* as either a "shrinking step" (deflating, smoothing $\lambda$ step) or an "un-shrinking step" (reinflating $\mu$ step).
 
 We have defined a single *iteration* as being composed of one smoothing step followed by one reinflation step.  So, for consistency with Taubin's example, which used 10, 50 and 200 steps, we examine our noised sphere after 5, 25, and 100 iterations.
 
