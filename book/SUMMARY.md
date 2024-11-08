@@ -9,9 +9,11 @@
   - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
   - [Spheres - continued](examples/spheres_cont/README.md)
-  - [Smoothing](examples/smoothing/README.md)
-    - [Python visualization](examples/smoothing/python_visualization.md)
-  - [Smoothing - continued](examples/smoothing/taubin.md)
+- [Smoothing](smoothing/README.md)
+  - [Laplace](smoothing/laplace.md)
+  - [Hierarchical Laplace](smoothing/laplace_hierarchical.md)
+  - [Taubin](smoothing/taubin.md)
+  - [Python visualization](smoothing/python_visualization.md)
 
 # Reference Guide
 
@@ -20,8 +22,6 @@
   - [Mesh](cli/mesh.md)
   - [Metrics](cli/metrics.md)
   - [Smooth](cli/smooth.md)
-- [Theory](theory/README.md)
-  - [Smoothing](theory/smoothing.md)
 
 # Appendices
 

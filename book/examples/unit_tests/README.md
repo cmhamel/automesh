@@ -1,4 +1,4 @@
-# Tests
+# Unit Tests
 
 The following illustates a subset of the unit tests used to validate
 the code implementation.
