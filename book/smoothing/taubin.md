@@ -27,7 +27,7 @@ We have defined a single *iteration* as being composed of one smoothing step fol
 The smoothing parameters used were the `autotwin` defaults,[^autotwin_defaults] the same as used in Taubin's Figure 3 example.
 
 ```sh
-alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
+alias automesh='~/autotwin/automesh/target/release/automesh'
 ```
 
 ```sh

@@ -4,7 +4,7 @@
 
 ### Cube with Inclusion
 
-![../unit_tests/cube_with_inclusion.png](../unit_tests/cube_with_inclusion.png)
+![../examples/unit_tests/cube_with_inclusion.png](../examples/unit_tests/cube_with_inclusion.png)
 
 To come.
 
@@ -14,7 +14,7 @@ To come.
 
 To begin to examine hiearchical control, we consider the [Bracket](../unit_tests/README.md#bracket) example.
 
-![../unit_tests/bracket.png](../unit_tests/bracket.png)
+![../examples/unit_tests/bracket.png](../examples/unit_tests/bracket.png)
 
 Figure: The **Bracket** example.
 
