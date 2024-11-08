@@ -1,6 +1,6 @@
-# Spheres - Continued
+# Sphere with Shells
 
-Use the fundamentals learned in the [previous example](../spheres/README.md) to create a more sophisticated example:  Concentric, high-resolution spheres consisting of three materials.
+Use the fundamentals learned in the previous example to create a more sophisticated example:  A high-resolution, three-material model consisting of a sphere with two concentric shells.
 
 ## Problem Statement
 
