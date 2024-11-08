@@ -13,14 +13,14 @@
 * convert
   * spn -> npy
   * npy -> spn
-  * inp -> exo | vtk | mesh
-  * (todo) mesh -> inp | exo | vtk
+  * inp -> exo | mesh | vtk
+  * (todo) mesh -> exo | inp | vtk
 * mesh [optional smoothing]
-  * spn -> inp | exo | vtk | mesh
-  * npy -> inp | exo | vtk | mesh
-  * (beta development) tif -> inp | exo | vtk | mesh
+  * spn -> exo | inp | mesh | vtk
+  * npy -> exo | inp | mesh | vtk
+  * (beta development) tif -> exo | inp | vtk | mesh
 * smooth
-  * inp -> inp | exo | vtk | mesh
+  * inp ->  exo | inp | mesh | vtk
 
 * Answer questions from email 2024-11-05 14:28
 * `.mesh`
