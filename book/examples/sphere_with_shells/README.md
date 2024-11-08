@@ -43,7 +43,7 @@ is slow, only the first two resolutions are shown.
 Use `automesh` to convert the segmentations into finite element meshes.
 
 ```sh
-alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
+alias automesh='~/autotwin/automesh/target/release/automesh'
 ```
 
 ```sh
