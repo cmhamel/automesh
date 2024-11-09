@@ -1607,7 +1607,7 @@ def main():
 
     # output_dir: Final[str] = "~/scratch"
     output_dir: Final[Path] = Path(__file__).parent
-    dpi: Final[int] = 300  # resolution, dots per inch
+    DPI: Final[int] = 300  # resolution, dots per inch
 
     for ex in examples:
 
@@ -1863,7 +1863,7 @@ def main():
 
         if SAVE:
             # plt.show()
-            fig.savefig(output_png, dpi=dpi)
+            fig.savefig(output_png, dpi=DPI)
             print(f"Saved: {output_png}")
 
 
