@@ -1,25 +1,18 @@
 r"""This module, figures_test.py, tests functionality of the included module.
 
-Example:
+Example
+-------
+source ~/autotwin/automesh/.venv/bin/activate
+cd ~/autotwin/automesh/book/examples/unit_tests
+python -m pytest examples_test.py -v  # -v is for verbose
 
-    cd ~/autotwin/automesh
-
-    Activate the venv with one of the following:
-    source .venv/bin/activate       # for bash shell
-    source .venv/bin/activate.csh   # for c shell
-    source .venv/bin/activate.fish  # for fish shell
-    .\.venv\Scripts\activate        # for powershell
-
-    cd book/examples/unit_tests
-    python -m pytest figures_test.py -v  # -v is for verbose
-
-    to run a single test in this module, for example `test_hello` function:
-    python -m pytest figures_test.py::test_hello -v
+to run a single test in this module, for example `test_hello` function:
+python -m pytest examples_test.py::test_foo -v
 """
 
 import pytest
 
-import figures as ff
+import examples_figures as ff
 
 
 def test_renumber():

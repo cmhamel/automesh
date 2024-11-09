@@ -21,7 +21,7 @@ for filename in filenames:
     bb = [float(x) for x in aa]
     print(f"Number of elements: {len(bb)}")
     # n_neg = [x <= 0.0 for x in bb]
-    
+
     # breakpoint()
     # Create the histogram
     plt.hist(bb, bins=20, color='blue', alpha=0.7, log=True)
