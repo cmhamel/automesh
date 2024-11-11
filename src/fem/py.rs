@@ -2,6 +2,7 @@ use super::{
     super::py::PyIntermediateError, finite_element_data_from_inp, write_finite_elements_metrics,
     write_finite_elements_to_abaqus, write_finite_elements_to_exodus,
     write_finite_elements_to_mesh, write_finite_elements_to_vtk, Blocks, Connectivity, Coordinates,
+    Smoothing,
 };
 use pyo3::prelude::*;
 
@@ -45,11 +46,40 @@ impl FiniteElements {
         ))
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    pub fn smooth(&mut self, method: String) -> Result<(), PyIntermediateError> {
-        Ok(Err(format!(
-            "Invalid smoothing method {} specified.",
-            method
-        ))?)
+    #[pyo3(signature = (method="Taubin", hierarchical=false, iterations=10, pass_band=0.1, scale=0.6307))]
+    pub fn smooth(
+        &mut self,
+        method: &str,
+        hierarchical: bool,
+        iterations: usize,
+        pass_band: f64,
+        scale: f64,
+    ) -> Result<(), PyIntermediateError> {
+        let mut finite_elements = super::FiniteElements::from_data(
+            self.element_blocks.clone(),
+            self.element_node_connectivity.clone(),
+            self.nodal_coordinates.clone(),
+        );
+        finite_elements.calculate_node_element_connectivity()?;
+        finite_elements.calculate_node_node_connectivity()?;
+        if hierarchical {
+            finite_elements.calculate_nodal_hierarchy()?;
+        }
+        finite_elements.calculate_nodal_influencers();
+        match method {
+            "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
+            | "laplace" => {
+                finite_elements.smooth(Smoothing::Laplacian(iterations, scale))?;
+            }
+            "Taubin" | "taubin" => {
+                finite_elements.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
+            }
+            _ => return Err(format!("Invalid smoothing method {} specified.", method))?,
+        }
+        self.element_blocks = finite_elements.element_blocks;
+        self.element_node_connectivity = finite_elements.element_node_connectivity;
+        self.nodal_coordinates = finite_elements.nodal_coordinates;
+        Ok(())
     }
     /// Writes the finite elements data to a new Exodus file.
     pub fn write_exo(&self, file_path: &str) -> Result<(), PyIntermediateError> {
