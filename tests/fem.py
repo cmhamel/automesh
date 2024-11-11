@@ -34,6 +34,11 @@ def test_write_inp():
             line = file.readline()
 
 
+def test_write_exo():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_exo('target/letter_f_3d.exo')
+
+
 def test_write_inp_sparse():
     voxels = Voxels.from_spn('tests/input/sparse.spn', [5, 5, 5])
     fem = voxels.as_finite_elements(remove, scale, translate)
@@ -51,3 +56,18 @@ def test_write_inp_sparse():
         while line != '':
             assert gold.readline() == line
             line = file.readline()
+
+
+def test_write_mesh():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_mesh('target/letter_f_3d.mesh')
+
+
+def test_write_metrics():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_metrics('target/letter_f_3d.csv')
+
+
+def test_write_vtk():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_vtk('target/letter_f_3d.vtk')
