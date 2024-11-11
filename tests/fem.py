@@ -3,10 +3,20 @@ from automesh import Voxels
 remove = [0]
 scale = [1, 1, 1]
 translate = [0, 0, 0]
+voxels = Voxels.from_npy('tests/input/letter_f_3d.npy')
 
 
-def test_write_inp_letter_f_3d():
-    voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', [4, 5, 3])
+def test_smooth_laplace():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.smooth(method='Laplace')
+
+
+def test_smooth_taubin():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.smooth(method='Taubin')
+
+
+def test_write_inp():
     fem = voxels.as_finite_elements(remove, scale, translate)
     inp = 'target/letter_f_3d.inp'
     fem.write_inp(inp)
@@ -22,6 +32,11 @@ def test_write_inp_letter_f_3d():
         while line != '':
             assert gold.readline() == line
             line = file.readline()
+
+
+def test_write_exo():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_exo('target/letter_f_3d.exo')
 
 
 def test_write_inp_sparse():
@@ -41,3 +56,18 @@ def test_write_inp_sparse():
         while line != '':
             assert gold.readline() == line
             line = file.readline()
+
+
+def test_write_mesh():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_mesh('target/letter_f_3d.mesh')
+
+
+def test_write_metrics():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_metrics('target/letter_f_3d.csv')
+
+
+def test_write_vtk():
+    fem = voxels.as_finite_elements(remove, scale, translate)
+    fem.write_vtk('target/letter_f_3d.vtk')
