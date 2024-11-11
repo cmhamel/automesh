@@ -4,10 +4,19 @@ remove = [0]
 scale = [1, 1, 1]
 translate = [0, 0, 0]
 
+voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', [4, 5, 3])
+fem = voxels.as_finite_elements(remove, scale, translate)
 
-def test_write_inp_letter_f_3d():
-    voxels = Voxels.from_spn('tests/input/letter_f_3d.spn', [4, 5, 3])
-    fem = voxels.as_finite_elements(remove, scale, translate)
+
+def test_smooth_laplace():
+    fem.smooth('Laplace')
+
+
+def test_smooth_taubin():
+    fem.smooth('Taubin')
+
+
+def test_write_inp():
     inp = 'target/letter_f_3d.inp'
     fem.write_inp(inp)
     with open('tests/input/letter_f_3d.inp') as gold, open(inp) as file:
