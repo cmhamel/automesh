@@ -48,7 +48,7 @@ const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
 #[test]
 fn filter() {
     let spn = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
-    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data(), None);
+    let (filtered_voxel_data, element_blocks) = filter_voxel_data(spn.get_data(), Some(vec![0]));
     assert_eq!(element_blocks.len(), NUM_ELEMENTS);
     BLOCKS_GOLD
         .iter()

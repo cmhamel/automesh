@@ -19,7 +19,7 @@ pub struct Voxels {
 #[pymethods]
 impl Voxels {
     /// Converts the voxels type into a finite elements type.
-    #[pyo3(signature = (remove=[0].to_vec(), scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
+    #[pyo3(signature = (remove=[].to_vec(), scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
     pub fn as_finite_elements(
         &self,
         remove: Option<Vec<u8>>,

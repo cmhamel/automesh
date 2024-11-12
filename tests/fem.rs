@@ -39,7 +39,7 @@ fn compare_files(
 ) {
     let voxels = Voxels::from_spn(spn_path, nel).unwrap();
     let fem = voxels
-        .into_finite_elements(None, &scale, &translate)
+        .into_finite_elements(Some(vec![0]), &scale, &translate)
         .unwrap();
     fem.write_inp(file_path).unwrap();
     let mut gold = String::new();
@@ -73,7 +73,7 @@ mod read_inp {
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
             .unwrap();
         fem.write_inp("target/letter_f_3d.inp").unwrap();
         let read = FiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
@@ -119,7 +119,7 @@ mod write_mesh {
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
             .unwrap();
         fem.write_mesh("target/letter_f_3d.mesh").unwrap();
     }
@@ -131,7 +131,7 @@ mod write_vtk {
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(None, &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
             .unwrap();
         fem.write_vtk("target/letter_f_3d.vtk").unwrap();
     }

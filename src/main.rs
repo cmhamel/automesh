@@ -88,7 +88,7 @@ enum Commands {
         #[arg(long, short = 'z', value_name = "NEL")]
         nelz: Option<usize>,
 
-        /// Voxel IDs to remove from the mesh [default: 0]
+        /// Voxel IDs to remove from the mesh
         #[arg(long, short, value_name = "ID")]
         remove: Option<Vec<u8>>,
 
