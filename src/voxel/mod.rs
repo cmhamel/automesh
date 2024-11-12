@@ -86,7 +86,7 @@ impl Voxels {
 fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<NSD>, Blocks) {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let mut removed_data = remove.unwrap_or(vec![0]);
+    let mut removed_data = remove.unwrap_or_default();
     removed_data.sort();
     removed_data.dedup();
     let filtered_voxel_data_combo: VoxelDataSized<4> = data
