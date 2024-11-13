@@ -52,6 +52,9 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: foo
+      if: matrix.os == 'macos-latest'
+      run: brew uninstall --ignore-dependencies xz
     - name: maturin
       run: pip install maturin
     - name: build
