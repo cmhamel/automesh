@@ -1,10 +1,10 @@
 r"""This module, smoothing_figures.py, illustrates test cases for
 smoothing algorithms.
 
-Example:
---------
+Example
+-------
 source ~/autotwin/automesh/.venv/bin/activate
-cd ~/autotwin/automesh/book/examples/smoothing
+cd ~/autotwin/automesh/book/smoothing
 python smoothing_figures.py
 """
 
@@ -56,8 +56,8 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 # OUTPUT_DIR: Final[Path] = Path(__file__).parent
 DPI: Final[int] = 300  # resolution, dots per inch
-SHOW: Final[bool] = True  # turn to True to show the figure on screen
-SAVE: Final[bool] = True  # turn to True to save .png and .npy files
+SHOW: Final[bool] = True  # Shows the figure on screen
+SAVE: Final[bool] = True  # Saves the .png and .npy files
 
 # output_png_short = ex.file_stem + ".png"
 # output_png: Path = (
