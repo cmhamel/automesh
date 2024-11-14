@@ -1,6 +1,7 @@
 use flavio::math::{Tensor, TensorRank1};
 
 type Point = TensorRank1<2, 1>;
+type Points = Vec<Point>;
 
 #[derive(Debug)]
 struct Cell {
@@ -12,11 +13,17 @@ struct Cell {
 }
 
 impl Cell {
-    fn contains(&self, point: &Point) -> bool {
-        &point[0] >= self.get_min_x()
-            && &point[0] <= self.get_max_x()
-            && &point[1] >= self.get_min_y()
-            && &point[1] <= self.get_max_y()
+    fn contains(&self, points: &Points) -> bool {
+        for point in points {
+            if &point[0] >= self.get_min_x()
+                && &point[0] <= self.get_max_x()
+                && &point[1] >= self.get_min_y()
+                && &point[1] <= self.get_max_y()
+            {
+                return true
+            }
+        }
+        false
     }
     fn get_level(&self) -> &usize {
         &self.level
@@ -37,8 +44,11 @@ impl Cell {
 
 #[test]
 fn foo() {
-    let m = 3;
-    let point = Point::new([6.6, 6.6]);
+    let m = 2;
+    let points = vec![
+        Point::new([1.2, 3.3]),
+        // Point::new([6.6, 6.6]),
+    ];
     let mut tree = vec![Cell {
         level: 0,
         min_x: 0.0,
@@ -46,17 +56,6 @@ fn foo() {
         max_x: 8.0,
         max_y: 8.0,
     }];
-    // let mut tree_iter = tree.iter_mut();
-    // let mut foo = tree_iter.next();
-    // let mut index = 0;
-    // while let Some(cell) = foo {
-    //     if cell.level < m && cell.contains(&point) {
-    //         tree.remove(index);
-    //     } else {
-    //         foo = tree_iter.next();
-    //         index += 1;
-    //     }
-    // }
     let mut cell;
     let mut index = 0;
     let mut level;
@@ -64,40 +63,44 @@ fn foo() {
     let mut min_y;
     let mut max_x;
     let mut max_y;
+    let mut val_x;
+    let mut val_y;
     while index < tree.len() {
         cell = &tree[index];
-        if cell.get_level() < &m && cell.contains(&point) {
+        if cell.get_level() < &m && cell.contains(&points) {
             level = cell.get_level() + 1;
             min_x = cell.get_min_x();
             min_y = cell.get_min_y();
             max_x = cell.get_max_x();
             max_y = cell.get_max_y();
+            val_x = 0.5 * (min_x + max_x);
+            val_y = 0.5 * (min_y + max_y);
             tree.extend([
                 Cell {
                     level,
                     min_x: *min_x,
                     min_y: *min_y,
-                    max_x: 0.5 * (min_x + max_x),
-                    max_y: 0.5 * (min_y + max_y),
+                    max_x: val_x,
+                    max_y: val_y,
                 },
                 Cell {
                     level,
-                    min_x: 0.5 * (min_x + max_x),
+                    min_x: val_x,
                     min_y: *min_y,
                     max_x: *max_x,
-                    max_y: 0.5 * (min_y + max_y),
+                    max_y: val_y,
                 },
                 Cell {
                     level,
                     min_x: *min_x,
-                    min_y: 0.5 * (min_y + max_y),
-                    max_x: 0.5 * (min_x + max_x),
+                    min_y: val_y,
+                    max_x: val_x,
                     max_y: *max_y,
                 },
                 Cell {
                     level,
-                    min_x: 0.5 * (min_x + max_x),
-                    min_y: 0.5 * (min_y + max_y),
+                    min_x: val_x,
+                    min_y: val_y,
                     max_x: *max_x,
                     max_y: *max_y,
                 },
@@ -106,6 +109,8 @@ fn foo() {
         } else {
             index += 1;
         }
-        println!("{:?}", tree);
     }
+    tree.iter().for_each(|cell|
+        println!("ax.add_patch(patches.Rectangle(({},{}),{},{}, edgecolor='red'))", cell.min_x, cell.min_y, cell.max_x, cell.max_y)
+    )
 }
