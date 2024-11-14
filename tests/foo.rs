@@ -82,7 +82,7 @@ fn foo() {
                 },
                 Cell {
                     level,
-                    min_x: 1.5 * min_x + 0.5 * max_x,
+                    min_x: 0.5 * (min_x + max_x),
                     min_y: *min_y,
                     max_x: *max_x,
                     max_y: 0.5 * (min_y + max_y),
@@ -90,14 +90,14 @@ fn foo() {
                 Cell {
                     level,
                     min_x: *min_x,
-                    min_y: 1.5 * min_y + 0.5 * max_y,
+                    min_y: 0.5 * (min_y + max_y),
                     max_x: 0.5 * (min_x + max_x),
                     max_y: *max_y,
                 },
                 Cell {
                     level,
-                    min_x: 1.5 * min_x + 0.5 * max_x,
-                    min_y: 1.5 * min_y + 0.5 * max_y,
+                    min_x: 0.5 * (min_x + max_x),
+                    min_y: 0.5 * (min_y + max_y),
                     max_x: *max_x,
                     max_y: *max_y,
                 },
@@ -106,6 +106,6 @@ fn foo() {
         } else {
             index += 1;
         }
+        println!("{:?}", tree);
     }
-    println!("{:?}", tree)
 }
