@@ -20,7 +20,7 @@ impl Cell {
                 && &point[1] >= self.get_min_y()
                 && &point[1] <= self.get_max_y()
             {
-                return true
+                return true;
             }
         }
         false
@@ -44,10 +44,11 @@ impl Cell {
 
 #[test]
 fn foo() {
-    let m = 2;
+    let m = 6;
     let points = vec![
         Point::new([1.2, 3.3]),
-        // Point::new([6.6, 6.6]),
+        Point::new([5.2, 2.3]),
+        Point::new([6.6, 6.6]),
     ];
     let mut tree = vec![Cell {
         level: 0,
@@ -110,7 +111,14 @@ fn foo() {
             index += 1;
         }
     }
-    tree.iter().for_each(|cell|
-        println!("ax.add_patch(patches.Rectangle(({},{}),{},{}, edgecolor='red'))", cell.min_x, cell.min_y, cell.max_x, cell.max_y)
-    )
+    tree.iter().for_each(|cell| println!("{:?}", cell));
+    tree.iter().for_each(|cell| {
+        println!(
+            "ax.add_patch(patches.Rectangle(({},{}),{},{}, edgecolor='red'))",
+            cell.min_x,
+            cell.min_y,
+            cell.max_x - cell.min_x,
+            cell.max_y - cell.min_y
+        )
+    })
 }
