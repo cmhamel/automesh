@@ -106,7 +106,7 @@ fn foo() {
                     max_y: *max_y,
                 },
             ]);
-            tree.remove(index);
+            tree.remove(index); // would keeping the "parent" cells help with balancing somehow? you could store "garbage" indices and remove them from the tree later (take out the garbage)
         } else {
             index += 1;
         }
