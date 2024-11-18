@@ -1243,12 +1243,14 @@ fn foo() {
     let mut tree = QuadTree::from_bounds(-8.0, 8.0, -8.0, 8.0);
     tree.from_points(&levels, points);
     tree.balance(&levels);
-    //
+
     // is there a case where you can't balance completely on the first go?
-    //
-    tree.iter()
-        .enumerate()
-        .for_each(|(index, cell)| println!("{:?}", (index, cell)));
+
+    // can you make something for hexalab?
+
+    // tree.iter()
+    //     .enumerate()
+    //     .for_each(|(index, cell)| println!("{:?}", (index, cell)));
     tree.iter().for_each(|cell| {
         println!(
             "ax.add_patch(patches.Rectangle(({},{}),{},{}, edgecolor='red'))",
