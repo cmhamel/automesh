@@ -274,7 +274,7 @@ fn renumber_nodes(
     nodal_coordinates
         .iter()
         .enumerate()
-        .filter(|&(_, coordinate)| coordinate != &vec![])
+        .filter(|&(_, coordinate)| !coordinate.is_empty())
         .for_each(|(index, _)| {
             if let Some(node) = nodes.next() {
                 mapping[index] = node;
@@ -287,7 +287,7 @@ fn renumber_nodes(
                 .iter_mut()
                 .for_each(|node| *node = mapping[*node - NODE_NUMBERING_OFFSET])
         });
-    nodal_coordinates.retain(|coordinate| coordinate != &vec![]);
+    nodal_coordinates.retain(|coordinate| !coordinate.is_empty());
     #[cfg(feature = "profile")]
     println!(
         "             \x1b[1;93mRenumbered nodes\x1b[0m {:?}",
