@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod test;
 
+use core::f64;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
@@ -322,11 +323,11 @@ impl Tree for OcTree {
         let y_vals: Vec<f64> = points.iter().map(|point| point[1]).collect();
         let z_vals: Vec<f64> = points.iter().map(|point| point[2]).collect();
         let min_x = x_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_x = x_vals.iter().cloned().fold(0.0/0.0, f64::max);
+        let max_x = x_vals.iter().cloned().fold(f64::NAN, f64::max);
         let min_y = y_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_y = y_vals.iter().cloned().fold(0.0/0.0, f64::max);
+        let max_y = y_vals.iter().cloned().fold(f64::NAN, f64::max);
         let min_z = z_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_z = z_vals.iter().cloned().fold(0.0/0.0, f64::max);
+        let max_z = z_vals.iter().cloned().fold(f64::NAN, f64::max);
         let mut tree = vec![Cell {
             cells: None,
             faces: [None; 6],
