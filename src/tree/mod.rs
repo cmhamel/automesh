@@ -1,6 +1,9 @@
 #[cfg(test)]
 pub mod test;
 
+#[cfg(feature = "profile")]
+use std::time::Instant;
+
 use flavio::math::{Tensor, TensorRank1};
 use std::{
     array::from_fn,
@@ -17,7 +20,7 @@ type Points = Vec<Point>;
 
 trait Tree {
     fn balance(&mut self, levels: &usize);
-    fn from_points(levels: &usize, points: &Points, foo: [f64; 6]) -> Self;
+    fn from_points(levels: &usize, points: &Points) -> Self;
     fn subdivide(&mut self, index: usize);
     fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
 }
@@ -240,10 +243,12 @@ impl Tree for OcTree {
         let mut balanced;
         let mut index;
         let mut subdivide;
-        loop {
+        for _iteration in 1.. {
             balanced = true;
             index = 0;
             subdivide = false;
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
             while index < self.len() {
                 if self[index].get_level() < &(levels - 1) && self[index].cells.is_none() {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
@@ -302,26 +307,37 @@ impl Tree for OcTree {
                 }
                 index += 1;
             }
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
+                _iteration, time.elapsed()
+            );
             if balanced {
                 break;
             }
         }
     }
-    fn from_points(levels: &usize, points: &Points, foo: [f64; 6]) -> Self {
+    fn from_points(levels: &usize, points: &Points) -> Self {
+        let x_vals: Vec<f64> = points.iter().map(|point| point[0]).collect();
+        let y_vals: Vec<f64> = points.iter().map(|point| point[1]).collect();
+        let z_vals: Vec<f64> = points.iter().map(|point| point[2]).collect();
+        let min_x = x_vals.iter().cloned().reduce(f64::min).unwrap();
+        let max_x = x_vals.iter().cloned().fold(0.0/0.0, f64::max);
+        let min_y = y_vals.iter().cloned().reduce(f64::min).unwrap();
+        let max_y = y_vals.iter().cloned().fold(0.0/0.0, f64::max);
+        let min_z = z_vals.iter().cloned().reduce(f64::min).unwrap();
+        let max_z = z_vals.iter().cloned().fold(0.0/0.0, f64::max);
         let mut tree = vec![Cell {
             cells: None,
             faces: [None; 6],
             level: 0,
-            min_x: foo[0],
-            max_x: foo[1],
-            min_y: foo[2],
-            max_y: foo[3],
-            min_z: foo[4],
-            max_z: foo[5],
+            min_x,
+            max_x,
+            min_y,
+            max_y,
+            min_z,
+            max_z,
         }];
-        //
-        // find bounds yourself instead of using foo
-        //
         let mut index = 0;
         while index < tree.len() {
             if tree[index].get_level() < levels && tree[index].contains(points) {
