@@ -455,68 +455,66 @@ impl Tree for OcTree {
             Point::zero(),
             Point::zero(),
         ];
-        self.iter()
-            .try_for_each(|cell| {
-                nodal_coordinates[0] = Point::new([
-                    cell.get_min_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_min_z().copy(),
-                ]);
-                nodal_coordinates[1] = Point::new([
-                    cell.get_max_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_min_z().copy(),
-                ]);
-                nodal_coordinates[2] = Point::new([
-                    cell.get_max_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_min_z().copy(),
-                ]);
-                nodal_coordinates[3] = Point::new([
-                    cell.get_min_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_min_z().copy(),
-                ]);
-                nodal_coordinates[4] = Point::new([
-                    cell.get_min_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_max_z().copy(),
-                ]);
-                nodal_coordinates[5] = Point::new([
-                    cell.get_max_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_max_z().copy(),
-                ]);
-                nodal_coordinates[6] = Point::new([
-                    cell.get_max_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_max_z().copy(),
-                ]);
-                nodal_coordinates[7] = Point::new([
-                    cell.get_min_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_max_z().copy(),
-                ]);
-                nodal_coordinates.iter().try_for_each(|coordinates| {
-                    coordinates.iter().try_for_each(|coordinate| {
-                        file.write_all(format!("{} ", coordinate).as_bytes())
-                    })?;
-                    file.write_all(b"0\n")
-                })
-            })?;
+        self.iter().try_for_each(|cell| {
+            nodal_coordinates[0] = Point::new([
+                cell.get_min_x().copy(),
+                cell.get_min_y().copy(),
+                cell.get_min_z().copy(),
+            ]);
+            nodal_coordinates[1] = Point::new([
+                cell.get_max_x().copy(),
+                cell.get_min_y().copy(),
+                cell.get_min_z().copy(),
+            ]);
+            nodal_coordinates[2] = Point::new([
+                cell.get_max_x().copy(),
+                cell.get_max_y().copy(),
+                cell.get_min_z().copy(),
+            ]);
+            nodal_coordinates[3] = Point::new([
+                cell.get_min_x().copy(),
+                cell.get_max_y().copy(),
+                cell.get_min_z().copy(),
+            ]);
+            nodal_coordinates[4] = Point::new([
+                cell.get_min_x().copy(),
+                cell.get_min_y().copy(),
+                cell.get_max_z().copy(),
+            ]);
+            nodal_coordinates[5] = Point::new([
+                cell.get_max_x().copy(),
+                cell.get_min_y().copy(),
+                cell.get_max_z().copy(),
+            ]);
+            nodal_coordinates[6] = Point::new([
+                cell.get_max_x().copy(),
+                cell.get_max_y().copy(),
+                cell.get_max_z().copy(),
+            ]);
+            nodal_coordinates[7] = Point::new([
+                cell.get_min_x().copy(),
+                cell.get_max_y().copy(),
+                cell.get_max_z().copy(),
+            ]);
+            nodal_coordinates.iter().try_for_each(|coordinates| {
+                coordinates.iter().try_for_each(|coordinate| {
+                    file.write_all(format!("{} ", coordinate).as_bytes())
+                })?;
+                file.write_all(b"0\n")
+            })
+        })?;
         file.write_all(b"Hexahedra\n")?;
         file.write_all(format!("{}\n", num_cells).as_bytes())?;
         let mut index = 0;
         let mut connectivity = [0; 8];
-        self.iter()
-            .try_for_each(|_| {
-                connectivity = from_fn(|n| index + n);
-                index += 8;
-                connectivity
-                    .iter()
-                    .try_for_each(|node| file.write_all(format!("{} ", node + 1).as_bytes()))?;
-                file.write_all(b"0\n")
-            })?;
+        self.iter().try_for_each(|_| {
+            connectivity = from_fn(|n| index + n);
+            index += 8;
+            connectivity
+                .iter()
+                .try_for_each(|node| file.write_all(format!("{} ", node + 1).as_bytes()))?;
+            file.write_all(b"0\n")
+        })?;
 
         file.write_all(b"End")?;
         file.flush()
