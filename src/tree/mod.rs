@@ -20,6 +20,8 @@ type Points = Vec<Point>;
 pub trait Tree {
     fn balance(&mut self, levels: &usize);
     fn from_points(levels: &usize, points: &Points) -> Self;
+    fn prune(&mut self);
+    fn sandbox(&self, levels: &usize);
     fn subdivide(&mut self, index: usize);
     fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
     fn from_npy(file_path: &str, levels: &usize) -> Result<Self, ReadNpyError>
@@ -58,7 +60,7 @@ impl Cell {
     fn get_faces(&self) -> &Faces {
         &self.faces
     }
-    fn get_level(&self) -> &usize {
+    pub fn get_level(&self) -> &usize {
         &self.level
     }
     fn get_min_x(&self) -> &f64 {
@@ -350,6 +352,14 @@ impl Tree for OcTree {
         }
         tree
     }
+    fn prune(&mut self) {
+        self.retain(|cell| cell.cells.is_none())
+    }
+    fn sandbox(&self, levels: &usize) {
+        let mut iter = self.iter();
+        let first_instance = iter.find(|&cell| cell.get_level() == &(levels - 1));
+        let next_instance = iter.next();
+    }
     fn subdivide(&mut self, index: usize) {
         let new_indices = from_fn(|n| self.len() + n);
         let mut new_cells = self[index].subdivide(new_indices);
@@ -433,7 +443,7 @@ impl Tree for OcTree {
         let mesh_file = File::create(file_path)?;
         let mut file = BufWriter::new(mesh_file);
         file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
-        let num_cells = self.iter().filter(|cell| cell.cells.is_none()).count();
+        let num_cells = self.len();
         file.write_all(format!("{}\n", num_cells * 8).as_bytes())?;
         let mut nodal_coordinates = [
             Point::zero(),
@@ -446,7 +456,6 @@ impl Tree for OcTree {
             Point::zero(),
         ];
         self.iter()
-            .filter(|cell| cell.cells.is_none())
             .try_for_each(|cell| {
                 nodal_coordinates[0] = Point::new([
                     cell.get_min_x().copy(),
@@ -500,7 +509,6 @@ impl Tree for OcTree {
         let mut index = 0;
         let mut connectivity = [0; 8];
         self.iter()
-            .filter(|cell| cell.cells.is_none())
             .try_for_each(|_| {
                 connectivity = from_fn(|n| index + n);
                 index += 8;

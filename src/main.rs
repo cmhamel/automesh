@@ -571,6 +571,19 @@ fn primal(levels: usize, input: String, output: String, quiet: bool) -> Result<(
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
+    //
+    //
+    tree.sandbox(&levels);
+    //
+    //
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mPruning\x1b[0m {}", input);
+    }
+    tree.prune();
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mWriting\x1b[0m {}", output);
