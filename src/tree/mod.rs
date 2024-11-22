@@ -1,11 +1,9 @@
-#[cfg(test)]
-pub mod test;
-
-use core::f64;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
 use flavio::math::{Tensor, TensorRank1};
+use ndarray::Array2;
+use ndarray_npy::{ReadNpyError, ReadNpyExt};
 use std::{
     array::from_fn,
     fs::File,
@@ -15,19 +13,22 @@ use std::{
 type Cells = [Cell; 8];
 type Faces = [Option<usize>; 6];
 type Indices = [usize; 8];
-type OcTree = Vec<Cell>;
+pub type OcTree = Vec<Cell>;
 type Point = TensorRank1<3, 1>;
 type Points = Vec<Point>;
 
-trait Tree {
+pub trait Tree {
     fn balance(&mut self, levels: &usize);
     fn from_points(levels: &usize, points: &Points) -> Self;
     fn subdivide(&mut self, index: usize);
     fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
+    fn from_npy(file_path: &str, levels: &usize) -> Result<Self, ReadNpyError>
+    where
+        Self: Sized;
 }
 
 #[derive(Debug)]
-struct Cell {
+pub struct Cell {
     cells: Option<Indices>,
     level: usize,
     faces: Faces,
@@ -311,7 +312,8 @@ impl Tree for OcTree {
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
-                _iteration, time.elapsed()
+                _iteration,
+                time.elapsed()
             );
             if balanced {
                 break;
@@ -431,11 +433,8 @@ impl Tree for OcTree {
         let mesh_file = File::create(file_path)?;
         let mut file = BufWriter::new(mesh_file);
         file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
-
         let num_cells = self.iter().filter(|cell| cell.cells.is_none()).count();
-
         file.write_all(format!("{}\n", num_cells * 8).as_bytes())?;
-
         let mut nodal_coordinates = [
             Point::zero(),
             Point::zero(),
@@ -496,11 +495,8 @@ impl Tree for OcTree {
                     file.write_all(b"0\n")
                 })
             })?;
-
         file.write_all(b"Hexahedra\n")?;
-
         file.write_all(format!("{}\n", num_cells).as_bytes())?;
-
         let mut index = 0;
         let mut connectivity = [0; 8];
         self.iter()
@@ -516,5 +512,15 @@ impl Tree for OcTree {
 
         file.write_all(b"End")?;
         file.flush()
+    }
+    fn from_npy(file_path: &str, levels: &usize) -> Result<Self, ReadNpyError>
+    where
+        Self: Sized,
+    {
+        let points = Array2::read_npy(File::open(file_path)?)?
+            .outer_iter()
+            .map(|row| row.iter().copied().collect())
+            .collect();
+        Ok(Self::from_points(levels, &points))
     }
 }

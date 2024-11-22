@@ -17,6 +17,7 @@ mod tree;
 mod voxel;
 
 pub use fem::{FiniteElements, Smoothing};
+pub use tree::{OcTree, Tree};
 pub use voxel::Voxels;
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
