@@ -20,9 +20,7 @@ Figure: Excerpt from Taubin[^Taubin_1995b], Figure 3, showing a surface mesh ori
 
 ## automesh
 
-We compare our volumetric results to the surface mesh presented by Taubin.[^Taubin_1995b]  Taubin defined a *step* as either a "shrinking step" (deflating, smoothing $\lambda$ step) or an "un-shrinking step" (reinflating $\mu$ step).
-
-We have defined a single *iteration* as being composed of one smoothing step followed by one reinflation step.  So, for consistency with Taubin's example, which used 10, 50 and 200 steps, we examine our noised sphere after 5, 25, and 100 iterations.
+We compare our volumetric results to the surface mesh presented by Taubin.[^Taubin_1995b] A *step* is either a "shrinking step" (deflating, smoothing $\lambda$ step) or an "un-shrinking step" (reinflating $\mu$ step).
 
 The smoothing parameters used were the `autotwin` defaults,[^autotwin_defaults] the same as used in Taubin's Figure 3 example.
 
@@ -35,26 +33,26 @@ cd ~/autotwin/automesh/book/examples/smoothing/
 ```
 
 ```sh
-automesh smooth -i sphere_res_1cm_noised.inp -o s5.exo -n 5
+automesh smooth -i sphere_res_1cm_noised.inp -o s10.exo -n 10
 ```
 
 ```sh
-automesh smooth -i sphere_res_1cm_noised.inp -o s25.exo -n 25
+automesh smooth -i sphere_res_1cm_noised.inp -o s50.exo -n 50
 ```
 
 ```sh
-automesh smooth -i sphere_res_1cm_noised.inp -o s100.exo -n 100
+automesh smooth -i sphere_res_1cm_noised.inp -o s200.exo -n 200
 ```
 
 front | iso | `xz` midplane
 :---: | :---: | :---:
-![s5.png](s5.png) | ![s5_iso.png](s5_iso.png) | ![s5_iso_half.png](s5_iso_half.png)
-![s25.png](s25.png) | ![s25_iso.png](s25_iso.png) | ![s25_iso_half.png](s25_iso_half.png)
-![s100.png](s100.png) | ![s100_iso.png](s100_iso.png) | ![s100_iso_half.png](s100_iso_half.png)
+![s10.png](s10.png) | ![s10_iso.png](s10_iso.png) | ![s10_iso_half.png](s10_iso_half.png)
+![s50.png](s50.png) | ![s50_iso.png](s50_iso.png) | ![s50_iso_half.png](s50_iso_half.png)
+![s200.png](s200.png) | ![s200_iso.png](s200_iso.png) | ![s200_iso_half.png](s200_iso_half.png)
 
-Figure.  Smoothing results after 5 (top row), 25 (middle row), and 100 (bottom row) iterations.
+Figure. Smoothing results after 10 (top row), 50 (middle row), and 200 (bottom row) iterations.
 
-The results demonstrate that our implementation of Taubin smoothing on volumetric meshes composed of hexahedral elements performs well.  All smoothing operations completed within 7.5 ms.  The noise in the $x > 0$ hemisphere was effectively removed, without volumetric shrinkage.  The $x < 0$ hemisphere did degradate from its original configuration.
+The results demonstrate that our implementation of Taubin smoothing on volumetric meshes composed of hexahedral elements performs well. All smoothing operations completed within 7.5 ms. The noise in the $x > 0$ hemisphere was effectively removed, without volumetric shrinkage. The $x < 0$ hemisphere did not degrade from its original configuration.
 
 ## Source
 
