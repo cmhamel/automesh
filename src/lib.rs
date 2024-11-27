@@ -18,7 +18,9 @@ mod voxel;
 
 pub use fem::{FiniteElements, Smoothing};
 pub use tree::{OcTree, Tree};
-pub use voxel::Voxels;
+pub use voxel::{Voxels, VoxelData};
+
+pub type Vector = flavio::mechanics::Vector<1>;
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
 const NODE_NUMBERING_OFFSET: usize = 1;

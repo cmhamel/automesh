@@ -2,13 +2,14 @@
 use std::time::Instant;
 
 use flavio::math::{Tensor, TensorRank1Vec};
-use ndarray::Array2;
+use ndarray::{Array2, s};
 use ndarray_npy::{ReadNpyError, ReadNpyExt};
 use std::{
     array::from_fn,
     fs::File,
     io::{BufWriter, Error as ErrorIO, Write},
 };
+use super::{Vector, Voxels, VoxelData};
 
 type Cells = [Cell; 8];
 type Faces = [Option<usize>; 6];
@@ -19,6 +20,7 @@ type Points = TensorRank1Vec<3, 1>;
 pub trait Tree {
     fn balance(&mut self, levels: &usize);
     fn from_points(levels: &usize, points: &Points) -> Self;
+    fn from_voxels(scale: Vector, translate: Vector, voxels: Voxels) -> Self;
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
     fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
@@ -78,6 +80,28 @@ impl Cell {
     }
     fn get_max_z(&self) -> &f64 {
         &self.max_z
+    }
+    fn inhomogeneous(&self, data: &VoxelData) -> bool {
+        let x_min = self.get_min_x().round() as u8 as usize;
+        let x_max = self.get_max_x().round() as u8 as u8 as usize;
+        let y_min = self.get_min_y().round() as u8 as u8 as usize;
+        let y_max = self.get_max_y().round() as u8 as u8 as usize;
+        let z_min = self.get_min_z().round() as u8 as u8 as usize;
+        let z_max = self.get_max_z().round() as u8 as u8 as usize;
+        let foo = data.slice(
+            s![
+                x_min..x_max,
+                y_min..y_max,
+                z_min..z_max
+            ]
+        );
+        let mut bar: Vec<u8> = foo.iter().cloned().collect();
+        bar.dedup();
+        if bar.len() > 1 {
+            true
+        } else {
+            false
+        }
     }
     fn subdivide(&mut self, indices: Indices) -> Cells {
         self.cells = Some(indices);
@@ -348,6 +372,35 @@ impl Tree for OcTree {
             }
             index += 1;
         }
+        tree
+    }
+    fn from_voxels(scale: Vector, translate: Vector, voxels: Voxels) -> Self {
+        let data = voxels.get_data();
+        let shape = data.shape();
+        let mut tree = vec![
+            Cell {
+                cells: None,
+                faces: [None; 6],
+                level: 0,
+                min_x: 0.0,
+                max_x: (shape[0] + 1) as f64,
+                min_y: 0.0,
+                max_y: (shape[1] + 1) as f64,
+                min_z: 0.0,
+                max_z: (shape[2] + 1) as f64,
+            }
+        ];
+        let mut index = 0;
+        panic!("Do the nels have to be even?");
+        while index < tree.len() {
+            if tree[index].inhomogeneous(data) {
+                tree.subdivide(index);
+            }
+            index += 1;
+        }
+        //
+        // apply scaling & translation at the end
+        //
         tree
     }
     fn prune(&mut self) {

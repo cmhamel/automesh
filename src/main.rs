@@ -1,5 +1,6 @@
-use automesh::{FiniteElements, OcTree, Smoothing, Tree, Voxels};
+use automesh::{FiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
+use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use std::{io::Error as ErrorIO, path::Path, time::Instant};
@@ -162,11 +163,11 @@ enum Commands {
         #[arg(long, short = 'l', value_name = "NUM")]
         levels: usize,
 
-        /// Name of the original mesh file
+        /// Name of the segmentation input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the smoothed mesh file
+        /// Name of the octree output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -491,8 +492,8 @@ fn mesh(
     }
     let mut output_type = input_type.into_finite_elements(
         remove,
-        &[xscale, yscale, zscale],
-        &[xtranslate, ytranslate, ztranslate],
+        &Vector::new([xscale, yscale, zscale]),
+        &Vector::new([xtranslate, ytranslate, ztranslate]),
     )?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
@@ -556,38 +557,51 @@ fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<()
 }
 
 fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
-    if !quiet {
-        println!("      \x1b[1;96mOctree\x1b[0m {}", input);
-    }
-    let mut tree = OcTree::from_npy(&input, &levels)?;
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    let time = Instant::now();
-    if !quiet {
-        println!("   \x1b[1;96mBalancing\x1b[0m {}", input);
-    }
-    tree.balance(&levels);
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    let time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mPruning\x1b[0m {}", input);
-    }
-    tree.prune();
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    let time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mWriting\x1b[0m {}", output);
-    }
+    // let time = Instant::now();
+    // if !quiet {
+    //     println!("      \x1b[1;96mOctree\x1b[0m {}", input);
+    // }
+    let input_type = match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Npy(voxels) => voxels,
+        _ => {
+            let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap_or("UNDEFINED"),
+                input
+            ))?
+        }
+    };
+    let tree = OcTree::from_voxels(Vector::new([0.0, 0.0, 0.0]), Vector::new([0.0, 0.0, 0.0]), input_type);
     tree.write_mesh(&output)?;
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
+    // let mut tree = OcTree::from_npy(&input, &levels)?;
+    // if !quiet {
+    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    // }
+    // let time = Instant::now();
+    // if !quiet {
+    //     println!("   \x1b[1;96mBalancing\x1b[0m {}", input);
+    // }
+    // tree.balance(&levels);
+    // if !quiet {
+    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    // }
+    // let time = Instant::now();
+    // if !quiet {
+    //     println!("     \x1b[1;96mPruning\x1b[0m {}", input);
+    // }
+    // tree.prune();
+    // if !quiet {
+    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    // }
+    // let time = Instant::now();
+    // if !quiet {
+    //     println!("     \x1b[1;96mWriting\x1b[0m {}", output);
+    // }
+    // tree.write_mesh(&output)?;
+    // if !quiet {
+    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    // }
     Ok(())
 }
 
