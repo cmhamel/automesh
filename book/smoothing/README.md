@@ -92,7 +92,7 @@ $$ \mu \in \mathbb{R}^- \subset (-1, 0) \hspace{0.75cm} \lambda \in \mathbb{R}^+
 
 The first parameter, $\lambda$, tends to smooth (and shrink) the domain.  The second parameter, $\mu$, tends to expand the domain.
 
-Taubin smoothing is written as, for $k = 0$, $k < k_{\rm{max}}$, $k = k+1$, with $k_{\rm{max}}$ an even number,
+Taubin smoothing is written, for $k = 0$, $k < k_{\rm{max}}$, $k = k+1$, with $k_{\rm{max}}$ typically being even, as
 
 * **First pass** (if $k$ is even):
 
@@ -103,16 +103,6 @@ $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \lambda \left( \frac{1}{n} 
 $$ {\boldsymbol{p}^{(k+1)} := \boldsymbol{p}^{(k)} + \mu \left( \frac{1}{n} \sum_{i=1}^n \boldsymbol{q}_i^{(k)} - \boldsymbol{p}^{(k)} \right),} $$
 
 > In any second pass (any pass with $k$ odd), the algorithm uses the updated positions from the previous (even) iteration to compute the new positions.  So, the average is taken from the updated neighbor positions rather than the original neighbor positions.  Some presentation of Taubin smoothing do not carefully state the second pass update, and so we emphasize it here.
-
-To enforce an even number of iterations in our implementation, we take a single iteration to mean a single application of the above-stated two-pass scheme.
-
-For example, in the `automesh` command line interface,
-
-```sh
-automesh smooth -n 50
-```
-
-the `-n 50` would be the equivalent of specifying $k_{\rm{max}} = 100$ in the formulation above.
 
 ### Taubin Parameters
 
