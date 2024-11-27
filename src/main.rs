@@ -156,7 +156,8 @@ enum Commands {
     },
 
     /// Creates a balanced octree from a set of points
-    Primal {
+    #[command(hide = true)]
+    Octree {
         /// Number of subdivision levels
         #[arg(long, short = 'l', value_name = "NUM")]
         levels: usize,
@@ -365,12 +366,12 @@ fn main() -> Result<(), ErrorWrapper> {
             output,
             quiet,
         }) => metrics(input, output, quiet),
-        Some(Commands::Primal {
+        Some(Commands::Octree {
             levels,
             input,
             output,
             quiet,
-        }) => primal(levels, input, output, quiet),
+        }) => octree(levels, input, output, quiet),
         Some(Commands::Smooth {
             input,
             output,
@@ -554,7 +555,7 @@ fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<()
     Ok(())
 }
 
-fn primal(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
     if !quiet {
         println!("      \x1b[1;96mOctree\x1b[0m {}", input);
@@ -571,11 +572,6 @@ fn primal(levels: usize, input: String, output: String, quiet: bool) -> Result<(
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
-    //
-    //
-    tree.sandbox(&levels);
-    //
-    //
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mPruning\x1b[0m {}", input);
