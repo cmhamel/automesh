@@ -535,35 +535,33 @@ fn smooth_finite_elements(
             .for_each(|(node, coordinates)| {
                 nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] = coordinates.clone()
             });
-        #[allow(unused_variables)]
-        (0..smoothing_iterations).for_each(|iteration| {
+        let mut iteration = 0;
+        let mut laplacian;
+        let mut scale;
+        while iteration < smoothing_iterations {
+            scale = if smoothing_scale_inflate < 0.0 && iteration % 2 == 1 {
+                smoothing_scale_inflate
+            } else {
+                smoothing_scale_deflate
+            };
             #[cfg(feature = "profile")]
             let time = Instant::now();
-            let laplacian =
+            laplacian =
                 finite_elements.calculate_laplacian(finite_elements.get_nodal_influencers());
             finite_elements
                 .get_nodal_coordinates_mut()
                 .iter_mut()
                 .flatten()
                 .zip(laplacian.iter().flatten())
-                .for_each(|(coordinate, entry)| *coordinate += entry * smoothing_scale_deflate);
-            if smoothing_scale_inflate < 0.0 {
-                let laplacian =
-                    finite_elements.calculate_laplacian(finite_elements.get_nodal_influencers());
-                finite_elements
-                    .get_nodal_coordinates_mut()
-                    .iter_mut()
-                    .flatten()
-                    .zip(laplacian.iter().flatten())
-                    .for_each(|(coordinate, entry)| *coordinate += entry * smoothing_scale_inflate);
-            }
+                .for_each(|(coordinate, entry)| *coordinate += entry * scale);
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
                 iteration + 1,
                 time.elapsed()
             );
-        });
+            iteration += 1;
+        }
         Ok(())
     } else {
         Err("Need to calculate the node-to-node connectivity first")
