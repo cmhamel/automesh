@@ -129,46 +129,56 @@ trait Tree {
 
 impl Tree for QuadTree {
     fn balance(&mut self, levels: &usize) {
-        let mut index = 0;
-        let mut subdivide = false;
-        while index < self.len() {
-            if self[index].get_level() < &(levels - 1) {
-                if self[index].cells.is_none() {
-                    'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
-                        if let Some(neighbor) = face_cell {
-                            if let Some(kids) = self[*neighbor].cells {
-                                if match face {
-                                    0 => {
-                                        self[kids[2]].cells.is_some()
-                                            || self[kids[3]].cells.is_some()
+        let mut balanced;
+        let mut index;
+        let mut subdivide;
+        for _iteration in 1.. {
+            balanced = true;
+            index = 0;
+            subdivide = false;
+            while index < self.len() {
+                if self[index].get_level() < &(levels - 1) {
+                    if self[index].cells.is_none() {
+                        'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
+                            if let Some(neighbor) = face_cell {
+                                if let Some(kids) = self[*neighbor].cells {
+                                    if match face {
+                                        0 => {
+                                            self[kids[2]].cells.is_some()
+                                                || self[kids[3]].cells.is_some()
+                                        }
+                                        1 => {
+                                            self[kids[0]].cells.is_some()
+                                                || self[kids[2]].cells.is_some()
+                                        }
+                                        2 => {
+                                            self[kids[0]].cells.is_some()
+                                                || self[kids[1]].cells.is_some()
+                                        }
+                                        3 => {
+                                            self[kids[1]].cells.is_some()
+                                                || self[kids[3]].cells.is_some()
+                                        }
+                                        _ => panic!(),
+                                    } {
+                                        subdivide = true;
+                                        break 'faces;
                                     }
-                                    1 => {
-                                        self[kids[0]].cells.is_some()
-                                            || self[kids[2]].cells.is_some()
-                                    }
-                                    2 => {
-                                        self[kids[0]].cells.is_some()
-                                            || self[kids[1]].cells.is_some()
-                                    }
-                                    3 => {
-                                        self[kids[1]].cells.is_some()
-                                            || self[kids[3]].cells.is_some()
-                                    }
-                                    _ => panic!(),
-                                } {
-                                    subdivide = true;
-                                    break 'faces;
                                 }
                             }
                         }
-                    }
-                    if subdivide {
-                        self.subdivide(index);
-                        subdivide = false;
+                        if subdivide {
+                            balanced = false;
+                            self.subdivide(index);
+                            subdivide = false;
+                        }
                     }
                 }
+                index += 1;
             }
-            index += 1;
+            if balanced {
+                break;
+            }
         }
     }
     fn from_bounds(min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> Self {
