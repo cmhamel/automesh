@@ -1,4 +1,4 @@
-use automesh::{FiniteElements, Smoothing, Voxels};
+use automesh::{FiniteElements, OcTree, Smoothing, Tree, Voxels};
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
@@ -147,6 +147,26 @@ enum Commands {
         input: String,
 
         /// Name of the quality metrics output file
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
+
+    /// Creates a balanced octree from a set of points
+    #[command(hide = true)]
+    Octree {
+        /// Number of subdivision levels
+        #[arg(long, short = 'l', value_name = "NUM")]
+        levels: usize,
+
+        /// Name of the original mesh file
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the smoothed mesh file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -346,6 +366,12 @@ fn main() -> Result<(), ErrorWrapper> {
             output,
             quiet,
         }) => metrics(input, output, quiet),
+        Some(Commands::Octree {
+            levels,
+            input,
+            output,
+            quiet,
+        }) => octree(levels, input, output, quiet),
         Some(Commands::Smooth {
             input,
             output,
@@ -523,6 +549,42 @@ fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<()
         println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
     }
     fem.write_metrics(&output)?;
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    Ok(())
+}
+
+fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!("      \x1b[1;96mOctree\x1b[0m {}", input);
+    }
+    let mut tree = OcTree::from_npy(&input, &levels)?;
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    let time = Instant::now();
+    if !quiet {
+        println!("   \x1b[1;96mBalancing\x1b[0m {}", input);
+    }
+    tree.balance(&levels);
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mPruning\x1b[0m {}", input);
+    }
+    tree.prune();
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mWriting\x1b[0m {}", output);
+    }
+    tree.write_mesh(&output)?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
