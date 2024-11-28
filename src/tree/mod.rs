@@ -269,7 +269,8 @@ impl Tree for OcTree {
         let mut balanced;
         let mut index;
         let mut subdivide;
-        for _iteration in 1.. {
+        #[allow(unused_variables)]
+        for iteration in 1.. {
             balanced = true;
             index = 0;
             subdivide = false;
@@ -334,11 +335,19 @@ impl Tree for OcTree {
                 index += 1;
             }
             #[cfg(feature = "profile")]
-            println!(
-                "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
-                _iteration,
-                time.elapsed()
-            );
+            if iteration == 1 {
+                println!(
+                    "           \x1b[1;93m⤷ Balancing iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            } else {
+                println!(
+                    "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            }
             if balanced {
                 break;
             }
@@ -393,7 +402,6 @@ impl Tree for OcTree {
                 )
             )
         );
-
         let length = nel_max as f64;
         let mut tree = vec![
             Cell {

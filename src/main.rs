@@ -557,10 +557,6 @@ fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<()
 }
 
 fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
-    // let time = Instant::now();
-    // if !quiet {
-    //     println!("      \x1b[1;96mOctree\x1b[0m {}", input);
-    // }
     let input_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         _ => {
@@ -572,37 +568,38 @@ fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(
             ))?
         }
     };
+    let mut time = Instant::now();
+    if !quiet {
+        println!("    \x1b[1;96mBuilding\x1b[0m octree");
+    }
     let mut tree = OcTree::from_voxels(Vector::new([0.0, 0.0, 0.0]), Vector::new([0.0, 0.0, 0.0]), input_type);
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    time = Instant::now();
+    if !quiet {
+        println!("   \x1b[1;96mBalancing\x1b[0m octree");
+    }
+    tree.balance(&levels);
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mPruning\x1b[0m octree");
+    }
     tree.prune();
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mWriting\x1b[0m {}", output);
+    }
     tree.write_mesh(&output)?;
-    // let mut tree = OcTree::from_npy(&input, &levels)?;
-    // if !quiet {
-    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    // }
-    // let time = Instant::now();
-    // if !quiet {
-    //     println!("   \x1b[1;96mBalancing\x1b[0m {}", input);
-    // }
-    // tree.balance(&levels);
-    // if !quiet {
-    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    // }
-    // let time = Instant::now();
-    // if !quiet {
-    //     println!("     \x1b[1;96mPruning\x1b[0m {}", input);
-    // }
-    // tree.prune();
-    // if !quiet {
-    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    // }
-    // let time = Instant::now();
-    // if !quiet {
-    //     println!("     \x1b[1;96mWriting\x1b[0m {}", output);
-    // }
-    // tree.write_mesh(&output)?;
-    // if !quiet {
-    //     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    // }
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
     Ok(())
 }
 
