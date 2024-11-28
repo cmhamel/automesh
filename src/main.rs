@@ -572,7 +572,8 @@ fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(
             ))?
         }
     };
-    let tree = OcTree::from_voxels(Vector::new([0.0, 0.0, 0.0]), Vector::new([0.0, 0.0, 0.0]), input_type);
+    let mut tree = OcTree::from_voxels(Vector::new([0.0, 0.0, 0.0]), Vector::new([0.0, 0.0, 0.0]), input_type);
+    tree.prune();
     tree.write_mesh(&output)?;
     // let mut tree = OcTree::from_npy(&input, &levels)?;
     // if !quiet {

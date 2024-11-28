@@ -2,7 +2,7 @@
 use std::time::Instant;
 
 use flavio::math::{Tensor, TensorRank1Vec};
-use ndarray::{Array2, s};
+use ndarray::{Array2, Axis, s};
 use ndarray_npy::{ReadNpyError, ReadNpyExt};
 use std::{
     array::from_fn,
@@ -375,25 +375,42 @@ impl Tree for OcTree {
         tree
     }
     fn from_voxels(scale: Vector, translate: Vector, voxels: Voxels) -> Self {
-        let data = voxels.get_data();
-        let shape = data.shape();
+        //
+        // Need to ensure that nels are powers of 2.
+        // This will also ensure they are multiples of each other.
+        //
+        let data_voxels = voxels.get_data();
+        let shape = data_voxels.shape();
+        let mut nel_max = shape.iter().max_by(|x, y| x.cmp(y)).unwrap().clone();
+        while (nel_max & (nel_max - 1)) != 0 {
+            nel_max += 1;
+        }
+        let mut data = VoxelData::zeros((nel_max, nel_max, nel_max));
+        data.axis_iter_mut(Axis(2)).zip(data_voxels.axis_iter(Axis(2))).for_each(|(mut data_i, data_voxels_i)|
+            data_i.axis_iter_mut(Axis(1)).zip(data_voxels_i.axis_iter(Axis(1))).for_each(|(mut data_ij, data_voxels_ij)|
+                data_ij.iter_mut().zip(data_voxels_ij.iter()).for_each(|(data_ijk, data_voxels_ijk)|
+                    *data_ijk = *data_voxels_ijk
+                )
+            )
+        );
+
+        let length = nel_max as f64;
         let mut tree = vec![
             Cell {
                 cells: None,
                 faces: [None; 6],
                 level: 0,
                 min_x: 0.0,
-                max_x: (shape[0] + 1) as f64,
+                max_x: length,
                 min_y: 0.0,
-                max_y: (shape[1] + 1) as f64,
+                max_y: length,
                 min_z: 0.0,
-                max_z: (shape[2] + 1) as f64,
+                max_z: length,
             }
         ];
         let mut index = 0;
-        panic!("Do the nels have to be even? Does the segmentation have to be a cube");
         while index < tree.len() {
-            if tree[index].inhomogeneous(data) {
+            if tree[index].inhomogeneous(&data) {
                 tree.subdivide(index);
             }
             index += 1;
