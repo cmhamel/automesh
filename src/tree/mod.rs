@@ -391,7 +391,7 @@ impl Tree for OcTree {
             }
         ];
         let mut index = 0;
-        panic!("Do the nels have to be even?");
+        panic!("Do the nels have to be even? Does the segmentation have to be a cube");
         while index < tree.len() {
             if tree[index].inhomogeneous(data) {
                 tree.subdivide(index);
