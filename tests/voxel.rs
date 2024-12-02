@@ -1,4 +1,5 @@
-use automesh::Voxels;
+use automesh::{Vector, Voxels};
+use flavio::math::Tensor;
 
 const NELX: usize = 4;
 const NELY: usize = 5;
@@ -101,10 +102,10 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     remove: Option<Vec<u8>>,
 
     /// The scaling in the [x, y, z] directions to be applied to the domain.
-    scale: [f64; NSD],
+    scale: Vector,
 
     /// The translation in the [x, y, z] directions to be applied to the domain.
-    translate: [f64; NSD],
+    translate: Vector,
 }
 
 /// The default implementation of the `Gold` struct, which is abstract since
@@ -118,8 +119,8 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
             file_path: "".to_string(),
             nel: [0; NSD],
             remove: Option::Some(vec![0]),
-            scale: [1.0; NSD],
-            translate: [0.0; NSD],
+            scale: Vector::new([1.0; NSD]),
+            translate: Vector::zero(),
         }
     }
 }
@@ -165,7 +166,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD],
-            scale: [10.0, 20.0, 30.0],
+            scale: Vector::new([10.0, 20.0, 30.0]),
             ..Default::default()
         });
     }
@@ -187,7 +188,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD],
-            scale: [0.5, 0.25, 0.125],
+            scale: Vector::new([0.5, 0.25, 0.125]),
             ..Default::default()
         });
     }
@@ -209,7 +210,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD],
-            translate: [0.3, 0.6, 0.9],
+            translate: Vector::new([0.3, 0.6, 0.9]),
             ..Default::default()
         });
     }
@@ -231,7 +232,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD],
-            translate: [-1.0, -2.0, -3.0],
+            translate: Vector::new([-1.0, -2.0, -3.0]),
             ..Default::default()
         });
     }
@@ -251,8 +252,8 @@ mod into_finite_elements {
                 [0.1, 11.2, 12.3],
                 [10.1, 11.2, 12.3],
             ],
-            scale: [10.0, 11.0, 12.0],
-            translate: [0.1, 0.2, 0.3],
+            scale: Vector::new([10.0, 11.0, 12.0]),
+            translate: Vector::new([0.1, 0.2, 0.3]),
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD],
             ..Default::default()
@@ -1385,7 +1386,11 @@ mod from_npy {
     fn xscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, &[0.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                None,
+                &Vector::new([0.0, 1.0, 1.0]),
+                &Vector::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
     }
     #[test]
@@ -1393,7 +1398,11 @@ mod from_npy {
     fn yscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, &[1.0, 0.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                None,
+                &Vector::new([1.0, 0.0, 1.0]),
+                &Vector::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
     }
     #[test]
@@ -1401,7 +1410,11 @@ mod from_npy {
     fn zscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, &[1.0, 1.0, 0.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                None,
+                &Vector::new([1.0, 1.0, 0.0]),
+                &Vector::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
     }
 }
