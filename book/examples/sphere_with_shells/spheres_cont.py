@@ -90,8 +90,8 @@ tt = tuple(map(lambda x: [0, 12*x, 24*x], rr))  # ticks
 spheres = {
     "resolution_1": sphere(resolution=rr[0]),
     "resolution_2": sphere(resolution=rr[1]),
-    # "resolution_3": sphere(resolution=rr[2]),
-    # "resolution_4": sphere(resolution=rr[3]),
+    "resolution_3": sphere(resolution=rr[2]),
+    "resolution_4": sphere(resolution=rr[3]),
 }
 
 aa = Path(__file__)
@@ -114,7 +114,7 @@ lightsource = LightSource(azdeg=325, altdeg=45)  # azimuth, elevation
 # lightsource = LightSource(azdeg=325, altdeg=90)  # azimuth, elevation
 DPI: Final[int] = 300  # resolution, dots per inch
 SHOW: Final[bool] = False  # turn to True to show the figure on screen
-SAVE: Final[bool] = False  # turn to True to save .png and .npy files
+SAVE: Final[bool] = True  # turn to True to save .png and .npy files
 # User input end
 
 N_SUBPLOTS = len(spheres)

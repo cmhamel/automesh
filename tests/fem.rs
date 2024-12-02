@@ -1,4 +1,5 @@
-use automesh::Voxels;
+use automesh::{FiniteElements, Vector, Voxels};
+use flavio::math::{Tensor, TensorRank1};
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},
@@ -34,8 +35,8 @@ fn compare_files(
     gold_path: &str,
     spn_path: &str,
     nel: [usize; 3],
-    scale: [f64; 3],
-    translate: [f64; 3],
+    scale: Vector,
+    translate: Vector,
 ) {
     let voxels = Voxels::from_spn(spn_path, nel).unwrap();
     let fem = voxels
@@ -68,12 +69,15 @@ fn compare_files(
 #[cfg(not(target_os = "windows"))]
 mod read_inp {
     use super::*;
-    use automesh::FiniteElements;
     #[test]
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                Some(vec![0]),
+                &TensorRank1::new([1.0, 1.0, 1.0]),
+                &TensorRank1::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
         fem.write_inp("target/letter_f_3d.inp").unwrap();
         let read = FiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
@@ -96,8 +100,8 @@ mod write_inp {
             "tests/input/letter_f_3d.inp",
             "tests/input/letter_f_3d.spn",
             [4, 5, 3],
-            [1.0, 1.0, 1.0],
-            [0.0, 0.0, 0.0],
+            TensorRank1::new([1.0, 1.0, 1.0]),
+            TensorRank1::new([0.0, 0.0, 0.0]),
         );
     }
     #[test]
@@ -107,8 +111,8 @@ mod write_inp {
             "tests/input/sparse.inp",
             "tests/input/sparse.spn",
             [5, 5, 5],
-            [1.0, 1.0, 1.0],
-            [0.0, 0.0, 0.0],
+            TensorRank1::new([1.0, 1.0, 1.0]),
+            TensorRank1::new([0.0, 0.0, 0.0]),
         );
     }
 }
@@ -119,7 +123,11 @@ mod write_mesh {
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                Some(vec![0]),
+                &Vector::new([1.0, 1.0, 1.0]),
+                &Vector::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
         fem.write_mesh("target/letter_f_3d.mesh").unwrap();
     }
@@ -131,7 +139,11 @@ mod write_vtk {
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
         let fem = voxels
-            .into_finite_elements(Some(vec![0]), &[1.0, 1.0, 1.0], &[0.0, 0.0, 0.0])
+            .into_finite_elements(
+                Some(vec![0]),
+                &Vector::new([1.0, 1.0, 1.0]),
+                &Vector::new([0.0, 0.0, 0.0]),
+            )
             .unwrap();
         fem.write_vtk("target/letter_f_3d.vtk").unwrap();
     }

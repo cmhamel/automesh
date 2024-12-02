@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
-    NODE_NUMBERING_OFFSET, NSD,
+    Vector, NODE_NUMBERING_OFFSET, NSD,
 };
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
@@ -23,9 +23,7 @@ use tiff::{
 };
 
 type Nel = [usize; NSD];
-type Scale = [f64; NSD];
-type Translate = [f64; NSD];
-type VoxelData = Array3<u8>;
+pub type VoxelData = Array3<u8>;
 type VoxelDataFlattened = Vec<u8>;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
@@ -62,8 +60,8 @@ impl Voxels {
     pub fn into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
-        scale: &Scale,
-        translate: &Translate,
+        scale: &Vector,
+        translate: &Vector,
     ) -> Result<FiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
@@ -189,8 +187,8 @@ fn initial_nodal_coordinates(
     element_node_connectivity: &Connectivity,
     filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
-    scale: &Scale,
-    translate: &Translate,
+    scale: &Vector,
+    translate: &Vector,
 ) -> Result<Coordinates, String> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
@@ -298,8 +296,8 @@ fn renumber_nodes(
 fn finite_element_data_from_data(
     data: &VoxelData,
     remove: Option<Vec<u8>>,
-    scale: &Scale,
-    translate: &Translate,
+    scale: &Vector,
+    translate: &Vector,
 ) -> Result<(Blocks, Connectivity, Coordinates), String> {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;

@@ -7,7 +7,9 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET, NSD};
+use super::{
+    ELEMENT_NUMBERING_OFFSET, ELEMENT_NUM_NODES, ELEMENT_TYPE, NODE_NUMBERING_OFFSET, NSD,
+};
 use chrono::Utc;
 use flavio::math::{Tensor, TensorRank1};
 use ndarray::Array1;
@@ -25,9 +27,6 @@ use vtkio::{
     },
     Error as ErrorVtk,
 };
-
-const ELEMENT_TYPE: &str = "C3D8R";
-const ELEMENT_NUM_NODES: usize = 8;
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
