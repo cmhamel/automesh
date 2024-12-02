@@ -18,10 +18,12 @@ mod voxel;
 
 pub use fem::{FiniteElements, Smoothing};
 pub use tree::{OcTree, Tree};
-pub use voxel::{Voxels, VoxelData};
+pub use voxel::{VoxelData, Voxels};
 
 pub type Vector = flavio::mechanics::Vector<1>;
 
+const ELEMENT_NUM_NODES: usize = 8;
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
+const ELEMENT_TYPE: &str = "C3D8R";
 const NODE_NUMBERING_OFFSET: usize = 1;
 const NSD: usize = 3;

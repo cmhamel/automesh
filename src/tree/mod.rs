@@ -1,36 +1,38 @@
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use flavio::math::{Tensor, TensorRank1Vec};
-use ndarray::{Array2, Axis, s};
-use ndarray_npy::{ReadNpyError, ReadNpyExt};
-use std::{
-    array::from_fn,
-    fs::File,
-    io::{BufWriter, Error as ErrorIO, Write},
+use super::{
+    FiniteElements, Vector, VoxelData, Voxels, ELEMENT_NUM_NODES, NODE_NUMBERING_OFFSET, NSD,
 };
-use super::{Vector, Voxels, VoxelData};
+use flavio::math::{Tensor, TensorRank1Vec};
+use ndarray::{s, Axis};
+use std::array::from_fn;
 
-type Cells = [Cell; 8];
+const NUM_OCTANTS: usize = 8;
+
+type Cells = [Cell; NUM_OCTANTS];
 type Faces = [Option<usize>; 6];
-type Indices = [usize; 8];
+type Indices = [usize; NUM_OCTANTS];
 pub type OcTree = Vec<Cell>;
 type Points = TensorRank1Vec<3, 1>;
 
 pub trait Tree {
-    fn balance(&mut self, levels: &usize);
+    fn balance(&mut self);
     fn from_points(levels: &usize, points: &Points) -> Self;
-    fn from_voxels(scale: Vector, translate: Vector, voxels: Voxels) -> Self;
+    fn from_voxels(voxels: Voxels) -> Self;
+    fn into_finite_elements(
+        self,
+        remove: Option<Vec<u8>>,
+        scale: &Vector,
+        translate: &Vector,
+    ) -> Result<FiniteElements, String>;
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
-    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
-    fn from_npy(file_path: &str, levels: &usize) -> Result<Self, ReadNpyError>
-    where
-        Self: Sized;
 }
 
 #[derive(Debug)]
 pub struct Cell {
+    block: Option<u8>,
     cells: Option<Indices>,
     level: usize,
     faces: Faces,
@@ -57,10 +59,17 @@ impl Cell {
         }
         false
     }
+    fn get_block(&self) -> u8 {
+        if let Some(block) = self.block {
+            block
+        } else {
+            panic!()
+        }
+    }
     fn get_faces(&self) -> &Faces {
         &self.faces
     }
-    pub fn get_level(&self) -> &usize {
+    fn get_level(&self) -> &usize {
         &self.level
     }
     fn get_min_x(&self) -> &f64 {
@@ -81,26 +90,20 @@ impl Cell {
     fn get_max_z(&self) -> &f64 {
         &self.max_z
     }
-    fn inhomogeneous(&self, data: &VoxelData) -> bool {
+    fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
         let x_min = self.get_min_x().round() as u8 as usize;
-        let x_max = self.get_max_x().round() as u8 as u8 as usize;
-        let y_min = self.get_min_y().round() as u8 as u8 as usize;
-        let y_max = self.get_max_y().round() as u8 as u8 as usize;
-        let z_min = self.get_min_z().round() as u8 as u8 as usize;
-        let z_max = self.get_max_z().round() as u8 as u8 as usize;
-        let foo = data.slice(
-            s![
-                x_min..x_max,
-                y_min..y_max,
-                z_min..z_max
-            ]
-        );
-        let mut bar: Vec<u8> = foo.iter().cloned().collect();
-        bar.dedup();
-        if bar.len() > 1 {
-            true
+        let x_max = self.get_max_x().round() as u8 as usize;
+        let y_min = self.get_min_y().round() as u8 as usize;
+        let y_max = self.get_max_y().round() as u8 as usize;
+        let z_min = self.get_min_z().round() as u8 as usize;
+        let z_max = self.get_max_z().round() as u8 as usize;
+        let contained = data.slice(s![x_min..x_max, y_min..y_max, z_min..z_max]);
+        let mut materials: Vec<u8> = contained.iter().cloned().collect();
+        materials.dedup();
+        if materials.len() == 1 {
+            Some(materials[0])
         } else {
-            false
+            None
         }
     }
     fn subdivide(&mut self, indices: Indices) -> Cells {
@@ -117,6 +120,7 @@ impl Cell {
         let val_z = 0.5 * (min_z + max_z);
         [
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     None,
@@ -135,6 +139,7 @@ impl Cell {
                 max_z: val_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     None,
@@ -153,6 +158,7 @@ impl Cell {
                 max_z: val_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     Some(indices[0]),
@@ -171,6 +177,7 @@ impl Cell {
                 max_z: val_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     Some(indices[1]),
@@ -189,6 +196,7 @@ impl Cell {
                 max_z: val_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     None,
@@ -207,6 +215,7 @@ impl Cell {
                 max_z: *max_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     None,
@@ -225,6 +234,7 @@ impl Cell {
                 max_z: *max_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     Some(indices[4]),
@@ -243,6 +253,7 @@ impl Cell {
                 max_z: *max_z,
             },
             Cell {
+                block: None,
                 cells: None,
                 faces: [
                     Some(indices[5]),
@@ -265,10 +276,12 @@ impl Cell {
 }
 
 impl Tree for OcTree {
-    fn balance(&mut self, levels: &usize) {
+    fn balance(&mut self) {
         let mut balanced;
+        let mut block;
         let mut index;
         let mut subdivide;
+        let levels = *self[self.len() - 1].get_level();
         #[allow(unused_variables)]
         for iteration in 1.. {
             balanced = true;
@@ -327,8 +340,13 @@ impl Tree for OcTree {
                         }
                     }
                     if subdivide {
-                        balanced = false;
+                        block = self[index].get_block();
                         self.subdivide(index);
+                        self.iter_mut()
+                            .rev()
+                            .take(NUM_OCTANTS)
+                            .for_each(|cell| cell.block = Some(block));
+                        balanced = false;
                         subdivide = false;
                     }
                 }
@@ -364,6 +382,7 @@ impl Tree for OcTree {
         let min_z = z_vals.iter().cloned().reduce(f64::min).unwrap();
         let max_z = z_vals.iter().cloned().fold(f64::NAN, f64::max);
         let mut tree = vec![Cell {
+            block: None,
             cells: None,
             faces: [None; 6],
             level: 0,
@@ -383,50 +402,152 @@ impl Tree for OcTree {
         }
         tree
     }
-    fn from_voxels(scale: Vector, translate: Vector, voxels: Voxels) -> Self {
-        //
-        // Need to ensure that nels are powers of 2.
-        // This will also ensure they are multiples of each other.
-        //
+    fn from_voxels(voxels: Voxels) -> Self {
         let data_voxels = voxels.get_data();
-        let shape = data_voxels.shape();
-        let mut nel_max = shape.iter().max_by(|x, y| x.cmp(y)).unwrap().clone();
-        while (nel_max & (nel_max - 1)) != 0 {
-            nel_max += 1;
-        }
-        let mut data = VoxelData::zeros((nel_max, nel_max, nel_max));
-        data.axis_iter_mut(Axis(2)).zip(data_voxels.axis_iter(Axis(2))).for_each(|(mut data_i, data_voxels_i)|
-            data_i.axis_iter_mut(Axis(1)).zip(data_voxels_i.axis_iter(Axis(1))).for_each(|(mut data_ij, data_voxels_ij)|
-                data_ij.iter_mut().zip(data_voxels_ij.iter()).for_each(|(data_ijk, data_voxels_ijk)|
-                    *data_ijk = *data_voxels_ijk
-                )
-            )
-        );
-        let length = nel_max as f64;
-        let mut tree = vec![
-            Cell {
-                cells: None,
-                faces: [None; 6],
-                level: 0,
-                min_x: 0.0,
-                max_x: length,
-                min_y: 0.0,
-                max_y: length,
-                min_z: 0.0,
-                max_z: length,
-            }
-        ];
+        let mut nels = [0; 3];
+        nels.iter_mut()
+            .zip(data_voxels.shape().iter())
+            .for_each(|(nel, nel_0)| {
+                *nel = *nel_0;
+                while (*nel & (*nel - 1)) != 0 {
+                    *nel += 1
+                }
+            });
+        let mut data = VoxelData::zeros((nels[0], nels[1], nels[2]));
+        data.axis_iter_mut(Axis(2))
+            .zip(data_voxels.axis_iter(Axis(2)))
+            .for_each(|(mut data_i, data_voxels_i)| {
+                data_i
+                    .axis_iter_mut(Axis(1))
+                    .zip(data_voxels_i.axis_iter(Axis(1)))
+                    .for_each(|(mut data_ij, data_voxels_ij)| {
+                        data_ij
+                            .iter_mut()
+                            .zip(data_voxels_ij.iter())
+                            .for_each(|(data_ijk, data_voxels_ijk)| *data_ijk = *data_voxels_ijk)
+                    })
+            });
+        let nel_min = nels.iter().min().unwrap();
+        let length = *nel_min as f64;
+        let mut tree = vec![];
+        (0..(nels[0] / nel_min)).for_each(|i| {
+            (0..(nels[1] / nel_min)).for_each(|j| {
+                (0..(nels[2] / nel_min)).for_each(|k| {
+                    tree.push(Cell {
+                        block: None,
+                        cells: None,
+                        faces: [None; 6],
+                        level: 0,
+                        min_x: length * i as f64,
+                        max_x: length * (i + 1) as f64,
+                        min_y: length * j as f64,
+                        max_y: length * (j + 1) as f64,
+                        min_z: length * k as f64,
+                        max_z: length * (k + 1) as f64,
+                    })
+                })
+            })
+        });
         let mut index = 0;
         while index < tree.len() {
-            if tree[index].inhomogeneous(&data) {
-                tree.subdivide(index);
+            if let Some(block) = tree[index].homogeneous(&data) {
+                tree[index].block = Some(block)
+            } else {
+                tree.subdivide(index)
             }
             index += 1;
         }
-        //
-        // apply scaling & translation at the end
-        //
         tree
+    }
+    fn into_finite_elements(
+        self,
+        remove: Option<Vec<u8>>,
+        scale: &Vector,
+        translate: &Vector,
+    ) -> Result<FiniteElements, String> {
+        let xscale = scale[0];
+        let yscale = scale[1];
+        let zscale = scale[2];
+        let xtranslate = translate[0];
+        let ytranslate = translate[1];
+        let ztranslate = translate[2];
+        if xscale <= 0.0 {
+            return Err("Need to specify xscale > 0.0".to_string());
+        } else if yscale <= 0.0 {
+            return Err("Need to specify yscale > 0.0".to_string());
+        } else if zscale <= 0.0 {
+            return Err("Need to specify zscale > 0.0".to_string());
+        }
+        let mut removed_data = remove.unwrap_or_default();
+        removed_data.sort();
+        removed_data.dedup();
+        let num_elements = self
+            .iter()
+            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
+            .count();
+        let mut element_blocks = vec![0; num_elements];
+        let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; num_elements];
+        let mut nodal_coordinates = vec![vec![0.0; NSD]; num_elements * ELEMENT_NUM_NODES];
+        let mut index = 0;
+        self.iter()
+            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
+            .zip(
+                element_blocks
+                    .iter_mut()
+                    .zip(element_node_connectivity.iter_mut()),
+            )
+            .for_each(|(cell, (block, connectivity))| {
+                *block = cell.get_block() as usize;
+                *connectivity = (index + NODE_NUMBERING_OFFSET
+                    ..index + ELEMENT_NUM_NODES + NODE_NUMBERING_OFFSET)
+                    .collect();
+                nodal_coordinates[index] = vec![
+                    cell.get_min_x().copy() * xscale + xtranslate,
+                    cell.get_min_y().copy() * yscale + ytranslate,
+                    cell.get_min_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 1] = vec![
+                    cell.get_max_x().copy() * xscale + xtranslate,
+                    cell.get_min_y().copy() * yscale + ytranslate,
+                    cell.get_min_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 2] = vec![
+                    cell.get_max_x().copy() * xscale + xtranslate,
+                    cell.get_max_y().copy() * yscale + ytranslate,
+                    cell.get_min_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 3] = vec![
+                    cell.get_min_x().copy() * xscale + xtranslate,
+                    cell.get_max_y().copy() * yscale + ytranslate,
+                    cell.get_min_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 4] = vec![
+                    cell.get_min_x().copy() * xscale + xtranslate,
+                    cell.get_min_y().copy() * yscale + ytranslate,
+                    cell.get_max_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 5] = vec![
+                    cell.get_max_x().copy() * xscale + xtranslate,
+                    cell.get_min_y().copy() * yscale + ytranslate,
+                    cell.get_max_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 6] = vec![
+                    cell.get_max_x().copy() * xscale + xtranslate,
+                    cell.get_max_y().copy() * yscale + ytranslate,
+                    cell.get_max_z().copy() * zscale + ztranslate,
+                ];
+                nodal_coordinates[index + 7] = vec![
+                    cell.get_min_x().copy() * xscale + xtranslate,
+                    cell.get_max_y().copy() * yscale + ytranslate,
+                    cell.get_max_z().copy() * zscale + ztranslate,
+                ];
+                index += ELEMENT_NUM_NODES;
+            });
+        Ok(FiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
     fn prune(&mut self) {
         self.retain(|cell| cell.cells.is_none())
@@ -509,88 +630,5 @@ impl Tree for OcTree {
                 }
             });
         self.extend(new_cells);
-    }
-    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
-        let mesh_file = File::create(file_path)?;
-        let mut file = BufWriter::new(mesh_file);
-        file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
-        let num_cells = self.len();
-        file.write_all(format!("{}\n", num_cells * 8).as_bytes())?;
-        let mut nodal_coordinates = Points::zero_vec(8);
-        self.iter().try_for_each(|cell| {
-            nodal_coordinates = Points::new_vec(&[
-                [
-                    cell.get_min_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_min_z().copy(),
-                ],
-                [
-                    cell.get_max_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_min_z().copy(),
-                ],
-                [
-                    cell.get_max_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_min_z().copy(),
-                ],
-                [
-                    cell.get_min_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_min_z().copy(),
-                ],
-                [
-                    cell.get_min_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_max_z().copy(),
-                ],
-                [
-                    cell.get_max_x().copy(),
-                    cell.get_min_y().copy(),
-                    cell.get_max_z().copy(),
-                ],
-                [
-                    cell.get_max_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_max_z().copy(),
-                ],
-                [
-                    cell.get_min_x().copy(),
-                    cell.get_max_y().copy(),
-                    cell.get_max_z().copy(),
-                ],
-            ]);
-            nodal_coordinates.iter().try_for_each(|coordinates| {
-                coordinates.iter().try_for_each(|coordinate| {
-                    file.write_all(format!("{} ", coordinate).as_bytes())
-                })?;
-                file.write_all(b"0\n")
-            })
-        })?;
-        file.write_all(b"Hexahedra\n")?;
-        file.write_all(format!("{}\n", num_cells).as_bytes())?;
-        let mut index = 0;
-        let mut connectivity = [0; 8];
-        self.iter().try_for_each(|_| {
-            connectivity = from_fn(|n| index + n);
-            index += 8;
-            connectivity
-                .iter()
-                .try_for_each(|node| file.write_all(format!("{} ", node + 1).as_bytes()))?;
-            file.write_all(b"0\n")
-        })?;
-
-        file.write_all(b"End")?;
-        file.flush()
-    }
-    fn from_npy(file_path: &str, levels: &usize) -> Result<Self, ReadNpyError>
-    where
-        Self: Sized,
-    {
-        let points = Array2::read_npy(File::open(file_path)?)?
-            .outer_iter()
-            .map(|row| row.iter().copied().collect())
-            .collect();
-        Ok(Self::from_points(levels, &points))
     }
 }

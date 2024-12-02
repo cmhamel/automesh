@@ -159,10 +159,6 @@ enum Commands {
     /// Creates a balanced octree from a set of points
     #[command(hide = true)]
     Octree {
-        /// Number of subdivision levels
-        #[arg(long, short = 'l', value_name = "NUM")]
-        levels: usize,
-
         /// Name of the segmentation input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
@@ -170,6 +166,49 @@ enum Commands {
         /// Name of the octree output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
+
+        /// Voxel IDs to remove from the mesh
+        #[arg(long, short, value_name = "ID")]
+        remove: Option<Vec<u8>>,
+
+        /// Scaling (> 0.0) in the x-direction
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        xscale: f64,
+
+        /// Scaling (> 0.0) in the y-direction
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        yscale: f64,
+
+        /// Scaling (> 0.0) in the z-direction
+        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        zscale: f64,
+
+        /// Translation in the x-direction
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "VAL"
+        )]
+        xtranslate: f64,
+
+        /// Translation in the y-direction
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "VAL"
+        )]
+        ytranslate: f64,
+
+        /// Translation in the z-direction
+        #[arg(
+            long,
+            default_value_t = 0.0,
+            allow_negative_numbers = true,
+            value_name = "VAL"
+        )]
+        ztranslate: f64,
 
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
@@ -368,11 +407,20 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
         }) => metrics(input, output, quiet),
         Some(Commands::Octree {
-            levels,
             input,
             output,
+            remove,
+            xscale,
+            yscale,
+            zscale,
+            xtranslate,
+            ytranslate,
+            ztranslate,
             quiet,
-        }) => octree(levels, input, output, quiet),
+        }) => octree(
+            input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
+            quiet,
+        ),
         Some(Commands::Smooth {
             input,
             output,
@@ -556,7 +604,19 @@ fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<()
     Ok(())
 }
 
-fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+#[allow(clippy::too_many_arguments)]
+fn octree(
+    input: String,
+    output: String,
+    remove: Option<Vec<u8>>,
+    xscale: f64,
+    yscale: f64,
+    zscale: f64,
+    xtranslate: f64,
+    ytranslate: f64,
+    ztranslate: f64,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
     let input_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         _ => {
@@ -572,7 +632,7 @@ fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(
     if !quiet {
         println!("    \x1b[1;96mBuilding\x1b[0m octree");
     }
-    let mut tree = OcTree::from_voxels(Vector::new([0.0, 0.0, 0.0]), Vector::new([0.0, 0.0, 0.0]), input_type);
+    let mut tree = OcTree::from_voxels(input_type);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
@@ -580,7 +640,7 @@ fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(
     if !quiet {
         println!("   \x1b[1;96mBalancing\x1b[0m octree");
     }
-    tree.balance(&levels);
+    tree.balance();
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
@@ -594,11 +654,23 @@ fn octree(levels: usize, input: String, output: String, quiet: bool) -> Result<(
     }
     time = Instant::now();
     if !quiet {
-        println!("     \x1b[1;96mWriting\x1b[0m {}", output);
+        println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
     }
-    tree.write_mesh(&output)?;
+    let output_type = tree.into_finite_elements(
+        remove,
+        &Vector::new([xscale, yscale, zscale]),
+        &Vector::new([xtranslate, ytranslate, ztranslate]),
+    )?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+        _ => invalid_output(&output, output_extension)?,
     }
     Ok(())
 }

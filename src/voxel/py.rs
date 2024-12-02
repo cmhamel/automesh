@@ -1,8 +1,9 @@
 use super::{
     super::{fem::py::FiniteElements, py::PyIntermediateError},
     finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
-    write_voxels_to_spn, Nel, Scale, Translate, VoxelData,
+    write_voxels_to_spn, Nel, Vector, VoxelData,
 };
+use flavio::math::Tensor;
 use pyo3::prelude::*;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -23,11 +24,16 @@ impl Voxels {
     pub fn as_finite_elements(
         &self,
         remove: Option<Vec<u8>>,
-        scale: Scale,
-        translate: Translate,
+        scale: [f64; 3],
+        translate: [f64; 3],
     ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_data(&self.data, remove, &scale, &translate)?;
+            finite_element_data_from_data(
+                &self.data,
+                remove,
+                &Vector::new(scale),
+                &Vector::new(translate),
+            )?;
         Ok(FiniteElements::from_data(
             element_blocks,
             element_node_connectivity,

@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, Connectivity, Coordinates, FiniteElements},
-    NODE_NUMBERING_OFFSET, NSD, Vector
+    Vector, NODE_NUMBERING_OFFSET, NSD,
 };
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
