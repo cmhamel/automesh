@@ -5,7 +5,7 @@ build:
     python: "latest"
     rust: "latest"
   commands:
-    - pip install cmake maturin pdoc
+    - pip install cmake maturin[patchelf] pdoc
     - maturin build --features python --release
     - pip install --find-links=target/wheels/ automesh
     - mkdir -p $READTHEDOCS_OUTPUT/html/
