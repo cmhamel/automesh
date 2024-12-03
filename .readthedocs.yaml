@@ -5,7 +5,7 @@ build:
     python: "latest"
     rust: "latest"
   commands:
-    - apt install cmake
+    - sudo apt install cmake -y
     - cargo build --release
     - pip install maturin pdoc
     - maturin build --features python --release
