@@ -18,7 +18,7 @@ dependencies = [
   'numpy',
 ]
 name = 'automesh'
-requires-python = '>=3.8,<3.13'
+requires-python = '>=3.8,<3.14'
 
 [project.optional-dependencies]
 dev = [
@@ -46,7 +46,7 @@ testpaths = [
 [build-system]
 build-backend = 'maturin'
 requires = [
-  'maturin==1.7.6'
+  'maturin==1.7.7'
 ]
 
 [tool.maturin]
