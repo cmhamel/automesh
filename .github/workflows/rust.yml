@@ -17,7 +17,8 @@ jobs:
           toolchain: nightly
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          check-latest: true
+          python-version: 3.13
       - name: numpy
         run: pip install numpy
       - name: pillow

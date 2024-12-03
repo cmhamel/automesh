@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     runs-on: ${{ matrix.os }}
     steps:
     - name: checkout
@@ -20,7 +20,7 @@ jobs:
       with:
         components: clippy
         default: true
-        toolchain: 1.81.0
+        toolchain: stable
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
@@ -70,7 +70,8 @@ jobs:
     - uses: actions/download-artifact@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: 3.12
+        check-latest: true
+        python-version: 3.13
     - name: wheelhouse
       run: mkdir -p wheelhouse/ && mv ./*-wheel*/*.whl wheelhouse/
     - name: twine
