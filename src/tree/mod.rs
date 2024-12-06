@@ -487,7 +487,6 @@ impl Tree for OcTree {
             .count();
         let mut element_blocks = vec![0; num_elements];
         let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; num_elements];
-        // let mut nodal_coordinates = vec![vec![0.0; NSD]; num_elements * ELEMENT_NUM_NODES];
         let mut nodal_coordinates: Coordinates = (0..num_elements * ELEMENT_NUM_NODES)
             .map(|_| Coordinate::zero())
             .collect();
