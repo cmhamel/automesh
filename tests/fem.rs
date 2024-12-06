@@ -86,7 +86,10 @@ mod read_inp {
             fem.get_element_node_connectivity(),
             read.get_element_node_connectivity()
         );
-        assert_eq!(fem.get_nodal_coordinates(), read.get_nodal_coordinates());
+        fem.get_nodal_coordinates()
+            .iter()
+            .zip(read.get_nodal_coordinates().iter())
+            .for_each(|(a, b)| a.iter().zip(b.iter()).for_each(|(c, d)| assert_eq!(c, d)));
     }
 }
 
