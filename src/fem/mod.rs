@@ -542,12 +542,6 @@ fn smooth_finite_elements(
             let time = Instant::now();
             laplacian =
                 finite_elements.calculate_laplacian(finite_elements.get_nodal_influencers());
-            // finite_elements
-            //     .get_nodal_coordinates_mut()
-            //     .iter_mut()
-            //     .flatten()
-            //     .zip(laplacian.iter().flatten())
-            //     .for_each(|(coordinate, entry)| *coordinate += entry * scale);
             finite_elements
                 .get_nodal_coordinates_mut()
                 .iter_mut()
