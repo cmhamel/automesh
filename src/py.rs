@@ -1,4 +1,5 @@
-use super::{voxel::IntermediateError, Coordinates};
+use super::{voxel::IntermediateError, Coordinate, Coordinates};
+use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use pyo3::{exceptions::PyTypeError, prelude::*};
@@ -28,13 +29,13 @@ pub trait IntoFoo<T> {
 
 impl IntoFoo<Coordinates> for PyCoordinates {
     fn as_foo(&self) -> Coordinates {
-        todo!()
+        self.iter().map(|entry| Coordinate::new(*entry)).collect()
     }
 }
 
 impl IntoFoo<PyCoordinates> for Coordinates {
     fn as_foo(&self) -> PyCoordinates {
-        todo!()
+        self.iter().map(|entry| entry.as_array()).collect()
     }
 }
 
