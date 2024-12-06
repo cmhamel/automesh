@@ -1,8 +1,8 @@
 use super::{
-    super::py::PyIntermediateError, finite_element_data_from_inp, write_finite_elements_metrics,
-    write_finite_elements_to_abaqus, write_finite_elements_to_exodus,
-    write_finite_elements_to_mesh, write_finite_elements_to_vtk, Blocks, Connectivity, Coordinates,
-    Smoothing,
+    super::py::{IntoFoo, PyCoordinates, PyIntermediateError},
+    finite_element_data_from_inp, write_finite_elements_metrics, write_finite_elements_to_abaqus,
+    write_finite_elements_to_exodus, write_finite_elements_to_mesh, write_finite_elements_to_vtk,
+    Blocks, Connectivity, Smoothing,
 };
 use pyo3::prelude::*;
 
@@ -16,7 +16,7 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 pub struct FiniteElements {
     element_blocks: Blocks,
     element_node_connectivity: Connectivity,
-    nodal_coordinates: Coordinates,
+    nodal_coordinates: PyCoordinates,
 }
 
 #[pymethods]
@@ -26,7 +26,7 @@ impl FiniteElements {
     pub fn from_data(
         element_blocks: Blocks,
         element_node_connectivity: Connectivity,
-        nodal_coordinates: Coordinates,
+        nodal_coordinates: PyCoordinates,
     ) -> Self {
         Self {
             element_blocks,
@@ -42,7 +42,7 @@ impl FiniteElements {
         Ok(Self::from_data(
             element_blocks,
             element_node_connectivity,
-            nodal_coordinates,
+            nodal_coordinates.as_foo(),
         ))
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
@@ -58,7 +58,7 @@ impl FiniteElements {
         let mut finite_elements = super::FiniteElements::from_data(
             self.element_blocks.clone(),
             self.element_node_connectivity.clone(),
-            self.nodal_coordinates.clone(),
+            self.nodal_coordinates.as_foo(),
         );
         finite_elements.calculate_node_element_connectivity()?;
         finite_elements.calculate_node_node_connectivity()?;
@@ -78,7 +78,7 @@ impl FiniteElements {
         }
         self.element_blocks = finite_elements.element_blocks;
         self.element_node_connectivity = finite_elements.element_node_connectivity;
-        self.nodal_coordinates = finite_elements.nodal_coordinates;
+        self.nodal_coordinates = finite_elements.nodal_coordinates.as_foo();
         Ok(())
     }
     /// Writes the finite elements data to a new Exodus file.
@@ -87,7 +87,7 @@ impl FiniteElements {
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
-            &self.nodal_coordinates,
+            &self.nodal_coordinates.as_foo(),
         )?)
     }
     /// Writes the finite elements data to a new Abaqus file.
@@ -96,7 +96,7 @@ impl FiniteElements {
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
-            &self.nodal_coordinates,
+            &self.nodal_coordinates.as_foo(),
         )?)
     }
     /// Writes the finite elements data to a new Mesh file.
@@ -105,7 +105,7 @@ impl FiniteElements {
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
-            &self.nodal_coordinates,
+            &self.nodal_coordinates.as_foo(),
         )?)
     }
     /// Writes the finite elements quality metrics to a new file.
@@ -113,7 +113,7 @@ impl FiniteElements {
         Ok(write_finite_elements_metrics(
             file_path,
             &self.element_node_connectivity,
-            &self.nodal_coordinates,
+            &self.nodal_coordinates.as_foo(),
         )?)
     }
     /// Writes the finite elements data to a new VTK file.
@@ -122,7 +122,7 @@ impl FiniteElements {
             file_path,
             &self.element_blocks,
             &self.element_node_connectivity,
-            &self.nodal_coordinates,
+            &self.nodal_coordinates.as_foo(),
         )?)
     }
 }

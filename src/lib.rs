@@ -20,7 +20,12 @@ pub use fem::{FiniteElements, Smoothing};
 pub use tree::{OcTree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
-pub type Vector = flavio::mechanics::Vector<1>;
+use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
+
+pub type Coordinate = VectorFlavio<1>;
+pub type Coordinates = TensorRank1Vec<3, 1>;
+pub type Points = TensorRank1Vec<3, 1>;
+pub type Vector = VectorFlavio<1>;
 
 const ELEMENT_NUM_NODES: usize = 8;
 const ELEMENT_NUMBERING_OFFSET: usize = 1;

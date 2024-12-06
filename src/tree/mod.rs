@@ -2,9 +2,10 @@
 use std::time::Instant;
 
 use super::{
-    FiniteElements, Vector, VoxelData, Voxels, ELEMENT_NUM_NODES, NODE_NUMBERING_OFFSET, NSD,
+    Coordinate, Coordinates, FiniteElements, Points, Vector, VoxelData, Voxels, ELEMENT_NUM_NODES,
+    NODE_NUMBERING_OFFSET,
 };
-use flavio::math::{Tensor, TensorRank1Vec};
+use flavio::math::Tensor;
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -14,7 +15,6 @@ type Cells = [Cell; NUM_OCTANTS];
 type Faces = [Option<usize>; 6];
 type Indices = [usize; NUM_OCTANTS];
 pub type OcTree = Vec<Cell>;
-type Points = TensorRank1Vec<3, 1>;
 
 pub trait Tree {
     fn balance(&mut self);
@@ -487,7 +487,10 @@ impl Tree for OcTree {
             .count();
         let mut element_blocks = vec![0; num_elements];
         let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; num_elements];
-        let mut nodal_coordinates = vec![vec![0.0; NSD]; num_elements * ELEMENT_NUM_NODES];
+        // let mut nodal_coordinates = vec![vec![0.0; NSD]; num_elements * ELEMENT_NUM_NODES];
+        let mut nodal_coordinates: Coordinates = (0..num_elements * ELEMENT_NUM_NODES)
+            .map(|_| Coordinate::zero())
+            .collect();
         let mut index = 0;
         self.iter()
             .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
@@ -501,46 +504,46 @@ impl Tree for OcTree {
                 *connectivity = (index + NODE_NUMBERING_OFFSET
                     ..index + ELEMENT_NUM_NODES + NODE_NUMBERING_OFFSET)
                     .collect();
-                nodal_coordinates[index] = vec![
+                nodal_coordinates[index] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,
                     cell.get_min_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 1] = vec![
+                ]);
+                nodal_coordinates[index + 1] = Coordinate::new([
                     cell.get_max_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,
                     cell.get_min_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 2] = vec![
+                ]);
+                nodal_coordinates[index + 2] = Coordinate::new([
                     cell.get_max_x().copy() * xscale + xtranslate,
                     cell.get_max_y().copy() * yscale + ytranslate,
                     cell.get_min_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 3] = vec![
+                ]);
+                nodal_coordinates[index + 3] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_max_y().copy() * yscale + ytranslate,
                     cell.get_min_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 4] = vec![
+                ]);
+                nodal_coordinates[index + 4] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,
                     cell.get_max_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 5] = vec![
+                ]);
+                nodal_coordinates[index + 5] = Coordinate::new([
                     cell.get_max_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,
                     cell.get_max_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 6] = vec![
+                ]);
+                nodal_coordinates[index + 6] = Coordinate::new([
                     cell.get_max_x().copy() * xscale + xtranslate,
                     cell.get_max_y().copy() * yscale + ytranslate,
                     cell.get_max_z().copy() * zscale + ztranslate,
-                ];
-                nodal_coordinates[index + 7] = vec![
+                ]);
+                nodal_coordinates[index + 7] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_max_y().copy() * yscale + ytranslate,
                     cell.get_max_z().copy() * zscale + ztranslate,
-                ];
+                ]);
                 index += ELEMENT_NUM_NODES;
             });
         Ok(FiniteElements::from_data(
