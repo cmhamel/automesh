@@ -1003,212 +1003,68 @@ fn write_finite_elements_metrics(
                 .map(|(index, node)| {
                     match index {
                         0 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         1 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         2 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         3 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         4 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         5 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         6 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         7 => {
-                            u = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            v = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
-                            w = nodal_coordinates[node - NODE_NUMBERING_OFFSET]
-                                .iter()
-                                .zip(
-                                    nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
-                                        .iter(),
-                                )
-                                .map(|(a, b)| b - a)
-                                .collect();
+                            u = &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            v = &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
+                            w = &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                                - &nodal_coordinates[node - NODE_NUMBERING_OFFSET];
                         }
                         _ => panic!(),
                     }
