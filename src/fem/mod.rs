@@ -8,11 +8,11 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    Coordinate, Coordinates, ELEMENT_NUMBERING_OFFSET, ELEMENT_NUM_NODES, ELEMENT_TYPE,
+    Coordinate, Coordinates, Vector, ELEMENT_NUMBERING_OFFSET, ELEMENT_NUM_NODES, ELEMENT_TYPE,
     NODE_NUMBERING_OFFSET, NSD,
 };
 use chrono::Utc;
-use flavio::math::{Tensor, TensorRank1};
+use flavio::math::Tensor;
 use ndarray::Array1;
 use ndarray_npy::WriteNpyExt;
 use netcdf::{create, Error as ErrorNetCDF};
@@ -990,10 +990,10 @@ fn write_finite_elements_metrics(
 ) -> Result<(), ErrorIO> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let mut u = TensorRank1::<3, 1>::zero();
-    let mut v = TensorRank1::zero();
-    let mut w = TensorRank1::zero();
-    let mut n = TensorRank1::zero();
+    let mut u = Vector::zero();
+    let mut v = Vector::zero();
+    let mut w = Vector::zero();
+    let mut n = Vector::zero();
     let minimum_scaled_jacobians: Jacobians = element_node_connectivity
         .iter()
         .map(|connectivity| {
