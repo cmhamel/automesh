@@ -1,4 +1,5 @@
-use super::voxel::IntermediateError;
+use super::{voxel::IntermediateError, Coordinate, Coordinates};
+use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use pyo3::{exceptions::PyTypeError, prelude::*};
@@ -18,6 +19,24 @@ fn automesh(m: &Bound<'_, PyModule>) -> PyResult<()> {
     super::fem::py::register_module(m)?;
     super::voxel::py::register_module(m)?;
     Ok(())
+}
+
+pub type PyCoordinates = Vec<[f64; 3]>;
+
+pub trait IntoFoo<T> {
+    fn as_foo(&self) -> T;
+}
+
+impl IntoFoo<Coordinates> for PyCoordinates {
+    fn as_foo(&self) -> Coordinates {
+        self.iter().map(|entry| Coordinate::new(*entry)).collect()
+    }
+}
+
+impl IntoFoo<PyCoordinates> for Coordinates {
+    fn as_foo(&self) -> PyCoordinates {
+        self.iter().map(|entry| entry.as_array()).collect()
+    }
 }
 
 pub struct PyIntermediateError {

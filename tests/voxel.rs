@@ -73,7 +73,19 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
         fem.get_element_node_connectivity(),
         &gold.element_node_connectivity,
     );
-    assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
+    // assert_data_eq_gold_2d(fem.get_nodal_coordinates(), &gold.element_coordinates);
+    assert_eq!(
+        fem.get_nodal_coordinates().len(),
+        gold.element_coordinates.len()
+    );
+    fem.get_nodal_coordinates()
+        .iter()
+        .zip(gold.element_coordinates.iter())
+        .for_each(|(data, gold)| {
+            data.iter()
+                .zip(gold.iter())
+                .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry))
+        });
 }
 
 /// A Gold struct is a so-called gold standard, taken as a trusted result,

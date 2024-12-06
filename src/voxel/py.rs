@@ -1,5 +1,8 @@
 use super::{
-    super::{fem::py::FiniteElements, py::PyIntermediateError},
+    super::{
+        fem::py::FiniteElements,
+        py::{IntoFoo, PyIntermediateError},
+    },
     finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
     write_voxels_to_spn, Nel, Vector, VoxelData,
 };
@@ -37,7 +40,7 @@ impl Voxels {
         Ok(FiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
-            nodal_coordinates,
+            nodal_coordinates.as_foo(),
         ))
     }
     /// Constructs and returns a new voxels type from an NPY file.
