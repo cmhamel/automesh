@@ -13,7 +13,7 @@ use super::{
 };
 use chrono::Utc;
 use flavio::math::Tensor;
-use ndarray::Array1;
+use ndarray::{s, Array1, Array2};
 use ndarray_npy::WriteNpyExt;
 use netcdf::{create, Error as ErrorNetCDF};
 use std::{
@@ -31,7 +31,7 @@ use vtkio::{
 
 pub type Blocks = Vec<usize>;
 pub type Connectivity = Vec<Vec<usize>>;
-pub type Jacobians = Array1<f64>;
+pub type Metrics = Array1<f64>;
 pub type Nodes = Vec<usize>;
 pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
@@ -982,13 +982,61 @@ fn write_finite_elements_metrics(
     element_node_connectivity: &Connectivity,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    let minimum_scaled_jacobians =
+        calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
+    let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    let mut file = BufWriter::new(File::create(file_path)?);
+    let input_extension = Path::new(&file_path)
+        .extension()
+        .and_then(|ext| ext.to_str());
+    match input_extension {
+        Some("csv") => {
+            minimum_scaled_jacobians
+                .iter()
+                .zip(maximum_skews.iter())
+                .try_for_each(|(minimum_scaled_jacobian, maximum_skew)| {
+                    file.write_all(
+                        format!(
+                            "{:>11.6e}, {:>15.6e}\n",
+                            minimum_scaled_jacobian, maximum_skew
+                        )
+                        .as_bytes(),
+                    )
+                })?;
+            file.flush()?
+        }
+        Some("npy") => {
+            let mut metrics_set =
+                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 2), 0.0);
+            metrics_set
+                .slice_mut(s![.., 0])
+                .assign(&minimum_scaled_jacobians);
+            metrics_set.slice_mut(s![.., 1]).assign(&maximum_skews);
+            metrics_set.write_npy(file).unwrap();
+        }
+        _ => panic!("print error message with input and extension"),
+    }
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mWriting metrics to file\x1b[0m {:?}",
+        time.elapsed()
+    );
+    Ok(())
+}
+
+fn calculate_minimum_scaled_jacobians(
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
     let mut u = Vector::zero();
     let mut v = Vector::zero();
     let mut w = Vector::zero();
     let mut n = Vector::zero();
-    let minimum_scaled_jacobians: Jacobians = element_node_connectivity
+    let minimum_scaled_jacobians = element_node_connectivity
         .iter()
         .map(|connectivity| {
             connectivity
@@ -1076,30 +1124,58 @@ fn write_finite_elements_metrics(
         "           \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
         time.elapsed()
     );
+    minimum_scaled_jacobians
+}
+
+fn calculate_maximum_skews(
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
     #[cfg(feature = "profile")]
-    let time2 = Instant::now();
-    let mut file = BufWriter::new(File::create(file_path)?);
-    let input_extension = Path::new(&file_path)
-        .extension()
-        .and_then(|ext| ext.to_str());
-    match input_extension {
-        Some("csv") => {
-            minimum_scaled_jacobians
-                .iter()
-                .try_for_each(|minimum_scaled_jacobian| {
-                    file.write_all(format!("{}\n", minimum_scaled_jacobian).as_bytes())
-                })?;
-            file.flush()?
-        }
-        Some("npy") => {
-            minimum_scaled_jacobians.write_npy(file).unwrap();
-        }
-        _ => panic!("print error message with input and extension"),
-    }
+    let time = Instant::now();
+    let mut x1 = Vector::zero();
+    let mut x2 = Vector::zero();
+    let mut x3 = Vector::zero();
+    let maximum_skews = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            x1 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET])
+                .normalized();
+            x2 = (&nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET])
+                .normalized();
+            x3 = (&nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET])
+                .normalized();
+            [(&x1 * &x2).abs(), (&x1 * &x3).abs(), (&x2 * &x3).abs()]
+                .into_iter()
+                .reduce(f64::min)
+                .unwrap()
+        })
+        .collect();
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mWriting metrics to file\x1b[0m {:?}",
-        time2.elapsed()
+        "           \x1b[1;93m⤷ Maximum skews\x1b[0m {:?}",
+        time.elapsed()
     );
-    Ok(())
+    maximum_skews
 }
