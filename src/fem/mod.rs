@@ -982,6 +982,8 @@ fn write_finite_elements_metrics(
     element_node_connectivity: &Connectivity,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    let maximum_aspect_ratios =
+        calculate_maximum_aspect_ratios(element_node_connectivity, nodal_coordinates);
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
@@ -993,27 +995,32 @@ fn write_finite_elements_metrics(
         .and_then(|ext| ext.to_str());
     match input_extension {
         Some("csv") => {
-            minimum_scaled_jacobians
+            maximum_aspect_ratios
                 .iter()
-                .zip(maximum_skews.iter())
-                .try_for_each(|(minimum_scaled_jacobian, maximum_skew)| {
-                    file.write_all(
-                        format!(
-                            "{:>11.6e}, {:>15.6e}\n",
-                            minimum_scaled_jacobian, maximum_skew
+                .zip(minimum_scaled_jacobians.iter().zip(maximum_skews.iter()))
+                .try_for_each(
+                    |(maximum_aspect_ratio, (minimum_scaled_jacobian, maximum_skew))| {
+                        file.write_all(
+                            format!(
+                                "{:>15.6e}, {:>15.6e}, {:>15.6e}\n",
+                                maximum_aspect_ratio, minimum_scaled_jacobian, maximum_skew
+                            )
+                            .as_bytes(),
                         )
-                        .as_bytes(),
-                    )
-                })?;
+                    },
+                )?;
             file.flush()?
         }
         Some("npy") => {
             let mut metrics_set =
-                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 2), 0.0);
+                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 3), 0.0);
             metrics_set
                 .slice_mut(s![.., 0])
+                .assign(&maximum_aspect_ratios);
+            metrics_set
+                .slice_mut(s![.., 1])
                 .assign(&minimum_scaled_jacobians);
-            metrics_set.slice_mut(s![.., 1]).assign(&maximum_skews);
+            metrics_set.slice_mut(s![.., 2]).assign(&maximum_skews);
             metrics_set.write_npy(file).unwrap();
         }
         _ => panic!("print error message with input and extension"),
@@ -1024,6 +1031,59 @@ fn write_finite_elements_metrics(
         time.elapsed()
     );
     Ok(())
+}
+
+fn calculate_maximum_aspect_ratios(
+    element_node_connectivity: &Connectivity,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    let mut l1 = 0.0;
+    let mut l2 = 0.0;
+    let mut l3 = 0.0;
+    let maximum_aspect_ratios = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            l1 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET])
+                .norm();
+            l2 = (&nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET])
+                .norm();
+            l3 = (&nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET])
+                .norm();
+            [l1 / l2, l2 / l1, l1 / l3, l3 / l1, l2 / l3, l3 / l2]
+                .into_iter()
+                .reduce(f64::min)
+                .unwrap()
+        })
+        .collect();
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Maximum aspect ratios\x1b[0m {:?}",
+        time.elapsed()
+    );
+    maximum_aspect_ratios
 }
 
 fn calculate_minimum_scaled_jacobians(
