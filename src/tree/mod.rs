@@ -486,7 +486,7 @@ impl Tree for OcTree {
             .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
             .count();
         let mut element_blocks = vec![0; num_elements];
-        let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; num_elements];
+        let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
         let mut nodal_coordinates: Coordinates = (0..num_elements * ELEMENT_NUM_NODES)
             .map(|_| Coordinate::zero())
             .collect();
@@ -500,9 +500,7 @@ impl Tree for OcTree {
             )
             .for_each(|(cell, (block, connectivity))| {
                 *block = cell.get_block() as usize;
-                *connectivity = (index + NODE_NUMBERING_OFFSET
-                    ..index + ELEMENT_NUM_NODES + NODE_NUMBERING_OFFSET)
-                    .collect();
+                *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
                 nodal_coordinates[index] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,

@@ -8,7 +8,7 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, Connectivity, FiniteElements},
+    fem::{Blocks, FiniteElements, HexConnectivity},
     Coordinate, Coordinates, Vector, NODE_NUMBERING_OFFSET, NSD,
 };
 use flavio::math::Tensor;
@@ -131,13 +131,13 @@ fn initial_element_node_connectivity(
     filtered_voxel_data: &VoxelDataSized<NSD>,
     nelxplus1: &usize,
     nelyplus1: &usize,
-) -> Connectivity {
+) -> HexConnectivity {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let element_node_connectivity: Connectivity = filtered_voxel_data
+    let element_node_connectivity: HexConnectivity = filtered_voxel_data
         .iter()
         .map(|entry| {
-            vec![
+            [
                 entry[0]
                     + entry[1] * nelxplus1
                     + entry[2] * nelxplus1 * nelyplus1
@@ -186,7 +186,7 @@ fn initial_element_node_connectivity(
 }
 
 fn initial_nodal_coordinates(
-    element_node_connectivity: &Connectivity,
+    element_node_connectivity: &HexConnectivity,
     filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
     scale: &Vector,
@@ -272,7 +272,7 @@ fn initial_nodal_coordinates(
 }
 
 fn renumber_nodes(
-    element_node_connectivity: &mut Connectivity,
+    element_node_connectivity: &mut HexConnectivity,
     mut initial_nodal_coordinates: InitialNodalCoordinates,
     number_of_nodes_unfiltered: usize,
 ) -> Coordinates {
@@ -314,7 +314,7 @@ fn finite_element_data_from_data(
     remove: Option<Vec<u8>>,
     scale: &Vector,
     translate: &Vector,
-) -> Result<(Blocks, Connectivity, Coordinates), String> {
+) -> Result<(Blocks, HexConnectivity, Coordinates), String> {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;

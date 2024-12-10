@@ -2,7 +2,7 @@ use super::{
     super::py::{IntoFoo, PyCoordinates, PyIntermediateError},
     finite_element_data_from_inp, write_finite_elements_metrics, write_finite_elements_to_abaqus,
     write_finite_elements_to_exodus, write_finite_elements_to_mesh, write_finite_elements_to_vtk,
-    Blocks, Connectivity, Smoothing,
+    Blocks, HexConnectivity, Smoothing,
 };
 use pyo3::prelude::*;
 
@@ -15,7 +15,7 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 #[pyclass]
 pub struct FiniteElements {
     element_blocks: Blocks,
-    element_node_connectivity: Connectivity,
+    element_node_connectivity: HexConnectivity,
     nodal_coordinates: PyCoordinates,
 }
 
@@ -25,7 +25,7 @@ impl FiniteElements {
     #[new]
     pub fn from_data(
         element_blocks: Blocks,
-        element_node_connectivity: Connectivity,
+        element_node_connectivity: HexConnectivity,
         nodal_coordinates: PyCoordinates,
     ) -> Self {
         Self {

@@ -22,6 +22,7 @@ pub use voxel::{VoxelData, Voxels};
 
 use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
 
+pub type Connectivity<const D: usize> = Vec<[usize; D]>;
 pub type Coordinate = VectorFlavio<1>;
 pub type Coordinates = TensorRank1Vec<3, 1>;
 pub type Points = TensorRank1Vec<3, 1>;

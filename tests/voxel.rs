@@ -49,7 +49,7 @@ where
         .for_each(|(data_entry, gold_entry)| assert_eq!(data_entry, gold_entry));
 }
 
-fn assert_data_eq_gold_2d<const N: usize, T>(data: &[Vec<T>], gold: &[[T; N]])
+fn assert_data_eq_gold_2d<const N: usize, T>(data: &[[T; 8]], gold: &[[T; N]])
 where
     T: std::fmt::Debug + std::cmp::PartialEq,
 {
