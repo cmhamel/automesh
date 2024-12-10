@@ -1,5 +1,6 @@
 """This module, quadtree.py, creates a simple quadtree and plots it.
 """
+
 from pathlib import Path
 from typing import NamedTuple
 
@@ -17,6 +18,7 @@ class QuadTree:
     """Defines a quadtree composed of a single parent quad and recursive
     children quads.
     """
+
     def __init__(self, x, y, width, height, level=0, max_level=2):
         # (x, y, width, height)
         self.boundary = (x, y, width, height)
@@ -94,6 +96,7 @@ class QuadTree:
         for child in self.children:
             child.draw(ax)
 
+
 # User input begin
 
 
@@ -116,9 +119,7 @@ figwidth, figheight = 8, 8
 fig, ax0 = plt.subplots(figsize=(figwidth, figheight))
 
 # Create the quadtree with a boundary of (-12, -12, 24, 24)
-quadtree = QuadTree(
-    XMIN, YMIN, WIDTH, HEIGHT, level=0, max_level=N_LEVELS
-)
+quadtree = QuadTree(XMIN, YMIN, WIDTH, HEIGHT, level=0, max_level=N_LEVELS)
 
 # Draw the quadtree
 quadtree.draw(ax0)

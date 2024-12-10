@@ -61,9 +61,9 @@ def sphere(radius: int, dtype=np.uint8) -> np.ndarray:
 
     n_voxels_per_side = 2 * radius + 1
     vox_z, vox_y, vox_x = np.mgrid[
-        -radius:radius:n_voxels_per_side * 1j,
-        -radius:radius:n_voxels_per_side * 1j,
-        -radius:radius:n_voxels_per_side * 1j,
+        -radius : radius : n_voxels_per_side * 1j,
+        -radius : radius : n_voxels_per_side * 1j,
+        -radius : radius : n_voxels_per_side * 1j,
     ]
     voxel_radius_squared = vox_x**2 + vox_y**2 + vox_z**2
     result = np.array(voxel_radius_squared <= radius * radius, dtype=dtype)
@@ -105,13 +105,14 @@ SAVE: Final[bool] = False  # turn to True to save .png and .npy files
 N_SUBPLOTS = len(spheres)
 IDX = 1
 for index, (key, value) in enumerate(spheres.items()):
-    ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
+    ax = fig.add_subplot(1, N_SUBPLOTS, index + 1, projection=Axes3D.name)
     ax.voxels(
         value,
         facecolors=colors[index],
         edgecolor=colors[index],
         alpha=VOXEL_ALPHA,
-        lightsource=lightsource)
+        lightsource=lightsource,
+    )
     ax.set_title(key.replace("_", "="))
     IDX += 1
 
