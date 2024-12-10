@@ -9,10 +9,10 @@ python spheres_cont.py
 
 Output
 ------
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_2.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_3.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_4.npy
+Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_1.npy
+Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.npy
+Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_3.npy
+Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_4.npy
 """
 
 from pathlib import Path

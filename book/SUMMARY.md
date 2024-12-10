@@ -8,7 +8,6 @@
 - [Examples](examples/README.md)
   - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
-  - [Sphere with Shells](examples/sphere_with_shells/README.md)
 - [Smoothing](smoothing/README.md)
   - [Laplace](smoothing/laplace.md)
   - [Hierarchical Laplace](smoothing/laplace_hierarchical.md)
@@ -23,6 +22,10 @@
   - [Mesh](cli/mesh.md)
   - [Metrics](cli/metrics.md)
   - [Smooth](cli/smooth.md)
+- [Analysis](analysis/README.md)
+  - [Sphere with Shells](analysis/sphere_with_shells/README.md)
+    - [Timing - `automesh`](analysis/sphere_with_shells/timing_automesh.md)
+    - [Timing - Sculpt](analysis/sphere_with_shells/timing_sculpt.md)
 
 # Appendices
 
