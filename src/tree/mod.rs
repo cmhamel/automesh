@@ -309,7 +309,7 @@ impl Tree for OcTree {
                                             false
                                         };
                                         strong_2 = if !weak {
-                                            if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
+                                            if let Some(edge_cell) = self[kids[7]].get_faces()[1] {
                                                 self[edge_cell].cells.is_some()
                                             } else {
                                                 false
