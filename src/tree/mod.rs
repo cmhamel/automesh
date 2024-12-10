@@ -222,7 +222,7 @@ impl Cell {
                     None,
                     None,
                     Some(indices[7]),
-                    Some(indices[6]),
+                    Some(indices[4]),
                     Some(indices[1]),
                     None,
                 ],
