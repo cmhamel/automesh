@@ -9,10 +9,10 @@ python spheres_cont.py
 
 Output
 ------
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_1.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_2.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_3.npy
-Saved: ~/autotwin/automesh/book/examples/spheres_cont/spheres_resolution_4.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_1.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_3.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_4.npy
 """
 
 from pathlib import Path
@@ -26,28 +26,28 @@ import numpy as np
 
 def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
     """Generate a 3D voxelized representation of three concentric spheres
-        of 10, 11, and 12 cm, at a given resolution.
+    of 10, 11, and 12 cm, at a given resolution.
 
-        Parameters
-        ----------
-        resolution : int
-            The resolution as voxels per centimeter.  Minimum value is 1.
+    Parameters
+    ----------
+    resolution : int
+        The resolution as voxels per centimeter.  Minimum value is 1.
 
-        dtype: data-type, optional
-            The data type of the output array.  Default is np.uint8.
+    dtype: data-type, optional
+        The data type of the output array.  Default is np.uint8.
 
-        Returns
-        -------
-        np.ndarray
-            A 3D numpy array representing the voxelized spheres.  Voxels within
-            the inner sphere are set to 1, the intermediate shell are set to 2,
-            and the outer shell are set to 3.  Voxels outside the spheres are
-            set to 0.
+    Returns
+    -------
+    np.ndarray
+        A 3D numpy array representing the voxelized spheres.  Voxels within
+        the inner sphere are set to 1, the intermediate shell are set to 2,
+        and the outer shell are set to 3.  Voxels outside the spheres are
+        set to 0.
 
-        Raises
-        ------
-        ValueError
-            If the resolution is less than 1.
+    Raises
+    ------
+    ValueError
+        If the resolution is less than 1.
     """
     print(f"Creating sphere with resolution: {resolution}")
     if resolution < 1:
@@ -83,8 +83,8 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
 
 
 rr = (1, 2, 4, 10)  # resolutions (voxels per cm)
-lims = tuple(map(lambda x: [0, 24*x], rr))  # limits
-tt = tuple(map(lambda x: [0, 12*x, 24*x], rr))  # ticks
+lims = tuple(map(lambda x: [0, 24 * x], rr))  # limits
+tt = tuple(map(lambda x: [0, 12 * x, 24 * x], rr))  # ticks
 
 # User input begin
 spheres = {
@@ -123,13 +123,14 @@ for index, (key, value) in enumerate(spheres.items()):
         print(f"index: {index}")
         print(f"key: {key}")
         # print(f"value: {value}")
-        ax = fig.add_subplot(1, N_SUBPLOTS, index+1, projection=Axes3D.name)
+        ax = fig.add_subplot(1, N_SUBPLOTS, index + 1, projection=Axes3D.name)
         ax.voxels(
             value,
             facecolors=colors[index],
             edgecolor=colors[index],
             alpha=VOXEL_ALPHA,
-            lightsource=lightsource)
+            lightsource=lightsource,
+        )
         ax.set_title(key)
 
         # Set labels for the axes

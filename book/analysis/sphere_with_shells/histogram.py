@@ -24,7 +24,7 @@ for filename in filenames:
 
     # breakpoint()
     # Create the histogram
-    plt.hist(bb, bins=20, color='blue', alpha=0.7, log=True)
+    plt.hist(bb, bins=20, color="blue", alpha=0.7, log=True)
 
     # Add labels and title
     plt.xlabel("Minimum Scaled Jacobian (MSJ)")

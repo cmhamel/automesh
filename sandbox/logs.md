@@ -4,6 +4,39 @@
 
 *In order of most recent to least recent.*
 
+
+## 2024-12-09
+
+* Speed up 10x flavio - on benchmarks
+* Tet meshing
+  * Literature review https://github.com/autotwin/automesh/issues/217
+* 2D weakly balanced templates - still work in progress
+* Hook up recon3d to Python API
+* rebase quadtree branch
+* Budget
+* Brainstorm - pivot from dev to analysis
+  * Case study #1 - three material spheres
+    * conforming versus voxelated versus voxelated smoothed
+      * displacement field (maybe also strain and strain rate)?
+      * existing CBH library for cross-correlation
+    * https://github.com/autotwin/basis/blob/main/README_three_material_spheres.md
+    * Write up as a chapter in mdbook as a case study?
+  * Case study #2 - 100 brains
+    * https://github.com/autotwin/basis
+    * shape metric - MSJ, possibly skew, aspect ratio
+  * Case study #3 - IPREDICT
+    * https://mtec-sc.org/project-awards/18-04-i-predict/
+
+## 2024-11-27
+
+* Not all hanging nodes need to be connected; make (a complete set of) templates, and then match templates.
+* Algorithmic connection of all hanging nodes causes unnecessarily large number of quad/hex element.
+* Match small to large
+* Match interior to exterior
+* Path forward
+  * Complete the quad templates (CBH) in Rust
+  * Taubin iteration recast in code and docs (MRB)
+
 ## 2024-11-13
 
 * stuck on local macOS

@@ -1,4 +1,4 @@
-r"""This module, figures_test.py, tests functionality of the included module.
+r"""This module, examples_test.py, tests functionality of the included module.
 
 Example
 -------

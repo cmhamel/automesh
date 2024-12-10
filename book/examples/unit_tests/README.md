@@ -551,17 +551,33 @@ Figure: Sparse mesh composed of two materials at random voxel locations, shown w
 
 ## Source
 
-The figures were created with [figures.py](figures.py) and tested with
-[figures_test.py](figures_test.py).
+The figures were created with the following Python files:
 
-### `figures.py`
+* [examples_data.py](examples_data.py)
+* [examples_figures.py](examples_figures.py)
+* [examples_test.py](examples_test.py)
+* [examples_types.py](examples_types.py)
+
+### `examples_data.py`
 
 ```python
-<!-- cmdrun cat figures.py -->
+<!-- cmdrun cat examples_data.py -->
 ```
 
-### `figures_test.py`
+### `examples_figures.py`
 
 ```python
-<!-- cmdrun cat figures_test.py -->
+<!-- cmdrun cat examples_figures.py -->
+```
+
+### `examples_test.py`
+
+```python
+<!-- cmdrun cat examples_test.py -->
+```
+
+### `examples_types.py`
+
+```python
+<!-- cmdrun cat examples_types.py -->
 ```

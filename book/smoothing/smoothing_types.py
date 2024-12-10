@@ -41,8 +41,7 @@ class SmoothingAlgorithm(Enum):
 
 
 class SmoothingExample(NamedTuple):
-    """The prototype for the data necessary to construct a smoothing example.
-    """
+    """The prototype smoothing example."""
 
     vertices: Vertices
     elements: Hexes

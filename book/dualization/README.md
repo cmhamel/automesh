@@ -16,5 +16,5 @@ tesselation.
 
 ## References
 
-* https://github.com/sandialabs/sibl/blob/master/geo/doc/quadtree.md
-* https://github.com/sandialabs/sibl/blob/master/geo/doc/dual_quad_transitions.md
+* [https://github.com/sandialabs/sibl/blob/master/geo/doc/quadtree.md](https://github.com/sandialabs/sibl/blob/master/geo/doc/quadtree.md)
+* [https://github.com/sandialabs/sibl/blob/master/geo/doc/dual_quad_transitions.md](https://github.com/sandialabs/sibl/blob/master/geo/doc/dual_quad_transitions.md)
