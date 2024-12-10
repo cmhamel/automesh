@@ -19,24 +19,28 @@ automesh convert -i spheres_resolution_4.npy -o spheres_resolution_4.spn
 ```sh
     automesh 0.2.8
      Reading spheres_resolution_1.npy
-        Done 191.208µs
+        Done 143.541µs
      Writing spheres_resolution_1.spn
-        Done 1.680708ms
+        Done 1.035459ms
+       Total 1.325833ms
     automesh 0.2.8
      Reading spheres_resolution_2.npy
-        Done 204.167µs
+        Done 177.334µs
      Writing spheres_resolution_2.spn
-        Done 3.387333ms
+        Done 4.078375ms
+       Total 4.409791ms
     automesh 0.2.8
      Reading spheres_resolution_3.npy
-        Done 317.25µs
+        Done 259.833µs
      Writing spheres_resolution_3.spn
-        Done 16.941292ms
+        Done 16.901542ms
+       Total 17.292542ms
     automesh 0.2.8
      Reading spheres_resolution_4.npy
-        Done 2.378083ms
+        Done 2.417333ms
      Writing spheres_resolution_4.spn
-        Done 222.468583ms
+        Done 230.103333ms
+       Total 232.658709ms
 ```
 
 Run Sculpt.

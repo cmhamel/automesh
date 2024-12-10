@@ -34,11 +34,12 @@ automesh mesh -i spheres_resolution_1.npy \
 ```sh
     automesh 0.2.8
      Reading spheres_resolution_1.npy
-        Done 556.958µs
-     Meshing spheres_resolution_1.exo [xtranslate: -12, ytranslate: -12, ztranslate: -12] 
-        Done 841.084µs
+        Done 9.991084ms
+     Meshing spheres_resolution_1.exo [xtranslate: -12, ytranslate: -12, ztranslate: -12]
+        Done 567.75µs
      Writing spheres_resolution_1.exo
-        Done 17.795292ms
+        Done 7.369708ms
+       Total 18.158ms
 ```
 
 ```sh
@@ -53,11 +54,12 @@ automesh mesh -i spheres_resolution_2.npy \
 ```sh
     automesh 0.2.8
      Reading spheres_resolution_2.npy
-        Done 7.280417ms
-     Meshing spheres_resolution_2.exo [xscale: 0.5, yscale: 0.5, zscale: 0.5, xtranslate: -12, ytranslate: -12, ztranslate: -12] 
-        Done 4.497209ms
+        Done 6.601875ms
+     Meshing spheres_resolution_2.exo [xscale: 0.5, yscale: 0.5, zscale: 0.5, xtranslate: -12, ytranslate: -12, ztranslate: -12]
+        Done 4.208542ms
      Writing spheres_resolution_2.exo
-        Done 26.157584ms
+        Done 13.984917ms
+       Total 25.056125ms
 ```
 
 ```sh
@@ -72,11 +74,12 @@ automesh mesh -i spheres_resolution_3.npy \
 ```sh
     automesh 0.2.8
      Reading spheres_resolution_3.npy
-        Done 11.56025ms
-     Meshing spheres_resolution_3.exo [xscale: 0.25, yscale: 0.25, zscale: 0.25, xtranslate: -12, ytranslate: -12, ztranslate: -12] 
-        Done 37.329166ms
+        Done 701.959µs
+     Meshing spheres_resolution_3.exo [xscale: 0.25, yscale: 0.25, zscale: 0.25, xtranslate: -12, ytranslate: -12, ztranslate: -12]
+        Done 32.522625ms
      Writing spheres_resolution_3.exo
-        Done 71.462542ms
+        Done 39.280292ms
+       Total 72.724167ms
 ```
 
 ```sh
@@ -91,11 +94,12 @@ automesh mesh -i spheres_resolution_4.npy \
 ```sh
     automesh 0.2.8
      Reading spheres_resolution_4.npy
-        Done 13.226083ms
-     Meshing spheres_resolution_4.exo [xscale: 0.1, yscale: 0.1, zscale: 0.1, xtranslate: -12, ytranslate: -12, ztranslate: -12] 
-        Done 620.524208ms
+        Done 5.540458ms
+     Meshing spheres_resolution_4.exo [xscale: 0.1, yscale: 0.1, zscale: 0.1, xtranslate: -12, ytranslate: -12, ztranslate: -12]
+        Done 458.92225ms
      Writing spheres_resolution_4.exo
-        Done 930.410584ms
+        Done 495.663416ms
+       Total 960.318042ms
 ```
 
 ## Visualization

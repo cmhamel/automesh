@@ -26,6 +26,7 @@
   - [Sphere with Shells](analysis/sphere_with_shells/README.md)
     - [Timing - `automesh`](analysis/sphere_with_shells/timing_automesh.md)
     - [Timing - Sculpt](analysis/sphere_with_shells/timing_sculpt.md)
+    - [Simulation](analysis/sphere_with_shells/simulation.md)
 
 # Appendices
 

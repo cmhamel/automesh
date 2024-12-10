@@ -9,10 +9,10 @@ python spheres_cont.py
 
 Output
 ------
-Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_1.npy
-Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.npy
-Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_3.npy
-Saved: ~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_4.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_1.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_3.npy
+~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_4.npy
 """
 
 from pathlib import Path
@@ -62,9 +62,9 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
     # nvps = 2 * r12 * resolution + 1
     nvps = 2 * r12 * resolution
     vox_z, vox_y, vox_x = np.mgrid[
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
+        -r12: r12: nvps * 1j,
+        -r12: r12: nvps * 1j,
+        -r12: r12: nvps * 1j,
     ]
     domain = vox_x**2 + vox_y**2 + vox_z**2
     mask_10_in = np.array(domain <= r10 * r10, dtype=dtype)
