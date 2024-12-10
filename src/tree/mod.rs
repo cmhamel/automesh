@@ -18,7 +18,7 @@ type Indices = [usize; NUM_OCTANTS];
 pub type OcTree = Vec<Cell>;
 
 pub trait Tree {
-    fn balance(&mut self);
+    fn balance(&mut self, weak: bool);
     fn from_points(levels: &usize, points: &Points) -> Self;
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
@@ -277,12 +277,14 @@ impl Cell {
 }
 
 impl Tree for OcTree {
-    fn balance(&mut self) {
+    fn balance(&mut self, weak: bool) {
         let mut balanced;
         let mut block;
         let mut index;
         let mut subdivide;
         let levels = *self[self.len() - 1].get_level();
+        let mut strong_1;
+        let mut strong_2;
         #[allow(unused_variables)]
         for iteration in 1.. {
             balanced = true;
@@ -297,7 +299,27 @@ impl Tree for OcTree {
                             if let Some(kids) = self[*neighbor].cells {
                                 if match face {
                                     0 => {
-                                        self[kids[2]].cells.is_some()
+                                        strong_1 = if !weak {
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
+                                                self[edge_cell].cells.is_some()
+                                            } else {
+                                                false
+                                            }
+                                        } else {
+                                            false
+                                        };
+                                        strong_2 = if !weak {
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
+                                                self[edge_cell].cells.is_some()
+                                            } else {
+                                                false
+                                            }
+                                        } else {
+                                            false
+                                        };
+                                        strong_1
+                                            || strong_2
+                                            || self[kids[2]].cells.is_some()
                                             || self[kids[3]].cells.is_some()
                                             || self[kids[6]].cells.is_some()
                                             || self[kids[7]].cells.is_some()

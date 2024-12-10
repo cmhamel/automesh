@@ -213,6 +213,10 @@ enum Commands {
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
+
+        /// Pass to use weak balancing
+        #[arg(action, long, short)]
+        weak: bool,
     },
 
     /// Applies smoothing to an existing finite element mesh
@@ -428,11 +432,12 @@ fn main() -> Result<(), ErrorWrapper> {
             ytranslate,
             ztranslate,
             quiet,
+            weak,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-                quiet,
+                quiet, weak,
             )
         }
         Some(Commands::Smooth {
@@ -641,6 +646,7 @@ fn octree(
     ytranslate: f64,
     ztranslate: f64,
     quiet: bool,
+    weak: bool,
 ) -> Result<(), ErrorWrapper> {
     let input_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Npy(voxels) => voxels,
@@ -665,7 +671,7 @@ fn octree(
     if !quiet {
         println!("   \x1b[1;96mBalancing\x1b[0m octree");
     }
-    tree.balance();
+    tree.balance(weak);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
