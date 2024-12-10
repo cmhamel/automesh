@@ -2,17 +2,18 @@
 use std::time::Instant;
 
 use super::{
-    Coordinate, Coordinates, FiniteElements, Points, Vector, VoxelData, Voxels, ELEMENT_NUM_NODES,
-    NODE_NUMBERING_OFFSET,
+    fem::NODE_NUMBERING_OFFSET, Coordinate, Coordinates, HexahedralFiniteElements, Points, Vector,
+    VoxelData, Voxels, NUM_NODES_HEX,
 };
 use flavio::math::Tensor;
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
+const NUM_FACES: usize = 6;
 const NUM_OCTANTS: usize = 8;
 
 type Cells = [Cell; NUM_OCTANTS];
-type Faces = [Option<usize>; 6];
+type Faces = [Option<usize>; NUM_FACES];
 type Indices = [usize; NUM_OCTANTS];
 pub type OcTree = Vec<Cell>;
 
@@ -25,7 +26,7 @@ pub trait Tree {
         remove: Option<Vec<u8>>,
         scale: &Vector,
         translate: &Vector,
-    ) -> Result<FiniteElements, String>;
+    ) -> Result<HexahedralFiniteElements, String>;
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
 }
@@ -384,7 +385,7 @@ impl Tree for OcTree {
         let mut tree = vec![Cell {
             block: None,
             cells: None,
-            faces: [None; 6],
+            faces: [None; NUM_FACES],
             level: 0,
             min_x,
             max_x,
@@ -436,7 +437,7 @@ impl Tree for OcTree {
                     tree.push(Cell {
                         block: None,
                         cells: None,
-                        faces: [None; 6],
+                        faces: [None; NUM_FACES],
                         level: 0,
                         min_x: length * i as f64,
                         max_x: length * (i + 1) as f64,
@@ -464,7 +465,7 @@ impl Tree for OcTree {
         remove: Option<Vec<u8>>,
         scale: &Vector,
         translate: &Vector,
-    ) -> Result<FiniteElements, String> {
+    ) -> Result<HexahedralFiniteElements, String> {
         let xscale = scale[0];
         let yscale = scale[1];
         let zscale = scale[2];
@@ -486,8 +487,8 @@ impl Tree for OcTree {
             .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
             .count();
         let mut element_blocks = vec![0; num_elements];
-        let mut element_node_connectivity = vec![vec![0; ELEMENT_NUM_NODES]; num_elements];
-        let mut nodal_coordinates: Coordinates = (0..num_elements * ELEMENT_NUM_NODES)
+        let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
+        let mut nodal_coordinates: Coordinates = (0..num_elements * NUM_NODES_HEX)
             .map(|_| Coordinate::zero())
             .collect();
         let mut index = 0;
@@ -500,9 +501,7 @@ impl Tree for OcTree {
             )
             .for_each(|(cell, (block, connectivity))| {
                 *block = cell.get_block() as usize;
-                *connectivity = (index + NODE_NUMBERING_OFFSET
-                    ..index + ELEMENT_NUM_NODES + NODE_NUMBERING_OFFSET)
-                    .collect();
+                *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
                 nodal_coordinates[index] = Coordinate::new([
                     cell.get_min_x().copy() * xscale + xtranslate,
                     cell.get_min_y().copy() * yscale + ytranslate,
@@ -543,9 +542,9 @@ impl Tree for OcTree {
                     cell.get_max_y().copy() * yscale + ytranslate,
                     cell.get_max_z().copy() * zscale + ztranslate,
                 ]);
-                index += ELEMENT_NUM_NODES;
+                index += NUM_NODES_HEX;
             });
-        Ok(FiniteElements::from_data(
+        Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,

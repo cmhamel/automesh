@@ -16,19 +16,16 @@ mod fem;
 mod tree;
 mod voxel;
 
-pub use fem::{FiniteElements, Smoothing};
+pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing, NUM_NODES_HEX};
 pub use tree::{OcTree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
 use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
 
+const NSD: usize = 3;
+
+pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 pub type Coordinate = VectorFlavio<1>;
 pub type Coordinates = TensorRank1Vec<3, 1>;
 pub type Points = TensorRank1Vec<3, 1>;
 pub type Vector = VectorFlavio<1>;
-
-const ELEMENT_NUM_NODES: usize = 8;
-const ELEMENT_NUMBERING_OFFSET: usize = 1;
-const ELEMENT_TYPE: &str = "C3D8R";
-const NODE_NUMBERING_OFFSET: usize = 1;
-const NSD: usize = 3;

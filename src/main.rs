@@ -1,4 +1,4 @@
-use automesh::{FiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -347,19 +347,19 @@ impl From<WriteNpyError> for ErrorWrapper {
 
 #[allow(clippy::large_enum_variant)]
 enum InputTypes {
-    Abaqus(FiniteElements),
+    Abaqus(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
 }
 
 #[allow(clippy::large_enum_variant)]
 enum OutputTypes {
-    Abaqus(FiniteElements),
-    Exodus(FiniteElements),
-    Mesh(FiniteElements),
+    Abaqus(HexahedralFiniteElements),
+    Exodus(HexahedralFiniteElements),
+    Mesh(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
-    Vtk(FiniteElements),
+    Vtk(HexahedralFiniteElements),
 }
 
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
@@ -371,8 +371,10 @@ fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrappe
 }
 
 fn main() -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    let is_quiet;
     let args = Args::parse();
-    match args.command {
+    let result = match args.command {
         Some(Commands::Convert {
             input,
             output,
@@ -380,7 +382,10 @@ fn main() -> Result<(), ErrorWrapper> {
             nely,
             nelz,
             quiet,
-        }) => convert(input, output, nelx, nely, nelz, quiet),
+        }) => {
+            is_quiet = quiet;
+            convert(input, output, nelx, nely, nelz, quiet)
+        }
         Some(Commands::Mesh {
             meshing,
             input,
@@ -397,15 +402,21 @@ fn main() -> Result<(), ErrorWrapper> {
             ztranslate,
             metrics,
             quiet,
-        }) => mesh(
-            meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-            ytranslate, ztranslate, metrics, quiet,
-        ),
+        }) => {
+            is_quiet = quiet;
+            mesh(
+                meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale,
+                xtranslate, ytranslate, ztranslate, metrics, quiet,
+            )
+        }
         Some(Commands::Metrics {
             input,
             output,
             quiet,
-        }) => metrics(input, output, quiet),
+        }) => {
+            is_quiet = quiet;
+            metrics(input, output, quiet)
+        }
         Some(Commands::Octree {
             input,
             output,
@@ -417,10 +428,13 @@ fn main() -> Result<(), ErrorWrapper> {
             ytranslate,
             ztranslate,
             quiet,
-        }) => octree(
-            input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-            quiet,
-        ),
+        }) => {
+            is_quiet = quiet;
+            octree(
+                input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
+                quiet,
+            )
+        }
         Some(Commands::Smooth {
             input,
             output,
@@ -431,19 +445,26 @@ fn main() -> Result<(), ErrorWrapper> {
             scale,
             metrics,
             quiet,
-        }) => smooth(
-            input,
-            output,
-            iterations,
-            method,
-            hierarchical,
-            pass_band,
-            scale,
-            metrics,
-            quiet,
-        ),
-        None => Ok(()),
+        }) => {
+            is_quiet = quiet;
+            smooth(
+                input,
+                output,
+                iterations,
+                method,
+                hierarchical,
+                pass_band,
+                scale,
+                metrics,
+                quiet,
+            )
+        }
+        None => return Ok(()),
+    };
+    if !is_quiet {
+        println!("       \x1b[1;98mTotal\x1b[0m {:?}", time.elapsed());
     }
+    result
 }
 
 fn convert(
@@ -592,7 +613,11 @@ fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrappe
     metrics_inner(&output_type, output, quiet)
 }
 
-fn metrics_inner(fem: &FiniteElements, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
+fn metrics_inner(
+    fem: &HexahedralFiniteElements,
+    output: String,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
@@ -718,7 +743,7 @@ fn smooth(
 
 #[allow(clippy::too_many_arguments)]
 fn apply_smoothing_method(
-    output_type: &mut FiniteElements,
+    output_type: &mut HexahedralFiniteElements,
     output: &str,
     iterations: usize,
     method: Option<String>,
@@ -795,7 +820,7 @@ fn read_input(
             if !quiet {
                 println!();
             }
-            InputTypes::Abaqus(FiniteElements::from_inp(input)?)
+            InputTypes::Abaqus(HexahedralFiniteElements::from_inp(input)?)
         }
         Some("npy") => {
             if !quiet {
