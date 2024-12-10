@@ -7,10 +7,7 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{
-    Connectivity, Coordinate, Coordinates, Vector, ELEMENT_NUMBERING_OFFSET, ELEMENT_NUM_NODES,
-    ELEMENT_TYPE, NODE_NUMBERING_OFFSET, NSD,
-};
+use super::{Connectivity, Coordinate, Coordinates, Vector, NSD};
 use chrono::Utc;
 use flavio::math::Tensor;
 use ndarray::{s, Array1, Array2};
@@ -29,19 +26,24 @@ use vtkio::{
     Error as ErrorVtk,
 };
 
+const ELEMENT_NUMBERING_OFFSET: usize = 1;
+const ELEMENT_TYPE: &str = "C3D8R";
+pub const NODE_NUMBERING_OFFSET: usize = 1;
+pub const NUM_NODES_HEX: usize = 8;
+
 pub type Blocks = Vec<usize>;
 pub type VecConnectivity = Vec<Vec<usize>>;
 pub type Metrics = Array1<f64>;
 pub type Nodes = Vec<usize>;
 pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
-pub type HexConnectivity = Connectivity<ELEMENT_NUM_NODES>;
+pub type HexConnectivity = Connectivity<NUM_NODES_HEX>;
 
 /// The finite elements type.
-pub struct FiniteElements {
+pub struct FiniteElements<const N: usize> {
     boundary_nodes: Nodes,
     element_blocks: Blocks,
-    element_node_connectivity: HexConnectivity,
+    element_node_connectivity: Connectivity<N>,
     exterior_nodes: Nodes,
     interface_nodes: Nodes,
     interior_nodes: Nodes,
@@ -55,14 +57,17 @@ pub struct FiniteElements {
     prescribed_nodes_inhomogeneous_coordinates: Coordinates,
 }
 
+/// The hexahedral finite elements type.
+pub type HexahedralFiniteElements = FiniteElements<NUM_NODES_HEX>;
+
 /// Possible smoothing methods.
 pub enum Smoothing {
     Laplacian(usize, f64),
     Taubin(usize, f64, f64),
 }
 
-/// Inherent implementation of the finite elements type.
-impl FiniteElements {
+/// Inherent implementation of hexahedral finite elements.
+impl HexahedralFiniteElements {
     /// Constructs and returns a new finite elements type from data.
     pub fn from_data(
         element_blocks: Blocks,
@@ -225,7 +230,7 @@ impl FiniteElements {
         if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
             let time = Instant::now();
-            let mut element_connectivity = [0; ELEMENT_NUM_NODES];
+            let mut element_connectivity = [0; NUM_NODES_HEX];
             let element_node_connectivity = self.get_element_node_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
             let mut node_node_connectivity = vec![vec![]; number_of_nodes];
@@ -414,7 +419,7 @@ impl FiniteElements {
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
     pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
-        smooth_finite_elements(self, method)
+        smooth_hexahedral_finite_elements(self, method)
     }
     /// Writes the finite elements data to a new Exodus file.
     pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
@@ -485,8 +490,8 @@ fn reorder_connectivity(
         .collect()
 }
 
-fn smooth_finite_elements(
-    finite_elements: &mut FiniteElements,
+fn smooth_hexahedral_finite_elements(
+    finite_elements: &mut HexahedralFiniteElements,
     method: Smoothing,
 ) -> Result<(), &str> {
     if !finite_elements.get_node_node_connectivity().is_empty() {
@@ -706,7 +711,7 @@ fn write_finite_elements_to_exodus(
             )?;
             file.add_dimension(
                 format!("num_nod_per_el{}", current_block).as_str(),
-                ELEMENT_NUM_NODES,
+                NUM_NODES_HEX,
             )?;
             let mut connectivities = file.add_variable::<i32>(
                 format!("connect{}", current_block).as_str(),
@@ -951,7 +956,7 @@ fn write_finite_elements_to_vtk(
         .collect();
     let number_of_cells = element_blocks.len();
     let offsets = (0..number_of_cells)
-        .map(|cell| ((cell + 1) * ELEMENT_NUM_NODES) as u64)
+        .map(|cell| ((cell + 1) * NUM_NODES_HEX) as u64)
         .collect();
     let types = vec![CellType::Hexahedron; number_of_cells];
     let file = PathBuf::from(file_path);

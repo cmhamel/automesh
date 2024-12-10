@@ -8,8 +8,8 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, FiniteElements, HexConnectivity},
-    Coordinate, Coordinates, Vector, NODE_NUMBERING_OFFSET, NSD,
+    fem::{Blocks, HexConnectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET},
+    Coordinate, Coordinates, Vector, NSD,
 };
 use flavio::math::Tensor;
 use ndarray::{Array3, Axis};
@@ -64,10 +64,10 @@ impl Voxels {
         remove: Option<Vec<u8>>,
         scale: &Vector,
         translate: &Vector,
-    ) -> Result<FiniteElements, String> {
+    ) -> Result<HexahedralFiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
-        Ok(FiniteElements::from_data(
+        Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,
