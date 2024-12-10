@@ -1,5 +1,5 @@
-r"""This module, figures.py, demonstrates creating a pixel slice in the (x, y)
-plane, and then appending layers in the z axis, to create a 3D
+r"""This module, examples_figures.py, demonstrates creating a pixel slice in
+the (x, y) plane, and then appending layers in the z axis, to create a 3D
 voxel lattice, as a precursor for a hexahedral finite element mesh.
 
 Example
@@ -18,7 +18,7 @@ The `output_png` visualization files
 # standard library
 import datetime
 from pathlib import Path
-from typing import Final, NamedTuple
+from typing import Final
 
 # third-party libary
 import matplotlib.pyplot as plt
