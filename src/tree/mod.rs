@@ -9,10 +9,11 @@ use flavio::math::Tensor;
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
+const NUM_FACES: usize = 6;
 const NUM_OCTANTS: usize = 8;
 
 type Cells = [Cell; NUM_OCTANTS];
-type Faces = [Option<usize>; 6];
+type Faces = [Option<usize>; NUM_FACES];
 type Indices = [usize; NUM_OCTANTS];
 pub type OcTree = Vec<Cell>;
 
@@ -384,7 +385,7 @@ impl Tree for OcTree {
         let mut tree = vec![Cell {
             block: None,
             cells: None,
-            faces: [None; 6],
+            faces: [None; NUM_FACES],
             level: 0,
             min_x,
             max_x,
@@ -436,7 +437,7 @@ impl Tree for OcTree {
                     tree.push(Cell {
                         block: None,
                         cells: None,
-                        faces: [None; 6],
+                        faces: [None; NUM_FACES],
                         level: 0,
                         min_x: length * i as f64,
                         max_x: length * (i + 1) as f64,
