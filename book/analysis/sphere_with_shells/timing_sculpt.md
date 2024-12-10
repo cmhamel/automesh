@@ -70,7 +70,7 @@ Total Time on 1 Procs   3.221756 sec. (0.053696 min.)
 
 ```sh
 sculpt --num_procs 1 --input_spn "spheres_resolution_3.spn" \
--x 96 -y 96 -z 96
+-x 96 -y 96 -z 96 \
 --xscale 0.25 --yscale 0.25 --zscale 0.25 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12 \
 --spn_xyz_order 0 \
@@ -79,7 +79,7 @@ sculpt --num_procs 1 --input_spn "spheres_resolution_3.spn" \
 ```
 
 ```sh
-Total Time on 1 Procs   116.907237 sec. (1.948454 min.)
+Total Time on 1 Procs   24.635255 sec. (0.410588 min.)
 ```
 
 ```sh
