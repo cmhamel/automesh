@@ -24,7 +24,7 @@ use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
 
 const NSD: usize = 3;
 
-pub type Connectivity<const D: usize> = Vec<[usize; D]>;
+pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 pub type Coordinate = VectorFlavio<1>;
 pub type Coordinates = TensorRank1Vec<3, 1>;
 pub type Points = TensorRank1Vec<3, 1>;
