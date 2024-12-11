@@ -23,6 +23,16 @@ With $\alpha_{\max} := $ 8.0 krad/s^2, and $\Delta t := 8.0$ ms, we can create t
 
 The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the tabular data at data point 4144, values (0.00414310, 7.99999997)).
 
+## Meshes
+
+We consider three simulations using the following three meshes:
+
+* `spheres_reolution_2.exo`
+* `spheres_reolution_3.exo`
+* `spheres_reolution_4.exo`
+
+We do not use the `spheres_resolution_1.exo` because the out shell layer is not closed.
+
 ## References
 
 [^Carlsen_2021]: Carlsen RW, Fawzi AL, Wan Y, Kesari H, Franck C. A quantitative relationship between rotational head kinematics and brain tissue strain from a 2-D parametric finite element analysis. Brain Multiphysics. 2021 Jan 1;2:100024.  [paper](https://1drv.ms/b/s!ApVSeeLlvsE8g9tyGKINkyp_5cb1hA?e=G9XGIZ)

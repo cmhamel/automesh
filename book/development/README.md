@@ -34,6 +34,8 @@
     * `cargo run -- --help`
   * precommit:
     * `pre-commit run --all-files`
+  * clean:
+    * `cargo clean`
   * `cargo doc --open`
 * Test
   * `maturin develop --release --features python`
