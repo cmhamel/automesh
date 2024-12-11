@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -156,7 +156,7 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a balanced octree from a set of points
+    /// Creates a balanced octree from a segmentation
     #[command(hide = true)]
     Octree {
         /// Name of the segmentation input file
@@ -214,7 +214,7 @@ enum Commands {
         #[arg(action, long, short)]
         quiet: bool,
 
-        /// Pass to use weak balancing
+        /// Pass to apply weak balancing
         #[arg(action, long, short)]
         weak: bool,
     },
@@ -663,7 +663,7 @@ fn octree(
     if !quiet {
         println!("    \x1b[1;96mBuilding\x1b[0m octree");
     }
-    let mut tree = OcTree::from_voxels(input_type);
+    let mut tree = Octree::from_voxels(input_type);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }

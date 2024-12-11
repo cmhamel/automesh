@@ -15,7 +15,7 @@ const NUM_OCTANTS: usize = 8;
 type Cells = [Cell; NUM_OCTANTS];
 type Faces = [Option<usize>; NUM_FACES];
 type Indices = [usize; NUM_OCTANTS];
-pub type OcTree = Vec<Cell>;
+pub type Octree = Vec<Cell>;
 
 pub trait Tree {
     fn balance(&mut self, weak: bool);
@@ -276,7 +276,7 @@ impl Cell {
     }
 }
 
-impl Tree for OcTree {
+impl Tree for Octree {
     fn balance(&mut self, weak: bool) {
         let mut balanced;
         let mut block;
