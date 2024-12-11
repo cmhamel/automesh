@@ -17,7 +17,7 @@ mod tree;
 mod voxel;
 
 pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing, NUM_NODES_HEX};
-pub use tree::{OcTree, Tree};
+pub use tree::{Octree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
 use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};

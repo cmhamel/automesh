@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use flavio::math::Tensor;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -156,7 +156,7 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a balanced octree from a set of points
+    /// Creates a balanced octree from a segmentation
     #[command(hide = true)]
     Octree {
         /// Name of the segmentation input file
@@ -213,6 +213,10 @@ enum Commands {
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
+
+        /// Pass to apply weak balancing
+        #[arg(action, long, short)]
+        weak: bool,
     },
 
     /// Applies smoothing to an existing finite element mesh
@@ -428,11 +432,12 @@ fn main() -> Result<(), ErrorWrapper> {
             ytranslate,
             ztranslate,
             quiet,
+            weak,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-                quiet,
+                quiet, weak,
             )
         }
         Some(Commands::Smooth {
@@ -641,6 +646,7 @@ fn octree(
     ytranslate: f64,
     ztranslate: f64,
     quiet: bool,
+    weak: bool,
 ) -> Result<(), ErrorWrapper> {
     let input_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Npy(voxels) => voxels,
@@ -657,7 +663,7 @@ fn octree(
     if !quiet {
         println!("    \x1b[1;96mBuilding\x1b[0m octree");
     }
-    let mut tree = OcTree::from_voxels(input_type);
+    let mut tree = Octree::from_voxels(input_type);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
@@ -665,7 +671,7 @@ fn octree(
     if !quiet {
         println!("   \x1b[1;96mBalancing\x1b[0m octree");
     }
-    tree.balance();
+    tree.balance(weak);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
