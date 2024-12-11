@@ -17,7 +17,7 @@ We use the model to explore answers to the following questions:
 
 Given three concentric spheres of radius 10, 11, and 12 cm, as shown in the figure below,
 
-![spheres_cont_dim](spheres_cont_dim.png)
+![spheres_cont_dim](img/spheres_cont_dim.png)
 
 Figure: Schematic cross-section of three concentric spheres of radius 10, 11, and 12 cm.  Grid spacing is 1 cm.
 
@@ -41,7 +41,7 @@ to create finite element meshes.
 
 The Python code used to generate the figures is included [below](#source).
 
-![spheres_cont](spheres_cont.png)
+![spheres_cont](img/spheres_cont.png)
 
 Figure: Sphere segmentations at selected resolutions, shown in the voxel domain.
 Because plotting large domains with [*Matplotlib*](https://matplotlib.org)

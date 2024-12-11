@@ -26,7 +26,6 @@ Use `automesh` to convert the segmentations into finite element meshes.
 ```sh
 automesh mesh -i spheres_resolution_1.npy \
 -o spheres_resolution_1.exo \
--x 24 -y 24 -z 24 \
 --remove 0 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
 ```
@@ -45,7 +44,6 @@ automesh mesh -i spheres_resolution_1.npy \
 ```sh
 automesh mesh -i spheres_resolution_2.npy \
 -o spheres_resolution_2.exo \
--x 48 -y 48 -z 48 \
 --remove 0 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
@@ -65,7 +63,6 @@ automesh mesh -i spheres_resolution_2.npy \
 ```sh
 automesh mesh -i spheres_resolution_3.npy \
 -o spheres_resolution_3.exo \
--x 96 -y 96 -z 96 \
 --remove 0 \
 --xscale 0.25 --yscale 0.25 --zscale 0.25 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
@@ -85,7 +82,6 @@ automesh mesh -i spheres_resolution_3.npy \
 ```sh
 automesh mesh -i spheres_resolution_4.npy \
 -o spheres_resolution_4.exo \
--x 240 -y 240 -z 240 \
 --remove 0 \
 --xscale 0.1 --yscale 0.1 --zscale 0.1 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12
@@ -127,5 +123,5 @@ view bottom
 
 resolution | 1 vox/cm | 2 vox/cm | 4 vox/cm | 10 vox/cm
 ---------- | -------- | -------- | -------- | ---------
-midline   | ![resolution_1.png](resolution_1.png) | ![resolution_2.png](resolution_2.png) | ![resolution_3.png](resolution_3.png) | ![resolution_4.png](resolution_4.png)
-isometric  | ![resolution_1_iso.png](resolution_1_iso.png) | ![resolution_2_iso.png](resolution_2_iso.png) | ![resolution_3_iso.png](resolution_3_iso.png) | ![resolution_4_iso.png](resolution_4_iso.png)
+midline   | ![resolution_1.png](img/resolution_1.png) | ![resolution_2.png](img/resolution_2.png) | ![resolution_3.png](img/resolution_3.png) | ![resolution_4.png](img/resolution_4.png)
+isometric  | ![resolution_1_iso.png](img/resolution_1_iso.png) | ![resolution_2_iso.png](img/resolution_2_iso.png) | ![resolution_3_iso.png](img/resolution_3_iso.png) | ![resolution_4_iso.png](img/resolution_4_iso.png)
