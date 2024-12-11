@@ -1,7 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{FiniteElements, OcTree, Smoothing, Tree, Vector, Voxels};
+use automesh::{FiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use flavio::math::Tensor;
 use std::{
     fs::{read_dir, remove_file},
@@ -139,7 +139,7 @@ macro_rules! bench_block {
         #[bench]
         fn octree_from_voxels_from_npy(bencher: &mut Bencher) {
             let npy = format!("benches/block/block_{}.npy", $nel);
-            bencher.iter(|| OcTree::from_voxels(Voxels::from_npy(&npy).unwrap()));
+            bencher.iter(|| Octree::from_voxels(Voxels::from_npy(&npy).unwrap()));
         }
         #[bench]
         fn set_prescribed_nodes(bencher: &mut Bencher) -> Result<(), String> {
