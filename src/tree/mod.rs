@@ -280,7 +280,7 @@ impl Tree for OcTree {
     fn balance(&mut self, weak: bool) {
         let mut balanced;
         let mut block;
-        let mut edges: [bool; 8] = from_fn(|_| false);
+        let mut edges: [bool; 8];
         let mut index;
         let mut subdivide;
         let levels = *self[self.len() - 1].get_level();
@@ -296,45 +296,46 @@ impl Tree for OcTree {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
                         if let Some(neighbor) = face_cell {
                             if let Some(kids) = self[*neighbor].cells {
+                                edges = from_fn(|_| false);
                                 if match face {
                                     0 => {
                                         if !weak {
-                                            if let Some(edge_cell) = self[kids[2]].get_faces()[3] {
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[0] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[2]].get_faces()[4] {
+                                            if let Some(edge_cell) = self[kids[7]].get_faces()[1] {
                                                 edges[1] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[1] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
+                                            if let Some(edge_cell) = self[kids[6]].get_faces()[5] {
                                                 edges[2] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[2] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[3]].get_faces()[4] {
+                                            if let Some(edge_cell) = self[kids[7]].get_faces()[5] {
                                                 edges[3] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[3] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[6]].get_faces()[3] {
+                                            if let Some(edge_cell) = self[kids[2]].get_faces()[3] {
                                                 edges[4] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[4] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[6]].get_faces()[5] {
+                                            if let Some(edge_cell) = self[kids[6]].get_faces()[3] {
                                                 edges[5] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[5] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[7]].get_faces()[1] {
+                                            if let Some(edge_cell) = self[kids[2]].get_faces()[4] {
                                                 edges[6] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[6] = false
                                             }
-                                            if let Some(edge_cell) = self[kids[7]].get_faces()[5] {
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[4] {
                                                 edges[7] = self[edge_cell].cells.is_some()
                                             } else {
                                                 edges[7] = false
@@ -347,31 +348,246 @@ impl Tree for OcTree {
                                             || self[kids[7]].cells.is_some()
                                     }
                                     1 => {
-                                        self[kids[0]].cells.is_some()
+                                        if !weak {
+                                            if let Some(edge_cell) = self[kids[2]].get_faces()[2] {
+                                                edges[0] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[0] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[6]].get_faces()[2] {
+                                                edges[1] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[1] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[4]].get_faces()[5] {
+                                                edges[2] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[2] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[6]].get_faces()[5] {
+                                                edges[3] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[3] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[0]].get_faces()[0] {
+                                                edges[4] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[4] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[4]].get_faces()[0] {
+                                                edges[5] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[5] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[0]].get_faces()[4] {
+                                                edges[6] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[6] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[2]].get_faces()[4] {
+                                                edges[7] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[7] = false
+                                            }
+                                        }
+                                        edges.into_iter().any(|edge| edge)
+                                            || self[kids[0]].cells.is_some()
                                             || self[kids[2]].cells.is_some()
                                             || self[kids[4]].cells.is_some()
                                             || self[kids[6]].cells.is_some()
                                     }
                                     2 => {
-                                        self[kids[0]].cells.is_some()
+                                        if !weak {
+                                            if let Some(edge_cell) = self[kids[0]].get_faces()[3] {
+                                                edges[0] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[0] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[4]].get_faces()[3] {
+                                                edges[1] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[1] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[4]].get_faces()[5] {
+                                                edges[2] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[2] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[5]].get_faces()[5] {
+                                                edges[3] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[3] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[1]].get_faces()[1] {
+                                                edges[4] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[4] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[5]].get_faces()[1] {
+                                                edges[5] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[5] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[0]].get_faces()[4] {
+                                                edges[6] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[6] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[1]].get_faces()[4] {
+                                                edges[7] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[7] = false
+                                            }
+                                        }
+                                        edges.into_iter().any(|edge| edge)
+                                            || self[kids[0]].cells.is_some()
                                             || self[kids[1]].cells.is_some()
                                             || self[kids[4]].cells.is_some()
                                             || self[kids[5]].cells.is_some()
                                     }
                                     3 => {
-                                        self[kids[1]].cells.is_some()
+                                        if !weak {
+                                            if let Some(edge_cell) = self[kids[1]].get_faces()[0] {
+                                                edges[0] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[0] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[5]].get_faces()[0] {
+                                                edges[1] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[1] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[5]].get_faces()[5] {
+                                                edges[2] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[2] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[7]].get_faces()[5] {
+                                                edges[3] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[3] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[2] {
+                                                edges[4] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[4] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[7]].get_faces()[2] {
+                                                edges[5] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[5] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[1]].get_faces()[4] {
+                                                edges[6] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[6] = false
+                                            }
+                                            if let Some(edge_cell) = self[kids[3]].get_faces()[4] {
+                                                edges[7] = self[edge_cell].cells.is_some()
+                                            } else {
+                                                edges[7] = false
+                                            }
+                                        }
+                                        edges.into_iter().any(|edge| edge)
+                                            || self[kids[1]].cells.is_some()
                                             || self[kids[3]].cells.is_some()
                                             || self[kids[5]].cells.is_some()
                                             || self[kids[7]].cells.is_some()
                                     }
                                     4 => {
-                                        self[kids[4]].cells.is_some()
+                                        // if !weak {
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[0] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[0] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[1] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[1] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[2] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[2] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[3] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[3] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[4] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[4] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[5] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[5] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[6] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[6] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[7] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[7] = false
+                                        //     }
+                                        // }
+                                        edges.into_iter().any(|edge| edge)
+                                            || self[kids[4]].cells.is_some()
                                             || self[kids[5]].cells.is_some()
                                             || self[kids[6]].cells.is_some()
                                             || self[kids[7]].cells.is_some()
                                     }
                                     5 => {
-                                        self[kids[0]].cells.is_some()
+                                        // if !weak {
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[0] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[0] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[1] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[1] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[2] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[2] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[3] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[3] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[4] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[4] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[5] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[5] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[6] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[6] = false
+                                        //     }
+                                        //     if let Some(edge_cell) = self[kids[]].get_faces()[] {
+                                        //         edges[7] = self[edge_cell].cells.is_some()
+                                        //     } else {
+                                        //         edges[7] = false
+                                        //     }
+                                        // }
+                                        edges.into_iter().any(|edge| edge)
+                                            || self[kids[0]].cells.is_some()
                                             || self[kids[1]].cells.is_some()
                                             || self[kids[2]].cells.is_some()
                                             || self[kids[3]].cells.is_some()
