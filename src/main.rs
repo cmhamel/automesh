@@ -677,6 +677,14 @@ fn octree(
     }
     time = Instant::now();
     if !quiet {
+        println!("     \x1b[1;96mPairing\x1b[0m octree");
+    }
+    tree.pair();
+    if !quiet {
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    }
+    time = Instant::now();
+    if !quiet {
         println!("     \x1b[1;96mPruning\x1b[0m octree");
     }
     tree.prune();

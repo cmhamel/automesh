@@ -27,6 +27,7 @@ pub trait Tree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
+    fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
 }
@@ -809,6 +810,37 @@ impl Tree for Octree {
             element_node_connectivity,
             nodal_coordinates,
         ))
+    }
+    fn pair(&mut self) {
+        let mut block = 0;
+        let mut index = 0;
+        let mut subsubcells: Vec<bool>;
+        while index < self.len() {
+            if let Some(subcells) = self[index].cells {
+                subsubcells = subcells
+                    .into_iter()
+                    .map(|subcell| self[subcell].cells.is_some())
+                    .collect();
+                if subsubcells.iter().any(|&subsubcell| subsubcell)
+                    && !subsubcells.iter().all(|&subsubcell| subsubcell)
+                {
+                    subcells
+                        .into_iter()
+                        .filter(|&subcell| self[subcell].cells.is_none())
+                        .collect::<Vec<usize>>()
+                        .into_iter()
+                        .for_each(|subcell| {
+                            block = self[subcell].get_block();
+                            self.subdivide(subcell);
+                            self.iter_mut()
+                                .rev()
+                                .take(NUM_OCTANTS)
+                                .for_each(|cell| cell.block = Some(block))
+                        })
+                }
+            }
+            index += 1;
+        }
     }
     fn prune(&mut self) {
         self.retain(|cell| cell.cells.is_none())
