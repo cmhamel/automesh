@@ -214,9 +214,13 @@ enum Commands {
         #[arg(action, long, short)]
         quiet: bool,
 
-        /// Pass to apply weak balancing
+        /// Pass to apply pairing
         #[arg(action, long, short)]
-        weak: bool,
+        pair: bool,
+
+        /// Pass to apply strong balancing
+        #[arg(action, long, short)]
+        strong: bool,
     },
 
     /// Applies smoothing to an existing finite element mesh
@@ -432,12 +436,13 @@ fn main() -> Result<(), ErrorWrapper> {
             ytranslate,
             ztranslate,
             quiet,
-            weak,
+            pair,
+            strong,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-                quiet, weak,
+                quiet, pair, strong,
             )
         }
         Some(Commands::Smooth {
@@ -646,7 +651,8 @@ fn octree(
     ytranslate: f64,
     ztranslate: f64,
     quiet: bool,
-    weak: bool,
+    pair: bool,
+    strong: bool,
 ) -> Result<(), ErrorWrapper> {
     let input_type = match read_input(&input, None, None, None, quiet)? {
         InputTypes::Npy(voxels) => voxels,
@@ -671,17 +677,19 @@ fn octree(
     if !quiet {
         println!("   \x1b[1;96mBalancing\x1b[0m octree");
     }
-    tree.balance(weak);
+    tree.balance(strong);
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
-    time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mPairing\x1b[0m octree");
-    }
-    tree.pair();
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+    if pair {
+        time = Instant::now();
+        if !quiet {
+            println!("     \x1b[1;96mPairing\x1b[0m octree");
+        }
+        tree.pair();
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
     }
     time = Instant::now();
     if !quiet {
