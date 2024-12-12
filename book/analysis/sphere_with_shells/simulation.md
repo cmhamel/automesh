@@ -31,7 +31,20 @@ We consider three simulations using the following three meshes:
 * `spheres_reolution_3.exo`
 * `spheres_reolution_4.exo`
 
-We do not use the `spheres_resolution_1.exo` because the out shell layer is not closed.
+We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.  We place these three meshes on the HPC in the shared folder called `~/autotwin/ssm/geometry/sphere/`.
+
+```sh
+# manual copy from local to HPC
+# macOS local finder, command+K to launch "Connect to Server"
+# smb://cee/chovey
+# copy [local]~/autotwin/automesh/book/analysis/sphere_with_shells/*.exo
+# to
+# [HPC]~/autotwin/ssm/geometry/sphere/
+```
+
+### SSM input
+
+
 
 ## References
 
