@@ -18,7 +18,7 @@ type Indices = [usize; NUM_OCTANTS];
 pub type Octree = Vec<Cell>;
 
 pub trait Tree {
-    fn balance(&mut self, weak: bool);
+    fn balance(&mut self, strong: bool);
     fn from_points(levels: &usize, points: &Points) -> Self;
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
@@ -27,6 +27,7 @@ pub trait Tree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
+    fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
 }
@@ -277,7 +278,7 @@ impl Cell {
 }
 
 impl Tree for Octree {
-    fn balance(&mut self, weak: bool) {
+    fn balance(&mut self, strong: bool) {
         let mut balanced;
         let mut block;
         let mut edges: [bool; 8];
@@ -299,7 +300,7 @@ impl Tree for Octree {
                                 edges = from_fn(|_| false);
                                 if match face {
                                     0 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[3]].get_faces()[1] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -348,7 +349,7 @@ impl Tree for Octree {
                                             || self[kids[7]].cells.is_some()
                                     }
                                     1 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[2]].get_faces()[2] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -397,7 +398,7 @@ impl Tree for Octree {
                                             || self[kids[6]].cells.is_some()
                                     }
                                     2 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[0]].get_faces()[3] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -446,7 +447,7 @@ impl Tree for Octree {
                                             || self[kids[5]].cells.is_some()
                                     }
                                     3 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[1]].get_faces()[0] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -495,7 +496,7 @@ impl Tree for Octree {
                                             || self[kids[7]].cells.is_some()
                                     }
                                     4 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[5]].get_faces()[1] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -544,7 +545,7 @@ impl Tree for Octree {
                                             || self[kids[7]].cells.is_some()
                                     }
                                     5 => {
-                                        if !weak {
+                                        if strong {
                                             if let Some(edge_cell) = self[kids[1]].get_faces()[1] {
                                                 edges[0] = self[edge_cell].cells.is_some()
                                             } else {
@@ -809,6 +810,37 @@ impl Tree for Octree {
             element_node_connectivity,
             nodal_coordinates,
         ))
+    }
+    fn pair(&mut self) {
+        let mut block = 0;
+        let mut index = 0;
+        let mut subsubcells: Vec<bool>;
+        while index < self.len() {
+            if let Some(subcells) = self[index].cells {
+                subsubcells = subcells
+                    .into_iter()
+                    .map(|subcell| self[subcell].cells.is_some())
+                    .collect();
+                if subsubcells.iter().any(|&subsubcell| subsubcell)
+                    && !subsubcells.iter().all(|&subsubcell| subsubcell)
+                {
+                    subcells
+                        .into_iter()
+                        .filter(|&subcell| self[subcell].cells.is_none())
+                        .collect::<Vec<usize>>()
+                        .into_iter()
+                        .for_each(|subcell| {
+                            block = self[subcell].get_block();
+                            self.subdivide(subcell);
+                            self.iter_mut()
+                                .rev()
+                                .take(NUM_OCTANTS)
+                                .for_each(|cell| cell.block = Some(block))
+                        })
+                }
+            }
+            index += 1;
+        }
     }
     fn prune(&mut self) {
         self.retain(|cell| cell.cells.is_none())
