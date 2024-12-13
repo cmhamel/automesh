@@ -34,4 +34,4 @@ rustdoc-args = ["--html-in-header", "docs/katex.html"]
 
 [profile.release]
 codegen-units = 1
-lto = false
+lto = true
