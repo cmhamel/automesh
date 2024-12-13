@@ -82,7 +82,7 @@ echo "Check syntax of input deck: $IFILE"
 adagio --check-syntax -i $IFILE  # to check syntax of input deck
 
 # echo "Check syntax of input deck ($IFILE) and mesh loading"
-adagio --check-input  -i $IFILE  # to check syntax of input deck and mesh load 
+adagio --check-input  -i $IFILE  # to check syntax of input deck and mesh load
 ```
 
 Clean the result files:
@@ -125,7 +125,7 @@ IFILE="sr4.i"
 # queues
 # https://wiki.sandia.gov/pages/viewpage.action?pageId=1359570410#SlurmDocumentation-Queues
 # short can be used for nodes <= 40 and wall time <= 4:00:00 (4 hours)
-# batch, the default queue, wall time <= 48 h 
+# batch, the default queue, wall time <= 48 h
 # long, wall time <= 96 h, eclipse 256 nodes
 
 # https://wiki.sandia.gov/display/OK/Slurm+Documentation
