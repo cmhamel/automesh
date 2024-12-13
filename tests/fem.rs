@@ -1,5 +1,5 @@
 use automesh::{FiniteElements, Vector, Voxels};
-use flavio::math::{Tensor, TensorRank1};
+use flavio::math::{Tensor, TensorArray, TensorRank1};
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},

@@ -1,7 +1,7 @@
 use super::{
     Blocks, Coordinates, FiniteElements, HexConnectivity, Nodes, Smoothing, VecConnectivity,
 };
-use flavio::math::Tensor;
+use flavio::math::{Tensor, TensorVec};
 
 const EPSILON: f64 = 10.0 * f64::EPSILON;
 const SMOOTHING_SCALE: f64 = 0.3;
@@ -152,7 +152,7 @@ fn test_finite_elements(
 fn single() {
     let element_blocks = vec![11];
     let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [0.0, 1.0, 0.0],
@@ -176,7 +176,7 @@ fn single() {
     let exterior_nodes_gold = (1..=8).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let laplacian_gold = Coordinates::new_vec(&[
+    let laplacian_gold = Coordinates::new(&[
         [ONE_THIRD, ONE_THIRD, ONE_THIRD],
         [-ONE_THIRD, ONE_THIRD, ONE_THIRD],
         [ONE_THIRD, -ONE_THIRD, ONE_THIRD],
@@ -206,7 +206,7 @@ fn single() {
 fn double_x() {
     let element_blocks = vec![11; 2];
     let element_node_connectivity = vec![[1, 2, 5, 4, 7, 8, 11, 10], [2, 3, 6, 5, 8, 9, 12, 11]];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -251,7 +251,7 @@ fn double_x() {
     let exterior_nodes_gold = (1..=12).collect();
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
-    let laplacian_gold = Coordinates::new_vec(&[
+    let laplacian_gold = Coordinates::new(&[
         [ONE_THIRD, ONE_THIRD, ONE_THIRD],
         [ZERO, ONE_FOURTH, ONE_FOURTH],
         [-ONE_THIRD, ONE_THIRD, ONE_THIRD],
@@ -266,7 +266,7 @@ fn double_x() {
         [-ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
     ]);
     let smoothed_coordinates_gold = vec![
-        Coordinates::new_vec(&[
+        Coordinates::new(&[
             [0.1, 0.100, 0.100],
             [1.0, 0.075, 0.075],
             [1.9, 0.100, 0.100],
@@ -280,7 +280,7 @@ fn double_x() {
             [1.0, 0.925, 0.925],
             [1.9, 0.900, 0.900],
         ]),
-        Coordinates::new_vec(&[
+        Coordinates::new(&[
             [0.19, 0.1775, 0.1775],
             [1.00, 0.1425, 0.1425],
             [1.81, 0.1775, 0.1775],
@@ -315,7 +315,7 @@ fn double_x() {
 fn double_y() {
     let element_blocks = vec![11; 2];
     let element_node_connectivity = vec![[1, 2, 4, 3, 7, 8, 10, 9], [3, 4, 6, 5, 9, 10, 12, 11]];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [0.0, 1.0, 0.0],
@@ -384,7 +384,7 @@ fn triple() {
         [2, 3, 7, 6, 10, 11, 15, 14],
         [3, 4, 8, 7, 11, 12, 16, 15],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -466,7 +466,7 @@ fn quadruple() {
         [3, 4, 9, 8, 13, 14, 19, 18],
         [4, 5, 10, 9, 14, 15, 20, 19],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -555,7 +555,7 @@ fn quadruple() {
 fn quadruple_2_voids() {
     let element_blocks = vec![99; 2];
     let element_node_connectivity = vec![[1, 2, 6, 5, 9, 10, 14, 13], [3, 4, 8, 7, 11, 12, 16, 15]];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [3.0, 0.0, 0.0],
@@ -637,7 +637,7 @@ fn quadruple_2_blocks() {
         [3, 4, 9, 8, 13, 14, 19, 18],
         [4, 5, 10, 9, 14, 15, 20, 19],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -730,7 +730,7 @@ fn quadruple_2_blocks_void() {
         [2, 3, 8, 7, 12, 13, 18, 17],
         [4, 5, 10, 9, 14, 15, 20, 19],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -828,7 +828,7 @@ fn cube() {
         [13, 14, 17, 16, 22, 23, 26, 25],
         [14, 15, 18, 17, 23, 24, 27, 26],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -974,7 +974,7 @@ fn cube_multi() {
         [11, 12, 15, 14, 19, 20, 22, 21],
         [14, 15, 18, 17, 21, 22, 24, 23],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -1104,7 +1104,7 @@ fn cube_with_inclusion() {
         [42, 43, 47, 46, 58, 59, 63, 62],
         [43, 44, 48, 47, 59, 60, 64, 63],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -1340,7 +1340,7 @@ fn bracket() {
         [16, 17, 20, 19, 37, 38, 41, 40],
         [17, 18, 21, 20, 38, 39, 42, 41],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -1476,7 +1476,7 @@ fn bracket() {
     let interface_nodes_gold = vec![];
     let interior_nodes_gold = vec![];
     let nodal_influencers_gold = node_node_connectivity_gold.clone();
-    let laplacian_gold = Coordinates::new_vec(&[
+    let laplacian_gold = Coordinates::new(&[
         [ONE_THIRD, ONE_THIRD, ONE_THIRD],
         [ZERO, ONE_FOURTH, ONE_FOURTH],
         [ZERO, ONE_FOURTH, ONE_FOURTH],
@@ -1521,7 +1521,7 @@ fn bracket() {
         [-ONE_THIRD, -ONE_THIRD, -ONE_THIRD],
     ]);
     let smoothed_coordinates_gold = vec![
-        Coordinates::new_vec(&[
+        Coordinates::new(&[
             [0.1, 0.1, 0.1],
             [1.0, 0.075, 0.075],
             [2.0, 0.075, 0.075],
@@ -1565,7 +1565,7 @@ fn bracket() {
             [1.0, 3.925, 0.925],
             [1.9, 3.9, 0.9],
         ]),
-        Coordinates::new_vec(&[
+        Coordinates::new(&[
             [0.1875, 0.1875, 0.175],
             [1.0075, 0.14625, 0.1395],
             [2.0, 0.144375, 0.137625],
@@ -1631,7 +1631,7 @@ fn bracket() {
         1, 2, 3, 4, 5, 6, 11, 16, 19, 22, 23, 24, 25, 26, 27, 32, 37, 40,
     ];
     let prescribed_nodes_inhomogeneous = vec![10, 15, 20, 21, 31, 36, 41, 42];
-    let prescribed_nodes_inhomogeneous_coordinates = Coordinates::new_vec(&[
+    let prescribed_nodes_inhomogeneous_coordinates = Coordinates::new(&[
         [4.5 * cos_15, 4.5 * sin_15, 0.0],
         [4.5 * cos_30, 4.5 * sin_30, 0.0],
         [1.5, 4.0, 0.0],
@@ -1731,7 +1731,7 @@ fn letter_f() {
         [12, 13, 17, 16, 30, 31, 35, 34],
         [13, 14, 18, 17, 31, 32, 36, 35],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [0.0, 1.0, 0.0],
@@ -1908,7 +1908,7 @@ fn letter_f_3d() {
         [77, 78, 83, 82, 95, 96, 101, 100],
         [78, 79, 84, 83, 96, 97, 102, 101],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
@@ -2305,7 +2305,7 @@ fn sparse() {
         [151, 152, 158, 157, 183, 184, 190, 189],
         [154, 155, 161, 160, 186, 187, 192, 191],
     ];
-    let nodal_coordinates = Coordinates::new_vec(&[
+    let nodal_coordinates = Coordinates::new(&[
         [1.0, 0.0, 0.0],
         [2.0, 0.0, 0.0],
         [1.0, 1.0, 0.0],

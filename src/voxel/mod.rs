@@ -11,7 +11,7 @@ use super::{
     fem::{Blocks, HexConnectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET},
     Coordinate, Coordinates, Vector, NSD,
 };
-use flavio::math::Tensor;
+use flavio::math::TensorArray;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
