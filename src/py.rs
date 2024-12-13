@@ -1,5 +1,5 @@
 use super::{voxel::IntermediateError, Coordinate, Coordinates};
-use flavio::math::Tensor;
+use flavio::math::{Tensor, TensorArray};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use pyo3::{exceptions::PyTypeError, prelude::*};

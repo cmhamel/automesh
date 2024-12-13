@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{Connectivity, Coordinate, Coordinates, Vector, NSD};
 use chrono::Utc;
-use flavio::math::Tensor;
+use flavio::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Array1, Array2};
 use ndarray_npy::WriteNpyExt;
 use netcdf::{create, Error as ErrorNetCDF};
@@ -88,7 +88,7 @@ impl HexahedralFiniteElements {
             prescribed_nodes: vec![],
             prescribed_nodes_homogeneous: vec![],
             prescribed_nodes_inhomogeneous: vec![],
-            prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero_vec(0),
+            prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
         }
     }
     /// Calculates the discrete Laplacian for the given node-to-node connectivity.
@@ -580,7 +580,7 @@ fn finite_element_data_from_inp(
     }
     buffer.clear();
     file.read_line(&mut buffer)?;
-    let mut nodal_coordinates = Coordinates::zero_vec(0);
+    let mut nodal_coordinates = Coordinates::zero(0);
     let mut inverse_mapping: Vec<usize> = vec![];
     while buffer != "**\n" {
         inverse_mapping.push(
