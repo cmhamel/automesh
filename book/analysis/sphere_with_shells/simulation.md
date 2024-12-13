@@ -42,9 +42,116 @@ We do not use the `spheres_resolution_1.exo` because the outer shell layer is no
 # [HPC]~/autotwin/ssm/geometry/sphere/
 ```
 
-### SSM input
+## Solver
 
+Request resources:
 
+```sh
+mywcid # see what wcid resources are available, gives an FYxxxxxx number
+```
+
+```sh
+#request 1 interactive node for four hours with wcid account FY180100
+salloc -N1 --time=4:00:00 --account=FY180100
+```
+
+See idle nodes:
+
+```sh
+sinfo
+```
+
+Check the input deck:
+
+```sh
+#!/bin/bash
+
+echo "This is submit_check"
+echo "module purge"
+module purge
+
+echo "module load sierra"
+module load sierra
+
+# new, run this first
+export PSM2_DEVICES='shm,self'
+
+IFILE="sr4.i"
+
+echo "Check syntax of input deck: $IFILE"
+adagio --check-syntax -i $IFILE  # to check syntax of input deck
+
+# echo "Check syntax of input deck ($IFILE) and mesh loading"
+adagio --check-input  -i $IFILE  # to check syntax of input deck and mesh load 
+```
+
+Clean the result files:
+
+```sh
+#!/bin/bash
+
+echo "This is submit_clean"
+rm batch_*
+rm sierra_batch_*
+rm *.e.*
+rm epu.log
+rm *.g.*
+rm *.err
+rm g.rsout.*
+```
+
+Submit script:
+
+```sh
+#!/bin/bash
+
+echo "This is submit_script"
+module purge
+module load sierra
+module load seacas
+
+# PROCS=16
+PROCS=160
+# PROCS=320
+# PROCS=336
+
+# geometry and mesh file
+GFILE="../../geometry/sphere/spheres_resolution_4.exo"
+
+decomp --processors $PROCS $GFILE
+
+IFILE="sr4.i"
+
+# queues
+# https://wiki.sandia.gov/pages/viewpage.action?pageId=1359570410#SlurmDocumentation-Queues
+# short can be used for nodes <= 40 and wall time <= 4:00:00 (4 hours)
+# batch, the default queue, wall time <= 48 h 
+# long, wall time <= 96 h, eclipse 256 nodes
+
+# https://wiki.sandia.gov/display/OK/Slurm+Documentation
+# over 4 hours, then need to remove 'short' from the --queue-name
+#
+# sierra -T 00:20:00 --queue-name batch,short --account FY180042 -j $PROCS --job-name $IFILE --run adagio -i $IFILE
+sierra -T 04:00:00 --queue-name batch,short --account FY180042 -j $PROCS --job-name $IFILE --run adagio -i $IFILE
+# sierra -T 06:00:00 --queue-name batch --account FY180042 -j $PROCS --job-name $IFILE --run adagio -i $IFILE
+# sierra -T 24:00:00 --queue-name batch --account FY180042 -j $PROCS --job-name $IFILE --run adagio -i $IFILE
+```
+
+Monitor the job:
+
+```sh
+# monitoring
+squeue -u chovey
+tail foo.log
+tail -f foo.log # interactive monitor
+```
+
+Cancel the job:
+
+```sh
+scancel JOB_ID
+scancel -u chovey # cancel all jobs
+```
 
 ## References
 
