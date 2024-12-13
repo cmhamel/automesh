@@ -25,22 +25,24 @@ The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the ta
 
 ## Meshes
 
-We consider three simulations using the following three meshes:
-
-* `spheres_reolution_2.exo`
-* `spheres_reolution_3.exo`
-* `spheres_reolution_4.exo`
-
-We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.  We place these three meshes on the HPC in the shared folder called `~/autotwin/ssm/geometry/sphere/`.
+Copy from local to HPC:
 
 ```sh
-# manual copy from local to HPC
+# for example, manual copy from local to HPC
 # macOS local finder, command+K to launch "Connect to Server"
 # smb://cee/chovey
-# copy [local]~/autotwin/automesh/book/analysis/sphere_with_shells/*.exo
+# copy [local]~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.exo
 # to
-# [HPC]~/autotwin/ssm/geometry/sphere/
+# [HPC]~/autotwin/ssm/geometry/sr2/
 ```
+
+We consider three simulations using the following three meshes (in the HPC `~/autotwin/ssm/geometry` folder):
+
+* `sr2/spheres_reolution_2.exo`
+* `sr3/spheres_reolution_3.exo`
+* `sr4/spheres_reolution_4.exo`
+
+We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.
 
 ## Solver
 
@@ -61,7 +63,29 @@ See idle nodes:
 sinfo
 ```
 
-Check the input deck:
+Decompose the geometry, e.g., `~/autotwin/ssm/geometry/sr2/submit_script`:
+
+```sh
+#!/bin/bash
+
+module purge
+module load sierra
+module load seacas
+
+# previously ran with 16 processors
+# PROCS=16
+# 10 nodes = 160 processors
+PROCS=160
+# PROCS=320
+# PROCS=336
+
+# geometry and mesh file
+GFILE="spheres_resolution_2.exo"
+
+decomp --processors $PROCS $GFILE
+```
+
+Check the input deck `~/autotwin/ssm/input/sr2/sr2.i` with `submit_check`:
 
 ```sh
 #!/bin/bash
@@ -76,7 +100,7 @@ module load sierra
 # new, run this first
 export PSM2_DEVICES='shm,self'
 
-IFILE="sr4.i"
+IFILE="sr2.i"
 
 echo "Check syntax of input deck: $IFILE"
 adagio --check-syntax -i $IFILE  # to check syntax of input deck
@@ -85,7 +109,7 @@ adagio --check-syntax -i $IFILE  # to check syntax of input deck
 adagio --check-input  -i $IFILE  # to check syntax of input deck and mesh load
 ```
 
-Clean the result files:
+Clean any preexisting result files with `submit_clean`:
 
 ```sh
 #!/bin/bash
@@ -100,7 +124,7 @@ rm *.err
 rm g.rsout.*
 ```
 
-Submit script:
+Submit the job with `submit_script`:
 
 ```sh
 #!/bin/bash
@@ -116,11 +140,10 @@ PROCS=160
 # PROCS=336
 
 # geometry and mesh file
-GFILE="../../geometry/sphere/spheres_resolution_4.exo"
+# GFILE="../../geometry/sphere/spheres_resolution_4.exo"
+# decomp --processors $PROCS $GFILE
 
-decomp --processors $PROCS $GFILE
-
-IFILE="sr4.i"
+IFILE="sr2.i"
 
 # queues
 # https://wiki.sandia.gov/pages/viewpage.action?pageId=1359570410#SlurmDocumentation-Queues
