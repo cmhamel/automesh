@@ -125,3 +125,7 @@ resolution | 1 vox/cm | 2 vox/cm | 4 vox/cm | 10 vox/cm
 ---------- | -------- | -------- | -------- | ---------
 midline   | ![resolution_1.png](img/resolution_1.png) | ![resolution_2.png](img/resolution_2.png) | ![resolution_3.png](img/resolution_3.png) | ![resolution_4.png](img/resolution_4.png)
 isometric  | ![resolution_1_iso.png](img/resolution_1_iso.png) | ![resolution_2_iso.png](img/resolution_2_iso.png) | ![resolution_3_iso.png](img/resolution_3_iso.png) | ![resolution_4_iso.png](img/resolution_4_iso.png)
+block 1 (green) #elements | 3,648 | 31,408 | 259,408 | 4,136,832
+block 2 (yellow) #elements | 1,248 | 10,400 | 86,032 | 1,369,056
+block 3 (magenta) #elements | 1,376 | 12,280 | 103,240 | 1,639,992
+total #elements | 6,272 | 54,088 | 448,680 | 7,145,880
