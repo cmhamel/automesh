@@ -2,6 +2,27 @@
 
 Work in progress.
 
+## Meshes
+
+Copy from local to HPC:
+
+```sh
+# for example, manual copy from local to HPC
+# macOS local finder, command+K to launch "Connect to Server"
+# smb://cee/chovey
+# copy [local]~/autotwin/automesh/book/analysis/sphere_with_shells/spheres_resolution_2.exo
+# to
+# [HPC]~/autotwin/ssm/geometry/sr2/
+```
+
+We consider three simulations using the following three meshes (in the HPC `~/autotwin/ssm/geometry` folder):
+
+* `sr2/spheres_reolution_2.exo`
+* `sr3/spheres_reolution_3.exo`
+* `sr4/spheres_reolution_4.exo`
+
+We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.
+
 ## Boundary Conditions
 
 We impose an angular acceleration pulse to the outermost shell.
@@ -23,24 +44,19 @@ With $\alpha_{\max} := $ 8.0 krad/s^2, and $\Delta t := 8.0$ ms, we can create t
 
 The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the tabular data at data point 4144, values (0.00414310, 7.99999997)).
 
-## Meshes
+## Materials
 
-We consider three simulations using the following three meshes:
+We model the outer shell (block 3) as a rigid body.  The inner sphere (block 1) is nodeled as Swanson viscoelastic [white matter](https://github.com/autotwin/ssm/blob/1fd3382f1b050465050ebc66c8fe7bbc87d690c3/material/whitematter.txt).  The intermediate material (block 2) is modeled as elastic [cerebral spinal fluid](https://github.com/autotwin/ssm/blob/1fd3382f1b050465050ebc66c8fe7bbc87d690c3/material/csf.txt).
 
-* `spheres_reolution_2.exo`
-* `spheres_reolution_3.exo`
-* `spheres_reolution_4.exo`
+## Input deck
 
-We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.  We place these three meshes on the HPC in the shared folder called `~/autotwin/ssm/geometry/sphere/`.
+We created three input decks:
 
-```sh
-# manual copy from local to HPC
-# macOS local finder, command+K to launch "Connect to Server"
-# smb://cee/chovey
-# copy [local]~/autotwin/automesh/book/analysis/sphere_with_shells/*.exo
-# to
-# [HPC]~/autotwin/ssm/geometry/sphere/
-```
+* sr2.i (for mesh spheres_reolution_2.exo)
+* sr3.i (for mesh spheres_reolution_3.exo)
+* sr4.i (for mesh spheres_reolution_4.exo)
+
+We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.
 
 ## Solver
 
@@ -61,7 +77,29 @@ See idle nodes:
 sinfo
 ```
 
-Check the input deck:
+Decompose the geometry, e.g., `~/autotwin/ssm/geometry/sr2/submit_script`:
+
+```sh
+#!/bin/bash
+
+module purge
+module load sierra
+module load seacas
+
+# previously ran with 16 processors
+# PROCS=16
+# 10 nodes = 160 processors
+PROCS=160
+# PROCS=320
+# PROCS=336
+
+# geometry and mesh file
+GFILE="spheres_resolution_2.exo"
+
+decomp --processors $PROCS $GFILE
+```
+
+Check the input deck `~/autotwin/ssm/input/sr2/sr2.i` with `submit_check`:
 
 ```sh
 #!/bin/bash
@@ -76,7 +114,7 @@ module load sierra
 # new, run this first
 export PSM2_DEVICES='shm,self'
 
-IFILE="sr4.i"
+IFILE="sr2.i"
 
 echo "Check syntax of input deck: $IFILE"
 adagio --check-syntax -i $IFILE  # to check syntax of input deck
@@ -85,7 +123,7 @@ adagio --check-syntax -i $IFILE  # to check syntax of input deck
 adagio --check-input  -i $IFILE  # to check syntax of input deck and mesh load
 ```
 
-Clean the result files:
+Clean any preexisting result files with `submit_clean`:
 
 ```sh
 #!/bin/bash
@@ -100,7 +138,7 @@ rm *.err
 rm g.rsout.*
 ```
 
-Submit script:
+Submit the job with `submit_script`:
 
 ```sh
 #!/bin/bash
@@ -116,11 +154,10 @@ PROCS=160
 # PROCS=336
 
 # geometry and mesh file
-GFILE="../../geometry/sphere/spheres_resolution_4.exo"
+# GFILE="../../geometry/sphere/spheres_resolution_4.exo"
+# decomp --processors $PROCS $GFILE
 
-decomp --processors $PROCS $GFILE
-
-IFILE="sr4.i"
+IFILE="sr2.i"
 
 # queues
 # https://wiki.sandia.gov/pages/viewpage.action?pageId=1359570410#SlurmDocumentation-Queues
@@ -152,6 +189,25 @@ Cancel the job:
 scancel JOB_ID
 scancel -u chovey # cancel all jobs
 ```
+
+Compute time:
+
+item | sim | T_sim (ms) | machine | #proc | cpu time (hh:mm)
+:---: | :---: | :---: | :---: | :---: | :---:
+0 | sr2.i | 20 | attaway | 160 | less than 1 min
+1 | sr3.i | 20 | attaway | 160 | 00:04
+2 | sr4.i | 20 | attaway | 160 | 03:48
+
+## Results
+
+We verify that the rigid body input values were sucessfully reflected in the output:
+
+angular acceleration | angular velocity | angular position
+:---: | :---: | :---:
+[rigid_body_ang_acel.yml](rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](rigid_body_ang_pos.yml)
+![img/sr2_angular_acceleration_z.png](img/sr2_angular_acceleration_z.png) | ![img/sr2_angular_velocity_z.png](img/sr2_angular_velocity_z.png) | ![img/sr2_angular_position_z.png](img/sr2_angular_position_z.png)
+
+Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
 
 ## References
 
