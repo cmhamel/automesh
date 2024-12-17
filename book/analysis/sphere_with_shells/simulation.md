@@ -25,8 +25,7 @@ We do not use the `spheres_resolution_1.exo` because the outer shell layer is no
 
 ## Boundary Conditions
 
-We impose an angular acceleration pulse to the outermost shell.
-The angular acceleration has the form
+Consider an angular acceleration pulse of the form:
 
 $$\alpha(t) := \alpha_{\max} \exp \left( 1 - \frac{1}{1 - \left(\frac{2t}{\Delta t} - 1 \right)^2}\right) \hspace{0.5cm} {\rm for} \hspace{0.5cm} 0 \leq t \leq \Delta t $$
 
@@ -39,10 +38,12 @@ With $\alpha_{\max} := $ 8.0 krad/s^2, and $\Delta t := 8.0$ ms, we can create t
 | ![](img/AngAccel.png) | ![](img/AngVel.png) |
 > Figure: Angular acceleration and corresponding angular velocity time history.
 
-* [Angular velocity tabulated data](https://1drv.ms/u/s!ApVSeeLlvsE8g_4yrDrMBjYM28vt6A?e=reeUyW):  The angular velocity curve has column data as (time, magnitude) in (sec, rad/s).
 * [Angular acceleration tabulated data](https://1drv.ms/u/s!ApVSeeLlvsE8g_4xLyBDaZDDXvh7iw?e=iikM6v):  The standardized angular acceleration load curve has column data as (time, magnitude) in (sec, krad/s^2).  The function used to generated the curve, from Equation (1) of [^Carlsen_2021], is
+* [Angular velocity tabulated data](https://1drv.ms/u/s!ApVSeeLlvsE8g_4yrDrMBjYM28vt6A?e=reeUyW):  The angular velocity curve has column data as (time, magnitude) in (sec, rad/s).
 
 The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the tabular data at data point 4144, values (0.00414310, 7.99999997)).
+
+On the outer shell (block 3) of the model, we prescribe the angular velocity [boundary condition](https://github.com/autotwin/ssm/blob/c83fb7a629850ba225fd4cb45f5b70382ac0d074/bcs/shell_rotation.txt).
 
 ## Materials
 
@@ -56,7 +57,7 @@ We created three input decks:
 * sr3.i (for mesh spheres_reolution_3.exo)
 * sr4.i (for mesh spheres_reolution_4.exo)
 
-We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.
+We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.  The Sierra/Solid Mechanics documentation [^Sierra_2022] [^Sierra_examples_2024] was also useful for creating the input decks.
 
 ## Solver
 
@@ -192,11 +193,11 @@ scancel -u chovey # cancel all jobs
 
 Compute time:
 
-item | sim | T_sim (ms) | machine | #proc | cpu time (hh:mm)
+item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 :---: | :---: | :---: | :---: | :---: | :---:
-0 | sr2.i | 20 | attaway | 160 | less than 1 min
-1 | sr3.i | 20 | attaway | 160 | 00:04
-2 | sr4.i | 20 | attaway | 160 | 03:48
+0 | sr2.i | 20 | att | 160 | less than 1 min
+1 | sr3.i | 20 | att | 160 | 00:04
+2 | sr4.i | 20 | att | 160 | 03:48
 
 ## Results
 
@@ -212,3 +213,7 @@ Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo`
 ## References
 
 [^Carlsen_2021]: Carlsen RW, Fawzi AL, Wan Y, Kesari H, Franck C. A quantitative relationship between rotational head kinematics and brain tissue strain from a 2-D parametric finite element analysis. Brain Multiphysics. 2021 Jan 1;2:100024.  [paper](https://1drv.ms/b/s!ApVSeeLlvsE8g9tyGKINkyp_5cb1hA?e=G9XGIZ)
+
+[^Sierra_2022]: Beckwith FN, Bergel GL, de Frias GJ, Manktelow KL, Merewether MT, Miller ST, Parmar KJ, Shelton TR, Thomas JD, Trageser J, Treweek BC. Sierra/SolidMechanics 5.10 Theory Manual. Sandia National Lab. (SNL-NM), Albuquerque, NM (United States); Sandia National Lab. (SNL-CA), Livermore, CA (United States); 2022 Sep 1. [link](https://www.osti.gov/servlets/purl/1885094)
+
+[^Sierra_examples_2024]: Thomas JD, Beckwith F, Buche MR, de Frias GJ, Gampert SO, Manktelow K, Merewether MT, Miller ST, Mosby MD, Parmar KJ, Rand MG, Schlinkman RT, Shelton TR, Trageser J, Treweek B, Veilleux MG, Wagman EB. Sierra/SolidMechanics 5.22 Example Problems Manual. Sandia National Lab. (SNL-NM), Albuquerque, NM (United States); Sandia National Lab. (SNL-CA), Livermore, CA (United States); 2024 Oct 1. [link](https://www.osti.gov/servlets/purl/2480120)
