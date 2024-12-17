@@ -2,8 +2,8 @@
 use std::time::Instant;
 
 use super::{
-    fem::NODE_NUMBERING_OFFSET, Coordinate, Coordinates, HexahedralFiniteElements, Vector,
-    VoxelData, Voxels, NUM_NODES_HEX,
+    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
+    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
 use flavio::math::{Tensor, TensorArray};
 use ndarray::{s, Axis};
