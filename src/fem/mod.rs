@@ -29,9 +29,13 @@ use vtkio::{
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
 const ELEMENT_TYPE: &str = "C3D8R";
 pub const NODE_NUMBERING_OFFSET: usize = 1;
+
+/// The number of nodes in a hexahedral finite element.
 pub const NUM_NODES_HEX: usize = 8;
 
+/// A vector of finite element block IDs.
 pub type Blocks = Vec<usize>;
+
 pub type VecConnectivity = Vec<Vec<usize>>;
 pub type Metrics = Array1<f64>;
 pub type Nodes = Vec<usize>;

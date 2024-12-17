@@ -25,9 +25,11 @@ use tiff::{
 
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
 type Nel = [usize; NSD];
-pub type VoxelData = Array3<u8>;
 type VoxelDataFlattened = Vec<u8>;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
+
+/// The segmentation data corresponding to voxels.
+pub type VoxelData = Array3<u8>;
 
 /// The voxels type.
 pub struct Voxels {
