@@ -2,8 +2,8 @@
 use std::time::Instant;
 
 use super::{
-    fem::NODE_NUMBERING_OFFSET, Coordinate, Coordinates, HexahedralFiniteElements, Points, Vector,
-    VoxelData, Voxels, NUM_NODES_HEX,
+    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
+    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
 use flavio::math::{Tensor, TensorArray};
 use ndarray::{s, Axis};
@@ -15,11 +15,14 @@ const NUM_OCTANTS: usize = 8;
 type Cells = [Cell; NUM_OCTANTS];
 type Faces = [Option<usize>; NUM_FACES];
 type Indices = [usize; NUM_OCTANTS];
+
+/// The octree type.
 pub type Octree = Vec<Cell>;
 
+/// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
-    fn from_points(levels: &usize, points: &Points) -> Self;
+    fn from_points(levels: &usize, points: &Coordinates) -> Self;
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
         self,
@@ -47,7 +50,7 @@ pub struct Cell {
 }
 
 impl Cell {
-    fn contains(&self, points: &Points) -> bool {
+    fn contains(&self, points: &Coordinates) -> bool {
         for point in points.iter() {
             if &point[0] >= self.get_min_x()
                 && &point[0] <= self.get_max_x()
@@ -633,7 +636,7 @@ impl Tree for Octree {
             }
         }
     }
-    fn from_points(levels: &usize, points: &Points) -> Self {
+    fn from_points(levels: &usize, points: &Coordinates) -> Self {
         let x_vals: Vec<f64> = points.iter().map(|point| point[0]).collect();
         let y_vals: Vec<f64> = points.iter().map(|point| point[1]).collect();
         let z_vals: Vec<f64> = points.iter().map(|point| point[2]).collect();

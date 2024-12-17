@@ -16,16 +16,23 @@ mod fem;
 mod tree;
 mod voxel;
 
-pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing, NUM_NODES_HEX};
+pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing};
 pub use tree::{Octree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
 use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
 
+/// The number of spatial dimensions.
 const NSD: usize = 3;
 
+/// An element-to-node connectivity.
 pub type Connectivity<const N: usize> = Vec<[usize; N]>;
+
+/// A three-dimensional coordinate.
 pub type Coordinate = VectorFlavio<1>;
-pub type Coordinates = TensorRank1Vec<3, 1>;
-pub type Points = TensorRank1Vec<3, 1>;
+
+/// A vector of three-dimensional coordinates.
+pub type Coordinates = TensorRank1Vec<NSD, 1>;
+
+/// A three-dimensional vector.
 pub type Vector = VectorFlavio<1>;
