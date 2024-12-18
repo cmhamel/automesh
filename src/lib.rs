@@ -20,7 +20,7 @@ pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing};
 pub use tree::{Octree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
-use flavio::{math::TensorRank1Vec, mechanics::Vector as VectorFlavio};
+use flavio::math::{TensorRank1, TensorRank1Vec};
 
 /// The number of spatial dimensions.
 const NSD: usize = 3;
@@ -29,10 +29,10 @@ const NSD: usize = 3;
 pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 
 /// A three-dimensional coordinate.
-pub type Coordinate = VectorFlavio<1>;
+pub type Coordinate = TensorRank1<NSD, 1>;
 
 /// A vector of three-dimensional coordinates.
 pub type Coordinates = TensorRank1Vec<NSD, 1>;
 
 /// A three-dimensional vector.
-pub type Vector = VectorFlavio<1>;
+pub type Vector = Coordinate;
