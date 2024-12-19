@@ -22,7 +22,6 @@ pub type Octree = Vec<Cell>;
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
-    fn from_points(levels: &usize, points: &Coordinates) -> Self;
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
         self,
@@ -56,20 +55,6 @@ pub struct Cell {
 }
 
 impl Cell {
-    fn contains(&self, points: &Coordinates) -> bool {
-        for point in points.iter() {
-            if &point[0] >= self.get_min_x()
-                && &point[0] <= self.get_max_x()
-                && &point[1] >= self.get_min_y()
-                && &point[1] <= self.get_max_y()
-                && &point[2] >= self.get_min_z()
-                && &point[2] <= self.get_max_z()
-            {
-                return true;
-            }
-        }
-        false
-    }
     fn get_block(&self) -> u8 {
         if let Some(block) = self.block {
             block
@@ -627,56 +612,19 @@ impl Tree for Octree {
                 index += 1;
             }
             #[cfg(feature = "profile")]
-            if iteration == 1 {
-                println!(
-                    "           \x1b[1;93m⤷ Balancing iteration {}\x1b[0m {:?} ",
-                    iteration,
-                    time.elapsed()
-                );
-            } else {
-                println!(
-                    "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
-                    iteration,
-                    time.elapsed()
-                );
-            }
+            println!(
+                "             \x1b[1;93mBalancing iteration {}\x1b[0m {:?} ",
+                iteration,
+                time.elapsed()
+            );
             if balanced {
                 break;
             }
         }
     }
-    fn from_points(levels: &usize, points: &Coordinates) -> Self {
-        let x_vals: Vec<f64> = points.iter().map(|point| point[0]).collect();
-        let y_vals: Vec<f64> = points.iter().map(|point| point[1]).collect();
-        let z_vals: Vec<f64> = points.iter().map(|point| point[2]).collect();
-        let min_x = x_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_x = x_vals.iter().cloned().fold(f64::NAN, f64::max);
-        let min_y = y_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_y = y_vals.iter().cloned().fold(f64::NAN, f64::max);
-        let min_z = z_vals.iter().cloned().reduce(f64::min).unwrap();
-        let max_z = z_vals.iter().cloned().fold(f64::NAN, f64::max);
-        let mut tree = vec![Cell {
-            block: None,
-            cells: None,
-            faces: [None; NUM_FACES],
-            level: 0,
-            min_x,
-            max_x,
-            min_y,
-            max_y,
-            min_z,
-            max_z,
-        }];
-        let mut index = 0;
-        while index < tree.len() {
-            if tree[index].get_level() < levels && tree[index].contains(points) {
-                tree.subdivide(index);
-            }
-            index += 1;
-        }
-        tree
-    }
     fn from_voxels(voxels: Voxels) -> Self {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
         let data_voxels = voxels.get_data();
         let mut nels = [0; 3];
         nels.iter_mut()
@@ -731,6 +679,11 @@ impl Tree for Octree {
             }
             index += 1;
         }
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m⤷ Octree initialization\x1b[0m {:?} ",
+            time.elapsed()
+        );
         tree
     }
     fn into_finite_elements(
@@ -739,6 +692,8 @@ impl Tree for Octree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
         let xscale = scale[0];
         let yscale = scale[1];
         let zscale = scale[2];
@@ -976,11 +931,17 @@ impl Tree for Octree {
                 }
             }
         });
-        Ok(HexahedralFiniteElements::from_data(
+        let fem = Ok(HexahedralFiniteElements::from_data(
             vec![1; element_node_connectivity.len()],
             element_node_connectivity,
             nodal_coordinates,
-        ))
+        ));
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m⤷ Dualization of primal\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        fem
     }
     fn octree_into_finite_elements(
         self,
@@ -1073,6 +1034,8 @@ impl Tree for Octree {
         ))
     }
     fn pair(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
         let mut block = 0;
         let mut index = 0;
         let mut subsubcells: Vec<bool>;
@@ -1102,9 +1065,21 @@ impl Tree for Octree {
             }
             index += 1;
         }
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m  Pairing hanging nodes\x1b[0m {:?} ",
+            time.elapsed()
+        );
     }
     fn prune(&mut self) {
-        self.retain(|cell| cell.cells.is_none())
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        self.retain(|cell| cell.cells.is_none());
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mPruning of the octree\x1b[0m {:?} ",
+            time.elapsed()
+        );
     }
     fn subdivide(&mut self, index: usize) {
         let new_indices = from_fn(|n| self.len() + n);

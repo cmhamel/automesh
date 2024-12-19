@@ -682,44 +682,16 @@ fn octree(
             ))?
         }
     };
-    let mut time = Instant::now();
-    if !quiet {
-        println!("    \x1b[1;96mBuilding\x1b[0m octree");
-    }
-    let mut tree = Octree::from_voxels(input_type);
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    time = Instant::now();
-    if !quiet {
-        println!("   \x1b[1;96mBalancing\x1b[0m octree");
-    }
-    tree.balance(strong);
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    if pair {
-        time = Instant::now();
-        if !quiet {
-            println!("     \x1b[1;96mPairing\x1b[0m octree");
-        }
-        tree.pair();
-        if !quiet {
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-        }
-    }
-    time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mPruning\x1b[0m octree");
-    }
-    tree.prune();
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    time = Instant::now();
+    let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
     }
+    let mut tree = Octree::from_voxels(input_type);
+    tree.balance(strong);
+    if pair {
+        tree.pair();
+    }
+    tree.prune();
     let output_type = tree.octree_into_finite_elements(
         remove,
         &Vector::new([xscale, yscale, zscale]),
