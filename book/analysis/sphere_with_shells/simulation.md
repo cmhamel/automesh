@@ -212,10 +212,23 @@ We verify that the rigid body input values were sucessfully reflected in the out
 
 angular acceleration | angular velocity | angular position
 :---: | :---: | :---:
-[rigid_body_ang_acel.yml](rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](rigid_body_ang_pos.yml)
-![img/sr2_angular_acceleration_z.png](img/sr2_angular_acceleration_z.png) | ![img/sr2_angular_velocity_z.png](img/sr2_angular_velocity_z.png) | ![img/sr2_angular_position_z.png](img/sr2_angular_position_z.png)
+![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
 
 Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
+
+The foregoing plots are created with the [`xyfigure`](https://pypi.org/project/xyfigure/) module as follows:
+
+```sh
+source ~/sibl/.venv/bin/activate.fish
+cd ~/autotwin/automesh/book/analysis/sphere_with_shells
+xyfigure rigid_body_ang_acel.yml  # for example
+```
+
+on the following `.yml` configuration files:
+
+angular acceleration | angular velocity | angular position
+:---: | :---: | :---:
+[rigid_body_ang_acel.yml](rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](rigid_body_ang_pos.yml)
 
 ## References
 
