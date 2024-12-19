@@ -5,7 +5,7 @@ use super::{
     fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
-use flavio::math::{Tensor, TensorArray};
+use flavio::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -30,6 +30,12 @@ pub trait Tree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
+    fn octree_into_finite_elements(
+        self,
+        remove: Option<Vec<u8>>,
+        scale: &Vector,
+        translate: &Vector,
+    ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
@@ -39,8 +45,8 @@ pub trait Tree {
 pub struct Cell {
     block: Option<u8>,
     cells: Option<Indices>,
-    level: usize,
     faces: Faces,
+    level: usize,
     min_x: f64,
     max_x: f64,
     min_y: f64,
@@ -70,6 +76,9 @@ impl Cell {
         } else {
             panic!()
         }
+    }
+    fn get_cells(&self) -> &Option<Indices> {
+        &self.cells
     }
     fn get_faces(&self) -> &Faces {
         &self.faces
@@ -725,6 +734,178 @@ impl Tree for Octree {
         tree
     }
     fn into_finite_elements(
+        self,
+        remove: Option<Vec<u8>>,
+        scale: &Vector,
+        translate: &Vector,
+    ) -> Result<HexahedralFiniteElements, String> {
+        let xscale = scale[0];
+        let yscale = scale[1];
+        let zscale = scale[2];
+        let xtranslate = translate[0];
+        let ytranslate = translate[1];
+        let ztranslate = translate[2];
+        if xscale <= 0.0 {
+            return Err("Need to specify xscale > 0.0".to_string());
+        } else if yscale <= 0.0 {
+            return Err("Need to specify yscale > 0.0".to_string());
+        } else if zscale <= 0.0 {
+            return Err("Need to specify zscale > 0.0".to_string());
+        }
+        let mut element_node_connectivity = vec![];
+        let mut nodal_coordinates = Coordinates::zero(0);
+        let mut cells_nodes = vec![0; self.len()];
+        let mut node_index = 1;
+        self.iter().enumerate().for_each(|(cell_index, cell)| {
+            if cell.get_cells().is_none() {
+                cells_nodes[cell_index] = node_index;
+                nodal_coordinates.0.append(&mut vec![Coordinate::new([
+                    0.5 * (cell.get_min_x() + cell.get_max_x()) * xscale + xtranslate,
+                    0.5 * (cell.get_min_y() + cell.get_max_y()) * yscale + ytranslate,
+                    0.5 * (cell.get_min_z() + cell.get_max_z()) * zscale + ztranslate,
+                ])]);
+                node_index += 1;
+            }
+        });
+        let mut connected_faces = [None; 6];
+        let mut fa_0_subcells = [0; NUM_OCTANTS];
+        let mut fa_1_subcells = [0; NUM_OCTANTS];
+        self.iter().for_each(|cell| {
+            if let Some(cell_subcells) = cell.get_cells() {
+                if cell_subcells
+                    .iter()
+                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                    .count()
+                    == NUM_OCTANTS
+                {
+                    element_node_connectivity.push([
+                        cells_nodes[cell_subcells[0]],
+                        cells_nodes[cell_subcells[1]],
+                        cells_nodes[cell_subcells[3]],
+                        cells_nodes[cell_subcells[2]],
+                        cells_nodes[cell_subcells[4]],
+                        cells_nodes[cell_subcells[5]],
+                        cells_nodes[cell_subcells[7]],
+                        cells_nodes[cell_subcells[6]],
+                    ]);
+                    connected_faces = [None; 6];
+                    cell.get_faces()
+                        .iter()
+                        .enumerate()
+                        .for_each(|(face_index, face_cell)| {
+                            if let Some(face_cell_index) = face_cell {
+                                if let Some(face_subcells) = self[*face_cell_index].get_cells() {
+                                    if face_subcells
+                                        .iter()
+                                        .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                        .count()
+                                        == NUM_OCTANTS
+                                    {
+                                        match face_index {
+                                            0 => {
+                                                element_node_connectivity.push([
+                                                    cells_nodes[face_subcells[2]],
+                                                    cells_nodes[face_subcells[3]],
+                                                    cells_nodes[cell_subcells[1]],
+                                                    cells_nodes[cell_subcells[0]],
+                                                    cells_nodes[face_subcells[6]],
+                                                    cells_nodes[face_subcells[7]],
+                                                    cells_nodes[cell_subcells[5]],
+                                                    cells_nodes[cell_subcells[4]],
+                                                ]);
+                                                connected_faces[0] = Some(face_cell_index)
+                                            }
+                                            1 => {
+                                                element_node_connectivity.push([
+                                                    cells_nodes[cell_subcells[1]],
+                                                    cells_nodes[face_subcells[0]],
+                                                    cells_nodes[face_subcells[2]],
+                                                    cells_nodes[cell_subcells[3]],
+                                                    cells_nodes[cell_subcells[5]],
+                                                    cells_nodes[face_subcells[4]],
+                                                    cells_nodes[face_subcells[6]],
+                                                    cells_nodes[cell_subcells[7]],
+                                                ]);
+                                                connected_faces[1] = Some(face_cell_index)
+                                            }
+                                            4 => {
+                                                element_node_connectivity.push([
+                                                    cells_nodes[face_subcells[4]],
+                                                    cells_nodes[face_subcells[5]],
+                                                    cells_nodes[face_subcells[7]],
+                                                    cells_nodes[face_subcells[6]],
+                                                    cells_nodes[cell_subcells[0]],
+                                                    cells_nodes[cell_subcells[1]],
+                                                    cells_nodes[cell_subcells[3]],
+                                                    cells_nodes[cell_subcells[2]],
+                                                ]);
+                                                connected_faces[4] = Some(face_cell_index)
+                                            }
+                                            2 | 3 | 5 => {}
+                                            _ => panic!(),
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    //
+                    // remove temporary assertions eventually!
+                    //
+                    // seems like you still may be missing cases by skipping possible repetition
+                    //
+                    if let Some(face_0) = connected_faces[0] {
+                        if let Some(face_1) = connected_faces[1] {
+                            if let Some(diag_subcells) =
+                                self[self[*face_0].get_faces()[1].unwrap()].get_cells()
+                            {
+                                if diag_subcells
+                                    .iter()
+                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .count()
+                                    == NUM_OCTANTS
+                                {
+                                    assert_eq!(
+                                        self[*face_0].get_faces()[1].unwrap(),
+                                        self[*face_1].get_faces()[0].unwrap()
+                                    );
+                                    fa_0_subcells = self[*face_0].get_cells().unwrap();
+                                    fa_1_subcells = self[*face_1].get_cells().unwrap();
+                                    element_node_connectivity.push([
+                                        cells_nodes[fa_0_subcells[3]],
+                                        cells_nodes[diag_subcells[2]],
+                                        cells_nodes[fa_1_subcells[0]],
+                                        cells_nodes[cell_subcells[1]],
+                                        cells_nodes[fa_0_subcells[7]],
+                                        cells_nodes[diag_subcells[6]],
+                                        cells_nodes[fa_1_subcells[4]],
+                                        cells_nodes[cell_subcells[5]],
+                                    ]);
+                                }
+                            }
+                            if let Some(face_4) = connected_faces[4] {
+                                assert_eq!(
+                                    self[*face_0].get_faces()[4].unwrap(),
+                                    self[*face_4].get_faces()[0].unwrap()
+                                );
+                                assert_eq!(
+                                    self[*face_1].get_faces()[4].unwrap(),
+                                    self[*face_4].get_faces()[1].unwrap()
+                                );
+                                // face[1] of first case is the same as face[0] of the second case
+                                // and that is the cell you need to connect to
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        Ok(HexahedralFiniteElements::from_data(
+            vec![1; element_node_connectivity.len()],
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
+    }
+    fn octree_into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
         scale: &Vector,
