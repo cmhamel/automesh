@@ -730,7 +730,7 @@ fn write_finite_elements_to_exodus(
         })?;
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mElement-to-node connectivity\x1b[0m {:?}",
+        "           \x1b[1;93m⤷ Element-to-node connectivity\x1b[0m {:?}",
         time.elapsed()
     );
     #[cfg(feature = "profile")]
@@ -747,7 +747,7 @@ fn write_finite_elements_to_exodus(
         .put_values(&zs, 0..)?;
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Nodal coordinates\x1b[0m {:?}",
+        "             \x1b[1;93mNodal coordinates\x1b[0m {:?}",
         time.elapsed()
     );
     Ok(())

@@ -139,6 +139,10 @@ enum Commands {
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
+
+        /// Pass to mesh using dualization
+        #[arg(action, hide = true, long, short)]
+        dual: bool,
     },
 
     /// Quality metrics for an existing finite element mesh
@@ -410,11 +414,12 @@ fn main() -> Result<(), ErrorWrapper> {
             ztranslate,
             metrics,
             quiet,
+            dual,
         }) => {
             is_quiet = quiet;
             mesh(
                 meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale,
-                xtranslate, ytranslate, ztranslate, metrics, quiet,
+                xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
             )
         }
         Some(Commands::Metrics {
@@ -521,6 +526,7 @@ fn mesh(
     ztranslate: f64,
     metrics: Option<String>,
     quiet: bool,
+    dual: bool,
 ) -> Result<(), ErrorWrapper> {
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
@@ -569,11 +575,22 @@ fn mesh(
         }
         println!();
     }
-    let mut output_type = input_type.into_finite_elements(
-        remove,
-        &Vector::new([xscale, yscale, zscale]),
-        &Vector::new([xtranslate, ytranslate, ztranslate]),
-    )?;
+    let mut output_type = if dual {
+        let mut tree = Octree::from_voxels(input_type);
+        tree.balance(true);
+        tree.pair();
+        tree.into_finite_elements(
+            remove,
+            &Vector::new([xscale, yscale, zscale]),
+            &Vector::new([xtranslate, ytranslate, ztranslate]),
+        )?
+    } else {
+        input_type.into_finite_elements(
+            remove,
+            &Vector::new([xscale, yscale, zscale]),
+            &Vector::new([xtranslate, ytranslate, ztranslate]),
+        )?
+    };
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
@@ -665,45 +682,17 @@ fn octree(
             ))?
         }
     };
-    let mut time = Instant::now();
-    if !quiet {
-        println!("    \x1b[1;96mBuilding\x1b[0m octree");
-    }
-    let mut tree = Octree::from_voxels(input_type);
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    time = Instant::now();
-    if !quiet {
-        println!("   \x1b[1;96mBalancing\x1b[0m octree");
-    }
-    tree.balance(strong);
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    if pair {
-        time = Instant::now();
-        if !quiet {
-            println!("     \x1b[1;96mPairing\x1b[0m octree");
-        }
-        tree.pair();
-        if !quiet {
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-        }
-    }
-    time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mPruning\x1b[0m octree");
-    }
-    tree.prune();
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    time = Instant::now();
+    let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
     }
-    let output_type = tree.into_finite_elements(
+    let mut tree = Octree::from_voxels(input_type);
+    tree.balance(strong);
+    if pair {
+        tree.pair();
+    }
+    tree.prune();
+    let output_type = tree.octree_into_finite_elements(
         remove,
         &Vector::new([xscale, yscale, zscale]),
         &Vector::new([xtranslate, ytranslate, ztranslate]),
