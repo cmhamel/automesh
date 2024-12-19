@@ -883,16 +883,27 @@ impl Tree for Octree {
                                 }
                             }
                             if let Some(face_4) = connected_faces[4] {
-                                assert_eq!(
-                                    self[*face_0].get_faces()[4].unwrap(),
-                                    self[*face_4].get_faces()[0].unwrap()
-                                );
-                                assert_eq!(
-                                    self[*face_1].get_faces()[4].unwrap(),
-                                    self[*face_4].get_faces()[1].unwrap()
-                                );
-                                // face[1] of first case is the same as face[0] of the second case
-                                // and that is the cell you need to connect to
+                                if let Some(diag_cell) =
+                                    self[*face_0].get_faces()[4]
+                                {
+                                    if let Some(tiag_cell) =
+                                        self[diag_cell].get_faces()[1]
+                                    {
+                                        assert_eq!(
+                                            self[*face_0].get_faces()[4].unwrap(),
+                                            self[*face_4].get_faces()[0].unwrap()
+                                        );
+                                        assert_eq!(
+                                            self[*face_1].get_faces()[4].unwrap(),
+                                            self[*face_4].get_faces()[1].unwrap()
+                                        );
+                                        assert_eq!(
+                                            self[self[*face_0].get_faces()[4].unwrap()].get_faces()[1].unwrap(),
+                                            self[self[*face_1].get_faces()[4].unwrap()].get_faces()[0].unwrap(),
+                                        );
+                                        // can reuse fa_0_subcells and fa_1_subcells
+                                    }
+                                }
                             }
                         }
                     }
