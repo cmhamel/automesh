@@ -184,6 +184,13 @@ tail foo.log
 tail -f foo.log # interactive monitor
 ```
 
+Add shortcuts, if desired, to the `~/.bash_profile`:
+
+```sh
+alias sq="squeue -u chovey"
+alias ss="squeue -u chovey --start"
+```
+
 Cancel the job:
 
 ```sh
