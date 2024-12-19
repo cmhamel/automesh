@@ -735,7 +735,7 @@ impl Tree for Octree {
     }
     fn into_finite_elements(
         self,
-        remove: Option<Vec<u8>>,
+        _remove: Option<Vec<u8>>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
@@ -768,8 +768,14 @@ impl Tree for Octree {
             }
         });
         let mut connected_faces = [None; 6];
+        let mut d_01_subcells = None;
+        let mut d_04_subcells = None;
+        let mut d_14_subcells = None;
+        let mut d014_subcells = None;
         let mut fa_0_subcells = [0; NUM_OCTANTS];
         let mut fa_1_subcells = [0; NUM_OCTANTS];
+        let mut fa_4_subcells = [0; NUM_OCTANTS];
+        let mut face_0_faces = &[None; NUM_FACES];
         self.iter().for_each(|cell| {
             if let Some(cell_subcells) = cell.get_cells() {
                 if cell_subcells
@@ -789,6 +795,10 @@ impl Tree for Octree {
                         cells_nodes[cell_subcells[6]],
                     ]);
                     connected_faces = [None; 6];
+                    d_01_subcells = None;
+                    d_04_subcells = None;
+                    d_14_subcells = None;
+                    d014_subcells = None;
                     cell.get_faces()
                         .iter()
                         .enumerate()
@@ -848,15 +858,14 @@ impl Tree for Octree {
                                 }
                             }
                         });
-                    //
-                    // remove temporary assertions eventually!
-                    //
-                    // seems like you still may be missing cases by skipping possible repetition
-                    //
-                    if let Some(face_0) = connected_faces[0] {
-                        if let Some(face_1) = connected_faces[1] {
+                    if let Some(face_4) = connected_faces[4] {
+                        fa_4_subcells = self[*face_4].get_cells().unwrap();
+                    }
+                    if let Some(face_1) = connected_faces[1] {
+                        fa_1_subcells = self[*face_1].get_cells().unwrap();
+                        if connected_faces[4].is_some() {
                             if let Some(diag_subcells) =
-                                self[self[*face_0].get_faces()[1].unwrap()].get_cells()
+                                self[self[*face_1].get_faces()[4].unwrap()].get_cells()
                             {
                                 if diag_subcells
                                     .iter()
@@ -864,47 +873,104 @@ impl Tree for Octree {
                                     .count()
                                     == NUM_OCTANTS
                                 {
-                                    assert_eq!(
-                                        self[*face_0].get_faces()[1].unwrap(),
-                                        self[*face_1].get_faces()[0].unwrap()
-                                    );
-                                    fa_0_subcells = self[*face_0].get_cells().unwrap();
-                                    fa_1_subcells = self[*face_1].get_cells().unwrap();
-                                    element_node_connectivity.push([
-                                        cells_nodes[fa_0_subcells[3]],
-                                        cells_nodes[diag_subcells[2]],
-                                        cells_nodes[fa_1_subcells[0]],
-                                        cells_nodes[cell_subcells[1]],
-                                        cells_nodes[fa_0_subcells[7]],
-                                        cells_nodes[diag_subcells[6]],
-                                        cells_nodes[fa_1_subcells[4]],
-                                        cells_nodes[cell_subcells[5]],
-                                    ]);
+                                    d_14_subcells = Some(diag_subcells);
                                 }
                             }
-                            if let Some(face_4) = connected_faces[4] {
-                                if let Some(diag_cell) =
-                                    self[*face_0].get_faces()[4]
+                        }
+                    }
+                    if let Some(face_0) = connected_faces[0] {
+                        fa_0_subcells = self[*face_0].get_cells().unwrap();
+                        face_0_faces = self[*face_0].get_faces();
+                        if connected_faces[1].is_some() {
+                            if let Some(diag_subcells) = self[face_0_faces[1].unwrap()].get_cells()
+                            {
+                                if diag_subcells
+                                    .iter()
+                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .count()
+                                    == NUM_OCTANTS
                                 {
-                                    if let Some(tiag_cell) =
-                                        self[diag_cell].get_faces()[1]
-                                    {
-                                        assert_eq!(
-                                            self[*face_0].get_faces()[4].unwrap(),
-                                            self[*face_4].get_faces()[0].unwrap()
-                                        );
-                                        assert_eq!(
-                                            self[*face_1].get_faces()[4].unwrap(),
-                                            self[*face_4].get_faces()[1].unwrap()
-                                        );
-                                        assert_eq!(
-                                            self[self[*face_0].get_faces()[4].unwrap()].get_faces()[1].unwrap(),
-                                            self[self[*face_1].get_faces()[4].unwrap()].get_faces()[0].unwrap(),
-                                        );
-                                        // can reuse fa_0_subcells and fa_1_subcells
+                                    d_01_subcells = Some(diag_subcells);
+                                }
+                            }
+                        }
+                        if connected_faces[4].is_some() {
+                            if let Some(diag_subcells) = self[face_0_faces[4].unwrap()].get_cells()
+                            {
+                                if diag_subcells
+                                    .iter()
+                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .count()
+                                    == NUM_OCTANTS
+                                {
+                                    d_04_subcells = Some(diag_subcells);
+                                    if d_01_subcells.is_some() && d_01_subcells.is_some() {
+                                        if let Some(diag_subcells) = self
+                                            [self[face_0_faces[1].unwrap()].get_faces()[4].unwrap()]
+                                        .get_cells()
+                                        {
+                                            if diag_subcells
+                                                .iter()
+                                                .filter(|&&subcell| {
+                                                    self[subcell].get_cells().is_none()
+                                                })
+                                                .count()
+                                                == NUM_OCTANTS
+                                            {
+                                                d014_subcells = Some(diag_subcells)
+                                            }
+                                        }
                                     }
                                 }
                             }
+                        }
+                    }
+                    if let Some(diag_subcells) = d_01_subcells {
+                        element_node_connectivity.push([
+                            cells_nodes[fa_0_subcells[3]],
+                            cells_nodes[diag_subcells[2]],
+                            cells_nodes[fa_1_subcells[0]],
+                            cells_nodes[cell_subcells[1]],
+                            cells_nodes[fa_0_subcells[7]],
+                            cells_nodes[diag_subcells[6]],
+                            cells_nodes[fa_1_subcells[4]],
+                            cells_nodes[cell_subcells[5]],
+                        ]);
+                    }
+                    if let Some(diag_subcells) = d_04_subcells {
+                        element_node_connectivity.push([
+                            cells_nodes[diag_subcells[6]],
+                            cells_nodes[diag_subcells[7]],
+                            cells_nodes[fa_4_subcells[5]],
+                            cells_nodes[fa_4_subcells[4]],
+                            cells_nodes[fa_0_subcells[2]],
+                            cells_nodes[fa_0_subcells[3]],
+                            cells_nodes[cell_subcells[1]],
+                            cells_nodes[cell_subcells[0]],
+                        ]);
+                    }
+                    if let Some(d_14_subcells) = d_14_subcells {
+                        element_node_connectivity.push([
+                            cells_nodes[fa_4_subcells[5]],
+                            cells_nodes[d_14_subcells[4]],
+                            cells_nodes[d_14_subcells[6]],
+                            cells_nodes[fa_4_subcells[7]],
+                            cells_nodes[cell_subcells[1]],
+                            cells_nodes[fa_1_subcells[0]],
+                            cells_nodes[fa_1_subcells[2]],
+                            cells_nodes[cell_subcells[3]],
+                        ]);
+                        if let Some(diag_subcells) = d014_subcells {
+                            element_node_connectivity.push([
+                                cells_nodes[d_04_subcells.unwrap()[7]],
+                                cells_nodes[diag_subcells[6]],
+                                cells_nodes[d_14_subcells[4]],
+                                cells_nodes[fa_4_subcells[5]],
+                                cells_nodes[fa_0_subcells[3]],
+                                cells_nodes[d_01_subcells.unwrap()[2]],
+                                cells_nodes[fa_1_subcells[0]],
+                                cells_nodes[cell_subcells[1]],
+                            ]);
                         }
                     }
                 }
