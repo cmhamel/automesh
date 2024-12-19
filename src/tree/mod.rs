@@ -938,7 +938,7 @@ impl Tree for Octree {
         ));
         #[cfg(feature = "profile")]
         println!(
-            "           \x1b[1;93m⤷ Dualization of primal\x1b[0m {:?} ",
+            "           \x1b[1;93m  Dualization of primal\x1b[0m {:?} ",
             time.elapsed()
         );
         fem
