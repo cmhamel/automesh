@@ -46,6 +46,22 @@ The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the ta
 
 On the outer shell (block 3) of the model, we prescribe the angular velocity [boundary condition](https://github.com/autotwin/ssm/blob/c83fb7a629850ba225fd4cb45f5b70382ac0d074/bcs/shell_rotation.txt).
 
+
+## Tracers
+
+View the tracer locations in Cubit:
+
+```sh
+graphics clip on plane location 0 0 1 direction 0 0 -1
+view up 0 1 0
+view from 0 0 100
+graphics clip manipulation off
+```
+
+![tracers_sr_2_3_4.png](img/tracers_sr_2_3_4.png)
+
+Figure: Tracer numbers `[0, 1, 2, ... 11]` at $\Delta x$ distance `[0, 1, 2, ... 11]` centimeters from point `(0, 0, 0)` along the x-axis at resolutions `sr2`, `sr3`, and `sr4` (top to bottom, respectively).
+
 ## Materials
 
 We model the outer shell (block 3) as a rigid body.  The inner sphere (block 1) is nodeled as Swanson viscoelastic [white matter](https://github.com/autotwin/ssm/blob/1fd3382f1b050465050ebc66c8fe7bbc87d690c3/material/whitematter.txt).  The intermediate material (block 2) is modeled as elastic [cerebral spinal fluid](https://github.com/autotwin/ssm/blob/1fd3382f1b050465050ebc66c8fe7bbc87d690c3/material/csf.txt).
@@ -236,17 +252,17 @@ The following figure shows the maximum principal log strain for various resoluti
 resolution | 2 vox/cm | 4 vox/cm | 10 vox/cm
 ---------- | -------- | -------- | ---------
 midline   | ![resolution_2.png](img/resolution_2.png) | ![resolution_3.png](img/resolution_3.png) | ![resolution_4.png](img/resolution_4.png)
-t=0.000 s | ![max_prin_log_strain_sr2_0000.png](img/max_prin_log_strain_sr3_0000.png) | ![max_prin_log_strain_sr3_0000.png](img/max_prin_log_strain_sr3_0000.png) | ![max_prin_log_strain_sr4_0000.png](img/max_prin_log_strain_sr4_0000.png) 
-t=0.002 s | ![max_prin_log_strain_sr2_0002.png](img/max_prin_log_strain_sr2_0002.png) | ![max_prin_log_strain_sr3_0002.png](img/max_prin_log_strain_sr3_0002.png) | ![max_prin_log_strain_sr4_0002.png](img/max_prin_log_strain_sr4_0002.png) 
-t=0.004 s | ![max_prin_log_strain_sr2_0004.png](img/max_prin_log_strain_sr2_0004.png) | ![max_prin_log_strain_sr3_0004.png](img/max_prin_log_strain_sr3_0004.png) | ![max_prin_log_strain_sr4_0004.png](img/max_prin_log_strain_sr4_0004.png) 
-t=0.006 s | ![max_prin_log_strain_sr2_0006.png](img/max_prin_log_strain_sr2_0006.png) | ![max_prin_log_strain_sr3_0006.png](img/max_prin_log_strain_sr3_0006.png) | ![max_prin_log_strain_sr4_0006.png](img/max_prin_log_strain_sr4_0006.png) 
-t=0.008 s | ![max_prin_log_strain_sr2_0008.png](img/max_prin_log_strain_sr2_0008.png) | ![max_prin_log_strain_sr3_0008.png](img/max_prin_log_strain_sr3_0008.png) | ![max_prin_log_strain_sr4_0008.png](img/max_prin_log_strain_sr4_0008.png) 
-t=0.010 s | ![max_prin_log_strain_sr2_0010.png](img/max_prin_log_strain_sr2_0010.png) | ![max_prin_log_strain_sr3_0010.png](img/max_prin_log_strain_sr3_0010.png) | ![max_prin_log_strain_sr4_0010.png](img/max_prin_log_strain_sr4_0010.png) 
-t=0.012 s | ![max_prin_log_strain_sr2_0012.png](img/max_prin_log_strain_sr2_0012.png) | ![max_prin_log_strain_sr3_0012.png](img/max_prin_log_strain_sr3_0012.png) | ![max_prin_log_strain_sr4_0012.png](img/max_prin_log_strain_sr4_0012.png) 
-t=0.014 s | ![max_prin_log_strain_sr2_0014.png](img/max_prin_log_strain_sr2_0014.png) | ![max_prin_log_strain_sr3_0014.png](img/max_prin_log_strain_sr3_0014.png) | ![max_prin_log_strain_sr4_0014.png](img/max_prin_log_strain_sr4_0014.png) 
-t=0.016 s | ![max_prin_log_strain_sr2_0016.png](img/max_prin_log_strain_sr2_0016.png) | ![max_prin_log_strain_sr3_0016.png](img/max_prin_log_strain_sr3_0016.png) | ![max_prin_log_strain_sr4_0016.png](img/max_prin_log_strain_sr4_0016.png) 
-t=0.018 s | ![max_prin_log_strain_sr2_0018.png](img/max_prin_log_strain_sr2_0018.png) | ![max_prin_log_strain_sr3_0018.png](img/max_prin_log_strain_sr3_0018.png) | ![max_prin_log_strain_sr4_0018.png](img/max_prin_log_strain_sr4_0018.png) 
-t=0.020 s | ![max_prin_log_strain_sr2_0020.png](img/max_prin_log_strain_sr2_0020.png) | ![max_prin_log_strain_sr3_0020.png](img/max_prin_log_strain_sr3_0020.png) | ![max_prin_log_strain_sr4_0020.png](img/max_prin_log_strain_sr4_0020.png) 
+t=0.000 s | ![max_prin_log_strain_sr2_0000.png](img/max_prin_log_strain_sr3_0000.png) | ![max_prin_log_strain_sr3_0000.png](img/max_prin_log_strain_sr3_0000.png) | ![max_prin_log_strain_sr4_0000.png](img/max_prin_log_strain_sr4_0000.png)
+t=0.002 s | ![max_prin_log_strain_sr2_0002.png](img/max_prin_log_strain_sr2_0002.png) | ![max_prin_log_strain_sr3_0002.png](img/max_prin_log_strain_sr3_0002.png) | ![max_prin_log_strain_sr4_0002.png](img/max_prin_log_strain_sr4_0002.png)
+t=0.004 s | ![max_prin_log_strain_sr2_0004.png](img/max_prin_log_strain_sr2_0004.png) | ![max_prin_log_strain_sr3_0004.png](img/max_prin_log_strain_sr3_0004.png) | ![max_prin_log_strain_sr4_0004.png](img/max_prin_log_strain_sr4_0004.png)
+t=0.006 s | ![max_prin_log_strain_sr2_0006.png](img/max_prin_log_strain_sr2_0006.png) | ![max_prin_log_strain_sr3_0006.png](img/max_prin_log_strain_sr3_0006.png) | ![max_prin_log_strain_sr4_0006.png](img/max_prin_log_strain_sr4_0006.png)
+t=0.008 s | ![max_prin_log_strain_sr2_0008.png](img/max_prin_log_strain_sr2_0008.png) | ![max_prin_log_strain_sr3_0008.png](img/max_prin_log_strain_sr3_0008.png) | ![max_prin_log_strain_sr4_0008.png](img/max_prin_log_strain_sr4_0008.png)
+t=0.010 s | ![max_prin_log_strain_sr2_0010.png](img/max_prin_log_strain_sr2_0010.png) | ![max_prin_log_strain_sr3_0010.png](img/max_prin_log_strain_sr3_0010.png) | ![max_prin_log_strain_sr4_0010.png](img/max_prin_log_strain_sr4_0010.png)
+t=0.012 s | ![max_prin_log_strain_sr2_0012.png](img/max_prin_log_strain_sr2_0012.png) | ![max_prin_log_strain_sr3_0012.png](img/max_prin_log_strain_sr3_0012.png) | ![max_prin_log_strain_sr4_0012.png](img/max_prin_log_strain_sr4_0012.png)
+t=0.014 s | ![max_prin_log_strain_sr2_0014.png](img/max_prin_log_strain_sr2_0014.png) | ![max_prin_log_strain_sr3_0014.png](img/max_prin_log_strain_sr3_0014.png) | ![max_prin_log_strain_sr4_0014.png](img/max_prin_log_strain_sr4_0014.png)
+t=0.016 s | ![max_prin_log_strain_sr2_0016.png](img/max_prin_log_strain_sr2_0016.png) | ![max_prin_log_strain_sr3_0016.png](img/max_prin_log_strain_sr3_0016.png) | ![max_prin_log_strain_sr4_0016.png](img/max_prin_log_strain_sr4_0016.png)
+t=0.018 s | ![max_prin_log_strain_sr2_0018.png](img/max_prin_log_strain_sr2_0018.png) | ![max_prin_log_strain_sr3_0018.png](img/max_prin_log_strain_sr3_0018.png) | ![max_prin_log_strain_sr4_0018.png](img/max_prin_log_strain_sr4_0018.png)
+t=0.020 s | ![max_prin_log_strain_sr2_0020.png](img/max_prin_log_strain_sr2_0020.png) | ![max_prin_log_strain_sr3_0020.png](img/max_prin_log_strain_sr3_0020.png) | ![max_prin_log_strain_sr4_0020.png](img/max_prin_log_strain_sr4_0020.png)
 displacement | ![displacement_sr2.svg](img/displacement_sr2.svg) | ![displacement_sr3.svg](img/displacement_sr3.svg) | ![displacement_sr4.svg](img/displacement_sr4.svg)
 recipe | [displacement_sr2.yml](xyfigure_recipes/displacement_sr2.yml) | [displacement_sr3.yml](xyfigure_recipes/displacement_sr3.yml) | [displacement_sr4.yml](xyfigure_recipes/displacement_sr4.yml)
 log strain | ![log_strain_sr2.svg](img/log_strain_sr2.svg) | ![log_strain_sr3.svg](img/log_strain_sr3.svg) | ![log_strain_sr4.svg](img/log_strain_sr4.svg)
