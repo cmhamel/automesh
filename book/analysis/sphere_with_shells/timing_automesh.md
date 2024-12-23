@@ -6,7 +6,7 @@ Build the latest release version of `automesh`.
 cd ~/autotwin/automesh
 cargo build --release
 ...
-   Compiling automesh v0.2.8 (/Users/chovey/autotwin/automesh)
+   Compiling automesh v0.2.9 (/Users/chovey/autotwin/automesh)
     Finished `release` profile [optimized] target(s) in 2m 59s
 ```
 
@@ -31,7 +31,7 @@ automesh mesh -i spheres_resolution_1.npy \
 ```
 
 ```sh
-    automesh 0.2.8
+    automesh 0.2.9
      Reading spheres_resolution_1.npy
         Done 9.991084ms
      Meshing spheres_resolution_1.exo [xtranslate: -12, ytranslate: -12, ztranslate: -12]
@@ -50,7 +50,7 @@ automesh mesh -i spheres_resolution_2.npy \
 ```
 
 ```sh
-    automesh 0.2.8
+    automesh 0.2.9
      Reading spheres_resolution_2.npy
         Done 6.601875ms
      Meshing spheres_resolution_2.exo [xscale: 0.5, yscale: 0.5, zscale: 0.5, xtranslate: -12, ytranslate: -12, ztranslate: -12]
@@ -69,7 +69,7 @@ automesh mesh -i spheres_resolution_3.npy \
 ```
 
 ```sh
-    automesh 0.2.8
+    automesh 0.2.9
      Reading spheres_resolution_3.npy
         Done 701.959µs
      Meshing spheres_resolution_3.exo [xscale: 0.25, yscale: 0.25, zscale: 0.25, xtranslate: -12, ytranslate: -12, ztranslate: -12]
@@ -88,7 +88,7 @@ automesh mesh -i spheres_resolution_4.npy \
 ```
 
 ```sh
-    automesh 0.2.8
+    automesh 0.2.9
      Reading spheres_resolution_4.npy
         Done 5.540458ms
      Meshing spheres_resolution_4.exo [xscale: 0.1, yscale: 0.1, zscale: 0.1, xtranslate: -12, ytranslate: -12, ztranslate: -12]
