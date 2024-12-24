@@ -17,7 +17,7 @@ alias automesh='/Users/chovey/autotwin/automesh/target/release/automesh'
 cd ~/autotwin/automesh/book/analysis/sphere_with_shells/
 ```
 
-### Mesh Creation
+## Mesh Creation
 
 Use `automesh` to convert the segmentations into finite element meshes.
 

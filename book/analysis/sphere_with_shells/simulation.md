@@ -70,9 +70,9 @@ We model the outer shell (block 3) as a rigid body.  The inner sphere (block 1) 
 
 We created three input decks:
 
-* sr2.i (for mesh spheres_reolution_2.exo)
-* sr3.i (for mesh spheres_reolution_3.exo)
-* sr4.i (for mesh spheres_reolution_4.exo)
+* [sr2.i](https://github.com/autotwin/ssm/blob/main/input/sr2/sr2.i) (for mesh spheres_reolution_2.exo)
+* [sr3.i](https://github.com/autotwin/ssm/blob/main/input/sr3/sr3.i) (for mesh spheres_reolution_3.exo)
+* [sr4.i](https://github.com/autotwin/ssm/blob/main/input/sr4/sr4.i) (for mesh spheres_reolution_4.exo)
 
 We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.  The Sierra/Solid Mechanics documentation [^Sierra_2022] [^Sierra_examples_2024] was also useful for creating the input decks.
 
@@ -221,7 +221,7 @@ item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 :---: | :---: | :---: | :---: | :---: | :---:
 0 | sr2.i | 20 | att | 160 | less than 1 min
 1 | sr3.i | 20 | att | 160 | 00:04
-2 | sr4.i | 20 | att | 160 | 03:48
+2 | sr4.i | 20 | gho | 160 | 03:48
 
 ## Results
 
