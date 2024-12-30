@@ -1,7 +1,7 @@
 use super::{
     Blocks, Coordinates, FiniteElements, HexConnectivity, Nodes, Smoothing, VecConnectivity,
 };
-use flavio::math::{Tensor, TensorVec};
+use conspire::math::{Tensor, TensorVec};
 
 const EPSILON: f64 = 10.0 * f64::EPSILON;
 const SMOOTHING_SCALE: f64 = 0.3;

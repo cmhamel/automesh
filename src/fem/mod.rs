@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{Connectivity, Coordinate, Coordinates, Vector, NSD};
 use chrono::Utc;
-use flavio::math::{Tensor, TensorArray, TensorVec};
+use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Array1, Array2};
 use ndarray_npy::WriteNpyExt;
 use netcdf::{create, Error as ErrorNetCDF};

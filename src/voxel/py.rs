@@ -6,7 +6,7 @@ use super::{
     finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
     write_voxels_to_spn, Nel, Vector, VoxelData,
 };
-use flavio::math::TensorArray;
+use conspire::math::TensorArray;
 use pyo3::prelude::*;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {

@@ -1,5 +1,5 @@
 use automesh::{Vector, Voxels};
-use flavio::math::{Tensor, TensorArray, TensorVec};
+use conspire::math::{Tensor, TensorArray, TensorVec};
 
 const NELX: usize = 4;
 const NELY: usize = 5;
