@@ -23,7 +23,7 @@
 
 ## 2024-12-09
 
-* Speed up 10x flavio - on benchmarks
+* Speed up 10x conspire - on benchmarks
 * Tet meshing
   * Literature review https://github.com/autotwin/automesh/issues/217
 * 2D weakly balanced templates - still work in progress

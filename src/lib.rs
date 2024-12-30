@@ -20,7 +20,7 @@ pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing};
 pub use tree::{Octree, Tree};
 pub use voxel::{VoxelData, Voxels};
 
-use flavio::math::{TensorRank1, TensorRank1Vec};
+use conspire::math::{TensorRank1, TensorRank1Vec};
 
 /// The number of spatial dimensions.
 const NSD: usize = 3;

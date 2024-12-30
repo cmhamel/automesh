@@ -2,7 +2,7 @@
 
 extern crate test;
 use automesh::{FiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
-use flavio::math::TensorArray;
+use conspire::math::TensorArray;
 use std::{
     fs::{read_dir, remove_file},
     path::Path,

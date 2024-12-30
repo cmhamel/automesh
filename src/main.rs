@@ -1,6 +1,6 @@
 use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
-use flavio::math::TensorArray;
+use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use std::{io::Error as ErrorIO, path::Path, time::Instant};

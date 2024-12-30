@@ -5,7 +5,7 @@ use super::{
     fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
-use flavio::math::{Tensor, TensorArray, TensorVec};
+use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
