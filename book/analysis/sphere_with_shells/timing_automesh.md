@@ -122,7 +122,7 @@ view bottom
 ```
 
 resolution | 1 vox/cm | 2 vox/cm | 4 vox/cm | 10 vox/cm
----------- | -------- | -------- | -------- | ---------
+---------- | -------: | -------: | -------: | --------:
 midline   | ![resolution_1.png](img/resolution_1.png) | ![resolution_2.png](img/resolution_2.png) | ![resolution_3.png](img/resolution_3.png) | ![resolution_4.png](img/resolution_4.png)
 isometric  | ![resolution_1_iso.png](img/resolution_1_iso.png) | ![resolution_2_iso.png](img/resolution_2_iso.png) | ![resolution_3_iso.png](img/resolution_3_iso.png) | ![resolution_4_iso.png](img/resolution_4_iso.png)
 block 1 (green) #elements | 3,648 | 31,408 | 259,408 | 4,136,832

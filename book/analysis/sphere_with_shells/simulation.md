@@ -225,15 +225,11 @@ item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 
 ## Results
 
-We verify that the rigid body input values were sucessfully reflected in the output:
+Copy the files, `history_rigid.csv` and `history.csv`, which contain tracer rigid and deformable body time histories, from the HPC to the local.
 
-angular acceleration | angular velocity | angular position
-:---: | :---: | :---:
-![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
+### Rigid Body
 
-Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
-
-The foregoing plots are created with the [`xyfigure`](https://pypi.org/project/xyfigure/) module as follows:
+With [`xyfigure`](https://pypi.org/project/xyfigure/)
 
 ```sh
 source ~/sibl/.venv/bin/activate.fish
@@ -241,11 +237,21 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells/xyfigure_recipes
 xyfigure rigid_body_ang_acel.yml  # for example
 ```
 
-on the following `.yml` configuration files:
+and the following `.yml` configuration files,
 
 angular acceleration | angular velocity | angular position
 :---: | :---: | :---:
 [rigid_body_ang_acel.yml](xyfigure_recipes/rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](xyfigure_recipes/rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](xyfigure_recipes/rigid_body_ang_pos.yml)
+
+verify that the rigid body input values were sucessfully reflected in the output:
+
+angular acceleration | angular velocity | angular position
+:---: | :---: | :---:
+![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
+
+Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
+
+### Deformable Body
 
 The following figure shows the maximum principal log strain for various resolutions and selected times.
 
@@ -270,7 +276,7 @@ recipe | [log_strain_sr2.yml](xyfigure_recipes/log_strain_sr2.yml) | [log_strain
 rate of deformation | ![rate_of_deformation_sr2.svg](img/rate_of_deformation_sr2.svg) | ![rate_of_deformation_sr3.svg](img/rate_of_deformation_sr3.svg) | ![rate_of_deformation_sr4.svg](img/rate_of_deformation_sr4.svg)
 recipe | [rate_of_deformation_sr2.yml](xyfigure_recipes/rate_of_deformation_sr2.yml) | [rate_of_deformation_sr3.yml](xyfigure_recipes/rate_of_deformation_sr3.yml) | [rate_of_deformation_sr4.yml](xyfigure_recipes/rate_of_deformation_sr4.yml)
 
-Figure: Midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
+Figure: Voxel mesh midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
 
 ## References
 

@@ -3,7 +3,7 @@ m0:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 1
+  ycolumn: 14
   plot_kwargs:
     label: r=0 cm
     linestyle: "--"
@@ -12,7 +12,7 @@ m1:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 2
+  ycolumn: 15
   plot_kwargs:
     label: r=1 cm
     linestyle: ":"
@@ -21,7 +21,7 @@ m2:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 3
+  ycolumn: 16
   plot_kwargs:
     label: r=2 cm
     marker: "$2$"
@@ -30,7 +30,7 @@ m3:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 4
+  ycolumn: 17
   plot_kwargs:
     label: r=3 cm
 m4:
@@ -38,7 +38,7 @@ m4:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 5
+  ycolumn: 18
   plot_kwargs:
     label: r=4 cm
     marker: "$4$"
@@ -47,7 +47,7 @@ m5:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 6
+  ycolumn: 19
   plot_kwargs:
     label: r=5 cm
 m6:
@@ -55,7 +55,7 @@ m6:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 7
+  ycolumn: 20
   plot_kwargs:
     label: r=6 cm
     marker: "$6$"
@@ -64,7 +64,7 @@ m7:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 8
+  ycolumn: 21
   plot_kwargs:
     label: r=7 cm
 m8:
@@ -72,7 +72,7 @@ m8:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 9
+  ycolumn: 22
   plot_kwargs:
     label: r=8 cm
     marker: "$8$"
@@ -81,7 +81,7 @@ m9:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 10
+  ycolumn: 23
   plot_kwargs:
     label: r=9 cm
 m10:
@@ -89,7 +89,7 @@ m10:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 11
+  ycolumn: 24
   plot_kwargs:
     label: r=10 cm
     marker: "$10$"
@@ -98,19 +98,19 @@ m11:
   folder: ~/autotwin/ssm/input/sr2c
   file: history.csv
   skip_rows: 3
-  ycolumn: 12
+  ycolumn: 25
   plot_kwargs:
     label: r=11 cm
 figure:
   class: view
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
-  file: displacement_sr2c.svg
+  file: log_strain_sr2c.svg
   size: [8.0, 6.0]
-  title: Displacement Magnitude at Various Radii (sr2c)
+  title: Maximum Principal Log Strain at Various Radii (sr2c)
   xlabel: time (s),
-  ylabel: displacement magnitude (cm)
+  ylabel: maximum principal log strain (cm/cm)
   xlim: [-0.001, 0.021]
-  #ylim: [-0.01, 0.46]
+  ylim: [-0.01, 1.36]
   details: false
   display: true
   dpi: 100
