@@ -56,26 +56,29 @@ class Triangle:
     a: Vertex
     b: Vertex
     c: Vertex
-    normal: np.ndarray = None  # normal vector to triangle face
 
     def __post_init__(self):
         """Post-initialization processing."""
 
-        ray_b = np.array(
+        self._ray_b = np.array(
             [self.b.x - self.a.x, self.b.y - self.a.y, self.b.z - self.a.z]
         )
 
-        ray_c = np.array(
+        self._ray_c = np.array(
             [self.c.x - self.a.x, self.c.y - self.a.y, self.c.z - self.a.z]
         )
 
-        self.normal = np.cross(ray_b, ray_c)
+        _b_cross_c = np.cross(self._ray_b, self._ray_c)
 
-        if np.allclose(self.normal, [0, 0, 0]):
+        if np.allclose(_b_cross_c, [0, 0, 0]):
             raise ValueError("The three vertices must be non-colinear.")
 
-        # Normalize the normal vector
-        self.normal /= np.linalg.norm(self.normal)  # overwrite
+    @property
+    def normal(self):
+        """Return the normal vector to the triangle face."""
+        _b_cross_c = np.cross(self._ray_b, self._ray_c)
+
+        return _b_cross_c / np.linalg.norm(_b_cross_c)
 
 
 @dataclass
