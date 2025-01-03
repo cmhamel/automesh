@@ -4,6 +4,24 @@
 
 *In order of most recent to least recent.*
 
+## 2025-01-02
+
+* schedule meeting
+  * value proposition: open, auto, fast
+* private client repo
+* pause dualization, concerns about resulting mesh quality
+* defeaturing
+* surface reconstruction
+  * `npy -> stl`
+  * marching cubes
+  * dual marching cubes
+  * dual contouring (DC)
+  * cubical marching squares (CMS)
+  * https://www.reddit.com/r/VoxelGameDev/comments/qxi0u3/cubical_marching_squares_vs_dual_contouring_which/?rdt=44360
+* mesh from isosurface
+  * `stl -> exo`
+* perfect tets to 4-hexs, what are the element qualities
+
 ## 2024-12-18
 
 * .svg figures instead of .png

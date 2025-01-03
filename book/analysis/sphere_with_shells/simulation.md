@@ -70,9 +70,9 @@ We model the outer shell (block 3) as a rigid body.  The inner sphere (block 1) 
 
 We created three input decks:
 
-* sr2.i (for mesh spheres_reolution_2.exo)
-* sr3.i (for mesh spheres_reolution_3.exo)
-* sr4.i (for mesh spheres_reolution_4.exo)
+* [sr2.i](https://github.com/autotwin/ssm/blob/main/input/sr2/sr2.i) (for mesh spheres_reolution_2.exo)
+* [sr3.i](https://github.com/autotwin/ssm/blob/main/input/sr3/sr3.i) (for mesh spheres_reolution_3.exo)
+* [sr4.i](https://github.com/autotwin/ssm/blob/main/input/sr4/sr4.i) (for mesh spheres_reolution_4.exo)
 
 We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.  The Sierra/Solid Mechanics documentation [^Sierra_2022] [^Sierra_examples_2024] was also useful for creating the input decks.
 
@@ -221,19 +221,15 @@ item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 :---: | :---: | :---: | :---: | :---: | :---:
 0 | sr2.i | 20 | att | 160 | less than 1 min
 1 | sr3.i | 20 | att | 160 | 00:04
-2 | sr4.i | 20 | att | 160 | 03:48
+2 | sr4.i | 20 | gho | 160 | 03:48
 
 ## Results
 
-We verify that the rigid body input values were sucessfully reflected in the output:
+Copy the files, `history_rigid.csv` and `history.csv`, which contain tracer rigid and deformable body time histories, from the HPC to the local.
 
-angular acceleration | angular velocity | angular position
-:---: | :---: | :---:
-![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
+### Rigid Body
 
-Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
-
-The foregoing plots are created with the [`xyfigure`](https://pypi.org/project/xyfigure/) module as follows:
+With [`xyfigure`](https://pypi.org/project/xyfigure/)
 
 ```sh
 source ~/sibl/.venv/bin/activate.fish
@@ -241,11 +237,21 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells/xyfigure_recipes
 xyfigure rigid_body_ang_acel.yml  # for example
 ```
 
-on the following `.yml` configuration files:
+and the following `.yml` configuration files,
 
 angular acceleration | angular velocity | angular position
 :---: | :---: | :---:
 [rigid_body_ang_acel.yml](xyfigure_recipes/rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](xyfigure_recipes/rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](xyfigure_recipes/rigid_body_ang_pos.yml)
+
+verify that the rigid body input values were sucessfully reflected in the output:
+
+angular acceleration | angular velocity | angular position
+:---: | :---: | :---:
+![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
+
+Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
+
+### Deformable Body
 
 The following figure shows the maximum principal log strain for various resolutions and selected times.
 
@@ -270,7 +276,7 @@ recipe | [log_strain_sr2.yml](xyfigure_recipes/log_strain_sr2.yml) | [log_strain
 rate of deformation | ![rate_of_deformation_sr2.svg](img/rate_of_deformation_sr2.svg) | ![rate_of_deformation_sr3.svg](img/rate_of_deformation_sr3.svg) | ![rate_of_deformation_sr4.svg](img/rate_of_deformation_sr4.svg)
 recipe | [rate_of_deformation_sr2.yml](xyfigure_recipes/rate_of_deformation_sr2.yml) | [rate_of_deformation_sr3.yml](xyfigure_recipes/rate_of_deformation_sr3.yml) | [rate_of_deformation_sr4.yml](xyfigure_recipes/rate_of_deformation_sr4.yml)
 
-Figure: Midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
+Figure: Voxel mesh midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
 
 ## References
 

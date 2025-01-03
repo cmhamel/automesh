@@ -110,7 +110,7 @@ figure:
   xlabel: time (s),
   ylabel: maximum principal log strain (cm/cm)
   xlim: [-0.001, 0.021]
-  ylim: [-0.01, 0.46]
+  ylim: [-0.01, 0.76]
   details: false
   display: true
   dpi: 100
