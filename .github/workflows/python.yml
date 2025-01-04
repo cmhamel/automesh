@@ -36,12 +36,36 @@ jobs:
       run: pycodestyle --verbose .
     - name: pytest
       run: pytest --verbose
-  wheels:
+  source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          default: true
+          toolchain: stable
+      - name: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+      - name: requirements
+        run: pip install build maturin twine
+      - name: source
+        run: python -m build . --sdist
+      - name: check
+        run: twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+  wheel:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -52,19 +76,21 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: requirements
+      run: pip install build maturin twine
     - name: foo
       if: matrix.os == 'macos-latest'
       run: brew uninstall --ignore-dependencies xz
-    - name: maturin
-      run: pip install maturin
-    - name: build
+    - name: wheel
       run: maturin build --release --features python
+    - name: check
+      run: twine check target/wheels/*
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel
         path: target/wheels
   twine:
-    needs: wheels
+    needs: [source, wheel]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
@@ -72,12 +98,10 @@ jobs:
       with:
         check-latest: true
         python-version: 3.13
-    - name: wheelhouse
-      run: mkdir -p wheelhouse/ && mv ./*-wheel*/*.whl wheelhouse/
-    - name: twine
+    - name: requirements
       run: pip install twine
-    - name: check
-      run: twine check wheelhouse/*.whl
-    - name: upload
+    - name: wheels
+      run: mv ./*-dist*/*.whl dist/
+    - name: ppload
       if: github.event_name == 'release'
-      run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} wheelhouse/*.whl
+      run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} dist/*
