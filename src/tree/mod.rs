@@ -1164,6 +1164,8 @@ impl Tree for Octree {
     }
     fn volumes(&self) -> Volumes {
         //
+        // can you make Volumes have a mutable reference to Cells rather than a copy?
+        //
         // only make Volumes related to Octree if you need the Tree methods
         // or if it is useful to mesh the volumes separately
         //
