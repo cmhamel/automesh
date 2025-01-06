@@ -2,7 +2,7 @@
 use std::time::Instant;
 
 use super::{
-    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
+    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX, Blocks},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
 use conspire::math::{Tensor, TensorArray, TensorVec};
@@ -18,11 +18,13 @@ type Indices = [usize; NUM_OCTANTS];
 
 /// The octree type.
 pub type Octree = Vec<Cell>;
-type Volumes = Vec<Vec<Cell>>;
+
+type Volumes = Vec<Vec<usize>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
+    fn defeature(&mut self, min_num_voxels: usize);
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
         self,
@@ -42,7 +44,7 @@ pub trait Tree {
     fn volumes(&self) -> Volumes;
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Cell {
     block: Option<u8>,
     cells: Option<Indices>,
@@ -624,6 +626,25 @@ impl Tree for Octree {
             }
         }
     }
+    fn defeature(&mut self, min_num_voxels: usize) {
+        let mut volumes = self.volumes();
+        //
+        // temp to see volumes
+        //
+        volumes.iter().enumerate().for_each(|(index, volume)| {
+            let mut tree = volume.iter().map(|cell|
+                self[*cell]
+            ).collect::<Octree>();
+            tree.iter_mut().for_each(|cell|
+                cell.block = Some(index as u8 + 1)
+            );
+            tree.octree_into_finite_elements(
+                None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero()
+            ).unwrap().write_exo(
+                format!("foo_{}.exo", index).as_str()
+            ).unwrap()
+        })
+    }
     fn from_voxels(voxels: Voxels) -> Self {
         #[cfg(feature = "profile")]
         let time = Instant::now();
@@ -1163,12 +1184,32 @@ impl Tree for Octree {
         self.extend(new_cells);
     }
     fn volumes(&self) -> Volumes {
-        //
-        // can you make Volumes have a mutable reference to Cells rather than a copy?
-        //
-        // only make Volumes related to Octree if you need the Tree methods
-        // or if it is useful to mesh the volumes separately
-        //
-        todo!()
+        let mut block;
+        let mut index;
+        let mut leaves: Vec<usize> = self.iter().enumerate().filter_map(|(index, cell)| if cell.cells.is_none() { Some(index) } else { None }).collect();
+        leaves.sort();
+        let mut volume;
+        let mut volumes = vec![];
+        while let Some(starting_leaf) = leaves.pop() {
+            block = self[starting_leaf].get_block();
+            index = 0;
+            volume = vec![starting_leaf];
+            while index < volume.len() {
+                self[volume[index]].get_faces().iter().for_each(|face|
+                    if let Some(cell) = face {
+                        // need to check for level mismatches
+                        if let Ok(spot) = leaves.binary_search(cell) {
+                            if self[*cell].get_block() == block {
+                                leaves.remove(spot);
+                                volume.push(*cell);
+                            }
+                        }
+                    }
+                );
+                index += 1;
+            }
+            volumes.push(volume)
+        }
+        volumes
     }
 }

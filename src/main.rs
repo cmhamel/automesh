@@ -577,13 +577,20 @@ fn mesh(
     }
     let mut output_type = if dual {
         let mut tree = Octree::from_voxels(input_type);
-        tree.balance(true);
-        tree.pair();
+        tree.balance(false);
+        tree.defeature(8);
         tree.into_finite_elements(
             remove,
             &Vector::new([xscale, yscale, zscale]),
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
+        // tree.balance(true);
+        // tree.pair();
+        // tree.into_finite_elements(
+        //     remove,
+        //     &Vector::new([xscale, yscale, zscale]),
+        //     &Vector::new([xtranslate, ytranslate, ztranslate]),
+        // )?
     } else {
         input_type.into_finite_elements(
             remove,
