@@ -1203,7 +1203,13 @@ impl Tree for Octree {
             while index < volume.len() {
                 self[volume[index]].get_faces().iter().for_each(|face| {
                     if let Some(cell) = face {
-                        // need to check for level mismatches
+                        // need to check for level mismatches, i.e. if face is leaf or has child leaves
+                        // face is either a parent of leaves 1 level smaller, a leaf of 1 size larger, or same level leaf
+                        //
+                        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
+                        // based on the protrusions thing, seems like it does not
+                        // seems like one face shared is also not enough ("4 or 5 sides")
+                        // might have to take care of remaining protrusions in another step
                         if let Ok(spot) = leaves.binary_search(cell) {
                             if self[*cell].get_block() == block {
                                 leaves.remove(spot);
