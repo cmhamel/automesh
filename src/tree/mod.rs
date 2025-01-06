@@ -18,6 +18,7 @@ type Indices = [usize; NUM_OCTANTS];
 
 /// The octree type.
 pub type Octree = Vec<Cell>;
+type Volumes = Vec<Vec<Cell>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
@@ -38,6 +39,7 @@ pub trait Tree {
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
+    fn volumes(&self) -> Volumes;
 }
 
 #[derive(Debug)]
@@ -1159,5 +1161,12 @@ impl Tree for Octree {
                 }
             });
         self.extend(new_cells);
+    }
+    fn volumes(&self) -> Volumes {
+        //
+        // only make Volumes related to Octree if you need the Tree methods
+        // or if it is useful to mesh the volumes separately
+        //
+        todo!()
     }
 }
