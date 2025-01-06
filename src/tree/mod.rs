@@ -2,7 +2,7 @@
 use std::time::Instant;
 
 use super::{
-    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX, Blocks},
+    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
 };
 use conspire::math::{Tensor, TensorArray, TensorVec};
@@ -632,17 +632,13 @@ impl Tree for Octree {
         // temp to see volumes
         //
         volumes.iter().enumerate().for_each(|(index, volume)| {
-            let mut tree = volume.iter().map(|cell|
-                self[*cell]
-            ).collect::<Octree>();
-            tree.iter_mut().for_each(|cell|
-                cell.block = Some(index as u8 + 1)
-            );
-            tree.octree_into_finite_elements(
-                None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero()
-            ).unwrap().write_exo(
-                format!("foo_{}.exo", index).as_str()
-            ).unwrap()
+            let mut tree = volume.iter().map(|cell| self[*cell]).collect::<Octree>();
+            tree.iter_mut()
+                .for_each(|cell| cell.block = Some(index as u8 + 1));
+            tree.octree_into_finite_elements(None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero())
+                .unwrap()
+                .write_exo(format!("foo_{}.exo", index).as_str())
+                .unwrap()
         })
     }
     fn from_voxels(voxels: Voxels) -> Self {
@@ -1186,7 +1182,17 @@ impl Tree for Octree {
     fn volumes(&self) -> Volumes {
         let mut block;
         let mut index;
-        let mut leaves: Vec<usize> = self.iter().enumerate().filter_map(|(index, cell)| if cell.cells.is_none() { Some(index) } else { None }).collect();
+        let mut leaves: Vec<usize> = self
+            .iter()
+            .enumerate()
+            .filter_map(|(index, cell)| {
+                if cell.cells.is_none() {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+            .collect();
         leaves.sort();
         let mut volume;
         let mut volumes = vec![];
@@ -1195,7 +1201,7 @@ impl Tree for Octree {
             index = 0;
             volume = vec![starting_leaf];
             while index < volume.len() {
-                self[volume[index]].get_faces().iter().for_each(|face|
+                self[volume[index]].get_faces().iter().for_each(|face| {
                     if let Some(cell) = face {
                         // need to check for level mismatches
                         if let Ok(spot) = leaves.binary_search(cell) {
@@ -1205,7 +1211,7 @@ impl Tree for Octree {
                             }
                         }
                     }
-                );
+                });
                 index += 1;
             }
             volumes.push(volume)
