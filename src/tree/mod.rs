@@ -1093,7 +1093,7 @@ impl Tree for Octree {
     fn prune(&mut self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        self.retain(|cell| cell.cells.is_none());
+        self.retain(|cell| cell.get_cells().is_none());
         #[cfg(feature = "profile")]
         println!(
             "             \x1b[1;93mPruning of the octree\x1b[0m {:?} ",
@@ -1180,13 +1180,20 @@ impl Tree for Octree {
         self.extend(new_cells);
     }
     fn volumes(&self) -> Volumes {
+        //
+        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
+        // based on the protrusions thing, seems like it does not
+        // seems like one face shared is also not enough ("4 or 5 sides")
+        // might have to take care of remaining protrusions in another step
+        //
         let mut block;
         let mut index;
+        let mut leaf;
         let mut leaves: Vec<usize> = self
             .iter()
             .enumerate()
             .filter_map(|(index, cell)| {
-                if cell.cells.is_none() {
+                if cell.get_cells().is_none() {
                     Some(index)
                 } else {
                     None
@@ -1194,6 +1201,27 @@ impl Tree for Octree {
             })
             .collect();
         leaves.sort();
+        let mut children_parents = vec![None; leaves[leaves.len() - 1] + 1];
+        self
+        .iter()
+        .enumerate()
+        .filter_map(|(parent_index, cell)| {
+            cell.get_cells().as_ref().map(|subcells| (parent_index, subcells))
+            // if let Some(subcells) = cell.get_cells() {
+            //     Some((parent_index, subcells))
+            // } else {
+            //     None
+            // }
+        })
+        .for_each(|(parent_index, subcells)|
+            if subcells.iter().filter(|&&subcell|
+                self[subcell].get_cells().is_some()
+            ).count() == 0 {
+                subcells.iter().enumerate().for_each(|(subcell_index, &subcell)|
+                    children_parents[subcell] = Some((parent_index, subcell_index))
+                )
+            }
+        );
         let mut volume;
         let mut volumes = vec![];
         while let Some(starting_leaf) = leaves.pop() {
@@ -1201,25 +1229,98 @@ impl Tree for Octree {
             index = 0;
             volume = vec![starting_leaf];
             while index < volume.len() {
-                self[volume[index]].get_faces().iter().for_each(|face| {
-                    if let Some(cell) = face {
-                        // need to check for level mismatches, i.e. if face is leaf or has child leaves
-                        // face is either a parent of leaves 1 level smaller, a leaf of 1 size larger, or same level leaf
-                        //
-                        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
-                        // based on the protrusions thing, seems like it does not
-                        // seems like one face shared is also not enough ("4 or 5 sides")
-                        // might have to take care of remaining protrusions in another step
+                leaf = volume[index];
+                self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
+                    if let Some(cell) = face_cell {
                         if let Ok(spot) = leaves.binary_search(cell) {
                             if self[*cell].get_block() == block {
                                 leaves.remove(spot);
                                 volume.push(*cell);
                             }
+                        } else if let Some(subcells) = self[*cell].get_cells() {
+                            match face {
+                                0 => {
+                                    [2, 3, 6, 7]
+                                }
+                                1 => {
+                                    [0, 2, 4, 6]
+                                }
+                                2 => {
+                                    [0, 1, 4, 5]
+                                }
+                                3 => {
+                                    [1, 3, 5, 7]
+                                }
+                                4 => {
+                                    [4, 5, 6, 7]
+                                }
+                                5 => {
+                                    [0, 1, 2, 3]
+                                }
+                                _ => {
+                                    panic!()
+                                }
+                            }.into_iter().for_each(|subcell| {
+                                if let Ok(spot) = leaves.binary_search(&subcells[subcell]) {
+                                    if self[subcells[subcell]].get_block() == block {
+                                        leaves.remove(spot);
+                                        volume.push(*cell);
+                                    }
+                                }
+                            })
                         }
                     }
                 });
                 index += 1;
             }
+            //
+            // seems like there are issues even with just above
+            // for example, it seems to include non-leaf cells for some reason!
+            //
+            // index = 0;
+            // while index < volume.len() {
+            //     leaf = volume[index];
+            //     if let Some((parent, subcell)) = children_parents[leaf] {
+            //         self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
+            //             if let Some(cell) = face_cell {
+            //                 if match face {
+            //                     0 => {
+            //                         [0, 1, 4, 5]
+            //                     }
+            //                     1 => {
+            //                         [1, 3, 5, 7]
+            //                     }
+            //                     2 => {
+            //                         [2, 3, 6, 7]
+            //                     }
+            //                     3 => {
+            //                         [0, 2, 4, 6]
+            //                     }
+            //                     4 => {
+            //                         [0, 1, 2, 3]
+            //                     }
+            //                     5 => {
+            //                         [4, 5, 6, 7]
+            //                     }
+            //                     _ => {
+            //                         panic!()
+            //                     }
+            //                 }.iter().filter(|&&entry| subcell == entry).count() == 1 {
+            //                     if let Ok(spot) = leaves.binary_search(cell) {
+            //                         if self[*cell].get_block() == block {
+            //                             // println!("{:?}, {:?}, {:?}, {:?}\n", parent, leaf, face, self[parent]);
+            //                             leaves.remove(spot);
+            //                             volume.push(*cell);
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         );
+            //     } else {
+            //         // do all leaves have parents?
+            //     }
+            //     index += 1;
+            // }
             volumes.push(volume)
         }
         volumes
