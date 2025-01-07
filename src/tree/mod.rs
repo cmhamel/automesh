@@ -1222,6 +1222,19 @@ impl Tree for Octree {
                 )
             }
         );
+
+
+        children_parents.iter().for_each(|foo|
+            if let Some((bar, baz)) = foo {
+                self[*bar].get_cells().unwrap().iter().for_each(|subcell|
+                    if self[*subcell].get_cells().is_some() {
+                        panic!()
+                    }
+                )
+            }
+        );
+
+
         let mut volume;
         let mut volumes = vec![];
         while let Some(starting_leaf) = leaves.pop() {
