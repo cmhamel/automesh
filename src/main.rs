@@ -577,7 +577,7 @@ fn mesh(
     }
     let mut output_type = if dual {
         let mut tree = Octree::from_voxels(input_type);
-        tree.balance(false);
+        tree.balance(true);
         tree.defeature(8);
         tree.into_finite_elements(
             remove,

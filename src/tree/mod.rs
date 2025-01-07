@@ -1191,7 +1191,11 @@ impl Tree for Octree {
         // seems like one face shared is also not enough ("4 or 5 sides")
         // might have to take care of remaining protrusions in another step
         //
+        // can you remove air before somehow?
+        // (can remove from leaves)
+        //
         let mut block;
+        let mut complete;
         let mut index;
         let mut leaf;
         let mut leaves: Vec<usize> = self
@@ -1222,114 +1226,106 @@ impl Tree for Octree {
                 )
             }
         );
-
-
-        children_parents.iter().for_each(|foo|
-            if let Some((bar, baz)) = foo {
-                self[*bar].get_cells().unwrap().iter().for_each(|subcell|
-                    if self[*subcell].get_cells().is_some() {
-                        panic!()
-                    }
-                )
-            }
-        );
-
-
         let mut volume;
         let mut volumes = vec![];
         while let Some(starting_leaf) = leaves.pop() {
             block = self[starting_leaf].get_block();
-            index = 0;
             volume = vec![starting_leaf];
-            while index < volume.len() {
-                leaf = volume[index];
-                self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
-                    if let Some(cell) = face_cell {
-                        if let Ok(spot) = leaves.binary_search(cell) {
-                            if self[*cell].get_block() == block {
-                                leaves.remove(spot);
-                                volume.push(*cell);
+            loop {
+                complete = true;
+                index = 0;
+                while index < volume.len() {
+                    leaf = volume[index];
+                    self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
+                        if let Some(cell) = face_cell {
+                            if let Ok(spot) = leaves.binary_search(cell) {
+                                if self[*cell].get_block() == block {
+                                    leaves.remove(spot);
+                                    volume.push(*cell);
+                                }
+                            } else if let Some(subcells) = self[*cell].get_cells() {
+                                match face {
+                                    0 => {
+                                        [2, 3, 6, 7]
+                                    }
+                                    1 => {
+                                        [0, 2, 4, 6]
+                                    }
+                                    2 => {
+                                        [0, 1, 4, 5]
+                                    }
+                                    3 => {
+                                        [1, 3, 5, 7]
+                                    }
+                                    4 => {
+                                        [4, 5, 6, 7]
+                                    }
+                                    5 => {
+                                        [0, 1, 2, 3]
+                                    }
+                                    _ => {
+                                        panic!()
+                                    }
+                                }.into_iter().for_each(|subcell| {
+                                    if let Ok(spot) = leaves.binary_search(&subcells[subcell]) {
+                                        if self[subcells[subcell]].get_block() == block {
+                                            complete = false;
+                                            leaves.remove(spot);
+                                            volume.push(subcells[subcell]);
+                                        }
+                                    }
+                                })
                             }
-                        } else if let Some(subcells) = self[*cell].get_cells() {
-                            match face {
-                                0 => {
-                                    [2, 3, 6, 7]
-                                }
-                                1 => {
-                                    [0, 2, 4, 6]
-                                }
-                                2 => {
-                                    [0, 1, 4, 5]
-                                }
-                                3 => {
-                                    [1, 3, 5, 7]
-                                }
-                                4 => {
-                                    [4, 5, 6, 7]
-                                }
-                                5 => {
-                                    [0, 1, 2, 3]
-                                }
-                                _ => {
-                                    panic!()
-                                }
-                            }.into_iter().for_each(|subcell| {
-                                if let Ok(spot) = leaves.binary_search(&subcells[subcell]) {
-                                    if self[subcells[subcell]].get_block() == block {
-                                        leaves.remove(spot);
-                                        volume.push(subcells[subcell]);
+                        }
+                    });
+                    index += 1;
+                }
+                index = 0;
+                while index < volume.len() {
+                    leaf = volume[index];
+                    if let Some((parent, subcell)) = children_parents[leaf] {
+                        self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
+                            if let Some(cell) = face_cell {
+                                if match face {
+                                    0 => {
+                                        [0, 1, 4, 5]
+                                    }
+                                    1 => {
+                                        [1, 3, 5, 7]
+                                    }
+                                    2 => {
+                                        [2, 3, 6, 7]
+                                    }
+                                    3 => {
+                                        [0, 2, 4, 6]
+                                    }
+                                    4 => {
+                                        [0, 1, 2, 3]
+                                    }
+                                    5 => {
+                                        [4, 5, 6, 7]
+                                    }
+                                    _ => {
+                                        panic!()
+                                    }
+                                }.iter().any(|&entry| subcell == entry) {
+                                    if let Ok(spot) = leaves.binary_search(cell) {
+                                        if self[*cell].get_block() == block {
+                                            complete = false;
+                                            leaves.remove(spot);
+                                            volume.push(*cell);
+                                        }
                                     }
                                 }
-                            })
-                        }
+                            }
+                        );
                     }
-                });
-                index += 1;
+                    index += 1;
+                }
+                if complete {
+                    break
+                }
             }
-            // index = 0;
-            // while index < volume.len() {
-            //     leaf = volume[index];
-            //     if let Some((parent, subcell)) = children_parents[leaf] {
-            //         self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
-            //             if let Some(cell) = face_cell {
-            //                 if match face {
-            //                     0 => {
-            //                         [0, 1, 4, 5]
-            //                     }
-            //                     1 => {
-            //                         [1, 3, 5, 7]
-            //                     }
-            //                     2 => {
-            //                         [2, 3, 6, 7]
-            //                     }
-            //                     3 => {
-            //                         [0, 2, 4, 6]
-            //                     }
-            //                     4 => {
-            //                         [0, 1, 2, 3]
-            //                     }
-            //                     5 => {
-            //                         [4, 5, 6, 7]
-            //                     }
-            //                     _ => {
-            //                         panic!()
-            //                     }
-            //                 }.iter().filter(|&&entry| subcell == entry).count() == 1 {
-            //                     if let Ok(spot) = leaves.binary_search(cell) {
-            //                         if self[*cell].get_block() == block {
-            //                             // println!("{:?}, {:?}, {:?}, {:?}\n", parent, leaf, face, self[parent]);
-            //                             leaves.remove(spot);
-            //                             volume.push(*cell);
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //         );
-            //     } else {
-            //         // do all leaves have parents?
-            //     }
-            //     index += 1;
-            // }
             volumes.push(volume)
         }
         volumes
