@@ -507,9 +507,13 @@ fn convert(
         InputTypes::Npy(mut voxels) => match output_extension {
             //
             // make these call a defeaturing function or at least print Defeaturing []...
+            // below is a clippy-killer to remind you to look here
             //
             Some("npy") => {
                 if let Some(min_num_voxels) = defeature {
+                    //
+                    let foo = 1;
+                    //
                     voxels = voxels.defeature(min_num_voxels)
                 }
                 write_output(output, OutputTypes::Npy(voxels), quiet)
