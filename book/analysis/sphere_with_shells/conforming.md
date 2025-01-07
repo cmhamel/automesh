@@ -30,9 +30,11 @@ Copy from local to HPC:
 
 We consider three simulations using the following three meshes (in the HPC `~/autotwin/ssm/geometry` folder):
 
-* `sr2c/conf_0.5cm.g`
-* `sr3c/conf_0.25cm.g`
-* `sr4/spheres_reolution_4.exo`
+folder | file | `md5` checksum
+:---: | :---: | :---:
+`sr2c` | `conf_0.5cm.g` | `3731460f73da70ae79dd8155e2a8e0c6`
+`sr3c` | `conf_0.25cm.g` | `bf65e329f43867c8fabc64b1b5273b8c`
+`sr4c` | `conf_0.1cm.g` | `ae0b13dec173c8fb030feab306a09db6`
 
 ## Tracers
 
@@ -55,7 +57,7 @@ We created three input decks:
 
 * [`sr2c.i`](https://github.com/autotwin/ssm/blob/main/input/sr2c/sr2c.i) (for mesh `conf_0.5cm.g`)
 * [`sr3c.i`](https://github.com/autotwin/ssm/blob/main/input/sr3c/sr3c.i) (for mesh `conf_0.25cm.g`)
-* [`sr4c.i`](https://github.com/autotwin/ssm/blob/main/input/sr4c/sr4c.i) (for mesh `conf_0.25cm.g`)
+* [`sr4c.i`](https://github.com/autotwin/ssm/blob/main/input/sr4c/sr4c.i) (for mesh `conf_0.1cm.g`)
 
 ## Results
 
@@ -63,9 +65,9 @@ Compute time:
 
 item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 :---: | :---: | :---: | :---: | :---: | :---:
-0 | sr2c.i | 20 | gho | 160 | 00:02 min
-1 | sr3c.i | 20 | gho | 160 | 00:04 (xxx)
-2 | sr4.i | 20 | att | 160 | 03:48 (xxx)
+0 | sr2c.i | 20 | gho | 160 | 00:02
+1 | sr3c.i | 20 | gho | 160 | 00:21
+2 | sr4.i | 20 | att | 160 | tbd (xxx)
 
 ### Rigid Body
 
