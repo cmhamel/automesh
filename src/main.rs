@@ -47,6 +47,10 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
+        /// Defeature clusters with less than NUM voxels
+        #[arg(long, short = 'd', value_name = "NUM")]
+        defeature: Option<usize>,
+
         /// Number of voxels in the x-direction
         #[arg(long, short = 'x', value_name = "NEL")]
         nelx: Option<usize>,
@@ -390,13 +394,14 @@ fn main() -> Result<(), ErrorWrapper> {
         Some(Commands::Convert {
             input,
             output,
+            defeature,
             nelx,
             nely,
             nelz,
             quiet,
         }) => {
             is_quiet = quiet;
-            convert(input, output, nelx, nely, nelz, quiet)
+            convert(input, output,defeature, nelx, nely, nelz, quiet)
         }
         Some(Commands::Mesh {
             meshing,
@@ -485,6 +490,7 @@ fn main() -> Result<(), ErrorWrapper> {
 fn convert(
     input: String,
     output: String,
+    defeature: Option<usize>,
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
@@ -498,12 +504,37 @@ fn convert(
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Npy(voxels) => match output_extension {
-            Some("spn") => write_output(output, OutputTypes::Spn(voxels), quiet),
+        InputTypes::Npy(mut voxels) => match output_extension {
+            //
+            // make these call a defeaturing function or at least print Defeaturing []...
+            //
+            Some("npy") => {
+                if let Some(min_num_voxels) = defeature {
+                    voxels = voxels.defeature(min_num_voxels)
+                }
+                write_output(output, OutputTypes::Npy(voxels), quiet)
+            }
+            Some("spn") => {
+                if let Some(min_num_voxels) = defeature {
+                    voxels = voxels.defeature(min_num_voxels)
+                }
+                write_output(output, OutputTypes::Spn(voxels), quiet)
+            }
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Spn(voxels) => match output_extension {
-            Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
+        InputTypes::Spn(mut voxels) => match output_extension {
+            Some("npy") => {
+                if let Some(min_num_voxels) = defeature {
+                    voxels = voxels.defeature(min_num_voxels)
+                }
+                write_output(output, OutputTypes::Npy(voxels), quiet)
+            }
+            Some("spn") => {
+                if let Some(min_num_voxels) = defeature {
+                    voxels = voxels.defeature(min_num_voxels)
+                }
+                write_output(output, OutputTypes::Spn(voxels), quiet)
+            }
             _ => invalid_output(&output, output_extension),
         },
     }
@@ -578,19 +609,12 @@ fn mesh(
     let mut output_type = if dual {
         let mut tree = Octree::from_voxels(input_type);
         tree.balance(true);
-        tree.defeature(8);
+        tree.pair();
         tree.into_finite_elements(
             remove,
             &Vector::new([xscale, yscale, zscale]),
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
-        // tree.balance(true);
-        // tree.pair();
-        // tree.into_finite_elements(
-        //     remove,
-        //     &Vector::new([xscale, yscale, zscale]),
-        //     &Vector::new([xtranslate, ytranslate, ztranslate]),
-        // )?
     } else {
         input_type.into_finite_elements(
             remove,

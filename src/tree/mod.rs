@@ -19,12 +19,13 @@ type Indices = [usize; NUM_OCTANTS];
 /// The octree type.
 pub type Octree = Vec<Cell>;
 
-type Volumes = Vec<Vec<usize>>;
+type Clusters = Vec<Vec<usize>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
-    fn defeature(&mut self, min_num_voxels: usize);
+    fn clusters(&self, remove: Option<Vec<u8>>) -> Clusters;
+    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>);
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
         self,
@@ -32,6 +33,7 @@ pub trait Tree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
+    fn into_voxels(self) -> Voxels;
     fn octree_into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
@@ -41,7 +43,6 @@ pub trait Tree {
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
-    fn volumes(&self) -> Volumes;
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -626,12 +627,194 @@ impl Tree for Octree {
             }
         }
     }
-    fn defeature(&mut self, min_num_voxels: usize) {
-        let mut volumes = self.volumes();
+    fn clusters(&self, remove: Option<Vec<u8>>) -> Clusters {
+        //
+        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
+        // based on the protrusions thing, seems like it does not
+        // seems like one face shared is also not enough ("4 or 5 sides")
+        // might have to take care of remaining protrusions in another step
+        //
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let mut removed_data = remove.unwrap_or_default();
+        removed_data.sort();
+        removed_data.dedup();
+        let mut blocks: Vec<u8> = self.iter()
+        .filter(|cell|
+            cell.get_cells().is_none() && removed_data.binary_search(&cell.get_block()).is_err()
+        ).map(|cell|
+            cell.get_block()
+        ).collect();
+        blocks.sort();
+        blocks.dedup();
+        let mut clusters = vec![];
+        let mut complete= false;
+        let mut index=0;
+        let mut leaf=0;
+        let mut leaves: Vec<Vec<usize>> = blocks.iter().map(|&block|
+            self
+            .iter()
+            .enumerate()
+            .filter_map(|(index, cell)| {
+                if cell.get_cells().is_none() && cell.get_block() == block {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+            .collect()
+        ).collect();
+        leaves.iter_mut().for_each(|block_leaves|
+            block_leaves.sort()
+        );
+        let mut children_parents = vec![None; leaves.iter().flatten().max().unwrap() + 1];
+        self
+        .iter()
+        .enumerate()
+        .filter_map(|(parent_index, cell)| {
+            cell.get_cells().as_ref().map(|subcells| (parent_index, subcells))
+        })
+        .for_each(|(parent_index, subcells)|
+            if subcells.iter().filter(|&&subcell|
+                self[subcell].get_cells().is_some()
+            ).count() == 0 {
+                subcells.iter().enumerate()
+                .filter(|(_, &subcell)|
+                    removed_data.binary_search(&self[subcell].get_block()).is_err()
+                ).for_each(|(subcell_index, &subcell)|
+                    children_parents[subcell] = Some((parent_index, subcell_index))
+                )
+            }
+        );
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mClusters creation instigation\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        #[allow(unused_variables)]
+        let mut cluster_index = 1;
+        blocks.into_iter().enumerate().for_each(|(block_index, block)| {
+            let block_leaves = &mut leaves[block_index];
+            while let Some(starting_leaf) = block_leaves.pop() {
+                let mut cluster = vec![starting_leaf];
+                #[allow(unused_variables)]
+                for iteration in 1.. {
+                    #[cfg(feature = "profile")]
+                    let time = Instant::now();
+                    complete = true;
+                    index = 0;
+                    while index < cluster.len() {
+                        leaf = cluster[index];
+                        self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
+                            if let Some(cell) = face_cell {
+                                if let Ok(spot) = block_leaves.binary_search(cell) {
+                                    if self[*cell].get_block() == block {
+                                        block_leaves.remove(spot);
+                                        cluster.push(*cell);
+                                    }
+                                } else if let Some(subcells) = self[*cell].get_cells() {
+                                    match face {
+                                        0 => {
+                                            [2, 3, 6, 7]
+                                        }
+                                        1 => {
+                                            [0, 2, 4, 6]
+                                        }
+                                        2 => {
+                                            [0, 1, 4, 5]
+                                        }
+                                        3 => {
+                                            [1, 3, 5, 7]
+                                        }
+                                        4 => {
+                                            [4, 5, 6, 7]
+                                        }
+                                        5 => {
+                                            [0, 1, 2, 3]
+                                        }
+                                        _ => {
+                                            panic!()
+                                        }
+                                    }.into_iter().for_each(|subcell| {
+                                        if let Ok(spot) = block_leaves.binary_search(&subcells[subcell]) {
+                                            if self[subcells[subcell]].get_block() == block {
+                                                complete = false;
+                                                block_leaves.remove(spot);
+                                                cluster.push(subcells[subcell]);
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        });
+                        index += 1;
+                    }
+                    index = 0;
+                    while index < cluster.len() {
+                        leaf = cluster[index];
+                        if let Some((parent, subcell)) = children_parents[leaf] {
+                            self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
+                                if let Some(cell) = face_cell {
+                                    if match face {
+                                        0 => {
+                                            [0, 1, 4, 5]
+                                        }
+                                        1 => {
+                                            [1, 3, 5, 7]
+                                        }
+                                        2 => {
+                                            [2, 3, 6, 7]
+                                        }
+                                        3 => {
+                                            [0, 2, 4, 6]
+                                        }
+                                        4 => {
+                                            [0, 1, 2, 3]
+                                        }
+                                        5 => {
+                                            [4, 5, 6, 7]
+                                        }
+                                        _ => {
+                                            panic!()
+                                        }
+                                    }.iter().any(|&entry| subcell == entry) {
+                                        if let Ok(spot) = block_leaves.binary_search(cell) {
+                                            if self[*cell].get_block() == block {
+                                                complete = false;
+                                                block_leaves.remove(spot);
+                                                cluster.push(*cell);
+                                            }
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                        index += 1;
+                    }
+                    #[cfg(feature = "profile")]
+                    println!(
+                        "             \x1b[1;93mBlock {} cluster {} iteration {}\x1b[0m {:?} ",
+                        block,
+                        cluster_index,
+                        iteration,
+                        time.elapsed()
+                    );
+                    if complete {
+                        break
+                    }
+                }
+                clusters.push(cluster);
+                cluster_index += 1;
+            }
+        });
+        clusters
+    }
+    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
+        let mut clusters = self.clusters(remove);
         //
         // temp to see volumes
         //
-        volumes.iter().enumerate().for_each(|(index, volume)| {
+        clusters.iter().enumerate().for_each(|(index, volume)| {
             let mut tree = volume.iter().map(|cell| {
                 if self[*cell].get_cells().is_some() {
                     println!("cell {} has children", cell)
@@ -967,6 +1150,9 @@ impl Tree for Octree {
         );
         fem
     }
+    fn into_voxels(self) -> Voxels {
+        todo!("Need to implement Octree->Voxels.");
+    }
     fn octree_into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
@@ -1183,151 +1369,5 @@ impl Tree for Octree {
                 }
             });
         self.extend(new_cells);
-    }
-    fn volumes(&self) -> Volumes {
-        //
-        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
-        // based on the protrusions thing, seems like it does not
-        // seems like one face shared is also not enough ("4 or 5 sides")
-        // might have to take care of remaining protrusions in another step
-        //
-        // can you remove air before somehow?
-        // (can remove from leaves)
-        //
-        let mut block;
-        let mut complete;
-        let mut index;
-        let mut leaf;
-        let mut leaves: Vec<usize> = self
-            .iter()
-            .enumerate()
-            .filter_map(|(index, cell)| {
-                if cell.get_cells().is_none() {
-                    Some(index)
-                } else {
-                    None
-                }
-            })
-            .collect();
-        leaves.sort();
-        let mut children_parents = vec![None; leaves[leaves.len() - 1] + 1];
-        self
-        .iter()
-        .enumerate()
-        .filter_map(|(parent_index, cell)| {
-            cell.get_cells().as_ref().map(|subcells| (parent_index, subcells))
-        })
-        .for_each(|(parent_index, subcells)|
-            if subcells.iter().filter(|&&subcell|
-                self[subcell].get_cells().is_some()
-            ).count() == 0 {
-                subcells.iter().enumerate().for_each(|(subcell_index, &subcell)|
-                    children_parents[subcell] = Some((parent_index, subcell_index))
-                )
-            }
-        );
-        let mut volume;
-        let mut volumes = vec![];
-        while let Some(starting_leaf) = leaves.pop() {
-            block = self[starting_leaf].get_block();
-            volume = vec![starting_leaf];
-            loop {
-                complete = true;
-                index = 0;
-                while index < volume.len() {
-                    leaf = volume[index];
-                    self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
-                        if let Some(cell) = face_cell {
-                            if let Ok(spot) = leaves.binary_search(cell) {
-                                if self[*cell].get_block() == block {
-                                    leaves.remove(spot);
-                                    volume.push(*cell);
-                                }
-                            } else if let Some(subcells) = self[*cell].get_cells() {
-                                match face {
-                                    0 => {
-                                        [2, 3, 6, 7]
-                                    }
-                                    1 => {
-                                        [0, 2, 4, 6]
-                                    }
-                                    2 => {
-                                        [0, 1, 4, 5]
-                                    }
-                                    3 => {
-                                        [1, 3, 5, 7]
-                                    }
-                                    4 => {
-                                        [4, 5, 6, 7]
-                                    }
-                                    5 => {
-                                        [0, 1, 2, 3]
-                                    }
-                                    _ => {
-                                        panic!()
-                                    }
-                                }.into_iter().for_each(|subcell| {
-                                    if let Ok(spot) = leaves.binary_search(&subcells[subcell]) {
-                                        if self[subcells[subcell]].get_block() == block {
-                                            complete = false;
-                                            leaves.remove(spot);
-                                            volume.push(subcells[subcell]);
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    });
-                    index += 1;
-                }
-                index = 0;
-                while index < volume.len() {
-                    leaf = volume[index];
-                    if let Some((parent, subcell)) = children_parents[leaf] {
-                        self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
-                            if let Some(cell) = face_cell {
-                                if match face {
-                                    0 => {
-                                        [0, 1, 4, 5]
-                                    }
-                                    1 => {
-                                        [1, 3, 5, 7]
-                                    }
-                                    2 => {
-                                        [2, 3, 6, 7]
-                                    }
-                                    3 => {
-                                        [0, 2, 4, 6]
-                                    }
-                                    4 => {
-                                        [0, 1, 2, 3]
-                                    }
-                                    5 => {
-                                        [4, 5, 6, 7]
-                                    }
-                                    _ => {
-                                        panic!()
-                                    }
-                                }.iter().any(|&entry| subcell == entry) {
-                                    if let Ok(spot) = leaves.binary_search(cell) {
-                                        if self[*cell].get_block() == block {
-                                            complete = false;
-                                            leaves.remove(spot);
-                                            volume.push(*cell);
-                                        }
-                                    }
-                                }
-                            }
-                        );
-                    }
-                    index += 1;
-                }
-                if complete {
-                    break
-                }
-            }
-            volumes.push(volume)
-        }
-        volumes
     }
 }

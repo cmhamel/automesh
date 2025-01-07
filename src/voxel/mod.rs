@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, HexConnectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET},
-    Coordinate, Coordinates, Vector, NSD,
+    Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};
@@ -38,6 +38,13 @@ pub struct Voxels {
 
 /// Inherent implementation of the voxels type.
 impl Voxels {
+    /// Defeatures clusters with less than a minimum number of voxels.
+    pub fn defeature(self, min_num_voxels: usize) -> Self {
+        let mut octree = Octree::from_voxels(self);
+        octree.balance(true);
+        octree.defeature(min_num_voxels, None);
+        octree.into_voxels()
+    }
     /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Result<Self, ReadNpyError> {
         Ok(Self {
