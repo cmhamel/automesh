@@ -17,9 +17,11 @@ Copy from local to HPC:
 
 We consider three simulations using the following three meshes (in the HPC `~/autotwin/ssm/geometry` folder):
 
-* `sr2/spheres_reolution_2.exo`
-* `sr3/spheres_reolution_3.exo`
-* `sr4/spheres_reolution_4.exo`
+folder | file | `md5` checksum
+:---: | :---: | :---:
+`sr2` | `spheres_resolution_2.exo` | `9f40c8bd91874f87e22a456c76b4448c`
+`sr3` | `spheres_resolution_3.exo` | `6ae69132897577e526860515e53c9018`
+`sr4` | `spheres_resolution_4.exo` | `b939bc65ce07d3ac6a573a4f1178cfd0`
 
 We do not use the `spheres_resolution_1.exo` because the outer shell layer is not closed.
 
@@ -46,7 +48,6 @@ The peak angular acceleration ocurrs at $t=\Delta t / 2$ (which occurs in the ta
 
 On the outer shell (block 3) of the model, we prescribe the angular velocity [boundary condition](https://github.com/autotwin/ssm/blob/c83fb7a629850ba225fd4cb45f5b70382ac0d074/bcs/shell_rotation.txt).
 
-
 ## Tracers
 
 View the tracer locations in Cubit:
@@ -70,11 +71,13 @@ We model the outer shell (block 3) as a rigid body.  The inner sphere (block 1) 
 
 We created three input decks:
 
-* [sr2.i](https://github.com/autotwin/ssm/blob/main/input/sr2/sr2.i) (for mesh spheres_reolution_2.exo)
-* [sr3.i](https://github.com/autotwin/ssm/blob/main/input/sr3/sr3.i) (for mesh spheres_reolution_3.exo)
-* [sr4.i](https://github.com/autotwin/ssm/blob/main/input/sr4/sr4.i) (for mesh spheres_reolution_4.exo)
+* [`sr2.i`](https://github.com/autotwin/ssm/blob/main/input/sr2/sr2.i) (for mesh `spheres_reolution_2.exo`)
+* [`sr3.i`](https://github.com/autotwin/ssm/blob/main/input/sr3/sr3.i) (for mesh `spheres_reolution_3.exo`)
+* [`sr4.i`](https://github.com/autotwin/ssm/blob/main/input/sr4/sr4.i) (for mesh `spheres_reolution_4.exo`)
 
-We used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define sample points along the line $y = x$ at 1-cm (radial) intervals.  Displacement, maximum principal log strain, and maximum principal rate of deformation were traced at sample points over the simulation duration.  The Sierra/Solid Mechanics documentation [^Sierra_2022] [^Sierra_examples_2024] was also useful for creating the input decks.
+**Remark:** Originally, we used [APREPRO](https://sandialabs.github.io/seacas-docs/aprepro.pdf), part of [SEACAS](https://sandialabs.github.io/seacas-docs/sphinx/html/index.html#aprepro), to define tracer points along the line $y = x$ at 1-cm (radial) intervals.  We then updated the locations of these tracer points to be along the x-axis, which allowed for nodally exact locations to be established across all models, voxelized and conforming.
+
+Displacement, maximum principal log strain, and maximum principal rate of deformation were logged at tracer points over the simulation duration.  The Sierra/Solid Mechanics documentation [^Sierra_2022] [^Sierra_examples_2024] was also useful for creating the input decks.
 
 ## Solver
 
@@ -221,7 +224,7 @@ item | sim | T_sim (ms) | HPC | #proc | cpu time (hh:mm)
 :---: | :---: | :---: | :---: | :---: | :---:
 0 | sr2.i | 20 | att | 160 | less than 1 min
 1 | sr3.i | 20 | att | 160 | 00:04
-2 | sr4.i | 20 | gho | 160 | 03:48
+2 | sr4.i | 20 | ecl | 160 | 03:58
 
 ## Results
 
@@ -229,7 +232,7 @@ Copy the files, `history_rigid.csv` and `history.csv`, which contain tracer rigi
 
 ### Rigid Body
 
-With [`xyfigure`](https://pypi.org/project/xyfigure/)
+With [`xyfigure`](https://github.com/sandialabs/sibl/tree/master/cli/doc)
 
 ```sh
 source ~/sibl/.venv/bin/activate.fish
@@ -249,7 +252,7 @@ angular acceleration | angular velocity | angular position
 :---: | :---: | :---:
 ![img/sr2_angular_acceleration_z.svg](img/sr2_angular_acceleration_z.svg) | ![img/sr2_angular_velocity_z.svg](img/sr2_angular_velocity_z.svg) | ![img/sr2_angular_position_z.svg](img/sr2_angular_position_z.svg)
 
-Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The traces appear the same for the `sr3` and `sr4` models.
+Figure: Rigid body (block 3) kinematics for `sr2`, the `sphere_resolution_2.exo` model.  The time history traces appear the same for the `sr3` and `sr4` models.
 
 ### Deformable Body
 

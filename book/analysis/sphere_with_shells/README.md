@@ -12,7 +12,7 @@ We use the model to explore answers to the following questions:
 
 ## Model
 
-[Python](#source) is used to create a segementations, saved as `.npy` files, and visualize the results.
+[Python](#source) is used to create a segmentations, saved as `.npy` files, and visualize the results.
 
 ### Given
 

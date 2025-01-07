@@ -107,11 +107,11 @@ figure:
   file: displacement_sr2c.svg
   size: [8.0, 6.0]
   title: Displacement Magnitude at Various Radii (sr2c)
-  xlabel: time (s),
+  xlabel: time (s)
   ylabel: displacement magnitude (cm)
   xlim: [-0.001, 0.021]
   #ylim: [-0.01, 0.46]
-  details: false
+  details: true
   display: true
   dpi: 100
   latex: false

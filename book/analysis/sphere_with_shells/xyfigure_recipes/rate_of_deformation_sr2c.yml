@@ -107,11 +107,11 @@ figure:
   file: rate_of_deformation_sr2c.svg
   size: [8.0, 6.0]
   title: Maximum Principal Rate of Deformation at Various Radii (sr2c)
-  xlabel: time (s),
+  xlabel: time (s)
   ylabel: maximum principal rate of deformation (1/s)
   xlim: [-0.001, 0.021]
   ylim: [-5.0, 675.0]
-  details: false
+  details: true
   display: true
   dpi: 100
   latex: false
