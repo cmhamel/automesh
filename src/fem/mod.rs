@@ -1008,6 +1008,10 @@ fn write_finite_elements_metrics(
         .and_then(|ext| ext.to_str());
     match input_extension {
         Some("csv") => {
+            file.write_all(
+                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,\n"
+                    .as_bytes(),
+            )?;
             maximum_aspect_ratios
                 .iter()
                 .zip(minimum_scaled_jacobians.iter().zip(maximum_skews.iter()))
@@ -1015,7 +1019,7 @@ fn write_finite_elements_metrics(
                     |(maximum_aspect_ratio, (minimum_scaled_jacobian, maximum_skew))| {
                         file.write_all(
                             format!(
-                                "{:>15.6e}, {:>15.6e}, {:>15.6e}\n",
+                                "{:>20.6e}, {:>26.6e}, {:>26.6e},\n",
                                 maximum_aspect_ratio, minimum_scaled_jacobian, maximum_skew
                             )
                             .as_bytes(),
