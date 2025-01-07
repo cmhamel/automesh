@@ -632,7 +632,12 @@ impl Tree for Octree {
         // temp to see volumes
         //
         volumes.iter().enumerate().for_each(|(index, volume)| {
-            let mut tree = volume.iter().map(|cell| self[*cell]).collect::<Octree>();
+            let mut tree = volume.iter().map(|cell| {
+                if self[*cell].get_cells().is_some() {
+                    println!("cell {} has children", cell)
+                }
+                self[*cell]
+            }).collect::<Octree>();
             tree.iter_mut()
                 .for_each(|cell| cell.block = Some(index as u8 + 1));
             tree.octree_into_finite_elements(None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero())
@@ -1207,11 +1212,6 @@ impl Tree for Octree {
         .enumerate()
         .filter_map(|(parent_index, cell)| {
             cell.get_cells().as_ref().map(|subcells| (parent_index, subcells))
-            // if let Some(subcells) = cell.get_cells() {
-            //     Some((parent_index, subcells))
-            // } else {
-            //     None
-            // }
         })
         .for_each(|(parent_index, subcells)|
             if subcells.iter().filter(|&&subcell|
@@ -1264,7 +1264,7 @@ impl Tree for Octree {
                                 if let Ok(spot) = leaves.binary_search(&subcells[subcell]) {
                                     if self[subcells[subcell]].get_block() == block {
                                         leaves.remove(spot);
-                                        volume.push(*cell);
+                                        volume.push(subcells[subcell]);
                                     }
                                 }
                             })
@@ -1273,10 +1273,6 @@ impl Tree for Octree {
                 });
                 index += 1;
             }
-            //
-            // seems like there are issues even with just above
-            // for example, it seems to include non-leaf cells for some reason!
-            //
             // index = 0;
             // while index < volume.len() {
             //     leaf = volume[index];
