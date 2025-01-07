@@ -107,11 +107,11 @@ figure:
   file: log_strain_sr3.svg
   size: [8.0, 6.0]
   title: Maximum Principal Log Strain at Various Radii (sr3)
-  xlabel: time (s),
+  xlabel: time (s)
   ylabel: maximum principal log strain (cm/cm)
   xlim: [-0.001, 0.021]
-  ylim: [-0.01, 0.76]
-  details: false
+  ylim: [-0.01, 1.36]
+  details: true
   display: true
   dpi: 100
   latex: false

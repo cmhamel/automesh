@@ -28,11 +28,11 @@ Copy from local to HPC:
 # [HPC]~/autotwin/ssm/geometry/sr2c/
 ```
 
-We consider three simulations using the following three meshes (in the HPC ~/autotwin/ssm/geometry folder):
+We consider three simulations using the following three meshes (in the HPC `~/autotwin/ssm/geometry` folder):
 
-*  `sr2c/conf_0.5cm.g`
-*  `sr3c/conf_0.25cm.g`
-*  `sr4/spheres_reolution_4.exo`
+* `sr2c/conf_0.5cm.g`
+* `sr3c/conf_0.25cm.g`
+* `sr4/spheres_reolution_4.exo`
 
 ## Tracers
 
@@ -53,9 +53,9 @@ Figure: Tracer numbers `[0, 1, 2, ... 11]` at $\Delta x$ distance `[0, 1, 2, ...
 
 We created three input decks:
 
-* [sr2c.i](https://github.com/autotwin/ssm/blob/main/input/sr2c/sr2c.i) (for mesh conf_0.5cm.g)
-* [sr3c.i](https://github.com/autotwin/ssm/blob/main/input/sr3c/sr3c.i) (for mesh conf_0.25cm.g)
-* sr4c.i (for mesh conf_0.1cm.g)
+* [`sr2c.i`](https://github.com/autotwin/ssm/blob/main/input/sr2c/sr2c.i) (for mesh `conf_0.5cm.g`)
+* [`sr3c.i`](https://github.com/autotwin/ssm/blob/main/input/sr3c/sr3c.i) (for mesh `conf_0.25cm.g`)
+* [`sr4c.i`](https://github.com/autotwin/ssm/blob/main/input/sr4c/sr4c.i) (for mesh `conf_0.25cm.g`)
 
 ## Results
 

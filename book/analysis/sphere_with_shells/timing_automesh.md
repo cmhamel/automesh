@@ -21,7 +21,7 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells/
 
 Use `automesh` to convert the segmentations into finite element meshes.
 
-**Remark:** Instead of the Abaqus output format (`.inp`), we use the Exodus II output format (`.exo`), which can result in faster mesh creation and smaller file sizes due to compression. The Exodus output files are created with the following,
+**Remark:** In the analysis below, we use the Exodus II output format (`.exo`) instead of the Abaqus output format (`.inp`).  The Exodus format results in faster mesh creation and smaller file size due to compression.
 
 ```sh
 automesh mesh -i spheres_resolution_1.npy \
