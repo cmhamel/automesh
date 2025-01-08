@@ -28,6 +28,7 @@
     - [Timing - Sculpt](analysis/sphere_with_shells/timing_sculpt.md)
     - [Simulation](analysis/sphere_with_shells/simulation.md)
     - [Conforming Mesh](analysis/sphere_with_shells/conforming.md)
+    - [Comparisons](analysis/sphere_with_shells/comparisons.md)
 
 # Appendices
 

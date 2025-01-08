@@ -110,7 +110,7 @@ figure:
   xlabel: time (s)
   ylabel: displacement magnitude (cm)
   xlim: [-0.001, 0.021]
-  #ylim: [-0.01, 0.46]
+  ylim: [-0.2, 7.2]
   details: true
   display: true
   dpi: 100

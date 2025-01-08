@@ -110,7 +110,7 @@ figure:
   xlabel: time (s)
   ylabel: maximum principal rate of deformation (1/s)
   xlim: [-0.001, 0.021]
-  ylim: [-5.0, 675.0]
+  ylim: [-5.0, 1075.0]
   details: true
   display: true
   dpi: 100
