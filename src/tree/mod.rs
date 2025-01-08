@@ -809,15 +809,59 @@ impl Tree for Octree {
         // seems like one face shared is also not enough ("4 or 5 sides")
         // might have to take care of remaining protrusions in another step
         //
+        let mut block = 0;
+        let mut blocks = vec![];
         let mut clusters = self.clusters(remove);
+        let mut counts = vec![];
+        let mut new_block = 0;
+        let mut unique_blocks = vec![];
         let volumes: Vec<usize> = clusters.iter().map(|cluster|
             cluster.iter().map(|&cell|
                 ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
             ).sum()
         ).collect();
-        if volumes.iter().any(|volume| volume < &min_num_voxels) {
-            panic!("Found at least one volume below min_num_voxels={}", min_num_voxels)
-        }
+        //
+        // how to find the "predominant" material to reassign to?
+        // count number of faces volume has touch each block and pick the largest count?
+        //
+        clusters.iter()
+            .zip(volumes)
+            .filter(|(_, volume)| volume < &min_num_voxels)
+            .for_each(|(cluster, _)| {
+                block = self[cluster[0]].get_block();
+                blocks = cluster.iter().map(|&cell|
+                    self[cell]
+                        .get_faces()
+                        .iter()
+                        .filter_map(|&face|
+                            if let Some(neighbor) = face {
+                                Some(self[neighbor].get_block())
+                            } else {
+                                None
+                            }
+                        ).collect::<Vec<u8>>()
+                    ).collect::<Vec<Vec<u8>>>().into_iter().flatten().collect();
+                unique_blocks = blocks.to_vec();
+                unique_blocks.sort();
+                unique_blocks.dedup();
+                counts = unique_blocks.iter().map(|unique_block|
+                    blocks.iter().filter(|&block| block == unique_block).count()
+                ).collect();
+                new_block = unique_blocks[counts.iter().position(|count| count == counts.iter().max().unwrap()).unwrap()];
+                cluster.iter().for_each(|&cell| self[cell].block = Some(new_block));
+                //
+                // should you delete cluster?
+                //
+                // do you need to add the cells from this cluster to another cluster?
+                //
+                // do you need to update the volumes?
+                //
+            });
+
+        // if volumes.iter().any(|volume| volume < &min_num_voxels) {
+        //     panic!("Found at least one volume below min_num_voxels={}", min_num_voxels)
+        // }
+
         // clusters.iter().enumerate().for_each(|(index, volume)| {
         //     let mut tree = volume.iter().map(|cell| {
         //         if self[*cell].get_cells().is_some() {
