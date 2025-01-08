@@ -15,6 +15,7 @@ use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
+    array::from_fn,
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error, Write},
 };
@@ -32,7 +33,6 @@ type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 pub type VoxelData = Array3<u8>;
 
 /// The voxels type.
-#[derive(Debug)]
 pub struct Voxels {
     data: VoxelData,
 }
@@ -41,16 +41,54 @@ pub struct Voxels {
 impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
-        let mut octree = Octree::from_voxels(self);
-        octree.balance(true);
-        octree.defeature(min_num_voxels, None);
-        octree.into_voxels()
+        let mut tree = Octree::from_voxels(self);
+        tree.balance(true);
+        tree.defeature(min_num_voxels, None);
+        Self::from_octree(tree)
     }
     /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Result<Self, ReadNpyError> {
         Ok(Self {
             data: voxel_data_from_npy(file_path)?,
         })
+    }
+    /// Constructs and returns a new voxels type from an Octree file.
+    pub fn from_octree(mut tree: Octree) -> Self {
+        if tree[0].get_level() == tree[1].get_level() {
+            panic!("from_octree() not yet ready for asymmetric octrees")
+        }
+        let nel= (tree[0].get_max_x() - tree[0].get_min_x()) as usize;
+        let mut data = VoxelData::zeros((nel, nel, nel));
+        let mut cell;
+        let mut index = 0;
+        let mut new_cells;
+        let mut new_indices;
+        tree.prune();
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        while index < tree.len() {
+            cell = tree[index];
+            if cell.get_max_x() - cell.get_min_x() > 1.0 {
+                new_indices = from_fn(|n| tree.len() + n);
+                new_cells = cell.subdivide(new_indices);
+                if let Some(block) = cell.block {
+                    new_cells.iter_mut().for_each(|cell|
+                        cell.block = Some(block)
+                    )
+                }
+                tree.extend(new_cells);
+            } else {
+                data[[*cell.get_min_x() as usize, *cell.get_min_y() as usize, *cell.get_min_z() as usize]] = cell.get_block()
+            }
+            index += 1;
+        }
+        let voxels = Self { data };
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mOctree to voxels\x1b[0m {:?}",
+            time.elapsed()
+        );
+        voxels
     }
     /// Constructs and returns a new voxels type from an SPN file.
     pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {

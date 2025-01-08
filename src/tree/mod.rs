@@ -3,7 +3,6 @@ use std::time::Instant;
 
 use super::{
     fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
-    voxel::Nel,
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
 use conspire::math::{Tensor, TensorArray, TensorVec};
@@ -34,7 +33,6 @@ pub trait Tree {
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
-    fn into_voxels(self) -> Voxels;
     fn octree_into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
@@ -48,7 +46,7 @@ pub trait Tree {
 
 #[derive(Clone, Copy, Debug)]
 pub struct Cell {
-    block: Option<u8>,
+    pub block: Option<u8>,
     cells: Option<Indices>,
     faces: Faces,
     level: usize,
@@ -61,41 +59,41 @@ pub struct Cell {
 }
 
 impl Cell {
-    fn get_block(&self) -> u8 {
+    pub fn get_block(&self) -> u8 {
         if let Some(block) = self.block {
             block
         } else {
             panic!()
         }
     }
-    fn get_cells(&self) -> &Option<Indices> {
+    pub fn get_cells(&self) -> &Option<Indices> {
         &self.cells
     }
-    fn get_faces(&self) -> &Faces {
+    pub fn get_faces(&self) -> &Faces {
         &self.faces
     }
-    fn get_level(&self) -> &usize {
+    pub fn get_level(&self) -> &usize {
         &self.level
     }
-    fn get_min_x(&self) -> &f64 {
+    pub fn get_min_x(&self) -> &f64 {
         &self.min_x
     }
-    fn get_max_x(&self) -> &f64 {
+    pub fn get_max_x(&self) -> &f64 {
         &self.max_x
     }
-    fn get_min_y(&self) -> &f64 {
+    pub fn get_min_y(&self) -> &f64 {
         &self.min_y
     }
-    fn get_max_y(&self) -> &f64 {
+    pub fn get_max_y(&self) -> &f64 {
         &self.max_y
     }
-    fn get_min_z(&self) -> &f64 {
+    pub fn get_min_z(&self) -> &f64 {
         &self.min_z
     }
-    fn get_max_z(&self) -> &f64 {
+    pub fn get_max_z(&self) -> &f64 {
         &self.max_z
     }
-    fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
+    pub fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
         let x_min = self.get_min_x().round() as u8 as usize;
         let x_max = self.get_max_x().round() as u8 as usize;
         let y_min = self.get_min_y().round() as u8 as usize;
@@ -111,7 +109,7 @@ impl Cell {
             None
         }
     }
-    fn subdivide(&mut self, indices: Indices) -> Cells {
+    pub fn subdivide(&mut self, indices: Indices) -> Cells {
         self.cells = Some(indices);
         let level = self.get_level() + 1;
         let min_x = self.get_min_x();
@@ -629,12 +627,6 @@ impl Tree for Octree {
         }
     }
     fn clusters(&self, remove: Option<Vec<u8>>) -> Clusters {
-        //
-        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
-        // based on the protrusions thing, seems like it does not
-        // seems like one face shared is also not enough ("4 or 5 sides")
-        // might have to take care of remaining protrusions in another step
-        //
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut removed_data = remove.unwrap_or_default();
@@ -811,6 +803,12 @@ impl Tree for Octree {
         clusters
     }
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
+        //
+        // does Sculpt consider voxels sharing an edge or corner part of the same volume?
+        // based on the protrusions thing, seems like it does not
+        // seems like one face shared is also not enough ("4 or 5 sides")
+        // might have to take care of remaining protrusions in another step
+        //
         let mut clusters = self.clusters(remove);
         let volumes: Vec<usize> = clusters.iter().map(|cluster|
             cluster.iter().map(|&cell|
@@ -1156,27 +1154,6 @@ impl Tree for Octree {
         );
         fem
     }
-    fn into_voxels(mut self) -> Voxels {
-        //
-        // what if not symmetric?
-        //
-        println!("{:?}", self[0]);
-        //
-        let nel: Nel = [(self[0].get_max_x() - self[0].get_min_x()) as usize; NSD];        
-        let mut index = 0;
-        while index < self.len() {
-            if self[index].get_max_x() - self[index].get_min_x() > 1.0 && self[index].get_cells().is_none() {
-                self.subdivide(index)
-            }
-            index += 1;
-        }
-        self.prune();
-        let data = VoxelData::zeros((nel[0], nel[1], nel[2]));
-        //
-        // profile printout for this!
-        //
-        todo!("Need to implement Octree->Voxels.");
-    }
     fn octree_into_finite_elements(
         self,
         remove: Option<Vec<u8>>,
@@ -1311,7 +1288,7 @@ impl Tree for Octree {
         self.retain(|cell| cell.get_cells().is_none());
         #[cfg(feature = "profile")]
         println!(
-            "             \x1b[1;93mPruning of the octree\x1b[0m {:?} ",
+            "             \x1b[1;93mPruning octree\x1b[0m {:?} ",
             time.elapsed()
         );
     }
