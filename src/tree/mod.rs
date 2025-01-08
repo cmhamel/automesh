@@ -809,6 +809,13 @@ impl Tree for Octree {
         // seems like one face shared is also not enough ("4 or 5 sides")
         // might have to take care of remaining protrusions in another step
         //
+        //
+        // should you delete cluster?
+        //
+        // do you need to add the cells from this cluster to another cluster?
+        //
+        // do you need to update the volumes?
+        //
         let mut block = 0;
         let mut blocks = vec![];
         let mut clusters = self.clusters(remove);
@@ -820,10 +827,6 @@ impl Tree for Octree {
                 ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
             ).sum()
         ).collect();
-        //
-        // how to find the "predominant" material to reassign to?
-        // count number of faces volume has touch each block and pick the largest count?
-        //
         clusters.iter()
             .zip(volumes)
             .filter(|(_, volume)| volume < &min_num_voxels)
@@ -849,33 +852,7 @@ impl Tree for Octree {
                 ).collect();
                 new_block = unique_blocks[counts.iter().position(|count| count == counts.iter().max().unwrap()).unwrap()];
                 cluster.iter().for_each(|&cell| self[cell].block = Some(new_block));
-                //
-                // should you delete cluster?
-                //
-                // do you need to add the cells from this cluster to another cluster?
-                //
-                // do you need to update the volumes?
-                //
             });
-
-        // if volumes.iter().any(|volume| volume < &min_num_voxels) {
-        //     panic!("Found at least one volume below min_num_voxels={}", min_num_voxels)
-        // }
-
-        // clusters.iter().enumerate().for_each(|(index, volume)| {
-        //     let mut tree = volume.iter().map(|cell| {
-        //         if self[*cell].get_cells().is_some() {
-        //             println!("cell {} has children", cell)
-        //         }
-        //         self[*cell]
-        //     }).collect::<Octree>();
-        //     tree.iter_mut()
-        //         .for_each(|cell| cell.block = Some(index as u8 + 1));
-        //     tree.octree_into_finite_elements(None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero())
-        //         .unwrap()
-        //         .write_exo(format!("foo_{}.exo", index).as_str())
-        //         .unwrap()
-        // })
     }
     fn from_voxels(voxels: Voxels) -> Self {
         #[cfg(feature = "profile")]
