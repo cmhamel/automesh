@@ -509,6 +509,8 @@ fn convert(
             // make these call a defeaturing function or at least print Defeaturing []...
             // below is a clippy-killer to remind you to look here
             //
+            // also, add to mesh command!
+            //
             Some("npy") => {
                 if let Some(min_num_voxels) = defeature {
                     //

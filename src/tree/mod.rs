@@ -815,6 +815,15 @@ impl Tree for Octree {
         // do you need to add the cells from this cluster to another cluster?
         //
         // do you need to update the volumes?
+        // meaning like,
+        // do you have to start with the smallest cluster,
+        // update all the cluster volumes and restart from the smallest cluster again,
+        // in case you made a cluster larger/smaller?
+        // like if you had small and medium clusters, both being small enough to eliminate,
+        // and a small was within a medium shell, them combined might be large enough to keep
+        //
+        // what does sculpt do?
+        // seems like it does some sort of iteration like this
         //
         let mut block = 0;
         let mut blocks = vec![];
@@ -836,13 +845,27 @@ impl Tree for Octree {
                     self[cell]
                         .get_faces()
                         .iter()
-                        .filter_map(|&face|
+                        .filter_map(|&face| {
+                            //
+                            // need to prevent it from counting the same block as the cluster!!!!!!!!!!
+                            //
+                            //
+                            // also need to fix the below:
+                            //
                             if let Some(neighbor) = face {
-                                Some(self[neighbor].get_block())
+                                if self[neighbor].get_cells().is_some() {
+                                    //
+                                    // need to check 2 other cases
+                                    // can you bake them into a common method to use here and in clusters()?
+                                    //
+                                    panic!("HELP")
+                                } else {
+                                    Some(self[neighbor].get_block())
+                                }
                             } else {
                                 None
                             }
-                        ).collect::<Vec<u8>>()
+                        }).collect::<Vec<u8>>()
                     ).collect::<Vec<Vec<u8>>>().into_iter().flatten().collect();
                 unique_blocks = blocks.to_vec();
                 unique_blocks.sort();

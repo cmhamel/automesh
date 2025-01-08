@@ -59,29 +59,26 @@ impl Voxels {
         }
         let nel= (tree[0].get_max_x() - tree[0].get_min_x()) as usize;
         let mut data = VoxelData::zeros((nel, nel, nel));
-        let mut cell;
-        let mut index = 0;
-        let mut new_cells;
-        let mut new_indices;
+        let mut length = 0;
+        let mut x = 0;
+        let mut y = 0;
+        let mut z = 0;
         tree.prune();
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        while index < tree.len() {
-            cell = tree[index];
-            if cell.get_max_x() - cell.get_min_x() > 1.0 {
-                new_indices = from_fn(|n| tree.len() + n);
-                new_cells = cell.subdivide(new_indices);
-                if let Some(block) = cell.block {
-                    new_cells.iter_mut().for_each(|cell|
-                        cell.block = Some(block)
+        tree.iter().for_each(|cell| {
+            x = *cell.get_min_x() as usize;
+            y = *cell.get_min_y() as usize;
+            z = *cell.get_min_z() as usize;
+            length = *cell.get_max_x() as usize - x;
+            (0..length).for_each(|i|
+                (0..length).for_each(|j|
+                    (0..length).for_each(|k|
+                        data[[x + i, y + j, z + k]] = cell.get_block()
                     )
-                }
-                tree.extend(new_cells);
-            } else {
-                data[[*cell.get_min_x() as usize, *cell.get_min_y() as usize, *cell.get_min_z() as usize]] = cell.get_block()
-            }
-            index += 1;
-        }
+                )
+            )
+        });
         let voxels = Self { data };
         #[cfg(feature = "profile")]
         println!(
