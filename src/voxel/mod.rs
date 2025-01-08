@@ -42,8 +42,8 @@ impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
         let mut octree = Octree::from_voxels(self);
-        // octree.balance(true);
-        // octree.defeature(min_num_voxels, None);
+        octree.balance(true);
+        octree.defeature(min_num_voxels, None);
         octree.into_voxels()
     }
     /// Constructs and returns a new voxels type from an NPY file.

@@ -1162,10 +1162,7 @@ impl Tree for Octree {
         //
         println!("{:?}", self[0]);
         //
-        let nel: Nel = [(self[0].get_max_x() - self[0].get_min_x()) as usize; NSD];
-
-        println!("{:?}", self.len());
-        
+        let nel: Nel = [(self[0].get_max_x() - self[0].get_min_x()) as usize; NSD];        
         let mut index = 0;
         while index < self.len() {
             if self[index].get_max_x() - self[index].get_min_x() > 1.0 && self[index].get_cells().is_none() {
@@ -1173,31 +1170,8 @@ impl Tree for Octree {
             }
             index += 1;
         }
-
-        println!("{:?}", self.len());
-
         self.prune();
-    
-        self.iter().for_each(|cell|
-            if (cell.get_max_x() - cell.get_min_x()).abs() > 1.0 {
-                panic!()
-            }
-        );
-
-        println!("{:?}", self.len());
-        
-        println!("{:?}", nel);
-        
         let data = VoxelData::zeros((nel[0], nel[1], nel[2]));
-        //
-        // just fully subdivide and directly convert?
-        // or is that much slower for some reason?
-        // maybe try it and see, if not a bottleneck, it is a much simpler method!
-        //
-        // prune?
-        //
-        // how to translate larger cells to indexed voxels?
-        // use home-base coordinates to find all the others?
         //
         // profile printout for this!
         //
