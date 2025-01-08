@@ -3,7 +3,8 @@ use std::time::Instant;
 
 use super::{
     fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
-    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
+    voxel::Nel,
+    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
 use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Axis};
@@ -811,23 +812,28 @@ impl Tree for Octree {
     }
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
         let mut clusters = self.clusters(remove);
-        //
-        // temp to see volumes
-        //
-        clusters.iter().enumerate().for_each(|(index, volume)| {
-            let mut tree = volume.iter().map(|cell| {
-                if self[*cell].get_cells().is_some() {
-                    println!("cell {} has children", cell)
-                }
-                self[*cell]
-            }).collect::<Octree>();
-            tree.iter_mut()
-                .for_each(|cell| cell.block = Some(index as u8 + 1));
-            tree.octree_into_finite_elements(None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero())
-                .unwrap()
-                .write_exo(format!("foo_{}.exo", index).as_str())
-                .unwrap()
-        })
+        let volumes: Vec<usize> = clusters.iter().map(|cluster|
+            cluster.iter().map(|&cell|
+                ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
+            ).sum()
+        ).collect();
+        if volumes.iter().any(|volume| volume < &min_num_voxels) {
+            panic!("Found at least one volume below min_num_voxels={}", min_num_voxels)
+        }
+        // clusters.iter().enumerate().for_each(|(index, volume)| {
+        //     let mut tree = volume.iter().map(|cell| {
+        //         if self[*cell].get_cells().is_some() {
+        //             println!("cell {} has children", cell)
+        //         }
+        //         self[*cell]
+        //     }).collect::<Octree>();
+        //     tree.iter_mut()
+        //         .for_each(|cell| cell.block = Some(index as u8 + 1));
+        //     tree.octree_into_finite_elements(None, &Vector::new([1.0, 1.0, 1.0]), &Vector::zero())
+        //         .unwrap()
+        //         .write_exo(format!("foo_{}.exo", index).as_str())
+        //         .unwrap()
+        // })
     }
     fn from_voxels(voxels: Voxels) -> Self {
         #[cfg(feature = "profile")]
@@ -1150,7 +1156,51 @@ impl Tree for Octree {
         );
         fem
     }
-    fn into_voxels(self) -> Voxels {
+    fn into_voxels(mut self) -> Voxels {
+        //
+        // what if not symmetric?
+        //
+        println!("{:?}", self[0]);
+        //
+        let nel: Nel = [(self[0].get_max_x() - self[0].get_min_x()) as usize; NSD];
+
+        println!("{:?}", self.len());
+        
+        let mut index = 0;
+        while index < self.len() {
+            if self[index].get_max_x() - self[index].get_min_x() > 1.0 && self[index].get_cells().is_none() {
+                self.subdivide(index)
+            }
+            index += 1;
+        }
+
+        println!("{:?}", self.len());
+
+        self.prune();
+    
+        self.iter().for_each(|cell|
+            if (cell.get_max_x() - cell.get_min_x()).abs() > 1.0 {
+                panic!()
+            }
+        );
+
+        println!("{:?}", self.len());
+        
+        println!("{:?}", nel);
+        
+        let data = VoxelData::zeros((nel[0], nel[1], nel[2]));
+        //
+        // just fully subdivide and directly convert?
+        // or is that much slower for some reason?
+        // maybe try it and see, if not a bottleneck, it is a much simpler method!
+        //
+        // prune?
+        //
+        // how to translate larger cells to indexed voxels?
+        // use home-base coordinates to find all the others?
+        //
+        // profile printout for this!
+        //
         todo!("Need to implement Octree->Voxels.");
     }
     fn octree_into_finite_elements(
@@ -1292,6 +1342,7 @@ impl Tree for Octree {
         );
     }
     fn subdivide(&mut self, index: usize) {
+        assert!(self[index].get_cells().is_none());
         let new_indices = from_fn(|n| self.len() + n);
         let mut new_cells = self[index].subdivide(new_indices);
         self[index]

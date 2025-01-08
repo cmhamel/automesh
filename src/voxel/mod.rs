@@ -24,7 +24,7 @@ use tiff::{
 };
 
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
-type Nel = [usize; NSD];
+pub type Nel = [usize; NSD];
 type VoxelDataFlattened = Vec<u8>;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
@@ -32,6 +32,7 @@ type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 pub type VoxelData = Array3<u8>;
 
 /// The voxels type.
+#[derive(Debug)]
 pub struct Voxels {
     data: VoxelData,
 }
@@ -41,8 +42,8 @@ impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
         let mut octree = Octree::from_voxels(self);
-        octree.balance(true);
-        octree.defeature(min_num_voxels, None);
+        // octree.balance(true);
+        // octree.defeature(min_num_voxels, None);
         octree.into_voxels()
     }
     /// Constructs and returns a new voxels type from an NPY file.
