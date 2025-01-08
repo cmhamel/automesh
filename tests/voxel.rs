@@ -1364,6 +1364,30 @@ mod into_finite_elements {
     }
 }
 
+mod defeature {
+    use super::*;
+    #[test]
+    fn cube_with_inclusion() {
+        let nel = 3;
+        let voxels = Voxels::from_spn("tests/input/cube_with_inclusion.spn", [nel; NSD]).unwrap();
+        let voxels = voxels.defeature(2);
+        voxels.get_data().outer_iter().take(nel).for_each(|a|
+            a.outer_iter().take(nel).for_each(|b|
+                b.iter().take(nel).for_each(|&c|
+                    assert_eq!(c, 11)
+                )
+            )
+        );
+        voxels.get_data().outer_iter().skip(nel).for_each(|a|
+            a.outer_iter().skip(nel).for_each(|b|
+                b.iter().skip(nel).for_each(|&c|
+                    assert_eq!(c, 0)
+                )
+            )
+        )
+    }
+}
+
 mod from_npy {
     use super::*;
     #[test]
