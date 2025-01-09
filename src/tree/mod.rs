@@ -92,17 +92,6 @@ pub struct Cell {
     min_z: u16,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct CellNu {
-    pub block: Option<u8>,
-    cells: Option<Indices>,
-    faces: Faces,
-    lngth: u16,
-    min_x: u16,
-    min_y: u16,
-    min_z: u16,
-}
-
 // what about making cells: Option<[&Cells; 8]>?
 // similarly for faces?
 // helps but not as much as I thought, keep thinking
@@ -121,7 +110,6 @@ pub struct CellFu<'a> {
 impl Cell {
     pub fn get_block(&self) -> u8 {
         // println!("{:?}", std::mem::size_of::<Cell>());
-        // println!("{:?}", std::mem::size_of::<CellNu>());
         // println!("{:?}\n", std::mem::size_of::<CellFu>());
         if let Some(block) = self.block {
             block
