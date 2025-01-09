@@ -515,6 +515,12 @@ fn convert(
             // and then make convert go back to SPN<->NPY only?
             // could become a command for defeaturing+manifolding in the future
             //
+            //
+            // the voxel-based approach (no octree) might be better...
+            // neighbor search is easy, just perturb the indices!
+            // should do it at least to compare
+            // if similar/better speed over many cases, and doesnt blow up memory, you might need it
+            //
             Some("npy") => {
                 if let Some(min_num_voxels) = defeature {
                     //
