@@ -86,13 +86,10 @@ pub struct Cell {
     pub block: Option<u8>,
     cells: Option<Indices>,
     faces: Faces,
-    level: usize,
     lngth: u16,
-    min_x: f64,
-    max_x: f64,
-    min_y: f64,
-    max_y: f64,
-    min_z: f64,
+    min_x: u16,
+    min_y: u16,
+    min_z: u16,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -138,33 +135,24 @@ impl Cell {
     pub fn get_faces(&self) -> &Faces {
         &self.faces
     }
-    pub fn get_level(&self) -> &usize {
-        &self.level
-    }
     pub fn get_lngth(&self) -> &u16 {
         &self.lngth
     }
-    pub fn get_min_x(&self) -> &f64 {
+    pub fn get_min_x(&self) -> &u16 {
         &self.min_x
     }
-    pub fn get_max_x(&self) -> &f64 {
-        &self.max_x
-    }
-    pub fn get_min_y(&self) -> &f64 {
+    pub fn get_min_y(&self) -> &u16 {
         &self.min_y
     }
-    pub fn get_max_y(&self) -> &f64 {
-        &self.max_y
-    }
-    pub fn get_min_z(&self) -> &f64 {
+    pub fn get_min_z(&self) -> &u16 {
         &self.min_z
     }
     pub fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
-        let x_min = self.get_min_x().round() as u8 as usize;
-        let x_max = self.get_max_x().round() as u8 as usize;
-        let y_min = self.get_min_y().round() as u8 as usize;
-        let y_max = self.get_max_y().round() as u8 as usize;
-        let z_min = self.get_min_z().round() as u8 as usize;
+        let x_min = *self.get_min_x() as usize;
+        let y_min = *self.get_min_y() as usize;
+        let z_min = *self.get_min_z() as usize;
+        let x_max = x_min + *self.get_lngth() as usize;
+        let y_max = y_min + *self.get_lngth() as usize;
         let z_max = z_min + *self.get_lngth() as usize;
         let contained = data.slice(s![x_min..x_max, y_min..y_max, z_min..z_max]);
         let mut materials: Vec<u8> = contained.iter().cloned().collect();
@@ -177,16 +165,13 @@ impl Cell {
     }
     pub fn subdivide(&mut self, indices: Indices) -> Cells {
         self.cells = Some(indices);
-        let level = self.get_level() + 1;
         let lngth = self.get_lngth() / 2;
         let min_x = self.get_min_x();
-        let max_x = self.get_max_x();
         let min_y = self.get_min_y();
-        let max_y = self.get_max_y();
         let min_z = self.get_min_z();
-        let val_x = 0.5 * (min_x + max_x);
-        let val_y = 0.5 * (min_y + max_y);
-        let val_z = min_z + lngth as f64;
+        let val_x = min_x + lngth;
+        let val_y = min_y + lngth;
+        let val_z = min_z + lngth;
         [
             Cell {
                 block: None,
@@ -199,12 +184,9 @@ impl Cell {
                     None,
                     Some(indices[4]),
                 ],
-                level,
                 lngth,
                 min_x: *min_x,
-                max_x: val_x,
                 min_y: *min_y,
-                max_y: val_y,
                 min_z: *min_z,
             },
             Cell {
@@ -218,12 +200,9 @@ impl Cell {
                     None,
                     Some(indices[5]),
                 ],
-                level,
                 lngth,
                 min_x: val_x,
-                max_x: *max_x,
                 min_y: *min_y,
-                max_y: val_y,
                 min_z: *min_z,
             },
             Cell {
@@ -237,12 +216,9 @@ impl Cell {
                     None,
                     Some(indices[6]),
                 ],
-                level,
                 lngth,
                 min_x: *min_x,
-                max_x: val_x,
                 min_y: val_y,
-                max_y: *max_y,
                 min_z: *min_z,
             },
             Cell {
@@ -256,12 +232,9 @@ impl Cell {
                     None,
                     Some(indices[7]),
                 ],
-                level,
                 lngth,
                 min_x: val_x,
-                max_x: *max_x,
                 min_y: val_y,
-                max_y: *max_y,
                 min_z: *min_z,
             },
             Cell {
@@ -275,12 +248,9 @@ impl Cell {
                     Some(indices[0]),
                     None,
                 ],
-                level,
                 lngth,
                 min_x: *min_x,
-                max_x: val_x,
                 min_y: *min_y,
-                max_y: val_y,
                 min_z: val_z,
             },
             Cell {
@@ -294,12 +264,9 @@ impl Cell {
                     Some(indices[1]),
                     None,
                 ],
-                level,
                 lngth,
                 min_x: val_x,
-                max_x: *max_x,
                 min_y: *min_y,
-                max_y: val_y,
                 min_z: val_z,
             },
             Cell {
@@ -313,12 +280,9 @@ impl Cell {
                     Some(indices[2]),
                     None,
                 ],
-                level,
                 lngth,
                 min_x: *min_x,
-                max_x: val_x,
                 min_y: val_y,
-                max_y: *max_y,
                 min_z: val_z,
             },
             Cell {
@@ -332,12 +296,9 @@ impl Cell {
                     Some(indices[3]),
                     None,
                 ],
-                level,
                 lngth,
                 min_x: val_x,
-                max_x: *max_x,
                 min_y: val_y,
-                max_y: *max_y,
                 min_z: val_z,
             },
         ]
@@ -351,7 +312,7 @@ impl Tree for Octree {
         let mut edges: [bool; 8];
         let mut index;
         let mut subdivide;
-        let levels = *self[self.len() - 1].get_level();
+        let lngth_min = 2 * self[self.len() - 1].get_lngth();
         #[allow(unused_variables)]
         for iteration in 1.. {
             balanced = true;
@@ -360,7 +321,7 @@ impl Tree for Octree {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             while index < self.len() {
-                if self[index].get_level() < &(levels - 1) && self[index].cells.is_none() {
+                if self[index].get_lngth() > &lngth_min && self[index].cells.is_none() {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
                         if let Some(neighbor) = face_cell {
                             if let Some(kids) = self[*neighbor].cells {
@@ -892,7 +853,7 @@ impl Tree for Octree {
                 cluster
                     .iter()
                     .map(|&cell| {
-                        ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
+                        self[cell].get_lngth().pow(NSD as u32) as usize
                     })
                     .sum()
             })
@@ -1006,13 +967,10 @@ impl Tree for Octree {
                         block: None,
                         cells: None,
                         faces: [None; NUM_FACES],
-                        level: 0,
                         lngth,
-                        min_x: (lngth * i as u16) as f64,
-                        max_x: (lngth * (i + 1) as u16) as f64,
-                        min_y: (lngth * j as u16) as f64,
-                        max_y: (lngth * (j + 1) as u16) as f64,
-                        min_z: (lngth * k as u16) as f64,
+                        min_x: lngth * i as u16,
+                        min_y: lngth * j as u16,
+                        min_z: lngth * k as u16,
                     })
                 })
             })
@@ -1062,9 +1020,9 @@ impl Tree for Octree {
             if cell.get_cells().is_none() {
                 cells_nodes[cell_index] = node_index;
                 nodal_coordinates.0.append(&mut vec![Coordinate::new([
-                    0.5 * (cell.get_min_x() + cell.get_max_x()) * xscale + xtranslate,
-                    0.5 * (cell.get_min_y() + cell.get_max_y()) * yscale + ytranslate,
-                    (cell.get_min_z() + 0.5 * (*cell.get_lngth() as f64)) * zscale + ztranslate,
+                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * xscale + xtranslate,
+                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * yscale + ytranslate,
+                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * zscale + ztranslate,
                 ])]);
                 node_index += 1;
             }
@@ -1309,6 +1267,12 @@ impl Tree for Octree {
         } else if zscale <= 0.0 {
             return Err("Need to specify zscale > 0.0".to_string());
         }
+        let mut x_min = 0.0;
+        let mut y_min = 0.0;
+        let mut z_min = 0.0;
+        let mut x_val = 0.0;
+        let mut y_val = 0.0;
+        let mut z_val = 0.0;
         let mut removed_data = remove.unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
@@ -1332,45 +1296,51 @@ impl Tree for Octree {
             .for_each(|(cell, (block, connectivity))| {
                 *block = cell.get_block() as usize;
                 *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
+                x_min = *cell.get_min_x() as f64 * xscale + xtranslate;
+                y_min = *cell.get_min_y() as f64 * yscale + ytranslate;
+                z_min = *cell.get_min_z() as f64 * zscale + ztranslate;
+                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * xscale + xtranslate;
+                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * yscale + ytranslate;
+                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * zscale + ztranslate;
                 nodal_coordinates[index] = Coordinate::new([
-                    cell.get_min_x().copy() * xscale + xtranslate,
-                    cell.get_min_y().copy() * yscale + ytranslate,
-                    cell.get_min_z().copy() * zscale + ztranslate,
+                    x_min,
+                    y_min,
+                    z_min,
                 ]);
                 nodal_coordinates[index + 1] = Coordinate::new([
-                    cell.get_max_x().copy() * xscale + xtranslate,
-                    cell.get_min_y().copy() * yscale + ytranslate,
-                    cell.get_min_z().copy() * zscale + ztranslate,
+                    x_val,
+                    y_min,
+                    z_min,
                 ]);
                 nodal_coordinates[index + 2] = Coordinate::new([
-                    cell.get_max_x().copy() * xscale + xtranslate,
-                    cell.get_max_y().copy() * yscale + ytranslate,
-                    cell.get_min_z().copy() * zscale + ztranslate,
+                    x_val,
+                    y_val,
+                    z_min,
                 ]);
                 nodal_coordinates[index + 3] = Coordinate::new([
-                    cell.get_min_x().copy() * xscale + xtranslate,
-                    cell.get_max_y().copy() * yscale + ytranslate,
-                    cell.get_min_z().copy() * zscale + ztranslate,
+                    x_min,
+                    y_val,
+                    z_min,
                 ]);
                 nodal_coordinates[index + 4] = Coordinate::new([
-                    cell.get_min_x().copy() * xscale + xtranslate,
-                    cell.get_min_y().copy() * yscale + ytranslate,
-                    (cell.get_min_z() + *cell.get_lngth() as f64) * zscale + ztranslate,
+                    x_min,
+                    y_min,
+                    z_val,
                 ]);
                 nodal_coordinates[index + 5] = Coordinate::new([
-                    cell.get_max_x().copy() * xscale + xtranslate,
-                    cell.get_min_y().copy() * yscale + ytranslate,
-                    (cell.get_min_z() + *cell.get_lngth() as f64) * zscale + ztranslate,
+                    x_val,
+                    y_min,
+                    z_val,
                 ]);
                 nodal_coordinates[index + 6] = Coordinate::new([
-                    cell.get_max_x().copy() * xscale + xtranslate,
-                    cell.get_max_y().copy() * yscale + ytranslate,
-                    (cell.get_min_z() + *cell.get_lngth() as f64) * zscale + ztranslate,
+                    x_val,
+                    y_val,
+                    z_val,
                 ]);
                 nodal_coordinates[index + 7] = Coordinate::new([
-                    cell.get_min_x().copy() * xscale + xtranslate,
-                    cell.get_max_y().copy() * yscale + ytranslate,
-                    (cell.get_min_z() + *cell.get_lngth() as f64) * zscale + ztranslate,
+                    x_min,
+                    y_val,
+                    z_val,
                 ]);
                 index += NUM_NODES_HEX;
             });

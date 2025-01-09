@@ -53,10 +53,10 @@ impl Voxels {
     }
     /// Constructs and returns a new voxels type from an Octree file.
     pub fn from_octree(mut tree: Octree) -> Self {
-        if tree[0].get_level() == tree[1].get_level() {
+        if tree[0].get_lngth() == tree[1].get_lngth() {
             panic!("from_octree() not yet ready for asymmetric octrees")
         }
-        let nel = (tree[0].get_max_x() - tree[0].get_min_x()) as usize;
+        let nel = *tree[0].get_lngth() as usize;
         let mut data = VoxelData::zeros((nel, nel, nel));
         let mut length = 0;
         let mut x = 0;
@@ -69,7 +69,7 @@ impl Voxels {
             x = *cell.get_min_x() as usize;
             y = *cell.get_min_y() as usize;
             z = *cell.get_min_z() as usize;
-            length = *cell.get_max_x() as usize - x;
+            length = *cell.get_lngth() as usize;
             (0..length).for_each(|i| {
                 (0..length).for_each(|j| {
                     (0..length).for_each(|k| data[[x + i, y + j, z + k]] = cell.get_block())
