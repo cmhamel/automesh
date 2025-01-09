@@ -28,6 +28,7 @@
     - [Voxel Mesh Sculpt](analysis/sphere_with_shells/voxel_sculpt.md)
     - [Simulation](analysis/sphere_with_shells/simulation.md)
     - [Conforming Mesh Cubit](analysis/sphere_with_shells/conforming.md)
+    - [Smoothed Mesh `automesh`](analysis/sphere_with_shells/smoothed.md)
     - [Comparisons](analysis/sphere_with_shells/comparisons.md)
 
 # Appendices
