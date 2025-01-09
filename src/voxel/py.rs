@@ -2,6 +2,7 @@ use super::{
     super::{
         fem::py::FiniteElements,
         py::{IntoFoo, PyIntermediateError},
+        Blocks,
     },
     finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
     write_voxels_to_spn, Nel, Vector, VoxelData,
@@ -26,7 +27,7 @@ impl Voxels {
     #[pyo3(signature = (remove=[].to_vec(), scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
     pub fn as_finite_elements(
         &self,
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
         scale: [f64; 3],
         translate: [f64; 3],
     ) -> Result<FiniteElements, PyIntermediateError> {

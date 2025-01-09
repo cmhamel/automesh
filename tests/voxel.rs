@@ -92,7 +92,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
 /// used for testing purposes.
 struct Gold<const D: usize, const E: usize, const N: usize> {
     /// The block id for each element.
-    element_blocks: [usize; E],
+    element_blocks: [u8; E],
 
     /// The connectivity matrix of a finite element mesh, with E rows of
     /// elements, and with each element composed of N local element node numbers

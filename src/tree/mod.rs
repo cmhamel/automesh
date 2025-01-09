@@ -2,7 +2,7 @@
 use std::time::Instant;
 
 use super::{
-    fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
+    fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
 use conspire::math::{TensorArray, TensorVec};
@@ -62,18 +62,18 @@ type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
-    fn clusters(&self, remove: Option<Vec<u8>>) -> (Clusters, SubcellToCellMap);
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>);
+    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap);
+    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>);
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
         self,
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
     fn octree_into_finite_elements(
         self,
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
@@ -127,7 +127,7 @@ impl Cell {
         let y_max = y_min + *self.get_lngth() as usize;
         let z_max = z_min + *self.get_lngth() as usize;
         let contained = data.slice(s![x_min..x_max, y_min..y_max, z_min..z_max]);
-        let mut materials: Vec<u8> = contained.iter().cloned().collect();
+        let mut materials: Blocks = contained.iter().cloned().collect();
         materials.dedup();
         if materials.len() == 1 {
             Some(materials[0])
@@ -625,13 +625,13 @@ impl Tree for Octree {
             }
         }
     }
-    fn clusters(&self, remove: Option<Vec<u8>>) -> (Clusters, SubcellToCellMap) {
+    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut removed_data = remove.unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
-        let mut blocks: Vec<u8> = self
+        let mut blocks: Blocks = self
             .iter()
             .filter(|cell| {
                 cell.get_cells().is_none() && removed_data.binary_search(&cell.get_block()).is_err()
@@ -786,7 +786,7 @@ impl Tree for Octree {
             });
         (clusters, cell_from_subcell_map)
     }
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
+    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>) {
         //
         // does Sculpt consider voxels sharing an edge or corner part of the same volume?
         // based on the protrusions thing, seems like it does not
@@ -837,7 +837,7 @@ impl Tree for Octree {
                 block = self[cluster[0]].get_block();
                 blocks = cluster
                     .iter()
-                    .map(|&cell| {
+                    .flat_map(|&cell| {
                         self[cell]
                             .get_faces()
                             .iter()
@@ -871,7 +871,7 @@ impl Tree for Octree {
                                     None
                                 }
                             })
-                            .collect::<Vec<Vec<u8>>>()
+                            .collect::<Vec<Blocks>>()
                     })
                     .chain(cluster.iter().filter_map(|&cell| {
                         if let Some((parent, subcell)) = cell_from_subcell_map[cell] {
@@ -882,16 +882,14 @@ impl Tree for Octree {
                                     .enumerate()
                                     .filter_map(|(face, face_cell)| {
                                         if let Some(neighbor_cell) = face_cell {
-                                            if subcells_on_own_face(face)
-                                                .iter()
-                                                .any(|&entry| subcell == entry)
+                                            if self[*neighbor_cell].get_cells().is_none()
+                                                && subcells_on_own_face(face)
+                                                    .iter()
+                                                    .any(|&entry| subcell == entry)
                                             {
-                                                //
-                                                // is neighbor always barren?
-                                                //
                                                 neighbor_block = self[*neighbor_cell].get_block();
                                                 if neighbor_block != block {
-                                                    Some(vec![neighbor_block])
+                                                    Some(neighbor_block)
                                                 } else {
                                                     None
                                                 }
@@ -908,9 +906,8 @@ impl Tree for Octree {
                             None
                         }
                     }))
-                    .collect::<Vec<Vec<Vec<u8>>>>()
+                    .collect::<Vec<Blocks>>()
                     .into_iter()
-                    .flatten()
                     .flatten()
                     .collect();
                 unique_blocks = blocks.to_vec();
@@ -997,7 +994,7 @@ impl Tree for Octree {
     }
     fn into_finite_elements(
         self,
-        _remove: Option<Vec<u8>>,
+        _remove: Option<Blocks>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
@@ -1254,7 +1251,7 @@ impl Tree for Octree {
     }
     fn octree_into_finite_elements(
         self,
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
@@ -1298,7 +1295,7 @@ impl Tree for Octree {
                     .zip(element_node_connectivity.iter_mut()),
             )
             .for_each(|(cell, (block, connectivity))| {
-                *block = cell.get_block() as usize;
+                *block = cell.get_block();
                 *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
                 x_min = *cell.get_min_x() as f64 * xscale + xtranslate;
                 y_min = *cell.get_min_y() as f64 * yscale + ytranslate;

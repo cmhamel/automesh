@@ -34,7 +34,7 @@ pub const NODE_NUMBERING_OFFSET: usize = 1;
 pub const NUM_NODES_HEX: usize = 8;
 
 /// A vector of finite element block IDs.
-pub type Blocks = Vec<usize>;
+pub type Blocks = Vec<u8>;
 
 pub type VecConnectivity = Vec<Vec<usize>>;
 pub type Metrics = Array1<f64>;
@@ -122,7 +122,7 @@ impl HexahedralFiniteElements {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             let element_blocks = self.get_element_blocks();
-            let mut connected_blocks: Vec<usize> = vec![];
+            let mut connected_blocks: Blocks = vec![];
             let mut exterior_nodes = vec![];
             let mut interface_nodes = vec![];
             let mut interior_nodes = vec![];
@@ -624,7 +624,7 @@ fn finite_element_data_from_inp(
     let mut element_numbers: Blocks = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
-            current_block = buffer.trim().chars().last().unwrap().to_digit(10).unwrap() as usize;
+            current_block = buffer.trim().chars().last().unwrap().to_digit(10).unwrap() as u8;
         } else {
             element_blocks.push(current_block);
             element_node_connectivity.push(
@@ -644,7 +644,7 @@ fn finite_element_data_from_inp(
                     .take(1)
                     .next()
                     .unwrap()
-                    .parse::<usize>()
+                    .parse()
                     .unwrap(),
             );
         }

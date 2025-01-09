@@ -25,7 +25,7 @@ use tiff::{
 
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
 pub type Nel = [usize; NSD];
-type VoxelDataFlattened = Vec<u8>;
+type VoxelDataFlattened = Blocks;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
 /// The segmentation data corresponding to voxels.
@@ -103,7 +103,7 @@ impl Voxels {
     /// Converts the voxels type into a finite elements type, consuming the voxels type.
     pub fn into_finite_elements(
         self,
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
         scale: &Vector,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
@@ -125,7 +125,7 @@ impl Voxels {
     }
 }
 
-fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSized<NSD>, Blocks) {
+fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSized<NSD>, Blocks) {
     #[cfg(feature = "profile")]
     let time = Instant::now();
     let mut removed_data = remove.unwrap_or_default();
@@ -155,7 +155,7 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Vec<u8>>) -> (VoxelDataSiz
         .collect();
     let element_blocks = filtered_voxel_data_combo
         .iter()
-        .map(|entry| entry[3])
+        .map(|entry| entry[3] as u8)
         .collect();
     let filtered_voxel_data = filtered_voxel_data_combo
         .into_iter()
@@ -353,7 +353,7 @@ fn renumber_nodes(
 
 fn finite_element_data_from_data(
     data: &VoxelData,
-    remove: Option<Vec<u8>>,
+    remove: Option<Blocks>,
     scale: &Vector,
     translate: &Vector,
 ) -> Result<(Blocks, HexConnectivity, Coordinates), String> {

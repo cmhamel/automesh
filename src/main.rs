@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{Blocks, HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -126,7 +126,7 @@ enum Commands {
 
         /// Voxel IDs to remove from the mesh
         #[arg(long, short, value_name = "ID")]
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -208,7 +208,7 @@ enum Commands {
 
         /// Voxel IDs to remove from the mesh
         #[arg(long, short, value_name = "ID")]
-        remove: Option<Vec<u8>>,
+        remove: Option<Blocks>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -610,7 +610,7 @@ fn mesh(
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
-    remove: Option<Vec<u8>>,
+    remove: Option<Blocks>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
@@ -763,7 +763,7 @@ fn metrics_inner(
 fn octree(
     input: String,
     output: String,
-    remove: Option<Vec<u8>>,
+    remove: Option<Blocks>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
