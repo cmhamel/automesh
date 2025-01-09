@@ -5,7 +5,7 @@ use super::{
     fem::{NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
-use conspire::math::{Tensor, TensorArray, TensorVec};
+use conspire::math::{TensorArray, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -717,6 +717,7 @@ impl Tree for Octree {
             .into_iter()
             .enumerate()
             .for_each(|(block_index, block)| {
+                cluster_index = 1;
                 let block_leaves = &mut leaves[block_index];
                 while let Some(starting_leaf) = block_leaves.pop() {
                     let mut cluster = vec![starting_leaf];
