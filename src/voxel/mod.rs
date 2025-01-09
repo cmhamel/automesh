@@ -40,10 +40,7 @@ pub struct Voxels {
 impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
-        let mut tree = Octree::from_voxels(self);
-        tree.balance(true);
-        tree.defeature(min_num_voxels, None);
-        Self::from_octree(tree)
+        defeature_voxels(min_num_voxels, self)
     }
     /// Constructs and returns a new voxels type from an NPY file.
     pub fn from_npy(file_path: &str) -> Result<Self, ReadNpyError> {
@@ -123,6 +120,13 @@ impl Voxels {
     pub fn write_spn(&self, file_path: &str) -> Result<(), Error> {
         write_voxels_to_spn(self.get_data(), file_path)
     }
+}
+
+fn defeature_voxels(min_num_voxels: usize, voxels: Voxels) -> Voxels {
+    let mut tree = Octree::from_voxels(voxels);
+    tree.balance(true);
+    tree.defeature(min_num_voxels, None);
+    Voxels::from_octree(tree)
 }
 
 fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSized<NSD>, Blocks) {

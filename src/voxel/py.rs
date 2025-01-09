@@ -4,8 +4,8 @@ use super::{
         py::{IntoFoo, PyIntermediateError},
         Blocks,
     },
-    finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
-    write_voxels_to_spn, Nel, Vector, VoxelData,
+    defeature_voxels, finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn,
+    write_voxels_to_npy, write_voxels_to_spn, Nel, Vector, VoxelData,
 };
 use conspire::math::TensorArray;
 use pyo3::prelude::*;
@@ -43,6 +43,17 @@ impl Voxels {
             element_node_connectivity,
             nodal_coordinates.as_foo(),
         ))
+    }
+    /// Defeatures clusters with less than a minimum number of voxels.
+    pub fn defeature(&mut self, min_num_voxels: usize) {
+        self.data = defeature_voxels(
+            min_num_voxels,
+            super::Voxels {
+                data: self.data.clone(),
+            },
+        )
+        .get_data()
+        .clone()
     }
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]

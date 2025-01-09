@@ -919,16 +919,24 @@ impl Tree for Octree {
                         blocks.iter().filter(|&block| block == unique_block).count()
                     })
                     .collect();
-
-                println!("{:?}", (&unique_blocks, &counts));
-
-                new_block = unique_blocks[counts
-                    .iter()
-                    .position(|count| count == counts.iter().max().unwrap())
-                    .unwrap()];
-                cluster
-                    .iter()
-                    .for_each(|&cell| self[cell].block = Some(new_block));
+                //
+                //
+                // how could `blocks` be empty?
+                // if a cluster is misidentified as a piece within a block of itself?
+                // all these small block 0 (and other blocks) clusters seem suspicious
+                println!(
+                    "{:?}\n{:?}\n{:?}\n{:?}",
+                    &cluster, &blocks, &unique_blocks, &counts
+                );
+                //
+                //
+                // new_block = unique_blocks[counts
+                //     .iter()
+                //     .position(|count| count == counts.iter().max().expect("maximum not found"))
+                //     .expect("position of maximum not found")];
+                // cluster
+                //     .iter()
+                //     .for_each(|&cell| self[cell].block = Some(new_block));
             });
     }
     fn from_voxels(voxels: Voxels) -> Self {
