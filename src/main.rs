@@ -518,8 +518,10 @@ fn convert(
             //
             // the voxel-based approach (no octree) might be better...
             // neighbor search is easy, just perturb the indices!
+            // clusters are Vec<[i, j, k]>
             // should do it at least to compare
             // if similar/better speed over many cases, and doesnt blow up memory, you might need it
+            // might also be a good backup if you can determine when octree will blow up memory
             //
             Some("npy") => {
                 if let Some(min_num_voxels) = defeature {
