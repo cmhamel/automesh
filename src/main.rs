@@ -47,9 +47,36 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
-        /// Defeature clusters with less than NUM voxels
-        #[arg(long, short = 'd', value_name = "NUM")]
-        defeature: Option<usize>,
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
+
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
+
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
+
+    /// Defeatures and creates a new segmentation
+    Defeature {
+        /// Name of the original segmentation file
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the defeatured segmentation file
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Defeature clusters with less than MIN voxels
+        #[arg(long, short, value_name = "MIN")]
+        min: usize,
 
         /// Number of voxels in the x-direction
         #[arg(long, short = 'x', value_name = "NEL")]
@@ -80,6 +107,10 @@ enum Commands {
         /// Name of the mesh output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
+
+        /// Defeature clusters with less than NUM voxels
+        #[arg(long, short, value_name = "NUM")]
+        defeature: Option<usize>,
 
         /// Number of voxels in the x-direction
         #[arg(long, short = 'x', value_name = "NEL")]
@@ -394,19 +425,31 @@ fn main() -> Result<(), ErrorWrapper> {
         Some(Commands::Convert {
             input,
             output,
-            defeature,
             nelx,
             nely,
             nelz,
             quiet,
         }) => {
             is_quiet = quiet;
-            convert(input, output, defeature, nelx, nely, nelz, quiet)
+            convert(input, output, nelx, nely, nelz, quiet)
+        }
+        Some(Commands::Defeature {
+            input,
+            output,
+            min,
+            nelx,
+            nely,
+            nelz,
+            quiet,
+        }) => {
+            is_quiet = quiet;
+            defeature(input, output, min, nelx, nely, nelz, quiet)
         }
         Some(Commands::Mesh {
             meshing,
             input,
             output,
+            defeature,
             nelx,
             nely,
             nelz,
@@ -423,8 +466,8 @@ fn main() -> Result<(), ErrorWrapper> {
         }) => {
             is_quiet = quiet;
             mesh(
-                meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale,
-                xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
+                meshing, input, output, defeature, nelx, nely, nelz, remove, xscale, yscale,
+                zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
             )
         }
         Some(Commands::Metrics {
@@ -490,7 +533,6 @@ fn main() -> Result<(), ErrorWrapper> {
 fn convert(
     input: String,
     output: String,
-    defeature: Option<usize>,
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
@@ -504,57 +546,69 @@ fn convert(
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Npy(mut voxels) => match output_extension {
-            //
-            // make these call a defeaturing function or at least print Defeaturing []...
-            // below is a clippy-killer to remind you to look here
-            //
-            // also, add to mesh command!
-            //
-            // should defeature be its own command?
-            // and then make convert go back to SPN<->NPY only?
-            // could become a command for defeaturing+manifolding in the future
-            //
-            //
-            // the voxel-based approach (no octree) might be better...
-            // neighbor search is easy, just perturb the indices!
-            // clusters are Vec<[i, j, k]>
-            // should do it at least to compare
-            // if similar/better speed over many cases, and doesnt blow up memory, you might need it
-            // might also be a good backup if you can determine when octree will blow up memory
-            //
+        InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
+            Some("spn") => write_output(output, OutputTypes::Spn(voxels), quiet),
+            Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
+            _ => invalid_output(&output, output_extension),
+        },
+    }
+}
+
+fn defeature(
+    input: String,
+    output: String,
+    min: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    //
+    // below is a clippy-killer to remind you to look here:
+    let foo = 1;
+    //
+    // the voxel-based approach (no octree) might be better...
+    // neighbor search is easy, just perturb the indices!
+    // clusters are Vec<[i, j, k]>
+    // should do it at least to compare
+    // if similar/better speed over many cases, and doesnt blow up memory, you might need it
+    // might also be a good backup if you can determine when octree will blow up memory
+    //
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Npy(mut voxels) | InputTypes::Spn(mut voxels) => match output_extension {
             Some("npy") => {
-                if let Some(min_num_voxels) = defeature {
-                    //
-                    let foo = 1;
-                    //
-                    voxels = voxels.defeature(min_num_voxels)
+                let time = Instant::now();
+                if !quiet {
+                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                }
+                voxels = voxels.defeature(min);
+                if !quiet {
+                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
                 write_output(output, OutputTypes::Npy(voxels), quiet)
             }
             Some("spn") => {
-                if let Some(min_num_voxels) = defeature {
-                    voxels = voxels.defeature(min_num_voxels)
+                let time = Instant::now();
+                if !quiet {
+                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                }
+                voxels = voxels.defeature(min);
+                if !quiet {
+                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
                 write_output(output, OutputTypes::Spn(voxels), quiet)
             }
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Spn(mut voxels) => match output_extension {
-            Some("npy") => {
-                if let Some(min_num_voxels) = defeature {
-                    voxels = voxels.defeature(min_num_voxels)
-                }
-                write_output(output, OutputTypes::Npy(voxels), quiet)
-            }
-            Some("spn") => {
-                if let Some(min_num_voxels) = defeature {
-                    voxels = voxels.defeature(min_num_voxels)
-                }
-                write_output(output, OutputTypes::Spn(voxels), quiet)
-            }
-            _ => invalid_output(&output, output_extension),
-        },
+        _ => {
+            let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap_or("UNDEFINED"),
+                input
+            ))?
+        }
     }
 }
 
@@ -563,6 +617,7 @@ fn mesh(
     meshing: Option<MeshingCommands>,
     input: String,
     output: String,
+    defeature: Option<usize>,
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
@@ -577,7 +632,7 @@ fn mesh(
     quiet: bool,
     dual: bool,
 ) -> Result<(), ErrorWrapper> {
-    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
+    let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
         _ => {
@@ -589,6 +644,16 @@ fn mesh(
             ))?
         }
     };
+    if let Some(min_num_voxels) = defeature {
+        let time = Instant::now();
+        if !quiet {
+            println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+        }
+        input_type = input_type.defeature(min_num_voxels);
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
+    }
     let time = Instant::now();
     if !quiet {
         let entirely_default = xscale == 1.0

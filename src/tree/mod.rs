@@ -882,9 +882,7 @@ impl Tree for Octree {
                                             }
                                             .into_iter()
                                             .filter_map(|subcell| {
-                                                println!("foo");
                                                 face_block = self[subcells[subcell]].get_block();
-                                                println!("bar");
                                                 if face_block != block {
                                                     Some(face_block)
                                                 } else {
