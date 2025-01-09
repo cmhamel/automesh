@@ -57,11 +57,12 @@ type Indices = [usize; NUM_OCTANTS];
 pub type Octree = Vec<Cell>;
 
 type Clusters = Vec<Vec<usize>>;
+type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
-    fn clusters(&self, remove: Option<Vec<u8>>) -> Clusters;
+    fn clusters(&self, remove: Option<Vec<u8>>) -> (Clusters, SubcellToCellMap);
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>);
     fn from_voxels(voxels: Voxels) -> Self;
     fn into_finite_elements(
@@ -92,25 +93,8 @@ pub struct Cell {
     min_z: u16,
 }
 
-// what about making cells: Option<[&Cells; 8]>?
-// similarly for faces?
-// helps but not as much as I thought, keep thinking
-
-#[derive(Clone, Copy, Debug)]
-pub struct CellFu<'a> {
-    pub block: Option<u8>,
-    cells: Option<[&'a Cells; NUM_OCTANTS]>,
-    faces: [Option<&'a Cells>; NUM_FACES],
-    lngth: u16,
-    min_x: u16,
-    min_y: u16,
-    min_z: u16,
-}
-
 impl Cell {
     pub fn get_block(&self) -> u8 {
-        // println!("{:?}", std::mem::size_of::<Cell>());
-        // println!("{:?}\n", std::mem::size_of::<CellFu>());
         if let Some(block) = self.block {
             block
         } else {
@@ -641,7 +625,7 @@ impl Tree for Octree {
             }
         }
     }
-    fn clusters(&self, remove: Option<Vec<u8>>) -> Clusters {
+    fn clusters(&self, remove: Option<Vec<u8>>) -> (Clusters, SubcellToCellMap) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut removed_data = remove.unwrap_or_default();
@@ -678,7 +662,7 @@ impl Tree for Octree {
         leaves
             .iter_mut()
             .for_each(|block_leaves| block_leaves.sort());
-        let mut children_parents = vec![None; leaves.iter().flatten().max().unwrap() + 1];
+        let mut cell_from_subcell_map = vec![None; leaves.iter().flatten().max().unwrap() + 1];
         self.iter()
             .enumerate()
             .filter_map(|(parent_index, cell)| {
@@ -702,7 +686,7 @@ impl Tree for Octree {
                                 .is_err()
                         })
                         .for_each(|(subcell_index, &subcell)| {
-                            children_parents[subcell] = Some((parent_index, subcell_index))
+                            cell_from_subcell_map[subcell] = Some((parent_index, subcell_index))
                         })
                 }
             });
@@ -738,9 +722,7 @@ impl Tree for Octree {
                                                 cluster.push(*cell);
                                             }
                                         } else if let Some(subcells) = self[*cell].get_cells() {
-                                            subcells_on_neighbor_face(face)
-                                            .into_iter()
-                                            .for_each(
+                                            subcells_on_neighbor_face(face).into_iter().for_each(
                                                 |subcell| {
                                                     if let Ok(spot) = block_leaves
                                                         .binary_search(&subcells[subcell])
@@ -764,12 +746,13 @@ impl Tree for Octree {
                         index = 0;
                         while index < cluster.len() {
                             leaf = cluster[index];
-                            if let Some((parent, subcell)) = children_parents[leaf] {
+                            if let Some((parent, subcell)) = cell_from_subcell_map[leaf] {
                                 self[parent].get_faces().iter().enumerate().for_each(
                                     |(face, face_cell)| {
                                         if let Some(cell) = face_cell {
-                                            if subcells_on_own_face(face).iter()
-                                            .any(|&entry| subcell == entry)
+                                            if subcells_on_own_face(face)
+                                                .iter()
+                                                .any(|&entry| subcell == entry)
                                             {
                                                 if let Ok(spot) = block_leaves.binary_search(cell) {
                                                     if self[*cell].get_block() == block {
@@ -801,7 +784,7 @@ impl Tree for Octree {
                     cluster_index += 1;
                 }
             });
-        clusters
+        (clusters, cell_from_subcell_map)
     }
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
         //
@@ -831,9 +814,10 @@ impl Tree for Octree {
         //
         let mut block = 0;
         let mut blocks = vec![];
-        let mut clusters = self.clusters(remove);
+        let (clusters, cell_from_subcell_map) = self.clusters(remove);
         let mut counts = vec![];
         let mut face_block = 0;
+        let mut neighbor_block = 0;
         let mut new_block = 0;
         let mut unique_blocks = vec![];
         let volumes: Vec<usize> = clusters
@@ -841,9 +825,7 @@ impl Tree for Octree {
             .map(|cluster| {
                 cluster
                     .iter()
-                    .map(|&cell| {
-                        self[cell].get_lngth().pow(NSD as u32) as usize
-                    })
+                    .map(|&cell| self[cell].get_lngth().pow(NSD as u32) as usize)
                     .sum()
             })
             .collect();
@@ -865,16 +847,17 @@ impl Tree for Octree {
                                     if let Some(subcells) = self[neighbor].get_cells() {
                                         Some(
                                             subcells_on_neighbor_face(face)
-                                            .into_iter()
-                                            .filter_map(|subcell| {
-                                                face_block = self[subcells[subcell]].get_block();
-                                                if face_block != block {
-                                                    Some(face_block)
-                                                } else {
-                                                    None
-                                                }
-                                            })
-                                            .collect(),
+                                                .into_iter()
+                                                .filter_map(|subcell| {
+                                                    face_block =
+                                                        self[subcells[subcell]].get_block();
+                                                    if face_block != block {
+                                                        Some(face_block)
+                                                    } else {
+                                                        None
+                                                    }
+                                                })
+                                                .collect(),
                                         )
                                     } else {
                                         face_block = self[neighbor].get_block();
@@ -885,17 +868,46 @@ impl Tree for Octree {
                                         }
                                     }
                                 } else {
-                                    //
-                                    // no face neighbor, this is where check for parent?
-                                    //
-                                    // should clusters operate similarly?
-                                    // (it starts over for that part of the check)
-                                    //
                                     None
                                 }
                             })
-                            .collect()
+                            .collect::<Vec<Vec<u8>>>()
                     })
+                    .chain(cluster.iter().filter_map(|&cell| {
+                        if let Some((parent, subcell)) = cell_from_subcell_map[cell] {
+                            Some(
+                                self[parent]
+                                    .get_faces()
+                                    .iter()
+                                    .enumerate()
+                                    .filter_map(|(face, face_cell)| {
+                                        if let Some(neighbor_cell) = face_cell {
+                                            if subcells_on_own_face(face)
+                                                .iter()
+                                                .any(|&entry| subcell == entry)
+                                            {
+                                                //
+                                                // is neighbor always barren?
+                                                //
+                                                neighbor_block = self[*neighbor_cell].get_block();
+                                                if neighbor_block != block {
+                                                    Some(vec![neighbor_block])
+                                                } else {
+                                                    None
+                                                }
+                                            } else {
+                                                None
+                                            }
+                                        } else {
+                                            None
+                                        }
+                                    })
+                                    .collect(),
+                            )
+                        } else {
+                            None
+                        }
+                    }))
                     .collect::<Vec<Vec<Vec<u8>>>>()
                     .into_iter()
                     .flatten()
@@ -910,6 +922,9 @@ impl Tree for Octree {
                         blocks.iter().filter(|&block| block == unique_block).count()
                     })
                     .collect();
+
+                println!("{:?}", (&unique_blocks, &counts));
+
                 new_block = unique_blocks[counts
                     .iter()
                     .position(|count| count == counts.iter().max().unwrap())
@@ -1291,46 +1306,14 @@ impl Tree for Octree {
                 x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * xscale + xtranslate;
                 y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * yscale + ytranslate;
                 z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * zscale + ztranslate;
-                nodal_coordinates[index] = Coordinate::new([
-                    x_min,
-                    y_min,
-                    z_min,
-                ]);
-                nodal_coordinates[index + 1] = Coordinate::new([
-                    x_val,
-                    y_min,
-                    z_min,
-                ]);
-                nodal_coordinates[index + 2] = Coordinate::new([
-                    x_val,
-                    y_val,
-                    z_min,
-                ]);
-                nodal_coordinates[index + 3] = Coordinate::new([
-                    x_min,
-                    y_val,
-                    z_min,
-                ]);
-                nodal_coordinates[index + 4] = Coordinate::new([
-                    x_min,
-                    y_min,
-                    z_val,
-                ]);
-                nodal_coordinates[index + 5] = Coordinate::new([
-                    x_val,
-                    y_min,
-                    z_val,
-                ]);
-                nodal_coordinates[index + 6] = Coordinate::new([
-                    x_val,
-                    y_val,
-                    z_val,
-                ]);
-                nodal_coordinates[index + 7] = Coordinate::new([
-                    x_min,
-                    y_val,
-                    z_val,
-                ]);
+                nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
+                nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
+                nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
+                nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
+                nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
+                nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
+                nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
+                nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
                 index += NUM_NODES_HEX;
             });
         Ok(HexahedralFiniteElements::from_data(
