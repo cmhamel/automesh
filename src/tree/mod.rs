@@ -11,6 +11,43 @@ use std::array::from_fn;
 
 const NUM_FACES: usize = 6;
 const NUM_OCTANTS: usize = 8;
+const NUM_SUBCELLS_FACE: usize = 4;
+
+type SubcellsOnFace = [usize; NUM_SUBCELLS_FACE];
+const SUBCELLS_ON_OWN_FACE_0: SubcellsOnFace = [0, 1, 4, 5];
+const SUBCELLS_ON_OWN_FACE_1: SubcellsOnFace = [1, 3, 5, 7];
+const SUBCELLS_ON_OWN_FACE_2: SubcellsOnFace = [2, 3, 6, 7];
+const SUBCELLS_ON_OWN_FACE_3: SubcellsOnFace = [0, 2, 4, 6];
+const SUBCELLS_ON_OWN_FACE_4: SubcellsOnFace = [0, 1, 2, 3];
+const SUBCELLS_ON_OWN_FACE_5: SubcellsOnFace = [4, 5, 6, 7];
+
+const fn subcells_on_own_face(face: usize) -> SubcellsOnFace {
+    match face {
+        0 => SUBCELLS_ON_OWN_FACE_0,
+        1 => SUBCELLS_ON_OWN_FACE_1,
+        2 => SUBCELLS_ON_OWN_FACE_2,
+        3 => SUBCELLS_ON_OWN_FACE_3,
+        4 => SUBCELLS_ON_OWN_FACE_4,
+        5 => SUBCELLS_ON_OWN_FACE_5,
+        _ => {
+            panic!()
+        }
+    }
+}
+
+const fn subcells_on_neighbor_face(face: usize) -> SubcellsOnFace {
+    match face {
+        0 => SUBCELLS_ON_OWN_FACE_2,
+        1 => SUBCELLS_ON_OWN_FACE_3,
+        2 => SUBCELLS_ON_OWN_FACE_0,
+        3 => SUBCELLS_ON_OWN_FACE_1,
+        4 => SUBCELLS_ON_OWN_FACE_5,
+        5 => SUBCELLS_ON_OWN_FACE_4,
+        _ => {
+            panic!()
+        }
+    }
+}
 
 type Cells = [Cell; NUM_OCTANTS];
 type Faces = [Option<usize>; NUM_FACES];
@@ -56,6 +93,17 @@ pub struct Cell {
     max_y: f64,
     min_z: f64,
     max_z: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct CellNu {
+    pub block: Option<u8>,
+    cells: Option<Indices>,
+    faces: Faces,
+    min_x: u16,
+    min_y: u16,
+    min_z: u16,
+    lngth: u16,
 }
 
 impl Cell {
@@ -722,17 +770,7 @@ impl Tree for Octree {
                                                 cluster.push(*cell);
                                             }
                                         } else if let Some(subcells) = self[*cell].get_cells() {
-                                            match face {
-                                                0 => [2, 3, 6, 7],
-                                                1 => [0, 2, 4, 6],
-                                                2 => [0, 1, 4, 5],
-                                                3 => [1, 3, 5, 7],
-                                                4 => [4, 5, 6, 7],
-                                                5 => [0, 1, 2, 3],
-                                                _ => {
-                                                    panic!()
-                                                }
-                                            }
+                                            subcells_on_neighbor_face(face)
                                             .into_iter()
                                             .for_each(
                                                 |subcell| {
@@ -762,18 +800,7 @@ impl Tree for Octree {
                                 self[parent].get_faces().iter().enumerate().for_each(
                                     |(face, face_cell)| {
                                         if let Some(cell) = face_cell {
-                                            if match face {
-                                                0 => [0, 1, 4, 5],
-                                                1 => [1, 3, 5, 7],
-                                                2 => [2, 3, 6, 7],
-                                                3 => [0, 2, 4, 6],
-                                                4 => [0, 1, 2, 3],
-                                                5 => [4, 5, 6, 7],
-                                                _ => {
-                                                    panic!()
-                                                }
-                                            }
-                                            .iter()
+                                            if subcells_on_own_face(face).iter()
                                             .any(|&entry| subcell == entry)
                                             {
                                                 if let Ok(spot) = block_leaves.binary_search(cell) {
@@ -869,17 +896,7 @@ impl Tree for Octree {
                                 if let Some(neighbor) = face_cell {
                                     if let Some(subcells) = self[neighbor].get_cells() {
                                         Some(
-                                            match face {
-                                                0 => [2, 3, 6, 7],
-                                                1 => [0, 2, 4, 6],
-                                                2 => [0, 1, 4, 5],
-                                                3 => [1, 3, 5, 7],
-                                                4 => [4, 5, 6, 7],
-                                                5 => [0, 1, 2, 3],
-                                                _ => {
-                                                    panic!()
-                                                }
-                                            }
+                                            subcells_on_neighbor_face(face)
                                             .into_iter()
                                             .filter_map(|subcell| {
                                                 face_block = self[subcells[subcell]].get_block();

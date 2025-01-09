@@ -574,6 +574,26 @@ fn defeature(
     // if similar/better speed over many cases, and doesnt blow up memory, you might need it
     // might also be a good backup if you can determine when octree will blow up memory
     //
+    // or, why is octree so expensive? can you make it cheaper?
+    // can at least use min(x, y, z) and length (4 total) instead of (6 total)
+    // seems like you can also get rid of level by using lengths
+    //
+    // also, min/max/lengths are always going to be unsigned integers
+    // use usize? could even go u16 or so since dimensions will be much smaller than num cells
+    // seems like usize is same size as f64 on 64-bit
+    // so maybe use u16 and error if ever get something that would overflow
+    // u16 gets you to 100 trillion, that's more than enough
+    //
+    // seems like 20% reduction in memory (232 bytes to 184 bytes)
+    // not a ton, but still worth it
+    //
+    // cells and faces fields are really what kills you, without them it could be only 10 bytes!
+    // if there were any way to avoid that, that would be where you can save yourself
+    // u32 gets you above 4 billion, and could cut memory in half, indexing would just be a pain everywhere
+    // some sort of maps, or another fancy idea?
+    //
+    // and test by diffing a dualized mesh .inp and defeatured .spn before and after changes
+    //
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(mut voxels) | InputTypes::Spn(mut voxels) => match output_extension {
