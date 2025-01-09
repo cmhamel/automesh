@@ -236,7 +236,7 @@ With [`xyfigure`](https://github.com/sandialabs/sibl/tree/master/cli/doc)
 
 ```sh
 source ~/sibl/.venv/bin/activate.fish
-cd ~/autotwin/automesh/book/analysis/sphere_with_shells/xyfigure_recipes
+cd ~/autotwin/automesh/book/analysis/sphere_with_shells/recipes
 xyfigure rigid_body_ang_acel.yml  # for example
 ```
 
@@ -244,7 +244,7 @@ and the following `.yml` configuration files,
 
 angular acceleration | angular velocity | angular position
 :---: | :---: | :---:
-[rigid_body_ang_acel.yml](xyfigure_recipes/rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](xyfigure_recipes/rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](xyfigure_recipes/rigid_body_ang_pos.yml)
+[rigid_body_ang_acel.yml](recipes/rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](recipes/rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](recipes/rigid_body_ang_pos.yml)
 
 verify that the rigid body input values were sucessfully reflected in the output:
 
@@ -273,11 +273,11 @@ t=0.016 s | ![max_prin_log_strain_sr2_0016.png](img/max_prin_log_strain_sr2_0016
 t=0.018 s | ![max_prin_log_strain_sr2_0018.png](img/max_prin_log_strain_sr2_0018.png) | ![max_prin_log_strain_sr3_0018.png](img/max_prin_log_strain_sr3_0018.png) | ![max_prin_log_strain_sr4_0018.png](img/max_prin_log_strain_sr4_0018.png)
 t=0.020 s | ![max_prin_log_strain_sr2_0020.png](img/max_prin_log_strain_sr2_0020.png) | ![max_prin_log_strain_sr3_0020.png](img/max_prin_log_strain_sr3_0020.png) | ![max_prin_log_strain_sr4_0020.png](img/max_prin_log_strain_sr4_0020.png)
 displacement | ![displacement_sr2.svg](img/displacement_sr2.svg) | ![displacement_sr3.svg](img/displacement_sr3.svg) | ![displacement_sr4.svg](img/displacement_sr4.svg)
-recipe | [displacement_sr2.yml](xyfigure_recipes/displacement_sr2.yml) | [displacement_sr3.yml](xyfigure_recipes/displacement_sr3.yml) | [displacement_sr4.yml](xyfigure_recipes/displacement_sr4.yml)
+recipe | [displacement_sr2.yml](recipes/displacement_sr2.yml) | [displacement_sr3.yml](recipes/displacement_sr3.yml) | [displacement_sr4.yml](recipes/displacement_sr4.yml)
 log strain | ![log_strain_sr2.svg](img/log_strain_sr2.svg) | ![log_strain_sr3.svg](img/log_strain_sr3.svg) | ![log_strain_sr4.svg](img/log_strain_sr4.svg)
-recipe | [log_strain_sr2.yml](xyfigure_recipes/log_strain_sr2.yml) | [log_strain_sr3.yml](xyfigure_recipes/log_strain_sr3.yml) | [log_strain_sr4.yml](xyfigure_recipes/log_strain_sr4.yml)
+recipe | [log_strain_sr2.yml](recipes/log_strain_sr2.yml) | [log_strain_sr3.yml](recipes/log_strain_sr3.yml) | [log_strain_sr4.yml](recipes/log_strain_sr4.yml)
 rate of deformation | ![rate_of_deformation_sr2.svg](img/rate_of_deformation_sr2.svg) | ![rate_of_deformation_sr3.svg](img/rate_of_deformation_sr3.svg) | ![rate_of_deformation_sr4.svg](img/rate_of_deformation_sr4.svg)
-recipe | [rate_of_deformation_sr2.yml](xyfigure_recipes/rate_of_deformation_sr2.yml) | [rate_of_deformation_sr3.yml](xyfigure_recipes/rate_of_deformation_sr3.yml) | [rate_of_deformation_sr4.yml](xyfigure_recipes/rate_of_deformation_sr4.yml)
+recipe | [rate_of_deformation_sr2.yml](recipes/rate_of_deformation_sr2.yml) | [rate_of_deformation_sr3.yml](recipes/rate_of_deformation_sr3.yml) | [rate_of_deformation_sr4.yml](recipes/rate_of_deformation_sr4.yml)
 
 Figure: Voxel mesh midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
 

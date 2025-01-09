@@ -1,4 +1,4 @@
-# Timing - `automesh`
+# Voxel Mesh with `automesh`
 
 Build the latest release version of `automesh`.
 

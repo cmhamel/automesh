@@ -6,6 +6,7 @@ m10_sr2:
   ycolumn: 24
   plot_kwargs:
     label: sr2
+    linestyle: "--"
 m10_sr3:
   class: model
   folder: ~/autotwin/ssm/input/sr3
@@ -14,6 +15,7 @@ m10_sr3:
   ycolumn: 24
   plot_kwargs:
     label: sr3
+    linestyle: "--"
 m10_sr4:
   class: model
   folder: ~/autotwin/ssm/input/sr4
@@ -22,6 +24,7 @@ m10_sr4:
   ycolumn: 24
   plot_kwargs:
     label: sr4
+    linestyle: "--"
 m10_sr2c:
   class: model
   folder: ~/autotwin/ssm/input/sr2c
