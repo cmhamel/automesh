@@ -49,12 +49,8 @@ impl Voxels {
         })
     }
     /// Constructs and returns a new voxels type from an Octree file.
-    pub fn from_octree(mut tree: Octree) -> Self {
-        if tree[0].get_lngth() == tree[1].get_lngth() {
-            panic!("from_octree() not yet ready for asymmetric octrees")
-        }
-        let nel = *tree[0].get_lngth() as usize;
-        let mut data = VoxelData::zeros((nel, nel, nel));
+    pub fn from_octree(nel: Nel, mut tree: Octree) -> Self {
+        let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
         let mut length = 0;
         let mut x = 0;
         let mut y = 0;
@@ -123,10 +119,10 @@ impl Voxels {
 }
 
 fn defeature_voxels(min_num_voxels: usize, voxels: Voxels) -> Voxels {
-    let mut tree = Octree::from_voxels(voxels);
+    let (nel, mut tree) = Octree::from_voxels(voxels);
     tree.balance(true);
     tree.defeature(min_num_voxels, None);
-    Voxels::from_octree(tree)
+    Voxels::from_octree(nel, tree)
 }
 
 fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSized<NSD>, Blocks) {

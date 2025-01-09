@@ -1,4 +1,4 @@
-use automesh::{Blocks, HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -125,8 +125,8 @@ enum Commands {
         nelz: Option<usize>,
 
         /// Voxel IDs to remove from the mesh
-        #[arg(long, short, value_name = "ID")]
-        remove: Option<Blocks>,
+        #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+        remove: Option<Vec<usize>>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -206,9 +206,21 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
+
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
+
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
+
         /// Voxel IDs to remove from the mesh
-        #[arg(long, short, value_name = "ID")]
-        remove: Option<Blocks>,
+        #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+        remove: Option<Vec<usize>>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -481,6 +493,9 @@ fn main() -> Result<(), ErrorWrapper> {
         Some(Commands::Octree {
             input,
             output,
+            nelx,
+            nely,
+            nelz,
             remove,
             xscale,
             yscale,
@@ -494,8 +509,8 @@ fn main() -> Result<(), ErrorWrapper> {
         }) => {
             is_quiet = quiet;
             octree(
-                input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-                quiet, pair, strong,
+                input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
+                ytranslate, ztranslate, quiet, pair, strong,
             )
         }
         Some(Commands::Smooth {
@@ -610,7 +625,7 @@ fn mesh(
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
-    remove: Option<Blocks>,
+    remove: Option<Vec<usize>>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
@@ -621,6 +636,12 @@ fn mesh(
     quiet: bool,
     dual: bool,
 ) -> Result<(), ErrorWrapper> {
+    let remove = remove.map(|removed_blocks| {
+        removed_blocks
+            .into_iter()
+            .map(|entry| entry as u8)
+            .collect()
+    });
     let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -679,7 +700,7 @@ fn mesh(
         println!();
     }
     let mut output_type = if dual {
-        let mut tree = Octree::from_voxels(input_type);
+        let (_, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
         tree.pair();
         tree.into_finite_elements(
@@ -763,7 +784,10 @@ fn metrics_inner(
 fn octree(
     input: String,
     output: String,
-    remove: Option<Blocks>,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    remove: Option<Vec<usize>>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
@@ -774,8 +798,15 @@ fn octree(
     pair: bool,
     strong: bool,
 ) -> Result<(), ErrorWrapper> {
-    let input_type = match read_input(&input, None, None, None, quiet)? {
+    let remove = remove.map(|removed_blocks| {
+        removed_blocks
+            .into_iter()
+            .map(|entry| entry as u8)
+            .collect()
+    });
+    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
+        InputTypes::Spn(voxels) => voxels,
         _ => {
             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
             Err(format!(
@@ -789,7 +820,7 @@ fn octree(
     if !quiet {
         println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
     }
-    let mut tree = Octree::from_voxels(input_type);
+    let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
     if pair {
         tree.pair();

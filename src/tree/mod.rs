@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
+    voxel::Nel,
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
 use conspire::math::{TensorArray, TensorVec};
@@ -64,7 +65,7 @@ pub trait Tree {
     fn balance(&mut self, strong: bool);
     fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap);
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>);
-    fn from_voxels(voxels: Voxels) -> Self;
+    fn from_voxels(voxels: Voxels) -> (Nel, Self);
     fn into_finite_elements(
         self,
         remove: Option<Blocks>,
@@ -812,6 +813,12 @@ impl Tree for Octree {
         // what does sculpt do?
         // seems like it does some sort of iteration like this
         //
+        //
+        //
+        // updating the octree somehow would be useful,
+        // because then you could defeature an octree before meshing it (dualization, tets, etc.)
+        // or at least output it for visualization/testing
+        //
         let mut block = 0;
         let mut blocks = vec![];
         let (clusters, cell_from_subcell_map) = self.clusters(remove);
@@ -924,22 +931,25 @@ impl Tree for Octree {
                 // how could `blocks` be empty?
                 // if a cluster is misidentified as a piece within a block of itself?
                 // all these small block 0 (and other blocks) clusters seem suspicious
-                println!(
-                    "{:?}\n{:?}\n{:?}\n{:?}",
-                    &cluster, &blocks, &unique_blocks, &counts
-                );
                 //
                 //
-                // new_block = unique_blocks[counts
-                //     .iter()
-                //     .position(|count| count == counts.iter().max().expect("maximum not found"))
-                //     .expect("position of maximum not found")];
-                // cluster
-                //     .iter()
-                //     .for_each(|&cell| self[cell].block = Some(new_block));
+                if blocks.is_empty() {
+                    println!(
+                        "{:?}\n{:?}\n{:?}\n{:?}",
+                        &cluster, &blocks, &unique_blocks, &counts
+                    );
+                } else {
+                    new_block = unique_blocks[counts
+                        .iter()
+                        .position(|count| count == counts.iter().max().expect("maximum not found"))
+                        .expect("position of maximum not found")];
+                    cluster
+                        .iter()
+                        .for_each(|&cell| self[cell].block = Some(new_block));
+                }
             });
     }
-    fn from_voxels(voxels: Voxels) -> Self {
+    fn from_voxels(voxels: Voxels) -> (Nel, Self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let data_voxels = voxels.get_data();
@@ -998,7 +1008,7 @@ impl Tree for Octree {
             "           \x1b[1;93m⤷ Octree initialization\x1b[0m {:?} ",
             time.elapsed()
         );
-        tree
+        (nels, tree)
     }
     fn into_finite_elements(
         self,
