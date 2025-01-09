@@ -57,7 +57,7 @@ impl Voxels {
         if tree[0].get_level() == tree[1].get_level() {
             panic!("from_octree() not yet ready for asymmetric octrees")
         }
-        let nel= (tree[0].get_max_x() - tree[0].get_min_x()) as usize;
+        let nel = (tree[0].get_max_x() - tree[0].get_min_x()) as usize;
         let mut data = VoxelData::zeros((nel, nel, nel));
         let mut length = 0;
         let mut x = 0;
@@ -71,13 +71,11 @@ impl Voxels {
             y = *cell.get_min_y() as usize;
             z = *cell.get_min_z() as usize;
             length = *cell.get_max_x() as usize - x;
-            (0..length).for_each(|i|
-                (0..length).for_each(|j|
-                    (0..length).for_each(|k|
-                        data[[x + i, y + j, z + k]] = cell.get_block()
-                    )
-                )
-            )
+            (0..length).for_each(|i| {
+                (0..length).for_each(|j| {
+                    (0..length).for_each(|k| data[[x + i, y + j, z + k]] = cell.get_block())
+                })
+            })
         });
         let voxels = Self { data };
         #[cfg(feature = "profile")]

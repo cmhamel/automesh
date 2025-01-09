@@ -401,7 +401,7 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
         }) => {
             is_quiet = quiet;
-            convert(input, output,defeature, nelx, nely, nelz, quiet)
+            convert(input, output, defeature, nelx, nely, nelz, quiet)
         }
         Some(Commands::Mesh {
             meshing,
@@ -510,6 +510,10 @@ fn convert(
             // below is a clippy-killer to remind you to look here
             //
             // also, add to mesh command!
+            //
+            // should defeature be its own command?
+            // and then make convert go back to SPN<->NPY only?
+            // could become a command for defeaturing+manifolding in the future
             //
             Some("npy") => {
                 if let Some(min_num_voxels) = defeature {

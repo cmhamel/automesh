@@ -632,53 +632,65 @@ impl Tree for Octree {
         let mut removed_data = remove.unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
-        let mut blocks: Vec<u8> = self.iter()
-        .filter(|cell|
-            cell.get_cells().is_none() && removed_data.binary_search(&cell.get_block()).is_err()
-        ).map(|cell|
-            cell.get_block()
-        ).collect();
+        let mut blocks: Vec<u8> = self
+            .iter()
+            .filter(|cell| {
+                cell.get_cells().is_none() && removed_data.binary_search(&cell.get_block()).is_err()
+            })
+            .map(|cell| cell.get_block())
+            .collect();
         blocks.sort();
         blocks.dedup();
         let mut clusters = vec![];
-        let mut complete= false;
-        let mut index=0;
-        let mut leaf=0;
-        let mut leaves: Vec<Vec<usize>> = blocks.iter().map(|&block|
-            self
+        let mut complete = false;
+        let mut index = 0;
+        let mut leaf = 0;
+        let mut leaves: Vec<Vec<usize>> = blocks
             .iter()
-            .enumerate()
-            .filter_map(|(index, cell)| {
-                if cell.get_cells().is_none() && cell.get_block() == block {
-                    Some(index)
-                } else {
-                    None
-                }
+            .map(|&block| {
+                self.iter()
+                    .enumerate()
+                    .filter_map(|(index, cell)| {
+                        if cell.get_cells().is_none() && cell.get_block() == block {
+                            Some(index)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
             })
-            .collect()
-        ).collect();
-        leaves.iter_mut().for_each(|block_leaves|
-            block_leaves.sort()
-        );
+            .collect();
+        leaves
+            .iter_mut()
+            .for_each(|block_leaves| block_leaves.sort());
         let mut children_parents = vec![None; leaves.iter().flatten().max().unwrap() + 1];
-        self
-        .iter()
-        .enumerate()
-        .filter_map(|(parent_index, cell)| {
-            cell.get_cells().as_ref().map(|subcells| (parent_index, subcells))
-        })
-        .for_each(|(parent_index, subcells)|
-            if subcells.iter().filter(|&&subcell|
-                self[subcell].get_cells().is_some()
-            ).count() == 0 {
-                subcells.iter().enumerate()
-                .filter(|(_, &subcell)|
-                    removed_data.binary_search(&self[subcell].get_block()).is_err()
-                ).for_each(|(subcell_index, &subcell)|
-                    children_parents[subcell] = Some((parent_index, subcell_index))
-                )
-            }
-        );
+        self.iter()
+            .enumerate()
+            .filter_map(|(parent_index, cell)| {
+                cell.get_cells()
+                    .as_ref()
+                    .map(|subcells| (parent_index, subcells))
+            })
+            .for_each(|(parent_index, subcells)| {
+                if subcells
+                    .iter()
+                    .filter(|&&subcell| self[subcell].get_cells().is_some())
+                    .count()
+                    == 0
+                {
+                    subcells
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, &subcell)| {
+                            removed_data
+                                .binary_search(&self[subcell].get_block())
+                                .is_err()
+                        })
+                        .for_each(|(subcell_index, &subcell)| {
+                            children_parents[subcell] = Some((parent_index, subcell_index))
+                        })
+                }
+            });
         #[cfg(feature = "profile")]
         println!(
             "             \x1b[1;93mClusters creation instigation\x1b[0m {:?} ",
@@ -686,120 +698,114 @@ impl Tree for Octree {
         );
         #[allow(unused_variables)]
         let mut cluster_index = 1;
-        blocks.into_iter().enumerate().for_each(|(block_index, block)| {
-            let block_leaves = &mut leaves[block_index];
-            while let Some(starting_leaf) = block_leaves.pop() {
-                let mut cluster = vec![starting_leaf];
-                #[allow(unused_variables)]
-                for iteration in 1.. {
-                    #[cfg(feature = "profile")]
-                    let time = Instant::now();
-                    complete = true;
-                    index = 0;
-                    while index < cluster.len() {
-                        leaf = cluster[index];
-                        self[leaf].get_faces().iter().enumerate().for_each(|(face, face_cell)| {
-                            if let Some(cell) = face_cell {
-                                if let Ok(spot) = block_leaves.binary_search(cell) {
-                                    if self[*cell].get_block() == block {
-                                        block_leaves.remove(spot);
-                                        cluster.push(*cell);
-                                    }
-                                } else if let Some(subcells) = self[*cell].get_cells() {
-                                    match face {
-                                        0 => {
-                                            [2, 3, 6, 7]
-                                        }
-                                        1 => {
-                                            [0, 2, 4, 6]
-                                        }
-                                        2 => {
-                                            [0, 1, 4, 5]
-                                        }
-                                        3 => {
-                                            [1, 3, 5, 7]
-                                        }
-                                        4 => {
-                                            [4, 5, 6, 7]
-                                        }
-                                        5 => {
-                                            [0, 1, 2, 3]
-                                        }
-                                        _ => {
-                                            panic!()
-                                        }
-                                    }.into_iter().for_each(|subcell| {
-                                        if let Ok(spot) = block_leaves.binary_search(&subcells[subcell]) {
-                                            if self[subcells[subcell]].get_block() == block {
-                                                complete = false;
-                                                block_leaves.remove(spot);
-                                                cluster.push(subcells[subcell]);
-                                            }
-                                        }
-                                    })
-                                }
-                            }
-                        });
-                        index += 1;
-                    }
-                    index = 0;
-                    while index < cluster.len() {
-                        leaf = cluster[index];
-                        if let Some((parent, subcell)) = children_parents[leaf] {
-                            self[parent].get_faces().iter().enumerate().for_each(|(face, face_cell)|
-                                if let Some(cell) = face_cell {
-                                    if match face {
-                                        0 => {
-                                            [0, 1, 4, 5]
-                                        }
-                                        1 => {
-                                            [1, 3, 5, 7]
-                                        }
-                                        2 => {
-                                            [2, 3, 6, 7]
-                                        }
-                                        3 => {
-                                            [0, 2, 4, 6]
-                                        }
-                                        4 => {
-                                            [0, 1, 2, 3]
-                                        }
-                                        5 => {
-                                            [4, 5, 6, 7]
-                                        }
-                                        _ => {
-                                            panic!()
-                                        }
-                                    }.iter().any(|&entry| subcell == entry) {
+        blocks
+            .into_iter()
+            .enumerate()
+            .for_each(|(block_index, block)| {
+                let block_leaves = &mut leaves[block_index];
+                while let Some(starting_leaf) = block_leaves.pop() {
+                    let mut cluster = vec![starting_leaf];
+                    #[allow(unused_variables)]
+                    for iteration in 1.. {
+                        #[cfg(feature = "profile")]
+                        let time = Instant::now();
+                        complete = true;
+                        index = 0;
+                        while index < cluster.len() {
+                            leaf = cluster[index];
+                            self[leaf].get_faces().iter().enumerate().for_each(
+                                |(face, face_cell)| {
+                                    if let Some(cell) = face_cell {
                                         if let Ok(spot) = block_leaves.binary_search(cell) {
                                             if self[*cell].get_block() == block {
-                                                complete = false;
                                                 block_leaves.remove(spot);
                                                 cluster.push(*cell);
                                             }
+                                        } else if let Some(subcells) = self[*cell].get_cells() {
+                                            match face {
+                                                0 => [2, 3, 6, 7],
+                                                1 => [0, 2, 4, 6],
+                                                2 => [0, 1, 4, 5],
+                                                3 => [1, 3, 5, 7],
+                                                4 => [4, 5, 6, 7],
+                                                5 => [0, 1, 2, 3],
+                                                _ => {
+                                                    panic!()
+                                                }
+                                            }
+                                            .into_iter()
+                                            .for_each(
+                                                |subcell| {
+                                                    if let Ok(spot) = block_leaves
+                                                        .binary_search(&subcells[subcell])
+                                                    {
+                                                        if self[subcells[subcell]].get_block()
+                                                            == block
+                                                        {
+                                                            complete = false;
+                                                            block_leaves.remove(spot);
+                                                            cluster.push(subcells[subcell]);
+                                                        }
+                                                    }
+                                                },
+                                            )
                                         }
                                     }
-                                }
+                                },
                             );
+                            index += 1;
                         }
-                        index += 1;
+                        index = 0;
+                        while index < cluster.len() {
+                            leaf = cluster[index];
+                            if let Some((parent, subcell)) = children_parents[leaf] {
+                                self[parent].get_faces().iter().enumerate().for_each(
+                                    |(face, face_cell)| {
+                                        if let Some(cell) = face_cell {
+                                            if match face {
+                                                0 => [0, 1, 4, 5],
+                                                1 => [1, 3, 5, 7],
+                                                2 => [2, 3, 6, 7],
+                                                3 => [0, 2, 4, 6],
+                                                4 => [0, 1, 2, 3],
+                                                5 => [4, 5, 6, 7],
+                                                _ => {
+                                                    panic!()
+                                                }
+                                            }
+                                            .iter()
+                                            .any(|&entry| subcell == entry)
+                                            {
+                                                if let Ok(spot) = block_leaves.binary_search(cell) {
+                                                    if self[*cell].get_block() == block {
+                                                        complete = false;
+                                                        block_leaves.remove(spot);
+                                                        cluster.push(*cell);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                );
+                            }
+                            index += 1;
+                        }
+                        #[cfg(feature = "profile")]
+                        println!(
+                            "             \x1b[1;93mBlock {} cluster {} iteration {}\x1b[0m {:?} ",
+                            block,
+                            cluster_index,
+                            iteration,
+                            time.elapsed()
+                        );
+                        if complete {
+                            break;
+                        }
                     }
-                    #[cfg(feature = "profile")]
-                    println!(
-                        "             \x1b[1;93mBlock {} cluster {} iteration {}\x1b[0m {:?} ",
-                        block,
-                        cluster_index,
-                        iteration,
-                        time.elapsed()
-                    );
-                    if complete {
-                        break
-                    }
+                    clusters.push(cluster);
+                    cluster_index += 1;
                 }
-                clusters.push(cluster);
-                cluster_index += 1;
-            }
-        });
+            });
         clusters
     }
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Vec<u8>>) {
@@ -829,52 +835,107 @@ impl Tree for Octree {
         let mut blocks = vec![];
         let mut clusters = self.clusters(remove);
         let mut counts = vec![];
+        let mut face_block = 0;
         let mut new_block = 0;
         let mut unique_blocks = vec![];
-        let volumes: Vec<usize> = clusters.iter().map(|cluster|
-            cluster.iter().map(|&cell|
-                ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
-            ).sum()
-        ).collect();
-        clusters.iter()
+        let volumes: Vec<usize> = clusters
+            .iter()
+            .map(|cluster| {
+                cluster
+                    .iter()
+                    .map(|&cell| {
+                        ((self[cell].get_max_x() - self[cell].get_min_x()) as usize).pow(NSD as u32)
+                    })
+                    .sum()
+            })
+            .collect();
+        clusters
+            .iter()
             .zip(volumes)
             .filter(|(_, volume)| volume < &min_num_voxels)
             .for_each(|(cluster, _)| {
                 block = self[cluster[0]].get_block();
-                blocks = cluster.iter().map(|&cell|
-                    self[cell]
-                        .get_faces()
-                        .iter()
-                        .filter_map(|&face| {
-                            //
-                            // need to prevent it from counting the same block as the cluster!!!!!!!!!!
-                            //
-                            //
-                            // also need to fix the below:
-                            //
-                            if let Some(neighbor) = face {
-                                if self[neighbor].get_cells().is_some() {
-                                    //
-                                    // need to check 2 other cases
-                                    // can you bake them into a common method to use here and in clusters()?
-                                    //
-                                    panic!("HELP")
+                blocks = cluster
+                    .iter()
+                    .map(|&cell| {
+                        self[cell]
+                            .get_faces()
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(face, &face_cell)| {
+                                if let Some(neighbor) = face_cell {
+                                    if let Some(subcells) = self[neighbor].get_cells() {
+                                        Some(
+                                            match face {
+                                                0 => [2, 3, 6, 7],
+                                                1 => [0, 2, 4, 6],
+                                                2 => [0, 1, 4, 5],
+                                                3 => [1, 3, 5, 7],
+                                                4 => [4, 5, 6, 7],
+                                                5 => [0, 1, 2, 3],
+                                                _ => {
+                                                    panic!()
+                                                }
+                                            }
+                                            .into_iter()
+                                            .filter_map(|subcell| {
+                                                println!("foo");
+                                                face_block = self[subcells[subcell]].get_block();
+                                                println!("bar");
+                                                if face_block != block {
+                                                    Some(face_block)
+                                                } else {
+                                                    None
+                                                }
+                                            })
+                                            .collect(),
+                                        )
+                                        //
+                                        // need to check 2 other cases
+                                        // can you bake them into a common method to use here and in clusters()?
+                                        //
+                                        // panic!("HELP")
+                                    } else {
+                                        face_block = self[neighbor].get_block();
+                                        if face_block != block {
+                                            Some(vec![face_block])
+                                        } else {
+                                            None
+                                        }
+                                    }
                                 } else {
-                                    Some(self[neighbor].get_block())
+                                    //
+                                    // no face neighbor, this is where check for parent?
+                                    //
+                                    // should clusters operate similarly?
+                                    // (it starts over for that part of the check)
+                                    //
+                                    None
                                 }
-                            } else {
-                                None
-                            }
-                        }).collect::<Vec<u8>>()
-                    ).collect::<Vec<Vec<u8>>>().into_iter().flatten().collect();
+                            })
+                            .collect::<Vec<Vec<u8>>>()
+                    })
+                    .collect::<Vec<Vec<Vec<u8>>>>()
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .collect();
                 unique_blocks = blocks.to_vec();
                 unique_blocks.sort();
                 unique_blocks.dedup();
-                counts = unique_blocks.iter().map(|unique_block|
-                    blocks.iter().filter(|&block| block == unique_block).count()
-                ).collect();
-                new_block = unique_blocks[counts.iter().position(|count| count == counts.iter().max().unwrap()).unwrap()];
-                cluster.iter().for_each(|&cell| self[cell].block = Some(new_block));
+                counts = unique_blocks
+                    .iter()
+                    .map(|unique_block| {
+                        blocks.iter().filter(|&block| block == unique_block).count()
+                    })
+                    .collect();
+                new_block = unique_blocks[counts
+                    .iter()
+                    .position(|count| count == counts.iter().max().unwrap())
+                    .unwrap()];
+                cluster
+                    .iter()
+                    .for_each(|&cell| self[cell].block = Some(new_block));
             });
     }
     fn from_voxels(voxels: Voxels) -> Self {
