@@ -1064,7 +1064,7 @@ impl Tree for Octree {
                 nodal_coordinates.0.append(&mut vec![Coordinate::new([
                     0.5 * (cell.get_min_x() + cell.get_max_x()) * xscale + xtranslate,
                     0.5 * (cell.get_min_y() + cell.get_max_y()) * yscale + ytranslate,
-                    (cell.get_min_z() + (cell.get_lngth() / 2) as f64) * zscale + ztranslate,
+                    (cell.get_min_z() + 0.5 * (*cell.get_lngth() as f64)) * zscale + ztranslate,
                 ])]);
                 node_index += 1;
             }
