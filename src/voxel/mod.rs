@@ -15,7 +15,6 @@ use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};
 use ndarray_npy::{ReadNpyError, ReadNpyExt, WriteNpyError, WriteNpyExt};
 use std::{
-    array::from_fn,
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error, Write},
 };

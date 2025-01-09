@@ -828,6 +828,9 @@ impl Tree for Octree {
         // like if you had small and medium clusters, both being small enough to eliminate,
         // and a small was within a medium shell, them combined might be large enough to keep
         //
+        // if you have to iterate, are there clusters you can lock down once you know they will not change?
+        // would be beneficial to remove their leaves from searches and so on
+        //
         // what does sculpt do?
         // seems like it does some sort of iteration like this
         //
@@ -890,11 +893,6 @@ impl Tree for Octree {
                                             })
                                             .collect(),
                                         )
-                                        //
-                                        // need to check 2 other cases
-                                        // can you bake them into a common method to use here and in clusters()?
-                                        //
-                                        // panic!("HELP")
                                     } else {
                                         face_block = self[neighbor].get_block();
                                         if face_block != block {
@@ -913,7 +911,7 @@ impl Tree for Octree {
                                     None
                                 }
                             })
-                            .collect::<Vec<Vec<u8>>>()
+                            .collect()
                     })
                     .collect::<Vec<Vec<Vec<u8>>>>()
                     .into_iter()
