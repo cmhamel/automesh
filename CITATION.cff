@@ -19,4 +19,4 @@ identifiers:
 repository-code: 'https://github.com/autotwin/automesh'
 url: 'https://autotwin.github.io/automesh'
 abstract: Automatic mesh generation.
-license: MIT
+license: GPL-3.0
