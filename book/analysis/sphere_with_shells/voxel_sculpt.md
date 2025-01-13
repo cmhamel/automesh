@@ -1,6 +1,6 @@
 # Timing - Sculpt
 
-Set up.
+Set up an alias, if needed.
 
 ```sh
 alias sculpt='/Applications/Cubit-16.14/Cubit.app/Contents/MacOS/sculpt'
@@ -100,7 +100,7 @@ sculpt --num_procs 1 --input_spn "spheres_resolution_4.spn" \
 Total Time on 1 Procs	135.636523 sec. (2.260609 min.)
 ```
 
-The relative processing times, Sculpt versus `automesh`, are summarized below:
+The table below summarizes the relative processing times, Sculpt versus `automesh`.
 
 resolution | 1 vox/cm | 2 vox/cm | 4 vox/cm | 10 vox/cm
 ---------- | -------: | -------: | -------: | --------:

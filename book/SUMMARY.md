@@ -24,10 +24,12 @@
   - [Smooth](cli/smooth.md)
 - [Analysis](analysis/README.md)
   - [Sphere with Shells](analysis/sphere_with_shells/README.md)
-    - [Timing - `automesh`](analysis/sphere_with_shells/timing_automesh.md)
-    - [Timing - Sculpt](analysis/sphere_with_shells/timing_sculpt.md)
+    - [Voxel Mesh `automesh`](analysis/sphere_with_shells/voxel_automesh.md)
+    - [Voxel Mesh Sculpt](analysis/sphere_with_shells/voxel_sculpt.md)
     - [Simulation](analysis/sphere_with_shells/simulation.md)
-    - [Conforming Mesh](analysis/sphere_with_shells/conforming.md)
+    - [Conforming Mesh Cubit](analysis/sphere_with_shells/conforming.md)
+    - [Smoothed Mesh `automesh`](analysis/sphere_with_shells/smoothed.md)
+    - [Comparisons](analysis/sphere_with_shells/comparisons.md)
 
 # Appendices
 

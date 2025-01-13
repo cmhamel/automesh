@@ -4,7 +4,7 @@ in the .inp format.
 Example:
 --------
 source ~/autotwin/automesh/.venv/bin/activate
-cd ~/autotwin/automesh/book/examples/smoothing
+cd ~/autotwin/automesh/book/smoothing
 python noise_augmentation.py
 """
 
