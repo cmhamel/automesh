@@ -61,7 +61,7 @@ impl Nel {
 impl From<[usize; NSD]> for Nel {
     fn from(nel: [usize; NSD]) -> Self {
         if nel.iter().any(|&entry| entry < 1) {
-            panic!("Need to specify nel > 0")
+            panic!("Need to specify nel > 0.")
         } else {
             Self {
                 x: nel[0],
@@ -503,7 +503,7 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
                 .enumerate()
                 .for_each(|(j, mut data_jk)| {
                     data_jk.iter_mut().enumerate().for_each(|(i, data_ijk)| {
-                        *data_ijk = data_flattened[i + nel.x() * j + nel.y() * nel.z() * k]
+                        *data_ijk = data_flattened[i + nel.x() * (j + nel.y() * k)]
                     })
                 })
         });

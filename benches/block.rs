@@ -36,7 +36,7 @@ macro_rules! bench_block {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
         #[bench]
         fn calculate_laplacian(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem = voxels.into_finite_elements(
                 REMOVE,
                 &Vector::new(SCALE),

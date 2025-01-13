@@ -1464,17 +1464,17 @@ mod from_spn {
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nelx > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nelx_positive() {
         Voxels::from_spn("tests/input/single.spn", [0, 1, 1].into()).unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nely > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nely_positive() {
         Voxels::from_spn("tests/input/single.spn", [1, 0, 1].into()).unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nelz > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nelz_positive() {
         Voxels::from_spn("tests/input/single.spn", [1, 1, 0].into()).unwrap();
     }
