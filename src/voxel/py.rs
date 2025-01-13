@@ -2,9 +2,10 @@ use super::{
     super::{
         fem::py::FiniteElements,
         py::{IntoFoo, PyIntermediateError},
+        Blocks, NSD,
     },
-    finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn, write_voxels_to_npy,
-    write_voxels_to_spn, Nel, Vector, VoxelData,
+    defeature_voxels, finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn,
+    write_voxels_to_npy, write_voxels_to_spn, Vector, VoxelData,
 };
 use conspire::math::TensorArray;
 use pyo3::prelude::*;
@@ -26,15 +27,15 @@ impl Voxels {
     #[pyo3(signature = (remove=[].to_vec(), scale=[1.0, 1.0, 1.0], translate=[0.0, 0.0, 0.0]))]
     pub fn as_finite_elements(
         &self,
-        remove: Option<Vec<u8>>,
-        scale: [f64; 3],
-        translate: [f64; 3],
+        remove: Option<Blocks>,
+        scale: [f64; NSD],
+        translate: [f64; NSD],
     ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(
                 &self.data,
                 remove,
-                &Vector::new(scale),
+                scale.into(),
                 &Vector::new(translate),
             )?;
         Ok(FiniteElements::from_data(
@@ -42,6 +43,17 @@ impl Voxels {
             element_node_connectivity,
             nodal_coordinates.as_foo(),
         ))
+    }
+    /// Defeatures clusters with less than a minimum number of voxels.
+    pub fn defeature(&mut self, min_num_voxels: usize) {
+        self.data = defeature_voxels(
+            min_num_voxels,
+            super::Voxels {
+                data: self.data.clone(),
+            },
+        )
+        .get_data()
+        .clone()
     }
     /// Constructs and returns a new voxels type from an NPY file.
     #[staticmethod]
@@ -52,9 +64,9 @@ impl Voxels {
     }
     /// Constructs and returns a new voxels type from an SPN file.
     #[staticmethod]
-    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, PyIntermediateError> {
+    pub fn from_spn(file_path: &str, nel: [usize; NSD]) -> Result<Self, PyIntermediateError> {
         Ok(Self {
-            data: voxel_data_from_spn(file_path, nel)?,
+            data: voxel_data_from_spn(file_path, nel.into())?,
         })
     }
     /// Writes the internal voxels data to an NPY file.

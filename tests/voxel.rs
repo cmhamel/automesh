@@ -1,13 +1,7 @@
-use automesh::{Vector, Voxels};
+use automesh::{Nel, Scale, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorVec};
 
-const NELX: usize = 4;
-const NELY: usize = 5;
-const NELZ: usize = 3;
-const NEL: [usize; 3] = [NELX, NELY, NELZ];
-const NSD: usize = 3; // number of space dimensions
-
-const GOLD_DATA: [[[u8; NELZ]; NELY]; NELX] = [
+const GOLD_DATA: [[[u8; 3]; 5]; 4] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
     [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
     [[1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 0, 0], [1, 1, 1]],
@@ -32,7 +26,7 @@ fn assert_data_eq_gold(spn: Voxels) {
     let data = spn.get_data();
     data.shape()
         .iter()
-        .zip(NEL.iter())
+        .zip([4, 5, 3].iter())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
     data.iter()
         .zip(GOLD_DATA.iter().flatten().flatten())
@@ -66,7 +60,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
 ) {
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
     let fem = voxels
-        .into_finite_elements(gold.remove, &gold.scale, &gold.translate)
+        .into_finite_elements(gold.remove, gold.scale, &gold.translate)
         .unwrap();
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
@@ -92,7 +86,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
 /// used for testing purposes.
 struct Gold<const D: usize, const E: usize, const N: usize> {
     /// The block id for each element.
-    element_blocks: [usize; E],
+    element_blocks: [u8; E],
 
     /// The connectivity matrix of a finite element mesh, with E rows of
     /// elements, and with each element composed of N local element node numbers
@@ -108,13 +102,13 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
 
     /// The number of voxels that compose the segmentation lattice domain in
     /// the [x, y, z] directions.
-    nel: [usize; NSD],
+    nel: Nel,
 
     /// Option to remove blocks.
     remove: Option<Vec<u8>>,
 
     /// The scaling in the [x, y, z] directions to be applied to the domain.
-    scale: Vector,
+    scale: Scale,
 
     /// The translation in the [x, y, z] directions to be applied to the domain.
     translate: Vector,
@@ -129,9 +123,9 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
             element_node_connectivity: [[0; N]; E],
             element_coordinates: [[0.0; NSD]; D],
             file_path: "".to_string(),
-            nel: [0; NSD],
+            nel: [1; NSD].into(),
             remove: Option::Some(vec![0]),
-            scale: Vector::new([1.0; NSD]),
+            scale: [1.0; NSD].into(),
             translate: Vector::zero(),
         }
     }
@@ -156,7 +150,7 @@ mod into_finite_elements {
                 [1.0, 1.0, 1.0],
             ],
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
+            nel: [1; NSD].into(),
             ..Default::default()
         });
     }
@@ -177,8 +171,8 @@ mod into_finite_elements {
                 [10.0, 20.0, 30.0],
             ],
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
-            scale: Vector::new([10.0, 20.0, 30.0]),
+            nel: [1; NSD].into(),
+            scale: [10.0, 20.0, 30.0].into(),
             ..Default::default()
         });
     }
@@ -199,8 +193,8 @@ mod into_finite_elements {
                 [0.5, 0.25, 0.125],
             ],
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
-            scale: Vector::new([0.5, 0.25, 0.125]),
+            nel: [1; NSD].into(),
+            scale: [0.5, 0.25, 0.125].into(),
             ..Default::default()
         });
     }
@@ -221,7 +215,7 @@ mod into_finite_elements {
                 [1.3, 1.6, 1.9],
             ],
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
+            nel: [1; NSD].into(),
             translate: Vector::new([0.3, 0.6, 0.9]),
             ..Default::default()
         });
@@ -243,7 +237,7 @@ mod into_finite_elements {
                 [0.0, -1.0, -2.0],
             ],
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
+            nel: [1; NSD].into(),
             translate: Vector::new([-1.0, -2.0, -3.0]),
             ..Default::default()
         });
@@ -264,10 +258,10 @@ mod into_finite_elements {
                 [0.1, 11.2, 12.3],
                 [10.1, 11.2, 12.3],
             ],
-            scale: Vector::new([10.0, 11.0, 12.0]),
+            scale: [10.0, 11.0, 12.0].into(),
             translate: Vector::new([0.1, 0.2, 0.3]),
             file_path: "tests/input/single.spn".to_string(),
-            nel: [1; NSD],
+            nel: [1; NSD].into(),
             ..Default::default()
         });
     }
@@ -292,7 +286,7 @@ mod into_finite_elements {
                 [2.0, 1.0, 1.0],
             ],
             file_path: "tests/input/double.spn".to_string(),
-            nel: [2, 1, 1],
+            nel: [2, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -317,7 +311,7 @@ mod into_finite_elements {
                 [1.0, 2.0, 1.0],
             ],
             file_path: "tests/input/double.spn".to_string(),
-            nel: [1, 2, 1],
+            nel: [1, 2, 1].into(),
             ..Default::default()
         });
     }
@@ -350,7 +344,7 @@ mod into_finite_elements {
                 [3.0, 1.0, 1.0],
             ],
             file_path: "tests/input/triple.spn".to_string(),
-            nel: [3, 1, 1],
+            nel: [3, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -388,7 +382,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -418,7 +412,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_voids.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -457,7 +451,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -484,7 +478,7 @@ mod into_finite_elements {
                 [3.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![11]),
             ..Default::default()
         });
@@ -516,7 +510,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![21]),
             ..Default::default()
         });
@@ -555,7 +549,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks_void.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             ..Default::default()
         });
     }
@@ -593,7 +587,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks_void.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![0]),
             ..Default::default()
         });
@@ -617,7 +611,7 @@ mod into_finite_elements {
                 [2.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks_void.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![0, 11]),
             ..Default::default()
         });
@@ -649,7 +643,7 @@ mod into_finite_elements {
                 [4.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks_void.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![0, 21]),
             ..Default::default()
         });
@@ -673,7 +667,7 @@ mod into_finite_elements {
                 [3.0, 1.0, 1.0],
             ],
             file_path: "tests/input/quadruple_2_blocks_void.spn".to_string(),
-            nel: [4, 1, 1],
+            nel: [4, 1, 1].into(),
             remove: Option::Some(vec![11, 21]),
             ..Default::default()
         });
@@ -723,7 +717,7 @@ mod into_finite_elements {
                 [2.0, 2.0, 2.0],
             ],
             file_path: "tests/input/cube.spn".to_string(),
-            nel: [2, 2, 2],
+            nel: [2, 2, 2].into(),
             ..Default::default()
         });
     }
@@ -767,7 +761,7 @@ mod into_finite_elements {
                 [2.0, 2.0, 2.0],
             ],
             file_path: "tests/input/cube_multi.spn".to_string(),
-            nel: [2, 2, 2],
+            nel: [2, 2, 2].into(),
             ..Default::default()
         });
     }
@@ -876,7 +870,7 @@ mod into_finite_elements {
                 [3.0, 3.0, 3.0],
             ],
             file_path: "tests/input/cube_with_inclusion.spn".to_string(),
-            nel: [3, 3, 3],
+            nel: [3, 3, 3].into(),
             ..Default::default()
         });
     }
@@ -934,7 +928,7 @@ mod into_finite_elements {
                 [3.0, 5.0, 1.0],
             ],
             file_path: "tests/input/letter_f.spn".to_string(),
-            nel: [3, 5, 1],
+            nel: [3, 5, 1].into(),
             ..Default::default()
         });
     }
@@ -1090,7 +1084,7 @@ mod into_finite_elements {
                 [4.0, 5.0, 3.0],
             ],
             file_path: "tests/input/letter_f_3d.spn".to_string(),
-            nel: NEL,
+            nel: [4, 5, 3].into(),
             ..Default::default()
         });
     }
@@ -1358,9 +1352,30 @@ mod into_finite_elements {
                 [5.0, 5.0, 5.0],
             ],
             file_path: "tests/input/sparse.spn".to_string(),
-            nel: [5; NSD],
+            nel: [5; NSD].into(),
             ..Default::default()
         });
+    }
+}
+
+mod defeature {
+    use super::*;
+    #[test]
+    fn cube_with_inclusion() {
+        let nel = 3;
+        let voxels =
+            Voxels::from_spn("tests/input/cube_with_inclusion.spn", [nel; NSD].into()).unwrap();
+        let voxels = voxels.defeature(2);
+        voxels.get_data().outer_iter().take(nel).for_each(|a| {
+            a.outer_iter()
+                .take(nel)
+                .for_each(|b| b.iter().take(nel).for_each(|&c| assert_eq!(c, 11)))
+        });
+        voxels.get_data().outer_iter().skip(nel).for_each(|a| {
+            a.outer_iter()
+                .skip(nel)
+                .for_each(|b| b.iter().skip(nel).for_each(|&c| assert_eq!(c, 0)))
+        })
     }
 }
 
@@ -1394,39 +1409,27 @@ mod from_npy {
         assert_data_eq_gold(voxels);
     }
     #[test]
-    #[should_panic(expected = "Need to specify xscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn xscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([0.0, 1.0, 1.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [0.0, 1.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify yscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn yscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([1.0, 0.0, 1.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [1.0, 0.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify zscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn zscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([1.0, 1.0, 0.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [1.0, 1.0, 0.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
 }
@@ -1437,35 +1440,35 @@ mod from_spn {
     #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn file_nonexistent() {
-        Voxels::from_spn("tests/input/f_file_nonexistent.spn", NEL)
+        Voxels::from_spn("tests/input/f_file_nonexistent.spn", [4, 5, 3].into())
             .map_err(|e| e.to_string())
             .unwrap();
     }
     #[test]
     #[should_panic(expected = "ParseIntError { kind: InvalidDigit }")]
     fn file_unreadable() {
-        Voxels::from_spn("tests/input/letter_f_3d.txt", NEL)
+        Voxels::from_spn("tests/input/letter_f_3d.txt", [4, 5, 3].into())
             .map_err(|e| e.to_string())
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nelx > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nelx_positive() {
-        Voxels::from_spn("tests/input/single.spn", [0, 1, 1]).unwrap();
+        Voxels::from_spn("tests/input/single.spn", [0, 1, 1].into()).unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nely > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nely_positive() {
-        Voxels::from_spn("tests/input/single.spn", [1, 0, 1]).unwrap();
+        Voxels::from_spn("tests/input/single.spn", [1, 0, 1].into()).unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify nelz > 0")]
+    #[should_panic(expected = "Need to specify nel > 0.")]
     fn nelz_positive() {
-        Voxels::from_spn("tests/input/single.spn", [1, 1, 0]).unwrap();
+        Voxels::from_spn("tests/input/single.spn", [1, 1, 0].into()).unwrap();
     }
     #[test]
     fn success() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         assert_data_eq_gold(voxels);
     }
 }
@@ -1484,7 +1487,8 @@ mod write_npy {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        let voxels_from_spn =
+            Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         voxels_from_spn.write_npy("target/letter_f_3d.npy").unwrap();
         let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
@@ -1493,12 +1497,12 @@ mod write_npy {
     #[cfg(not(target_os = "windows"))]
     #[should_panic(expected = "No such file or directory")]
     fn no_such_directory() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", NEL).unwrap();
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         voxels.write_npy("no_such_directory/foo.npy").unwrap();
     }
     #[test]
     fn sparse() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5]).unwrap();
+        let voxels_from_spn = Voxels::from_spn("tests/input/sparse.spn", [5, 5, 5].into()).unwrap();
         voxels_from_spn.write_npy("target/sparse.npy").unwrap();
         let voxels_from_npy = Voxels::from_npy("target/sparse.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
@@ -1511,7 +1515,7 @@ mod write_spn {
     fn letter_f_3d() {
         let voxels_from_npy = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels_from_npy.write_spn("target/letter_f_3d.spn").unwrap();
-        let voxels_from_spn = Voxels::from_spn("target/letter_f_3d.spn", NEL).unwrap();
+        let voxels_from_spn = Voxels::from_spn("target/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
     #[test]
@@ -1525,7 +1529,7 @@ mod write_spn {
     fn sparse() {
         let voxels_from_npy = Voxels::from_npy("tests/input/sparse.npy").unwrap();
         voxels_from_npy.write_spn("target/sparse.spn").unwrap();
-        let voxels_from_spn = Voxels::from_spn("target/sparse.spn", [5, 5, 5]).unwrap();
+        let voxels_from_spn = Voxels::from_spn("target/sparse.spn", [5, 5, 5].into()).unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);
     }
 }

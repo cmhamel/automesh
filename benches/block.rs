@@ -36,12 +36,10 @@ macro_rules! bench_block {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
         #[bench]
         fn calculate_laplacian(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             let node_node_connectivity = fem.get_node_node_connectivity();
@@ -50,12 +48,10 @@ macro_rules! bench_block {
         }
         #[bench]
         fn calculate_nodal_hierarchy(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             bencher.iter(|| fem.calculate_nodal_hierarchy().unwrap());
@@ -63,12 +59,10 @@ macro_rules! bench_block {
         }
         #[bench]
         fn calculate_nodal_influencers(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_hierarchy()?;
@@ -77,35 +71,28 @@ macro_rules! bench_block {
         }
         #[bench]
         fn calculate_node_element_connectivity(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             bencher.iter(|| fem.calculate_node_element_connectivity().unwrap());
             Ok(())
         }
         #[bench]
         fn calculate_node_node_connectivity(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             bencher.iter(|| fem.calculate_node_node_connectivity().unwrap());
             Ok(())
         }
         #[bench]
         fn from_inp(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let inp = format!("target/block_{}.inp", $nel);
             fem.write_inp(&inp).unwrap();
             bencher.iter(|| FiniteElements::from_inp(&inp).unwrap());
@@ -119,7 +106,7 @@ macro_rules! bench_block {
         #[bench]
         fn from_spn(bencher: &mut Bencher) {
             let spn = format!("benches/block/block_{}.spn", $nel);
-            bencher.iter(|| Voxels::from_spn(&spn, NEL).unwrap());
+            bencher.iter(|| Voxels::from_spn(&spn, NEL.into()).unwrap());
         }
         #[bench]
         fn from_tif(bencher: &mut Bencher) {
@@ -132,7 +119,7 @@ macro_rules! bench_block {
             bencher.iter(|| {
                 Voxels::from_npy(&npy)
                     .unwrap()
-                    .into_finite_elements(REMOVE, &Vector::new(SCALE), &Vector::new(TRANSLATE))
+                    .into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))
                     .unwrap()
             });
         }
@@ -143,12 +130,10 @@ macro_rules! bench_block {
         }
         #[bench]
         fn set_prescribed_nodes(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_hierarchy()?;
@@ -162,12 +147,10 @@ macro_rules! bench_block {
         }
         #[bench]
         fn smooth_laplace(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_influencers();
@@ -182,12 +165,10 @@ macro_rules! bench_block {
         }
         #[bench]
         fn smooth_taubin(bencher: &mut Bencher) -> Result<(), String> {
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let mut fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let mut fem =
+                voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             fem.calculate_node_element_connectivity()?;
             fem.calculate_node_node_connectivity()?;
             fem.calculate_nodal_influencers();
@@ -204,12 +185,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_exo(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("exo");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_exo(&format!("target/block_{}_{}.exo", $nel, count))
@@ -221,12 +199,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_inp(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("inp");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_inp(&format!("target/block_{}_{}.inp", $nel, count))
@@ -238,12 +213,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_mesh(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("mesh");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_mesh(&format!("target/block_{}_{}.mesh", $nel, count))
@@ -255,12 +227,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_metrics_csv(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("csv");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_metrics(&format!("target/block_{}_{}.csv", $nel, count))
@@ -272,12 +241,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_metrics_npy(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("npy");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_metrics(&format!("target/block_{}_{}.npy", $nel, count))
@@ -289,7 +255,8 @@ macro_rules! bench_block {
         #[bench]
         fn write_npy(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("npy");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut count = 0;
             bencher.iter(|| {
                 voxels
@@ -302,7 +269,8 @@ macro_rules! bench_block {
         #[bench]
         fn write_spn(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("spn");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut count = 0;
             bencher.iter(|| {
                 voxels
@@ -315,12 +283,9 @@ macro_rules! bench_block {
         #[bench]
         fn write_vtk(bencher: &mut Bencher) -> Result<(), String> {
             remove_files_with_extension!("vtk");
-            let voxels = Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL)?;
-            let fem = voxels.into_finite_elements(
-                REMOVE,
-                &Vector::new(SCALE),
-                &Vector::new(TRANSLATE),
-            )?;
+            let voxels =
+                Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
+            let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let mut count = 0;
             bencher.iter(|| {
                 fem.write_vtk(&format!("target/block_{}_{}.vtk", $nel, count))

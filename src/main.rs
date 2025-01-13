@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -64,6 +64,37 @@ enum Commands {
         quiet: bool,
     },
 
+    /// Defeatures and creates a new segmentation
+    Defeature {
+        /// Name of the original segmentation file
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Name of the defeatured segmentation file
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        /// Defeature clusters with less than MIN voxels
+        #[arg(long, short, value_name = "MIN")]
+        min: usize,
+
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
+
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
+
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
+
     /// Creates a finite element mesh from a segmentation
     Mesh {
         #[command(subcommand)]
@@ -76,6 +107,10 @@ enum Commands {
         /// Name of the mesh output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
+
+        /// Defeature clusters with less than NUM voxels
+        #[arg(long, short, value_name = "NUM")]
+        defeature: Option<usize>,
 
         /// Number of voxels in the x-direction
         #[arg(long, short = 'x', value_name = "NEL")]
@@ -90,8 +125,8 @@ enum Commands {
         nelz: Option<usize>,
 
         /// Voxel IDs to remove from the mesh
-        #[arg(long, short, value_name = "ID")]
-        remove: Option<Vec<u8>>,
+        #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+        remove: Option<Vec<usize>>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -171,9 +206,21 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
+        /// Number of voxels in the x-direction
+        #[arg(long, short = 'x', value_name = "NEL")]
+        nelx: Option<usize>,
+
+        /// Number of voxels in the y-direction
+        #[arg(long, short = 'y', value_name = "NEL")]
+        nely: Option<usize>,
+
+        /// Number of voxels in the z-direction
+        #[arg(long, short = 'z', value_name = "NEL")]
+        nelz: Option<usize>,
+
         /// Voxel IDs to remove from the mesh
-        #[arg(long, short, value_name = "ID")]
-        remove: Option<Vec<u8>>,
+        #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+        remove: Option<Vec<usize>>,
 
         /// Scaling (> 0.0) in the x-direction
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
@@ -398,10 +445,23 @@ fn main() -> Result<(), ErrorWrapper> {
             is_quiet = quiet;
             convert(input, output, nelx, nely, nelz, quiet)
         }
+        Some(Commands::Defeature {
+            input,
+            output,
+            min,
+            nelx,
+            nely,
+            nelz,
+            quiet,
+        }) => {
+            is_quiet = quiet;
+            defeature(input, output, min, nelx, nely, nelz, quiet)
+        }
         Some(Commands::Mesh {
             meshing,
             input,
             output,
+            defeature,
             nelx,
             nely,
             nelz,
@@ -418,8 +478,8 @@ fn main() -> Result<(), ErrorWrapper> {
         }) => {
             is_quiet = quiet;
             mesh(
-                meshing, input, output, nelx, nely, nelz, remove, xscale, yscale, zscale,
-                xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
+                meshing, input, output, defeature, nelx, nely, nelz, remove, xscale, yscale,
+                zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
             )
         }
         Some(Commands::Metrics {
@@ -433,6 +493,9 @@ fn main() -> Result<(), ErrorWrapper> {
         Some(Commands::Octree {
             input,
             output,
+            nelx,
+            nely,
+            nelz,
             remove,
             xscale,
             yscale,
@@ -446,8 +509,8 @@ fn main() -> Result<(), ErrorWrapper> {
         }) => {
             is_quiet = quiet;
             octree(
-                input, output, remove, xscale, yscale, zscale, xtranslate, ytranslate, ztranslate,
-                quiet, pair, strong,
+                input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
+                ytranslate, ztranslate, quiet, pair, strong,
             )
         }
         Some(Commands::Smooth {
@@ -498,14 +561,58 @@ fn convert(
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Npy(voxels) => match output_extension {
+        InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
             Some("spn") => write_output(output, OutputTypes::Spn(voxels), quiet),
-            _ => invalid_output(&output, output_extension),
-        },
-        InputTypes::Spn(voxels) => match output_extension {
             Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
             _ => invalid_output(&output, output_extension),
         },
+    }
+}
+
+fn defeature(
+    input: String,
+    output: String,
+    min: usize,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Npy(mut voxels) | InputTypes::Spn(mut voxels) => match output_extension {
+            Some("npy") => {
+                let time = Instant::now();
+                if !quiet {
+                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                }
+                voxels = voxels.defeature(min);
+                if !quiet {
+                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+                }
+                write_output(output, OutputTypes::Npy(voxels), quiet)
+            }
+            Some("spn") => {
+                let time = Instant::now();
+                if !quiet {
+                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                }
+                voxels = voxels.defeature(min);
+                if !quiet {
+                    println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+                }
+                write_output(output, OutputTypes::Spn(voxels), quiet)
+            }
+            _ => invalid_output(&output, output_extension),
+        },
+        _ => {
+            let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap_or("UNDEFINED"),
+                input
+            ))?
+        }
     }
 }
 
@@ -514,10 +621,11 @@ fn mesh(
     meshing: Option<MeshingCommands>,
     input: String,
     output: String,
+    defeature: Option<usize>,
     nelx: Option<usize>,
     nely: Option<usize>,
     nelz: Option<usize>,
-    remove: Option<Vec<u8>>,
+    remove: Option<Vec<usize>>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
@@ -528,7 +636,13 @@ fn mesh(
     quiet: bool,
     dual: bool,
 ) -> Result<(), ErrorWrapper> {
-    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
+    let remove = remove.map(|removed_blocks| {
+        removed_blocks
+            .into_iter()
+            .map(|entry| entry as u8)
+            .collect()
+    });
+    let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
         _ => {
@@ -540,9 +654,20 @@ fn mesh(
             ))?
         }
     };
+    if let Some(min_num_voxels) = defeature {
+        let time = Instant::now();
+        if !quiet {
+            println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+        }
+        input_type = input_type.defeature(min_num_voxels);
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
+    }
     let time = Instant::now();
+    let scale = Scale::from([xscale, yscale, zscale]);
     if !quiet {
-        let entirely_default = xscale == 1.0
+        let entirely_default = scale.x() == &1.0
             && yscale == 1.0
             && zscale == 1.0
             && xtranslate == 0.0
@@ -553,13 +678,13 @@ fn mesh(
             print!(" [");
         }
         if xscale != 1.0 {
-            print!("xscale: {}, ", xscale);
+            print!("xscale: {}, ", scale.x());
         }
         if yscale != 1.0 {
-            print!("yscale: {}, ", yscale);
+            print!("yscale: {}, ", scale.y());
         }
         if zscale != 1.0 {
-            print!("zscale: {}, ", zscale);
+            print!("zscale: {}, ", scale.z());
         }
         if xtranslate != 0.0 {
             print!("xtranslate: {}, ", xtranslate);
@@ -576,18 +701,18 @@ fn mesh(
         println!();
     }
     let mut output_type = if dual {
-        let mut tree = Octree::from_voxels(input_type);
+        let (_, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
         tree.pair();
         tree.into_finite_elements(
             remove,
-            &Vector::new([xscale, yscale, zscale]),
+            scale,
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
     } else {
         input_type.into_finite_elements(
             remove,
-            &Vector::new([xscale, yscale, zscale]),
+            scale,
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
     };
@@ -660,7 +785,10 @@ fn metrics_inner(
 fn octree(
     input: String,
     output: String,
-    remove: Option<Vec<u8>>,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    remove: Option<Vec<usize>>,
     xscale: f64,
     yscale: f64,
     zscale: f64,
@@ -671,8 +799,15 @@ fn octree(
     pair: bool,
     strong: bool,
 ) -> Result<(), ErrorWrapper> {
-    let input_type = match read_input(&input, None, None, None, quiet)? {
+    let remove = remove.map(|removed_blocks| {
+        removed_blocks
+            .into_iter()
+            .map(|entry| entry as u8)
+            .collect()
+    });
+    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
+        InputTypes::Spn(voxels) => voxels,
         _ => {
             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
             Err(format!(
@@ -686,7 +821,7 @@ fn octree(
     if !quiet {
         println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
     }
-    let mut tree = Octree::from_voxels(input_type);
+    let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
     if pair {
         tree.pair();
@@ -694,7 +829,7 @@ fn octree(
     tree.prune();
     let output_type = tree.octree_into_finite_elements(
         remove,
-        &Vector::new([xscale, yscale, zscale]),
+        [xscale, yscale, zscale].into(),
         &Vector::new([xtranslate, ytranslate, ztranslate]),
     )?;
     if !quiet {
@@ -847,18 +982,11 @@ fn read_input(
             } else if nelz.is_none() {
                 Err("Argument nelz was required but was not provided")?
             } else {
+                let nel = Nel::from([nelx.unwrap(), nely.unwrap(), nelz.unwrap()]);
                 if !quiet {
-                    println!(
-                        " [nelx: {}, nely: {}, nelz: {}]",
-                        nelx.unwrap(),
-                        nely.unwrap(),
-                        nelz.unwrap()
-                    );
+                    println!(" [nelx: {}, nely: {}, nelz: {}]", nel.x(), nel.y(), nel.z(),);
                 }
-                InputTypes::Spn(Voxels::from_spn(
-                    input,
-                    [nelx.unwrap(), nely.unwrap(), nelz.unwrap()],
-                )?)
+                InputTypes::Spn(Voxels::from_spn(input, nel)?)
             }
         }
         _ => {

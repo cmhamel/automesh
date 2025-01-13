@@ -2,7 +2,7 @@ use super::{filter_voxel_data, Voxels};
 
 const NUM_ELEMENTS: usize = 39;
 
-const BLOCKS_GOLD: [usize; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
+const BLOCKS_GOLD: [u8; NUM_ELEMENTS] = [1; NUM_ELEMENTS];
 const VOXELS_GOLD: [[usize; 3]; NUM_ELEMENTS] = [
     [0, 0, 0],
     [1, 0, 0],

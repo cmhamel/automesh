@@ -18,12 +18,12 @@ mod voxel;
 
 pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing};
 pub use tree::{Octree, Tree};
-pub use voxel::{VoxelData, Voxels};
+pub use voxel::{Nel, Scale, VoxelData, Voxels};
 
 use conspire::math::{TensorRank1, TensorRank1Vec};
 
 /// The number of spatial dimensions.
-const NSD: usize = 3;
+pub const NSD: usize = 3;
 
 /// An element-to-node connectivity.
 pub type Connectivity<const N: usize> = Vec<[usize; N]>;
