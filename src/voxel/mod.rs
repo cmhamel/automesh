@@ -36,6 +36,39 @@ pub struct Voxels {
     data: VoxelData,
 }
 
+/// The number of voxels in each direction.
+pub struct NelNew {
+    nelx: usize,
+    nely: usize,
+    nelz: usize,
+}
+
+impl NelNew {
+    pub fn x(&self) -> &usize {
+        &self.nelx
+    }
+    pub fn y(&self) -> &usize {
+        &self.nely
+    }
+    pub fn z(&self) -> &usize {
+        &self.nelz
+    }
+}
+
+impl From<[usize; 3]> for NelNew {
+    fn from(nel: [usize; 3]) -> Self {
+        if nel.iter().any(|&entry| entry < 1) {
+            panic!("Need to specify nel > 0")
+        } else {
+            Self {
+                nelx: nel[0],
+                nely: nel[1],
+                nelz: nel[2],
+            }
+        }
+    }
+}
+
 /// Inherent implementation of the voxels type.
 impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
@@ -78,7 +111,7 @@ impl Voxels {
         voxels
     }
     /// Constructs and returns a new voxels type from an SPN file.
-    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {
+    pub fn from_spn(file_path: &str, nel: NelNew) -> Result<Self, String> {
         Ok(Self {
             data: voxel_data_from_spn(file_path, nel)?,
         })
@@ -416,33 +449,25 @@ fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
     VoxelData::read_npy(File::open(file_path)?)
 }
 
-fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, IntermediateError> {
-    if nel[0] < 1 {
-        Err("Need to specify nelx > 0".to_string())?
-    } else if nel[1] < 1 {
-        Err("Need to specify nely > 0".to_string())?
-    } else if nel[2] < 1 {
-        Err("Need to specify nelz > 0".to_string())?
-    } else {
-        let data_flattened = BufReader::new(File::open(file_path)?)
-            .lines()
-            .map(|line| line.unwrap().parse().unwrap())
-            .collect::<VoxelDataFlattened>();
-        let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
-        data.axis_iter_mut(Axis(2))
-            .enumerate()
-            .for_each(|(k, mut data_k)| {
-                data_k
-                    .axis_iter_mut(Axis(1))
-                    .enumerate()
-                    .for_each(|(j, mut data_jk)| {
-                        data_jk.iter_mut().enumerate().for_each(|(i, data_ijk)| {
-                            *data_ijk = data_flattened[i + nel[0] * j + nel[0] * nel[1] * k]
-                        })
+fn voxel_data_from_spn(file_path: &str, nel: NelNew) -> Result<VoxelData, IntermediateError> {
+    let data_flattened = BufReader::new(File::open(file_path)?)
+        .lines()
+        .map(|line| line.unwrap().parse().unwrap())
+        .collect::<VoxelDataFlattened>();
+    let mut data = VoxelData::zeros((*nel.x(), *nel.y(), *nel.z()));
+    data.axis_iter_mut(Axis(2))
+        .enumerate()
+        .for_each(|(k, mut data_k)| {
+            data_k
+                .axis_iter_mut(Axis(1))
+                .enumerate()
+                .for_each(|(j, mut data_jk)| {
+                    data_jk.iter_mut().enumerate().for_each(|(i, data_ijk)| {
+                        *data_ijk = data_flattened[i + nel.x() * j + nel.y() * nel.z() * k]
                     })
-            });
-        Ok(data)
-    }
+                })
+        });
+    Ok(data)
 }
 
 fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> {

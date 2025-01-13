@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Nel, Octree, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -981,18 +981,11 @@ fn read_input(
             } else if nelz.is_none() {
                 Err("Argument nelz was required but was not provided")?
             } else {
+                let nel = Nel::from([nelx.unwrap(), nely.unwrap(), nelz.unwrap()]);
                 if !quiet {
-                    println!(
-                        " [nelx: {}, nely: {}, nelz: {}]",
-                        nelx.unwrap(),
-                        nely.unwrap(),
-                        nelz.unwrap()
-                    );
+                    println!(" [nelx: {}, nely: {}, nelz: {}]", nel.x(), nel.y(), nel.z(),);
                 }
-                InputTypes::Spn(Voxels::from_spn(
-                    input,
-                    [nelx.unwrap(), nely.unwrap(), nelz.unwrap()],
-                )?)
+                InputTypes::Spn(Voxels::from_spn(input, nel)?)
             }
         }
         _ => {
