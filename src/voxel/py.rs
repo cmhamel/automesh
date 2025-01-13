@@ -8,7 +8,7 @@ use super::{
     write_voxels_to_npy, write_voxels_to_spn, Nel, Vector, VoxelData,
 };
 use conspire::math::TensorArray;
-use pyo3::prelude::*;
+use pyo3::{PyClass, prelude::*, pyclass::boolean_struct};
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<Voxels>()?;
@@ -19,6 +19,21 @@ pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
 #[pyclass]
 pub struct Voxels {
     data: VoxelData,
+}
+
+unsafe impl pyo3::type_object::PyTypeInfo for Nel {
+    const NAME: &'static str = "Nel";
+    const MODULE: ::std::option::Option<&'static str> = ::std::option::Option::None;
+    #[inline]
+    fn type_object_raw(py: pyo3::Python<'_>) -> *mut pyo3::ffi::PyTypeObject {
+        <Self as pyo3::impl_::pyclass::PyClassImpl>::lazy_type_object()
+            .get_or_init(py)
+            .as_type_ptr()
+    }
+}
+
+impl PyClass for Nel {
+    type Frozen = boolean_struct::True;
 }
 
 #[pymethods]
