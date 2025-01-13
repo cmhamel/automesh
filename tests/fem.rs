@@ -1,4 +1,4 @@
-use automesh::{NSD, FiniteElements, Vector, Voxels};
+use automesh::{FiniteElements, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorRank1};
 use std::{
     fs::File,

@@ -1,4 +1,4 @@
-use automesh::{NSD, Nel, Vector, Voxels};
+use automesh::{Nel, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorVec};
 
 const GOLD_DATA: [[[u8; 3]; 5]; 4] = [
@@ -1363,7 +1363,8 @@ mod defeature {
     #[test]
     fn cube_with_inclusion() {
         let nel = 3;
-        let voxels = Voxels::from_spn("tests/input/cube_with_inclusion.spn", [nel; NSD].into()).unwrap();
+        let voxels =
+            Voxels::from_spn("tests/input/cube_with_inclusion.spn", [nel; NSD].into()).unwrap();
         let voxels = voxels.defeature(2);
         voxels.get_data().outer_iter().take(nel).for_each(|a| {
             a.outer_iter()
@@ -1498,7 +1499,8 @@ mod write_npy {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels_from_spn = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
+        let voxels_from_spn =
+            Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         voxels_from_spn.write_npy("target/letter_f_3d.npy").unwrap();
         let voxels_from_npy = Voxels::from_npy("target/letter_f_3d.npy").unwrap();
         assert_data_eq(voxels_from_npy, voxels_from_spn);

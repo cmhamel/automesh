@@ -954,13 +954,17 @@ impl Tree for Octree {
         let time = Instant::now();
         let data_voxels = voxels.get_data();
         let mut neli = 0;
-        let nel: Nel = data_voxels.shape().iter().map(|nel0| {
-            neli = *nel0;
-            while (neli & (neli - 1)) != 0 {
-                neli += 1
-            }
-            neli
-        }).collect();
+        let nel: Nel = data_voxels
+            .shape()
+            .iter()
+            .map(|nel0| {
+                neli = *nel0;
+                while (neli & (neli - 1)) != 0 {
+                    neli += 1
+                }
+                neli
+            })
+            .collect();
         let mut data = VoxelData::from(nel);
         data.axis_iter_mut(Axis(2))
             .zip(data_voxels.axis_iter(Axis(2)))

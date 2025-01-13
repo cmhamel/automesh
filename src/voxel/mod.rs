@@ -63,7 +63,11 @@ impl From<[usize; NSD]> for Nel {
         if nel.iter().any(|&entry| entry < 1) {
             panic!("Need to specify nel > 0")
         } else {
-            Self { x: nel[0], y: nel[1], z: nel[2] }
+            Self {
+                x: nel[0],
+                y: nel[1],
+                z: nel[2],
+            }
         }
     }
 }
@@ -73,7 +77,11 @@ impl From<&[usize]> for Nel {
         if nel.iter().any(|&entry| entry < 1) {
             panic!("Need to specify nel > 0")
         } else {
-            Self { x: nel[0], y: nel[1], z: nel[2] }
+            Self {
+                x: nel[0],
+                y: nel[1],
+                z: nel[2],
+            }
         }
     }
 }
@@ -93,7 +101,11 @@ impl From<Nel> for VoxelData {
 impl FromIterator<usize> for Nel {
     fn from_iter<Ii: IntoIterator<Item = usize>>(into_iterator: Ii) -> Self {
         let nel: Vec<usize> = into_iterator.into_iter().collect();
-        Self { x: nel[0], y: nel[1], z: nel[2] }
+        Self {
+            x: nel[0],
+            y: nel[1],
+            z: nel[2],
+        }
     }
 }
 
