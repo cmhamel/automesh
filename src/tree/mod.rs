@@ -953,16 +953,15 @@ impl Tree for Octree {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let data_voxels = voxels.get_data();
-        let mut nels = [0; NSD];
-        nels.iter_mut()
-            .zip(data_voxels.shape().iter())
-            .for_each(|(nel, nel_0)| {
-                *nel = *nel_0;
-                while (*nel & (*nel - 1)) != 0 {
-                    *nel += 1
-                }
-            });
-        let mut data = VoxelData::zeros((nels[0], nels[1], nels[2]));
+        let mut neli = 0;
+        let nel: Nel = data_voxels.shape().iter().map(|nel0| {
+            neli = *nel0;
+            while (neli & (neli - 1)) != 0 {
+                neli += 1
+            }
+            neli
+        }).collect();
+        let mut data = VoxelData::from(nel);
         data.axis_iter_mut(Axis(2))
             .zip(data_voxels.axis_iter(Axis(2)))
             .for_each(|(mut data_i, data_voxels_i)| {
@@ -976,12 +975,12 @@ impl Tree for Octree {
                             .for_each(|(data_ijk, data_voxels_ijk)| *data_ijk = *data_voxels_ijk)
                     })
             });
-        let nel_min = nels.iter().min().unwrap();
+        let nel_min = nel.iter().min().unwrap();
         let lngth = *nel_min as u16;
         let mut tree = vec![];
-        (0..(nels[0] / nel_min)).for_each(|i| {
-            (0..(nels[1] / nel_min)).for_each(|j| {
-                (0..(nels[2] / nel_min)).for_each(|k| {
+        (0..(nel.x() / nel_min)).for_each(|i| {
+            (0..(nel.y() / nel_min)).for_each(|j| {
+                (0..(nel.z() / nel_min)).for_each(|k| {
                     tree.push(Cell {
                         block: None,
                         cells: None,
@@ -1008,7 +1007,7 @@ impl Tree for Octree {
             "           \x1b[1;93m⤷ Octree initialization\x1b[0m {:?} ",
             time.elapsed()
         );
-        (nels, tree)
+        (nel, tree)
     }
     fn into_finite_elements(
         self,

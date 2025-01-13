@@ -1,4 +1,4 @@
-use automesh::{FiniteElements, Vector, Voxels};
+use automesh::{NSD, FiniteElements, Vector, Voxels};
 use conspire::math::{Tensor, TensorArray, TensorRank1};
 use std::{
     fs::File,
@@ -34,11 +34,11 @@ fn compare_files(
     file_path: &str,
     gold_path: &str,
     spn_path: &str,
-    nel: [usize; 3],
+    nel: [usize; NSD],
     scale: Vector,
     translate: Vector,
 ) {
-    let voxels = Voxels::from_spn(spn_path, nel).unwrap();
+    let voxels = Voxels::from_spn(spn_path, nel.into()).unwrap();
     let fem = voxels
         .into_finite_elements(Some(vec![0]), &scale, &translate)
         .unwrap();
@@ -71,7 +71,7 @@ mod read_inp {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),
@@ -124,7 +124,7 @@ mod write_mesh {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),
@@ -140,7 +140,7 @@ mod write_vtk {
     use super::*;
     #[test]
     fn letter_f_3d() {
-        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3]).unwrap();
+        let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),

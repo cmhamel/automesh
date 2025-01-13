@@ -24,7 +24,6 @@ use tiff::{
 };
 
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
-pub type Nel = [usize; NSD];
 type VoxelDataFlattened = Blocks;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 
@@ -37,35 +36,64 @@ pub struct Voxels {
 }
 
 /// The number of voxels in each direction.
-pub struct NelNew {
-    nelx: usize,
-    nely: usize,
-    nelz: usize,
+#[derive(Copy, Clone, Debug)]
+pub struct Nel {
+    x: usize,
+    y: usize,
+    z: usize,
 }
 
-impl NelNew {
+impl Nel {
+    pub fn iter(&self) -> impl Iterator<Item = &usize> {
+        [self.x(), self.y(), self.z()].into_iter()
+    }
     pub fn x(&self) -> &usize {
-        &self.nelx
+        &self.x
     }
     pub fn y(&self) -> &usize {
-        &self.nely
+        &self.y
     }
     pub fn z(&self) -> &usize {
-        &self.nelz
+        &self.z
     }
 }
 
-impl From<[usize; 3]> for NelNew {
-    fn from(nel: [usize; 3]) -> Self {
+impl From<[usize; NSD]> for Nel {
+    fn from(nel: [usize; NSD]) -> Self {
         if nel.iter().any(|&entry| entry < 1) {
             panic!("Need to specify nel > 0")
         } else {
-            Self {
-                nelx: nel[0],
-                nely: nel[1],
-                nelz: nel[2],
-            }
+            Self { x: nel[0], y: nel[1], z: nel[2] }
         }
+    }
+}
+
+impl From<&[usize]> for Nel {
+    fn from(nel: &[usize]) -> Self {
+        if nel.iter().any(|&entry| entry < 1) {
+            panic!("Need to specify nel > 0")
+        } else {
+            Self { x: nel[0], y: nel[1], z: nel[2] }
+        }
+    }
+}
+
+impl From<Nel> for (usize, usize, usize) {
+    fn from(nel: Nel) -> Self {
+        (nel.x, nel.y, nel.z)
+    }
+}
+
+impl From<Nel> for VoxelData {
+    fn from(nel: Nel) -> Self {
+        VoxelData::zeros::<(usize, usize, usize)>(nel.into())
+    }
+}
+
+impl FromIterator<usize> for Nel {
+    fn from_iter<Ii: IntoIterator<Item = usize>>(into_iterator: Ii) -> Self {
+        let nel: Vec<usize> = into_iterator.into_iter().collect();
+        Self { x: nel[0], y: nel[1], z: nel[2] }
     }
 }
 
@@ -83,7 +111,7 @@ impl Voxels {
     }
     /// Constructs and returns a new voxels type from an Octree file.
     pub fn from_octree(nel: Nel, mut tree: Octree) -> Self {
-        let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
+        let mut data = VoxelData::from(nel);
         let mut length = 0;
         let mut x = 0;
         let mut y = 0;
@@ -111,7 +139,7 @@ impl Voxels {
         voxels
     }
     /// Constructs and returns a new voxels type from an SPN file.
-    pub fn from_spn(file_path: &str, nel: NelNew) -> Result<Self, String> {
+    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {
         Ok(Self {
             data: voxel_data_from_spn(file_path, nel)?,
         })
@@ -449,12 +477,12 @@ fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
     VoxelData::read_npy(File::open(file_path)?)
 }
 
-fn voxel_data_from_spn(file_path: &str, nel: NelNew) -> Result<VoxelData, IntermediateError> {
+fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, IntermediateError> {
     let data_flattened = BufReader::new(File::open(file_path)?)
         .lines()
         .map(|line| line.unwrap().parse().unwrap())
         .collect::<VoxelDataFlattened>();
-    let mut data = VoxelData::zeros((*nel.x(), *nel.y(), *nel.z()));
+    let mut data = VoxelData::from(nel);
     data.axis_iter_mut(Axis(2))
         .enumerate()
         .for_each(|(k, mut data_k)| {
@@ -502,8 +530,8 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
         index += 1;
         file.set_file_name(format!("{}_{}.{}", file_stem, index, file_extension));
     }
-    let nel: Nel = [nelx as usize, nely as usize, index as usize];
-    let mut data = VoxelData::zeros((nel[0], nel[1], nel[2]));
+    let nel = Nel::from([nelx as usize, nely as usize, index as usize]);
+    let mut data = VoxelData::from(nel);
     data.axis_iter_mut(Axis(2))
         .enumerate()
         .try_for_each(|(k, mut data_k)| {
@@ -512,14 +540,14 @@ fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> 
                 basic_file_path, k, file_extension
             ))?))?;
             (nelx, nely) = decoder.dimensions()?;
-            if nel[0] != nelx as usize || nel[1] != nely as usize {
+            if *nel.x() != nelx as usize || *nel.y() != nely as usize {
                 panic!()
             }
             match decoder.read_image()? {
                 DecodingResult::U8(data_flattened) => data_flattened,
                 _ => panic!(),
             }
-            .chunks(nel[0])
+            .chunks(*nel.x())
             .zip(data_k.axis_iter_mut(Axis(1)).rev())
             .for_each(|(chunk, mut data_kj)| {
                 chunk
