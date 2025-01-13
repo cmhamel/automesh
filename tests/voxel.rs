@@ -1,4 +1,4 @@
-use automesh::{Nel, Vector, Voxels, NSD};
+use automesh::{Nel, Scale, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorVec};
 
 const GOLD_DATA: [[[u8; 3]; 5]; 4] = [
@@ -60,7 +60,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
 ) {
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
     let fem = voxels
-        .into_finite_elements(gold.remove, &gold.scale, &gold.translate)
+        .into_finite_elements(gold.remove, gold.scale, &gold.translate)
         .unwrap();
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
@@ -108,7 +108,7 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     remove: Option<Vec<u8>>,
 
     /// The scaling in the [x, y, z] directions to be applied to the domain.
-    scale: Vector,
+    scale: Scale,
 
     /// The translation in the [x, y, z] directions to be applied to the domain.
     translate: Vector,
@@ -125,7 +125,7 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
             file_path: "".to_string(),
             nel: [1; NSD].into(),
             remove: Option::Some(vec![0]),
-            scale: Vector::new([1.0; NSD]),
+            scale: [1.0; NSD].into(),
             translate: Vector::zero(),
         }
     }
@@ -172,7 +172,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
-            scale: Vector::new([10.0, 20.0, 30.0]),
+            scale: [10.0, 20.0, 30.0].into(),
             ..Default::default()
         });
     }
@@ -194,7 +194,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
-            scale: Vector::new([0.5, 0.25, 0.125]),
+            scale: [0.5, 0.25, 0.125].into(),
             ..Default::default()
         });
     }
@@ -258,7 +258,7 @@ mod into_finite_elements {
                 [0.1, 11.2, 12.3],
                 [10.1, 11.2, 12.3],
             ],
-            scale: Vector::new([10.0, 11.0, 12.0]),
+            scale: [10.0, 11.0, 12.0].into(),
             translate: Vector::new([0.1, 0.2, 0.3]),
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
@@ -1409,39 +1409,27 @@ mod from_npy {
         assert_data_eq_gold(voxels);
     }
     #[test]
-    #[should_panic(expected = "Need to specify xscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn xscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([0.0, 1.0, 1.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [0.0, 1.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify yscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn yscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([1.0, 0.0, 1.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [1.0, 0.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
     #[test]
-    #[should_panic(expected = "Need to specify zscale > 0")]
+    #[should_panic(expected = "Need to specify scale > 0.")]
     fn zscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(
-                None,
-                &Vector::new([1.0, 1.0, 0.0]),
-                &Vector::new([0.0, 0.0, 0.0]),
-            )
+            .into_finite_elements(None, [1.0, 1.0, 0.0].into(), &Vector::new([0.0, 0.0, 0.0]))
             .unwrap();
     }
 }

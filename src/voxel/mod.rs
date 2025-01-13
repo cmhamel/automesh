@@ -54,15 +54,11 @@ impl Nel {
 }
 
 impl From<[usize; NSD]> for Nel {
-    fn from(nel: [usize; NSD]) -> Self {
-        if nel.iter().any(|&entry| entry < 1) {
+    fn from([x, y, z]: [usize; NSD]) -> Self {
+        if x < 1 || y < 1 || z < 1 {
             panic!("Need to specify nel > 0.")
         } else {
-            Self {
-                x: nel[0],
-                y: nel[1],
-                z: nel[2],
-            }
+            Self { x, y, z }
         }
     }
 }
@@ -122,9 +118,9 @@ impl Scale {
 impl From<[f64; NSD]> for Scale {
     fn from(scale: [f64; NSD]) -> Self {
         if scale.iter().any(|&entry| entry <= 0.0) {
-            panic!("Need to specify scale > 0.0.")
+            panic!("Need to specify scale > 0.")
         } else {
-            Self(Vector::new([scale[0], scale[1], scale[2]]))
+            Self(Vector::new(scale))
         }
     }
 }

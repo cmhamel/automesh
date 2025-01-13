@@ -1,4 +1,4 @@
-use automesh::{FiniteElements, Vector, Voxels, NSD};
+use automesh::{FiniteElements, Scale, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorRank1};
 use std::{
     fs::File,
@@ -35,12 +35,12 @@ fn compare_files(
     gold_path: &str,
     spn_path: &str,
     nel: [usize; NSD],
-    scale: Vector,
+    scale: Scale,
     translate: Vector,
 ) {
     let voxels = Voxels::from_spn(spn_path, nel.into()).unwrap();
     let fem = voxels
-        .into_finite_elements(Some(vec![0]), &scale, &translate)
+        .into_finite_elements(Some(vec![0]), scale, &translate)
         .unwrap();
     fem.write_inp(file_path).unwrap();
     let mut gold = String::new();
@@ -75,7 +75,7 @@ mod read_inp {
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),
-                &TensorRank1::new([1.0, 1.0, 1.0]),
+                [1.0, 1.0, 1.0].into(),
                 &TensorRank1::new([0.0, 0.0, 0.0]),
             )
             .unwrap();
@@ -103,7 +103,7 @@ mod write_inp {
             "tests/input/letter_f_3d.inp",
             "tests/input/letter_f_3d.spn",
             [4, 5, 3],
-            TensorRank1::new([1.0, 1.0, 1.0]),
+            [1.0, 1.0, 1.0].into(),
             TensorRank1::new([0.0, 0.0, 0.0]),
         );
     }
@@ -114,7 +114,7 @@ mod write_inp {
             "tests/input/sparse.inp",
             "tests/input/sparse.spn",
             [5, 5, 5],
-            TensorRank1::new([1.0, 1.0, 1.0]),
+            [1.0, 1.0, 1.0].into(),
             TensorRank1::new([0.0, 0.0, 0.0]),
         );
     }
@@ -128,7 +128,7 @@ mod write_mesh {
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),
-                &Vector::new([1.0, 1.0, 1.0]),
+                [1.0, 1.0, 1.0].into(),
                 &Vector::new([0.0, 0.0, 0.0]),
             )
             .unwrap();
@@ -144,7 +144,7 @@ mod write_vtk {
         let fem = voxels
             .into_finite_elements(
                 Some(vec![0]),
-                &Vector::new([1.0, 1.0, 1.0]),
+                [1.0, 1.0, 1.0].into(),
                 &Vector::new([0.0, 0.0, 0.0]),
             )
             .unwrap();
