@@ -35,7 +35,7 @@ impl Voxels {
             finite_element_data_from_data(
                 &self.data,
                 remove,
-                &Vector::new(scale),
+                scale.into(),
                 &Vector::new(translate),
             )?;
         Ok(FiniteElements::from_data(

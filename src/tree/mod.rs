@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
-    voxel::Nel,
+    voxel::{Nel, Scale},
     Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
 };
 use conspire::math::{TensorArray, TensorVec};
@@ -69,13 +69,13 @@ pub trait Tree {
     fn into_finite_elements(
         self,
         remove: Option<Blocks>,
-        scale: &Vector,
+        scale: Scale,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
     fn octree_into_finite_elements(
         self,
         remove: Option<Blocks>,
-        scale: &Vector,
+        scale: Scale,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
@@ -1016,24 +1016,14 @@ impl Tree for Octree {
     fn into_finite_elements(
         self,
         _remove: Option<Blocks>,
-        scale: &Vector,
+        scale: Scale,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        let xscale = scale[0];
-        let yscale = scale[1];
-        let zscale = scale[2];
         let xtranslate = translate[0];
         let ytranslate = translate[1];
         let ztranslate = translate[2];
-        if xscale <= 0.0 {
-            return Err("Need to specify xscale > 0.0".to_string());
-        } else if yscale <= 0.0 {
-            return Err("Need to specify yscale > 0.0".to_string());
-        } else if zscale <= 0.0 {
-            return Err("Need to specify zscale > 0.0".to_string());
-        }
         let mut element_node_connectivity = vec![];
         let mut nodal_coordinates = Coordinates::zero(0);
         let mut cells_nodes = vec![0; self.len()];
@@ -1042,9 +1032,9 @@ impl Tree for Octree {
             if cell.get_cells().is_none() {
                 cells_nodes[cell_index] = node_index;
                 nodal_coordinates.0.append(&mut vec![Coordinate::new([
-                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * xscale + xtranslate,
-                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * yscale + ytranslate,
-                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * zscale + ztranslate,
+                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate,
+                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate,
+                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate,
                 ])]);
                 node_index += 1;
             }
@@ -1273,22 +1263,12 @@ impl Tree for Octree {
     fn octree_into_finite_elements(
         self,
         remove: Option<Blocks>,
-        scale: &Vector,
+        scale: Scale,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
-        let xscale = scale[0];
-        let yscale = scale[1];
-        let zscale = scale[2];
         let xtranslate = translate[0];
         let ytranslate = translate[1];
         let ztranslate = translate[2];
-        if xscale <= 0.0 {
-            return Err("Need to specify xscale > 0.0".to_string());
-        } else if yscale <= 0.0 {
-            return Err("Need to specify yscale > 0.0".to_string());
-        } else if zscale <= 0.0 {
-            return Err("Need to specify zscale > 0.0".to_string());
-        }
         let mut x_min = 0.0;
         let mut y_min = 0.0;
         let mut z_min = 0.0;
@@ -1318,12 +1298,12 @@ impl Tree for Octree {
             .for_each(|(cell, (block, connectivity))| {
                 *block = cell.get_block();
                 *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
-                x_min = *cell.get_min_x() as f64 * xscale + xtranslate;
-                y_min = *cell.get_min_y() as f64 * yscale + ytranslate;
-                z_min = *cell.get_min_z() as f64 * zscale + ztranslate;
-                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * xscale + xtranslate;
-                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * yscale + ytranslate;
-                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * zscale + ztranslate;
+                x_min = *cell.get_min_x() as f64 * scale.x() + xtranslate;
+                y_min = *cell.get_min_y() as f64 * scale.y() + ytranslate;
+                z_min = *cell.get_min_z() as f64 * scale.z() + ztranslate;
+                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate;
+                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate;
+                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate;
                 nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
                 nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
                 nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);

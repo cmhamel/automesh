@@ -30,11 +30,6 @@ type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
 /// The segmentation data corresponding to voxels.
 pub type VoxelData = Array3<u8>;
 
-/// The voxels type.
-pub struct Voxels {
-    data: VoxelData,
-}
-
 /// The number of voxels in each direction.
 #[derive(Copy, Clone, Debug)]
 pub struct Nel {
@@ -109,6 +104,36 @@ impl FromIterator<usize> for Nel {
     }
 }
 
+/// The multiplying scale in each direction.
+pub struct Scale(Vector);
+
+impl Scale {
+    pub fn x(&self) -> &f64 {
+        &self.0[0]
+    }
+    pub fn y(&self) -> &f64 {
+        &self.0[1]
+    }
+    pub fn z(&self) -> &f64 {
+        &self.0[2]
+    }
+}
+
+impl From<[f64; NSD]> for Scale {
+    fn from(scale: [f64; NSD]) -> Self {
+        if scale.iter().any(|&entry| entry <= 0.0) {
+            panic!("Need to specify scale > 0.0.")
+        } else {
+            Self(Vector::new([scale[0], scale[1], scale[2]]))
+        }
+    }
+}
+
+/// The voxels type.
+pub struct Voxels {
+    data: VoxelData,
+}
+
 /// Inherent implementation of the voxels type.
 impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
@@ -170,7 +195,7 @@ impl Voxels {
     pub fn into_finite_elements(
         self,
         remove: Option<Blocks>,
-        scale: &Vector,
+        scale: Scale,
         translate: &Vector,
     ) -> Result<HexahedralFiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
@@ -304,86 +329,67 @@ fn initial_nodal_coordinates(
     element_node_connectivity: &HexConnectivity,
     filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
-    scale: &Vector,
+    scale: Scale,
     translate: &Vector,
 ) -> Result<InitialNodalCoordinates, String> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let xscale = scale[0];
-    let yscale = scale[1];
-    let zscale = scale[2];
     let xtranslate = translate[0];
     let ytranslate = translate[1];
     let ztranslate: f64 = translate[2];
     let mut nodal_coordinates: InitialNodalCoordinates =
         (0..number_of_nodes_unfiltered).map(|_| None).collect();
-    if xscale <= 0.0 {
-        Err("Need to specify xscale > 0.0".to_string())
-    } else if yscale <= 0.0 {
-        Err("Need to specify yscale > 0.0".to_string())
-    } else if zscale <= 0.0 {
-        Err("Need to specify zscale > 0.0".to_string())
-    } else {
-        filtered_voxel_data
-            .iter()
-            .zip(element_node_connectivity.iter())
-            .for_each(|(entry, connectivity)| {
-                nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64) * xscale + xtranslate,
-                        (entry[1] as f64) * yscale + ytranslate,
-                        (entry[2] as f64) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64 + 1.0) * xscale + xtranslate,
-                        (entry[1] as f64) * yscale + ytranslate,
-                        (entry[2] as f64) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64 + 1.0) * xscale + xtranslate,
-                        (entry[1] as f64 + 1.0) * yscale + ytranslate,
-                        (entry[2] as f64) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64) * xscale + xtranslate,
-                        (entry[1] as f64 + 1.0) * yscale + ytranslate,
-                        (entry[2] as f64) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64) * xscale + xtranslate,
-                        (entry[1] as f64) * yscale + ytranslate,
-                        (entry[2] as f64 + 1.0) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64 + 1.0) * xscale + xtranslate,
-                        (entry[1] as f64) * yscale + ytranslate,
-                        (entry[2] as f64 + 1.0) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64 + 1.0) * xscale + xtranslate,
-                        (entry[1] as f64 + 1.0) * yscale + ytranslate,
-                        (entry[2] as f64 + 1.0) * zscale + ztranslate,
-                    ]));
-                nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] =
-                    Some(Coordinate::new([
-                        (entry[0] as f64) * xscale + xtranslate,
-                        (entry[1] as f64 + 1.0) * yscale + ytranslate,
-                        (entry[2] as f64 + 1.0) * zscale + ztranslate,
-                    ]));
-            });
-        #[cfg(feature = "profile")]
-        println!(
-            "             \x1b[1;93mNodal coordinates\x1b[0m {:?}",
-            time.elapsed()
-        );
-        Ok(nodal_coordinates)
-    }
+    filtered_voxel_data
+        .iter()
+        .zip(element_node_connectivity.iter())
+        .for_each(|(entry, connectivity)| {
+            nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64) * scale.x() + xtranslate,
+                (entry[1] as f64) * scale.y() + ytranslate,
+                (entry[2] as f64) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
+                (entry[1] as f64) * scale.y() + ytranslate,
+                (entry[2] as f64) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
+                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
+                (entry[2] as f64) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64) * scale.x() + xtranslate,
+                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
+                (entry[2] as f64) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64) * scale.x() + xtranslate,
+                (entry[1] as f64) * scale.y() + ytranslate,
+                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
+                (entry[1] as f64) * scale.y() + ytranslate,
+                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
+                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
+                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+            ]));
+            nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
+                (entry[0] as f64) * scale.x() + xtranslate,
+                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
+                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+            ]));
+        });
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mNodal coordinates\x1b[0m {:?}",
+        time.elapsed()
+    );
+    Ok(nodal_coordinates)
 }
 
 fn renumber_nodes(
@@ -427,7 +433,7 @@ fn renumber_nodes(
 fn finite_element_data_from_data(
     data: &VoxelData,
     remove: Option<Blocks>,
-    scale: &Vector,
+    scale: Scale,
     translate: &Vector,
 ) -> Result<(Blocks, HexConnectivity, Coordinates), String> {
     let shape = data.shape();

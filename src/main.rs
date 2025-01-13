@@ -1,4 +1,4 @@
-use automesh::{HexahedralFiniteElements, Nel, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tree, Vector, Voxels};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -665,8 +665,9 @@ fn mesh(
         }
     }
     let time = Instant::now();
+    let scale = Scale::from([xscale, yscale, zscale]);
     if !quiet {
-        let entirely_default = xscale == 1.0
+        let entirely_default = scale.x() == &1.0
             && yscale == 1.0
             && zscale == 1.0
             && xtranslate == 0.0
@@ -677,13 +678,13 @@ fn mesh(
             print!(" [");
         }
         if xscale != 1.0 {
-            print!("xscale: {}, ", xscale);
+            print!("xscale: {}, ", scale.x());
         }
         if yscale != 1.0 {
-            print!("yscale: {}, ", yscale);
+            print!("yscale: {}, ", scale.y());
         }
         if zscale != 1.0 {
-            print!("zscale: {}, ", zscale);
+            print!("zscale: {}, ", scale.z());
         }
         if xtranslate != 0.0 {
             print!("xtranslate: {}, ", xtranslate);
@@ -705,13 +706,13 @@ fn mesh(
         tree.pair();
         tree.into_finite_elements(
             remove,
-            &Vector::new([xscale, yscale, zscale]),
+            scale,
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
     } else {
         input_type.into_finite_elements(
             remove,
-            &Vector::new([xscale, yscale, zscale]),
+            scale,
             &Vector::new([xtranslate, ytranslate, ztranslate]),
         )?
     };
@@ -828,7 +829,7 @@ fn octree(
     tree.prune();
     let output_type = tree.octree_into_finite_elements(
         remove,
-        &Vector::new([xscale, yscale, zscale]),
+        [xscale, yscale, zscale].into(),
         &Vector::new([xtranslate, ytranslate, ztranslate]),
     )?;
     if !quiet {

@@ -18,7 +18,7 @@ mod voxel;
 
 pub use fem::{Blocks, FiniteElements, HexahedralFiniteElements, Smoothing};
 pub use tree::{Octree, Tree};
-pub use voxel::{Nel, VoxelData, Voxels};
+pub use voxel::{Nel, Scale, VoxelData, Voxels};
 
 use conspire::math::{TensorRank1, TensorRank1Vec};
 
