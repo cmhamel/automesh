@@ -2,13 +2,13 @@ use super::{
     super::{
         fem::py::FiniteElements,
         py::{IntoFoo, PyIntermediateError},
-        Blocks,
+        Blocks, NSD,
     },
     defeature_voxels, finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn,
-    write_voxels_to_npy, write_voxels_to_spn, Nel, Vector, VoxelData,
+    write_voxels_to_npy, write_voxels_to_spn, Vector, VoxelData,
 };
 use conspire::math::TensorArray;
-use pyo3::{PyClass, prelude::*, pyclass::boolean_struct};
+use pyo3::prelude::*;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     parent_module.add_class::<Voxels>()?;
@@ -21,21 +21,6 @@ pub struct Voxels {
     data: VoxelData,
 }
 
-unsafe impl pyo3::type_object::PyTypeInfo for Nel {
-    const NAME: &'static str = "Nel";
-    const MODULE: ::std::option::Option<&'static str> = ::std::option::Option::None;
-    #[inline]
-    fn type_object_raw(py: pyo3::Python<'_>) -> *mut pyo3::ffi::PyTypeObject {
-        <Self as pyo3::impl_::pyclass::PyClassImpl>::lazy_type_object()
-            .get_or_init(py)
-            .as_type_ptr()
-    }
-}
-
-impl PyClass for Nel {
-    type Frozen = boolean_struct::True;
-}
-
 #[pymethods]
 impl Voxels {
     /// Converts the voxels type into a finite elements type.
@@ -43,8 +28,8 @@ impl Voxels {
     pub fn as_finite_elements(
         &self,
         remove: Option<Blocks>,
-        scale: [f64; 3],
-        translate: [f64; 3],
+        scale: [f64; NSD],
+        translate: [f64; NSD],
     ) -> Result<FiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(
@@ -79,9 +64,9 @@ impl Voxels {
     }
     /// Constructs and returns a new voxels type from an SPN file.
     #[staticmethod]
-    pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, PyIntermediateError> {
+    pub fn from_spn(file_path: &str, nel: [usize; NSD]) -> Result<Self, PyIntermediateError> {
         Ok(Self {
-            data: voxel_data_from_spn(file_path, nel)?,
+            data: voxel_data_from_spn(file_path, nel.into())?,
         })
     }
     /// Writes the internal voxels data to an NPY file.
