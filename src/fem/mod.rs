@@ -621,7 +621,7 @@ fn finite_element_data_from_inp(
     let mut current_block = 0;
     let mut element_blocks: Blocks = vec![];
     let mut element_node_connectivity: HexConnectivity = vec![];
-    let mut element_numbers: Blocks = vec![];
+    let mut element_numbers = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
             current_block = buffer.trim().chars().last().unwrap().to_digit(10).unwrap() as u8;
@@ -644,7 +644,7 @@ fn finite_element_data_from_inp(
                     .take(1)
                     .next()
                     .unwrap()
-                    .parse()
+                    .parse::<usize>()
                     .unwrap(),
             );
         }
