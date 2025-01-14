@@ -10,3 +10,9 @@ automesh metrics --help
 ```sh
 inp -> csv
 ```
+
+### Maximum Aspect Ratio
+
+### Minimum Scaled Jacobian
+
+### Maximum Skew
