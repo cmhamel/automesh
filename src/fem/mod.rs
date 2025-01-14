@@ -1091,7 +1091,7 @@ fn calculate_maximum_aspect_ratios(
                 .norm();
             [l1 / l2, l2 / l1, l1 / l3, l3 / l1, l2 / l3, l3 / l2]
                 .into_iter()
-                .reduce(f64::min)
+                .reduce(f64::max)
                 .unwrap()
         })
         .collect();
