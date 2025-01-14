@@ -1,4 +1,4 @@
-histogram_s10_aspect:
+hmodel_s10_aspect:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s10.csv
   skip_rows: 1
@@ -8,7 +8,7 @@ histogram_s10_aspect:
     color: blue
     label: sr2s10
     linewidth: 2.0
-histogram_s10_msj:
+hmodel_s10_msj:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s10.csv
   skip_rows: 1
@@ -18,7 +18,7 @@ histogram_s10_msj:
     color: blue
     label: sr2s10
     linewidth: 2.0
-histogram_s10_skew:
+hmodel_s10_skew:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s10.csv
   skip_rows: 1
@@ -28,7 +28,7 @@ histogram_s10_skew:
     color: blue
     label: sr2s10
     linewidth: 2.0
-histogram_s50_aspect:
+hmodel_s50_aspect:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s50.csv
   skip_rows: 1
@@ -38,7 +38,7 @@ histogram_s50_aspect:
     color: orange
     label: sr2s50
     linewidth: 2.0
-histogram_s50_msj:
+hmodel_s50_msj:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s50.csv
   skip_rows: 1
@@ -48,7 +48,7 @@ histogram_s50_msj:
     color: orange
     label: sr2s50
     linewidth: 2.0
-histogram_s50_skew:
+hmodel_s50_skew:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s50.csv
   skip_rows: 1
@@ -58,8 +58,8 @@ histogram_s50_skew:
     color: orange
     label: sr2s50
     linewidth: 2.0
-figure_aspect:
-  models: [histogram_s10_aspect, histogram_s50_aspect]
+hfigure_aspect:
+  models: [hmodel_s10_aspect, hmodel_s50_aspect]
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
   file: hist_sr2sx_aspect.png
   size: [8.0, 6.0]
@@ -71,8 +71,8 @@ figure_aspect:
   dpi: 100
   latex: false
   save: true
-figure_msj:
-  models: [histogram_s10_msj, histogram_s50_msj]
+hfigure_msj:
+  models: [hmodel_s10_msj, hmodel_s50_msj]
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
   file: hist_sr2sx_msj.png
   size: [8.0, 6.0]
@@ -84,8 +84,8 @@ figure_msj:
   dpi: 100
   latex: false
   save: true
-figure_skew:
-  models: [histogram_s10_skew, histogram_s50_skew]
+hfigure_skew:
+  models: [hmodel_s10_skew, hmodel_s50_skew]
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
   file: hist_sr2sx_skew.png
   size: [8.0, 6.0]

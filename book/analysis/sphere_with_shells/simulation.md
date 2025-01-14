@@ -232,19 +232,12 @@ Copy the files, `history_rigid.csv` and `history.csv`, which contain tracer rigi
 
 ### Rigid Body
 
-With [`xyfigure`](https://github.com/sandialabs/sibl/tree/master/cli/doc)
+With [`figio`](https://github.com/autotwin/figio) and the [`rigid_body_ang_kinematics.yml`](recipes/rigid_body_ang_kinematics.yml) recipe,
 
 ```sh
-source ~/sibl/.venv/bin/activate.fish
 cd ~/autotwin/automesh/book/analysis/sphere_with_shells/recipes
-xyfigure rigid_body_ang_acel.yml  # for example
+figio rigid_body_ang_kinematics.yml
 ```
-
-and the following `.yml` configuration files,
-
-angular acceleration | angular velocity | angular position
-:---: | :---: | :---:
-[rigid_body_ang_acel.yml](recipes/rigid_body_ang_acel.yml) | [rigid_body_ang_vel.yml](recipes/rigid_body_ang_vel.yml) | [rigid_body_ang_pos.yml](recipes/rigid_body_ang_pos.yml)
 
 verify that the rigid body input values were sucessfully reflected in the output:
 

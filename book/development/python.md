@@ -37,6 +37,8 @@ pip install maturin
 maturin develop --features python --extras dev
 
 pytest
+
+pre-commit run --all-files
 ```
 
 ## Build a '.whl` file release
