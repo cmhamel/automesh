@@ -1198,7 +1198,7 @@ fn calculate_minimum_scaled_jacobians(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
+        "             \x1b[1;93mMinimum scaled Jacobians\x1b[0m {:?}",
         time.elapsed()
     );
     minimum_scaled_jacobians
@@ -1251,7 +1251,7 @@ fn calculate_maximum_skews(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Maximum skews\x1b[0m {:?}",
+        "             \x1b[1;93mMaximum skews\x1b[0m {:?}",
         time.elapsed()
     );
     maximum_skews
