@@ -1245,7 +1245,7 @@ fn calculate_maximum_skews(
                 .normalized();
             [(&x1 * &x2).abs(), (&x1 * &x3).abs(), (&x2 * &x3).abs()]
                 .into_iter()
-                .reduce(f64::min)
+                .reduce(f64::max)
                 .unwrap()
         })
         .collect();
