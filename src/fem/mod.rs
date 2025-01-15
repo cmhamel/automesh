@@ -1188,7 +1188,7 @@ fn calculate_minimum_scaled_jacobians(
                         _ => panic!(),
                     }
                     n = u.cross(&v);
-                    (&n * &w) / n.norm() / w.norm()
+                    (&n * &w) / u.norm() / v.norm() / w.norm()
                 })
                 .collect::<Vec<f64>>()
                 .into_iter()
