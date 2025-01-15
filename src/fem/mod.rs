@@ -1000,6 +1000,7 @@ fn write_finite_elements_metrics(
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
+    let element_volumes = calculate_element_volumes(element_node_connectivity, nodal_coordinates);
     #[cfg(feature = "profile")]
     let time = Instant::now();
     let mut file = BufWriter::new(File::create(file_path)?);
@@ -1009,18 +1010,22 @@ fn write_finite_elements_metrics(
     match input_extension {
         Some("csv") => {
             file.write_all(
-                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,\n"
+                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,                     volume\n"
                     .as_bytes(),
             )?;
             maximum_aspect_ratios
                 .iter()
-                .zip(minimum_scaled_jacobians.iter().zip(maximum_skews.iter()))
+                .zip(
+                    minimum_scaled_jacobians
+                        .iter()
+                        .zip(maximum_skews.iter().zip(element_volumes.iter())),
+                )
                 .try_for_each(
-                    |(maximum_aspect_ratio, (minimum_scaled_jacobian, maximum_skew))| {
+                    |(maximum_aspect_ratio, (minimum_scaled_jacobian, (maximum_skew, volume)))| {
                         file.write_all(
                             format!(
-                                "{:>20.6e}, {:>26.6e}, {:>26.6e},\n",
-                                maximum_aspect_ratio, minimum_scaled_jacobian, maximum_skew
+                                "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n",
+                                maximum_aspect_ratio, minimum_scaled_jacobian, maximum_skew, volume,
                             )
                             .as_bytes(),
                         )
@@ -1030,7 +1035,7 @@ fn write_finite_elements_metrics(
         }
         Some("npy") => {
             let mut metrics_set =
-                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 3), 0.0);
+                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 4), 0.0);
             metrics_set
                 .slice_mut(s![.., 0])
                 .assign(&maximum_aspect_ratios);
@@ -1038,6 +1043,7 @@ fn write_finite_elements_metrics(
                 .slice_mut(s![.., 1])
                 .assign(&minimum_scaled_jacobians);
             metrics_set.slice_mut(s![.., 2]).assign(&maximum_skews);
+            metrics_set.slice_mut(s![.., 3]).assign(&element_volumes);
             metrics_set.write_npy(file).unwrap();
         }
         _ => panic!("print error message with input and extension"),
@@ -1204,6 +1210,37 @@ fn calculate_minimum_scaled_jacobians(
     minimum_scaled_jacobians
 }
 
+fn calculate_element_principal_axes(
+    connectivity: &[usize; NUM_NODES_HEX],
+    nodal_coordinates: &Coordinates,
+) -> (Vector, Vector, Vector) {
+    let x1 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET];
+    let x2 = &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET];
+    let x3 = &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+        + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
+        - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET];
+    (x1, x2, x3)
+}
+
 fn calculate_maximum_skews(
     element_node_connectivity: &HexConnectivity,
     nodal_coordinates: &Coordinates,
@@ -1216,33 +1253,10 @@ fn calculate_maximum_skews(
     let maximum_skews = element_node_connectivity
         .iter()
         .map(|connectivity| {
-            x1 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET])
-                .normalized();
-            x2 = (&nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET])
-                .normalized();
-            x3 = (&nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET])
-                .normalized();
+            (x1, x2, x3) = calculate_element_principal_axes(connectivity, nodal_coordinates);
+            x1 = &x1 / x1.norm();
+            x2 = &x2 / x2.norm();
+            x3 = &x3 / x3.norm();
             [(&x1 * &x2).abs(), (&x1 * &x3).abs(), (&x2 * &x3).abs()]
                 .into_iter()
                 .reduce(f64::max)
@@ -1255,4 +1269,28 @@ fn calculate_maximum_skews(
         time.elapsed()
     );
     maximum_skews
+}
+
+fn calculate_element_volumes(
+    element_node_connectivity: &HexConnectivity,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    let mut x1 = Vector::zero();
+    let mut x2 = Vector::zero();
+    let mut x3 = Vector::zero();
+    let element_volumes = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            (x1, x2, x3) = calculate_element_principal_axes(connectivity, nodal_coordinates);
+            &x2.cross(&x3) * &x1 / 64.0
+        })
+        .collect();
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mElement volumes\x1b[0m {:?}",
+        time.elapsed()
+    );
+    element_volumes
 }
