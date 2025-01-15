@@ -1010,7 +1010,7 @@ fn write_finite_elements_metrics(
     match input_extension {
         Some("csv") => {
             file.write_all(
-                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,                     volume,\n"
+                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,                     volume\n"
                     .as_bytes(),
             )?;
             maximum_aspect_ratios
