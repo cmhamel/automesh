@@ -1015,7 +1015,11 @@ fn write_finite_elements_metrics(
             )?;
             maximum_aspect_ratios
                 .iter()
-                .zip(minimum_scaled_jacobians.iter().zip(maximum_skews.iter().zip(element_volumes.iter())))
+                .zip(
+                    minimum_scaled_jacobians
+                        .iter()
+                        .zip(maximum_skews.iter().zip(element_volumes.iter())),
+                )
                 .try_for_each(
                     |(maximum_aspect_ratio, (minimum_scaled_jacobian, (maximum_skew, volume)))| {
                         file.write_all(
@@ -1205,7 +1209,6 @@ fn calculate_minimum_scaled_jacobians(
     );
     minimum_scaled_jacobians
 }
-
 
 fn calculate_element_principal_axes(
     connectivity: &[usize; NUM_NODES_HEX],
