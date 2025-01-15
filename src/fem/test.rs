@@ -1,5 +1,7 @@
 use super::{
-    Blocks, Coordinates, FiniteElements, HexConnectivity, Nodes, Smoothing, VecConnectivity,
+    calculate_element_volumes, calculate_maximum_aspect_ratios,
+    calculate_maximum_skews, calculate_minimum_scaled_jacobians, Blocks, Coordinates,
+    FiniteElements, HexConnectivity, Nodes, Smoothing, VecConnectivity,
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -2910,4 +2912,45 @@ fn sparse() {
         None,
         nodal_influencers_gold,
     );
+}
+
+#[test]
+fn valence_3_noised() {
+    // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
+
+    // Gold values:
+    let max_aspect_ratio_gold = vec![1.2922598186116965];
+    let min_scaled_jacobian_gold = vec![0.19173666980464177];
+    let max_skew_gold = vec![0.6797482929789989];
+    let volume_gold = vec![1.24779970625];
+
+    let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
+
+    let nodal_coordinates = Coordinates::new(&[
+        [0.110000e0, 0.120000e0, -0.130000e0],
+        [1.200000e0, -0.200000e0, 0.000000e0],
+        [-0.500000e0, 1.866025e0, -0.200000e0],
+        [0.500000e0, 0.866025e0, -0.400000e0],
+        [0.000000e0, 0.000000e0, 1.000000e0],
+        [1.000000e0, 0.000000e0, 1.000000e0],
+        [-0.500000e0, 0.600000e0, 1.400000e0],
+        [0.500000e0, 0.866025e0, 1.200000e0],
+    ]);
+
+    let maximum_aspect_ratios =
+        calculate_maximum_aspect_ratios(&element_node_connectivity, &nodal_coordinates).to_vec();
+
+    let minimum_scaled_jacobians =
+        calculate_minimum_scaled_jacobians(&element_node_connectivity, &nodal_coordinates).to_vec();
+
+    let maximum_skews =
+        calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates).to_vec();
+
+    let element_volumes =
+        calculate_element_volumes(&element_node_connectivity, &nodal_coordinates).to_vec();
+
+    assert_eq!(maximum_aspect_ratios, max_aspect_ratio_gold);
+    assert_eq!(minimum_scaled_jacobians, min_scaled_jacobian_gold);
+    assert_eq!(maximum_skews, max_skew_gold);
+    assert_eq!(element_volumes, volume_gold);
 }
