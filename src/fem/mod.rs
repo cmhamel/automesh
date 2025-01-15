@@ -1254,9 +1254,9 @@ fn calculate_maximum_skews(
         .iter()
         .map(|connectivity| {
             (x1, x2, x3) = calculate_element_principal_axes(connectivity, nodal_coordinates);
-            x1 = &x1 / x1.norm();
-            x2 = &x2 / x2.norm();
-            x3 = &x3 / x3.norm();
+            x1.normalize();
+            x2.normalize();
+            x3.normalize();
             [(&x1 * &x2).abs(), (&x1 * &x3).abs(), (&x2 * &x3).abs()]
                 .into_iter()
                 .reduce(f64::max)
