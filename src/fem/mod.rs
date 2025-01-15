@@ -1091,7 +1091,7 @@ fn calculate_maximum_aspect_ratios(
                 .norm();
             [l1 / l2, l2 / l1, l1 / l3, l3 / l1, l2 / l3, l3 / l2]
                 .into_iter()
-                .reduce(f64::min)
+                .reduce(f64::max)
                 .unwrap()
         })
         .collect();
@@ -1188,7 +1188,7 @@ fn calculate_minimum_scaled_jacobians(
                         _ => panic!(),
                     }
                     n = u.cross(&v);
-                    (&n * &w) / n.norm() / w.norm()
+                    (&n * &w) / u.norm() / v.norm() / w.norm()
                 })
                 .collect::<Vec<f64>>()
                 .into_iter()
@@ -1198,7 +1198,7 @@ fn calculate_minimum_scaled_jacobians(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
+        "             \x1b[1;93mMinimum scaled Jacobians\x1b[0m {:?}",
         time.elapsed()
     );
     minimum_scaled_jacobians
@@ -1245,13 +1245,13 @@ fn calculate_maximum_skews(
                 .normalized();
             [(&x1 * &x2).abs(), (&x1 * &x3).abs(), (&x2 * &x3).abs()]
                 .into_iter()
-                .reduce(f64::min)
+                .reduce(f64::max)
                 .unwrap()
         })
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Maximum skews\x1b[0m {:?}",
+        "             \x1b[1;93mMaximum skews\x1b[0m {:?}",
         time.elapsed()
     );
     maximum_skews
