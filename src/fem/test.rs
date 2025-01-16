@@ -1,7 +1,7 @@
 use super::{
-    calculate_element_volumes, calculate_maximum_aspect_ratios,
-    calculate_maximum_skews, calculate_minimum_scaled_jacobians, Blocks, Coordinates,
-    FiniteElements, HexConnectivity, Nodes, Smoothing, VecConnectivity,
+    calculate_element_volumes, calculate_maximum_aspect_ratios, calculate_maximum_skews,
+    calculate_minimum_scaled_jacobians, Blocks, Coordinates, FiniteElements, HexConnectivity,
+    Nodes, Smoothing, VecConnectivity,
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -2918,11 +2918,14 @@ fn sparse() {
 fn valence_3_noised() {
     // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
 
-    // Gold values:
-    let max_aspect_ratio_gold = vec![1.2922598186116965];
-    let min_scaled_jacobian_gold = vec![0.19173666980464177];
-    let max_skew_gold = vec![0.6797482929789989];
-    let volume_gold = vec![1.24779970625];
+    // Gold values
+    let maximum_aspect_ratios_gold = vec![1.2922598186116965];
+    let min_scaled_jacobians_gold = vec![0.19173666980464177];
+    let maximum_skews_gold = vec![0.6797482929789989];
+    let element_volumes_gold = vec![1.24779970625];
+
+    // Small tolerance for comparison of two floats
+    let epsilon = 1e-10;
 
     let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
 
@@ -2949,8 +2952,61 @@ fn valence_3_noised() {
     let element_volumes =
         calculate_element_volumes(&element_node_connectivity, &nodal_coordinates).to_vec();
 
-    assert_eq!(maximum_aspect_ratios, max_aspect_ratio_gold);
-    assert_eq!(minimum_scaled_jacobians, min_scaled_jacobian_gold);
-    assert_eq!(maximum_skews, max_skew_gold);
-    assert_eq!(element_volumes, volume_gold);
+    // Assert that the calculated values are approximately equal to the gold values
+    assert_eq!(
+        maximum_aspect_ratios.len(),
+        maximum_aspect_ratios_gold.len()
+    );
+    for (calculated, gold) in maximum_aspect_ratios
+        .iter()
+        .zip(maximum_aspect_ratios_gold.iter())
+    {
+        assert!(
+            (calculated - gold).abs() < epsilon,
+            "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
+            calculated,
+            gold
+        );
+    }
+
+    assert_eq!(
+        minimum_scaled_jacobians.len(),
+        min_scaled_jacobians_gold.len()
+    );
+    for (calculated, gold) in minimum_scaled_jacobians
+        .iter()
+        .zip(min_scaled_jacobians_gold.iter())
+    {
+        assert!(
+            (calculated - gold).abs() < epsilon,
+            "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
+            calculated,
+            gold
+        );
+    }
+
+    assert_eq!(maximum_skews.len(), maximum_skews_gold.len());
+    for (calculated, gold) in maximum_skews.iter().zip(maximum_skews_gold.iter()) {
+        assert!(
+            (calculated - gold).abs() < epsilon,
+            "Calculated maximum skew {} is not approximately equal to gold value {}",
+            calculated,
+            gold
+        );
+    }
+
+    assert_eq!(element_volumes.len(), element_volumes_gold.len());
+    for (calculated, gold) in element_volumes.iter().zip(element_volumes_gold.iter()) {
+        assert!(
+            (calculated - gold).abs() < epsilon,
+            "Calcualted element volume {} is not approximately equal to gold value {}",
+            calculated,
+            gold
+        );
+    }
+
+    // assert_eq!(maximum_aspect_ratios, maximum_aspect_ratios_gold);
+    // assert_eq!(minimum_scaled_jacobians, minimum_scaled_jacobians_gold);
+    // assert_eq!(maximum_skews, maxmum_skews_gold);
+    // assert_eq!(element_volumes, element_volumes_gold);
 }
