@@ -16,19 +16,25 @@ inp -> csv
 
 ## Description
 
-The element quality definitions are defined in the Verdict report.[^Knupp_2006]
-A brief description of each metric implemented in `automesh` follows.
+`automesh` implements the following element quality metrics defined in the Verdict report.[^Knupp_2006]
+
+* Maximum edge ratio ${\rm ER}_{\max}$
+* Minium scaled Jacobian ${\rm SJ}_{\min}$
+* Maximum skew
+* Element volume
+
+A brief description of each metric follows.
 
 ### Maximum Edge Ratio
 
 * ${\rm ER}_{\max}$ measures the ratio of the longest edge to the shortest edge in a mesh element.
 * A ratio of 1.0 indicates perfect element quality, whereas a very large ratio indicates bad element quality.
-* Knupp *et al.*[^Knupp_2006] (page 87), indicate an acceptable range of `[1.0, 1.3]`.
+* Knupp *et al.*[^Knupp_2006] (page 87) indicate an acceptable range of `[1.0, 1.3]`.
 
 ### Minimum Scaled Jacobian
 
 * ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
-* Knupp *et al.*[^Knupp_2006] (page 92), indicate an acceptable range of `[0.5, 1.0]`, though in practice, minimum values as low as `0.2` and `0.3` are often used.
+* Knupp *et al.*[^Knupp_2006] (page 92) indicate an acceptable range of `[0.5, 1.0]`, though in practice, minimum values as low as `0.2` and `0.3` are often used.
 
 ![](img/metrics_msj.png)
 
@@ -37,6 +43,7 @@ Figure. Illustrate of minimum scaled Jacobian[^Hovey_2023] with acceptable range
 ### Maximum Skew
 
 * Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A maximum skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
+* Knupp *et al.*[^Knupp_2006] (page 97) indicate an acceptable range of `[0.0, 0.5]`.
 
 ### Element Volume
 
