@@ -249,11 +249,11 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSize
         .collect();
     let element_blocks = filtered_voxel_data_combo
         .iter()
-        .map(|entry| entry[3] as u8)
+        .map(|&[_, _, _, data]| data as u8)
         .collect();
     let filtered_voxel_data = filtered_voxel_data_combo
         .into_iter()
-        .map(|entry| [entry[0], entry[1], entry[2]])
+        .map(|[i, j, k, _]| [i, j, k])
         .collect();
     #[cfg(feature = "profile")]
     println!(
@@ -272,44 +272,19 @@ fn initial_element_node_connectivity(
     let time = Instant::now();
     let element_node_connectivity: HexConnectivity = filtered_voxel_data
         .iter()
-        .map(|entry| {
+        .map(|&[i, j, k]| {
             [
-                entry[0]
-                    + entry[1] * nelxplus1
-                    + entry[2] * nelxplus1 * nelyplus1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + entry[1] * nelxplus1
-                    + entry[2] * nelxplus1 * nelyplus1
+                i + j * nelxplus1 + k * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,
+                i + j * nelxplus1 + k * nelxplus1 * nelyplus1 + 1 + NODE_NUMBERING_OFFSET,
+                i + (j + 1) * nelxplus1 + k * nelxplus1 * nelyplus1 + 1 + NODE_NUMBERING_OFFSET,
+                i + (j + 1) * nelxplus1 + k * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,
+                i + j * nelxplus1 + (k + 1) * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,
+                i + j * nelxplus1 + (k + 1) * nelxplus1 * nelyplus1 + 1 + NODE_NUMBERING_OFFSET,
+                i + (j + 1) * nelxplus1
+                    + (k + 1) * nelxplus1 * nelyplus1
                     + 1
                     + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + (entry[1] + 1) * nelxplus1
-                    + entry[2] * nelxplus1 * nelyplus1
-                    + 1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + (entry[1] + 1) * nelxplus1
-                    + entry[2] * nelxplus1 * nelyplus1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + entry[1] * nelxplus1
-                    + (entry[2] + 1) * nelxplus1 * nelyplus1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + entry[1] * nelxplus1
-                    + (entry[2] + 1) * nelxplus1 * nelyplus1
-                    + 1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + (entry[1] + 1) * nelxplus1
-                    + (entry[2] + 1) * nelxplus1 * nelyplus1
-                    + 1
-                    + NODE_NUMBERING_OFFSET,
-                entry[0]
-                    + (entry[1] + 1) * nelxplus1
-                    + (entry[2] + 1) * nelxplus1 * nelyplus1
-                    + NODE_NUMBERING_OFFSET,
+                i + (j + 1) * nelxplus1 + (k + 1) * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,
             ]
         })
         .collect();
@@ -338,46 +313,46 @@ fn initial_nodal_coordinates(
     filtered_voxel_data
         .iter()
         .zip(element_node_connectivity.iter())
-        .for_each(|(entry, connectivity)| {
+        .for_each(|(&[x, y, z], connectivity)| {
             nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64) * scale.x() + xtranslate,
-                (entry[1] as f64) * scale.y() + ytranslate,
-                (entry[2] as f64) * scale.z() + ztranslate,
+                x as f64 * scale.x() + xtranslate,
+                y as f64 * scale.y() + ytranslate,
+                z as f64 * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
-                (entry[1] as f64) * scale.y() + ytranslate,
-                (entry[2] as f64) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + xtranslate,
+                y as f64 * scale.y() + ytranslate,
+                z as f64 * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
-                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
-                (entry[2] as f64) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + xtranslate,
+                (y as f64 + 1.0) * scale.y() + ytranslate,
+                z as f64 * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64) * scale.x() + xtranslate,
-                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
-                (entry[2] as f64) * scale.z() + ztranslate,
+                x as f64 * scale.x() + xtranslate,
+                (y as f64 + 1.0) * scale.y() + ytranslate,
+                z as f64 * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64) * scale.x() + xtranslate,
-                (entry[1] as f64) * scale.y() + ytranslate,
-                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+                x as f64 * scale.x() + xtranslate,
+                y as f64 * scale.y() + ytranslate,
+                (z as f64 + 1.0) * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
-                (entry[1] as f64) * scale.y() + ytranslate,
-                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + xtranslate,
+                y as f64 * scale.y() + ytranslate,
+                (z as f64 + 1.0) * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64 + 1.0) * scale.x() + xtranslate,
-                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
-                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + xtranslate,
+                (y as f64 + 1.0) * scale.y() + ytranslate,
+                (z as f64 + 1.0) * scale.z() + ztranslate,
             ]));
             nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (entry[0] as f64) * scale.x() + xtranslate,
-                (entry[1] as f64 + 1.0) * scale.y() + ytranslate,
-                (entry[2] as f64 + 1.0) * scale.z() + ztranslate,
+                x as f64 * scale.x() + xtranslate,
+                (y as f64 + 1.0) * scale.y() + ytranslate,
+                (z as f64 + 1.0) * scale.z() + ztranslate,
             ]));
         });
     #[cfg(feature = "profile")]
