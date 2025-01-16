@@ -57,7 +57,7 @@
     * Write up as a chapter in mdbook as a case study?
   * Case study #2 - 100 brains
     * https://github.com/autotwin/basis
-    * shape metric - MSJ, possibly skew, aspect ratio
+    * shape metric - MSJ, possibly skew, aspect ratio (-> "edge ratio" instead 2025-01-16)
   * Case study #3 - IPREDICT
     * https://mtec-sc.org/project-awards/18-04-i-predict/
 

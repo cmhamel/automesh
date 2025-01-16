@@ -1,5 +1,5 @@
 use super::{
-    calculate_element_volumes, calculate_maximum_aspect_ratios, calculate_maximum_skews,
+    calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
     calculate_minimum_scaled_jacobians, Blocks, Coordinates, FiniteElements, HexConnectivity,
     Nodes, Smoothing, VecConnectivity,
 };
@@ -2919,7 +2919,7 @@ fn valence_3_and_4_noised() {
     // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
 
     // Gold values
-    let maximum_aspect_ratios_gold = vec![1.2922598186116965, 1.167883631481492];
+    let maximum_edge_ratios_gold = vec![1.2922598186116965, 1.167883631481492];
     let mininum_scaled_jacobians_gold = vec![0.19173666980464177, 0.3743932367172326];
     let maximum_skews_gold = vec![0.6797482929789989, 0.4864935739781938];
     let element_volumes_gold = vec![1.24779970625, 0.9844007500000004];
@@ -2952,9 +2952,9 @@ fn valence_3_and_4_noised() {
         ]),
     ];
 
-    let maximum_aspect_ratios: Vec<f64> = nodal_coordinates
+    let maximum_edge_ratios: Vec<f64> = nodal_coordinates
         .iter()
-        .map(|x| calculate_maximum_aspect_ratios(&element_node_connectivity, x).to_vec())
+        .map(|x| calculate_maximum_edge_ratios(&element_node_connectivity, x).to_vec())
         .flatten()
         .collect();
 
@@ -2978,9 +2978,9 @@ fn valence_3_and_4_noised() {
 
     // Assert that the calculated values are approximately equal to the gold values
     assert_eq!(
-        maximum_aspect_ratios.len(),
-        maximum_aspect_ratios_gold.len(),
-        "Length of calculated maximum aspect ratios is not equal to the length of gold values"
+        maximum_edge_ratios.len(),
+        maximum_edge_ratios_gold.len(),
+        "Length of calculated maximum edge ratios is not equal to the length of gold values"
     );
     assert_eq!(
         minimum_scaled_jacobians.len(),
@@ -2999,26 +2999,26 @@ fn valence_3_and_4_noised() {
     );
 
     // for in alternative
-    // for (calculated, gold) in maximum_aspect_ratios
+    // for (calculated, gold) in maximum_edge_ratios
     //     .iter()
-    //     .zip(maximum_aspect_ratios_gold.iter())
+    //     .zip(maximum_edge_ratios_gold.iter())
     // {
     //     assert!(
     //         (calculated - gold).abs() < epsilon,
-    //         "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
+    //         "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
     //         calculated,
     //         gold
     //     );
     // }
 
     // foreach alternative
-    maximum_aspect_ratios
+    maximum_edge_ratios
         .iter()
-        .zip(maximum_aspect_ratios_gold.iter())
+        .zip(maximum_edge_ratios_gold.iter())
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < epsilon,
-                "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
+                "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
                 calculated,
                 gold
             );
