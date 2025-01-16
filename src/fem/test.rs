@@ -2915,98 +2915,148 @@ fn sparse() {
 }
 
 #[test]
-fn valence_3_noised() {
+fn valence_3_and_4_noised() {
     // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
 
     // Gold values
-    let maximum_aspect_ratios_gold = vec![1.2922598186116965];
-    let min_scaled_jacobians_gold = vec![0.19173666980464177];
-    let maximum_skews_gold = vec![0.6797482929789989];
-    let element_volumes_gold = vec![1.24779970625];
+    let maximum_aspect_ratios_gold = vec![1.2922598186116965, 1.167883631481492];
+    let mininum_scaled_jacobians_gold = vec![0.19173666980464177, 0.3743932367172326];
+    let maximum_skews_gold = vec![0.6797482929789989, 0.4864935739781938];
+    let element_volumes_gold = vec![1.24779970625, 0.9844007500000004];
 
     // Small tolerance for comparison of two floats
     let epsilon = 1e-10;
 
     let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
 
-    let nodal_coordinates = Coordinates::new(&[
-        [0.110000e0, 0.120000e0, -0.130000e0],
-        [1.200000e0, -0.200000e0, 0.000000e0],
-        [-0.500000e0, 1.866025e0, -0.200000e0],
-        [0.500000e0, 0.866025e0, -0.400000e0],
-        [0.000000e0, 0.000000e0, 1.000000e0],
-        [1.000000e0, 0.000000e0, 1.000000e0],
-        [-0.500000e0, 0.600000e0, 1.400000e0],
-        [0.500000e0, 0.866025e0, 1.200000e0],
-    ]);
+    let nodal_coordinates = vec![
+        Coordinates::new(&[
+            [0.110000e0, 0.120000e0, -0.130000e0],
+            [1.200000e0, -0.200000e0, 0.000000e0],
+            [-0.500000e0, 1.866025e0, -0.200000e0],
+            [0.500000e0, 0.866025e0, -0.400000e0],
+            [0.000000e0, 0.000000e0, 1.000000e0],
+            [1.000000e0, 0.000000e0, 1.000000e0],
+            [-0.500000e0, 0.600000e0, 1.400000e0],
+            [0.500000e0, 0.866025e0, 1.200000e0],
+        ]),
+        Coordinates::new(&[
+            [0.100000e0, 0.200000e0, 0.300000e0],
+            [1.200000e0, 0.300000e0, 0.400000e0],
+            [-0.200000e0, 1.200000e0, -0.100000e0],
+            [1.030000e0, 1.102000e0, -0.250000e0],
+            [-0.001000e0, -0.021000e0, 1.002000e0],
+            [1.200000e0, -0.100000e0, 1.100000e0],
+            [0.000000e0, 1.000000e0, 1.000000e0],
+            [1.010000e0, 1.020000e0, 1.030000e0],
+        ]),
+    ];
 
-    let maximum_aspect_ratios =
-        calculate_maximum_aspect_ratios(&element_node_connectivity, &nodal_coordinates).to_vec();
+    let maximum_aspect_ratios: Vec<f64> = nodal_coordinates
+        .iter()
+        .map(|x| calculate_maximum_aspect_ratios(&element_node_connectivity, x).to_vec())
+        .flatten()
+        .collect();
 
-    let minimum_scaled_jacobians =
-        calculate_minimum_scaled_jacobians(&element_node_connectivity, &nodal_coordinates).to_vec();
+    let minimum_scaled_jacobians: Vec<f64> = nodal_coordinates
+        .iter()
+        .map(|x| calculate_minimum_scaled_jacobians(&element_node_connectivity, x).to_vec())
+        .flatten()
+        .collect();
 
-    let maximum_skews =
-        calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates).to_vec();
+    let maximum_skews: Vec<f64> = nodal_coordinates
+        .iter()
+        .map(|x| calculate_maximum_skews(&element_node_connectivity, x).to_vec())
+        .flatten()
+        .collect();
 
-    let element_volumes =
-        calculate_element_volumes(&element_node_connectivity, &nodal_coordinates).to_vec();
+    let element_volumes: Vec<f64> = nodal_coordinates
+        .iter()
+        .map(|x| calculate_element_volumes(&element_node_connectivity, x).to_vec())
+        .flatten()
+        .collect();
 
     // Assert that the calculated values are approximately equal to the gold values
     assert_eq!(
         maximum_aspect_ratios.len(),
-        maximum_aspect_ratios_gold.len()
+        maximum_aspect_ratios_gold.len(),
+        "Length of calculated maximum aspect ratios is not equal to the length of gold values"
     );
-    for (calculated, gold) in maximum_aspect_ratios
-        .iter()
-        .zip(maximum_aspect_ratios_gold.iter())
-    {
-        assert!(
-            (calculated - gold).abs() < epsilon,
-            "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
-            calculated,
-            gold
-        );
-    }
-
     assert_eq!(
         minimum_scaled_jacobians.len(),
-        min_scaled_jacobians_gold.len()
+        mininum_scaled_jacobians_gold.len(),
+        "Length of calculated minimum scaled Jacobians is not equal to the length of gold values"
     );
-    for (calculated, gold) in minimum_scaled_jacobians
+    assert_eq!(
+        maximum_skews.len(),
+        maximum_skews_gold.len(),
+        "Length of calculated maximum skews is not equal to the length of gold values"
+    );
+    assert_eq!(
+        element_volumes.len(),
+        element_volumes_gold.len(),
+        "Length of calculated element volumes is not equal to the length of gold values"
+    );
+
+    // for in alternative
+    // for (calculated, gold) in maximum_aspect_ratios
+    //     .iter()
+    //     .zip(maximum_aspect_ratios_gold.iter())
+    // {
+    //     assert!(
+    //         (calculated - gold).abs() < epsilon,
+    //         "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
+    //         calculated,
+    //         gold
+    //     );
+    // }
+
+    // foreach alternative
+    maximum_aspect_ratios
         .iter()
-        .zip(min_scaled_jacobians_gold.iter())
-    {
-        assert!(
-            (calculated - gold).abs() < epsilon,
-            "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
-            calculated,
-            gold
-        );
-    }
+        .zip(maximum_aspect_ratios_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < epsilon,
+                "Calculated maximum aspect ratio {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
 
-    assert_eq!(maximum_skews.len(), maximum_skews_gold.len());
-    for (calculated, gold) in maximum_skews.iter().zip(maximum_skews_gold.iter()) {
-        assert!(
-            (calculated - gold).abs() < epsilon,
-            "Calculated maximum skew {} is not approximately equal to gold value {}",
-            calculated,
-            gold
-        );
-    }
+    minimum_scaled_jacobians
+        .iter()
+        .zip(mininum_scaled_jacobians_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < epsilon,
+                "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
 
-    assert_eq!(element_volumes.len(), element_volumes_gold.len());
-    for (calculated, gold) in element_volumes.iter().zip(element_volumes_gold.iter()) {
-        assert!(
-            (calculated - gold).abs() < epsilon,
-            "Calcualted element volume {} is not approximately equal to gold value {}",
-            calculated,
-            gold
-        );
-    }
+    maximum_skews
+        .iter()
+        .zip(maximum_skews_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < epsilon,
+                "Calculated maximum skew {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
 
-    // assert_eq!(maximum_aspect_ratios, maximum_aspect_ratios_gold);
-    // assert_eq!(minimum_scaled_jacobians, minimum_scaled_jacobians_gold);
-    // assert_eq!(maximum_skews, maxmum_skews_gold);
-    // assert_eq!(element_volumes, element_volumes_gold);
+    element_volumes
+        .iter()
+        .zip(element_volumes_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < epsilon,
+                "Calcualted element volume {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
 }
