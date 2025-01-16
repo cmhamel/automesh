@@ -995,8 +995,8 @@ fn write_finite_elements_metrics(
     element_node_connectivity: &HexConnectivity,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
-    let maximum_aspect_ratios =
-        calculate_maximum_aspect_ratios(element_node_connectivity, nodal_coordinates);
+    let maximum_edge_ratios =
+        calculate_maximum_edge_ratios(element_node_connectivity, nodal_coordinates);
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
@@ -1010,10 +1010,10 @@ fn write_finite_elements_metrics(
     match input_extension {
         Some("csv") => {
             file.write_all(
-                "maximum aspect ratio,    minimum scaled jacobian,               maximum skew,                     volume\n"
+                "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n"
                     .as_bytes(),
             )?;
-            maximum_aspect_ratios
+            maximum_edge_ratios
                 .iter()
                 .zip(
                     minimum_scaled_jacobians
@@ -1021,11 +1021,11 @@ fn write_finite_elements_metrics(
                         .zip(maximum_skews.iter().zip(element_volumes.iter())),
                 )
                 .try_for_each(
-                    |(maximum_aspect_ratio, (minimum_scaled_jacobian, (maximum_skew, volume)))| {
+                    |(maximum_edge_ratio, (minimum_scaled_jacobian, (maximum_skew, volume)))| {
                         file.write_all(
                             format!(
                                 "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n",
-                                maximum_aspect_ratio, minimum_scaled_jacobian, maximum_skew, volume,
+                                maximum_edge_ratio, minimum_scaled_jacobian, maximum_skew, volume,
                             )
                             .as_bytes(),
                         )
@@ -1038,7 +1038,7 @@ fn write_finite_elements_metrics(
                 Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), 4), 0.0);
             metrics_set
                 .slice_mut(s![.., 0])
-                .assign(&maximum_aspect_ratios);
+                .assign(&maximum_edge_ratios);
             metrics_set
                 .slice_mut(s![.., 1])
                 .assign(&minimum_scaled_jacobians);
@@ -1056,7 +1056,7 @@ fn write_finite_elements_metrics(
     Ok(())
 }
 
-fn calculate_maximum_aspect_ratios(
+fn calculate_maximum_edge_ratios(
     element_node_connectivity: &HexConnectivity,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
@@ -1065,7 +1065,7 @@ fn calculate_maximum_aspect_ratios(
     let mut l1 = 0.0;
     let mut l2 = 0.0;
     let mut l3 = 0.0;
-    let maximum_aspect_ratios = element_node_connectivity
+    let maximum_edge_ratios = element_node_connectivity
         .iter()
         .map(|connectivity| {
             l1 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
@@ -1103,10 +1103,10 @@ fn calculate_maximum_aspect_ratios(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Maximum aspect ratios\x1b[0m {:?}",
+        "           \x1b[1;93m⤷ Maximum edge ratios\x1b[0m {:?}",
         time.elapsed()
     );
-    maximum_aspect_ratios
+    maximum_edge_ratios
 }
 
 fn calculate_minimum_scaled_jacobians(
