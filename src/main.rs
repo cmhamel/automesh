@@ -272,6 +272,10 @@ enum Commands {
         /// Pass to apply strong balancing
         #[arg(action, long, short)]
         strong: bool,
+
+        /// Pass to fully refine the boundaries
+        #[arg(action, long, short)]
+        boundaries: bool,
     },
 
     /// Applies smoothing to an existing finite element mesh
@@ -506,11 +510,12 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
             pair,
             strong,
+            boundaries,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-                ytranslate, ztranslate, quiet, pair, strong,
+                ytranslate, ztranslate, quiet, pair, strong, boundaries,
             )
         }
         Some(Commands::Smooth {
@@ -798,6 +803,7 @@ fn octree(
     quiet: bool,
     pair: bool,
     strong: bool,
+    boundaries: bool,
 ) -> Result<(), ErrorWrapper> {
     let remove = remove.map(|removed_blocks| {
         removed_blocks
@@ -823,6 +829,9 @@ fn octree(
     }
     let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
+    if boundaries {
+        tree.boundaries();
+    }
     if pair {
         tree.pair();
     }
