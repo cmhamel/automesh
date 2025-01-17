@@ -63,6 +63,7 @@ type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
+    fn boundaries(&mut self);
     fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap);
     fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>);
     fn from_voxels(voxels: Voxels) -> (Nel, Self);
@@ -285,7 +286,6 @@ impl Tree for Octree {
         let mut edges: [bool; 8];
         let mut index;
         let mut subdivide;
-        let lngth_min = 2 * self[self.len() - 1].get_lngth();
         #[allow(unused_variables)]
         for iteration in 1.. {
             balanced = true;
@@ -294,7 +294,7 @@ impl Tree for Octree {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             while index < self.len() {
-                if self[index].get_lngth() > &lngth_min && self[index].cells.is_none() {
+                if self[index].get_lngth() > &1 && self[index].cells.is_none() {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
                         if let Some(neighbor) = face_cell {
                             if let Some(kids) = self[*neighbor].cells {
@@ -622,6 +622,48 @@ impl Tree for Octree {
                 time.elapsed()
             );
             if balanced {
+                break;
+            }
+        }
+    }
+    fn boundaries(&mut self) {
+        let mut block;
+        let mut boundaries;
+        let mut cell;
+        let mut index;
+        #[allow(unused_variables)]
+        for iteration in 1.. {
+            boundaries = true;
+            index = 0;
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
+            while index < self.len() {
+                cell = self[index];
+                if cell.get_lngth() > &1 && cell.cells.is_none() {
+                    block = cell.get_block();
+                    if cell.get_faces().iter()
+                        .filter_map(|&face| face)
+                        //
+                        // need to check if face is subdivided (and for correct children) before checking the block
+                        //
+                        .filter(|&face| self[face].get_block() != block).count() > 0 {
+                            self.subdivide(index);
+                            self.iter_mut()
+                                .rev()
+                                .take(NUM_OCTANTS)
+                                .for_each(|cell| cell.block = Some(block));
+                            boundaries = false;
+                    }
+                }
+                index += 1;
+            }
+            #[cfg(feature = "profile")]
+            println!(
+                "            \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
+                iteration,
+                time.elapsed()
+            );
+            if boundaries {
                 break;
             }
         }
