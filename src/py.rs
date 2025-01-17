@@ -1,4 +1,4 @@
-use super::{voxel::IntermediateError, Coordinate, Coordinates};
+use super::{voxel::IntermediateError, Coordinate, Coordinates, NSD};
 use conspire::math::{Tensor, TensorArray};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
@@ -21,7 +21,7 @@ fn automesh(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-pub type PyCoordinates = Vec<[f64; 3]>;
+pub type PyCoordinates = Vec<[f64; NSD]>;
 
 pub trait IntoFoo<T> {
     fn as_foo(&self) -> T;
