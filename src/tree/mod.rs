@@ -639,20 +639,40 @@ impl Tree for Octree {
             let time = Instant::now();
             while index < self.len() {
                 cell = self[index];
-                if cell.get_lngth() > &1 && cell.cells.is_none() {
+                if cell.get_lngth() > &1 && cell.get_cells().is_none() {
                     block = cell.get_block();
-                    if cell.get_faces().iter()
+                    if cell
+                        .get_faces()
+                        .iter()
                         .filter_map(|&face| face)
-                        //
-                        // need to check if face is subdivided (and for correct children) before checking the block
-                        //
-                        .filter(|&face| self[face].get_block() != block).count() > 0 {
-                            self.subdivide(index);
-                            self.iter_mut()
-                                .rev()
-                                .take(NUM_OCTANTS)
-                                .for_each(|cell| cell.block = Some(block));
-                            boundaries = false;
+                        .filter(|&face| self[face].get_cells().is_none())
+                        .filter(|&face| self[face].get_block() != block)
+                        .count()
+                        > 0
+                        || cell
+                            .get_faces()
+                            .iter()
+                            .enumerate()
+                            .any(|(face, &face_cell_maybe)| {
+                                if let Some(face_cell) = face_cell_maybe {
+                                    if let Some(subcells) = self[face_cell].get_cells() {
+                                        subcells_on_neighbor_face(face).iter().any(|&subcell| {
+                                            self[subcells[subcell]].get_block() != block
+                                        })
+                                    } else {
+                                        false
+                                    }
+                                } else {
+                                    false
+                                }
+                            })
+                    {
+                        self.subdivide(index);
+                        self.iter_mut()
+                            .rev()
+                            .take(NUM_OCTANTS)
+                            .for_each(|cell| cell.block = Some(block));
+                        boundaries = false;
                     }
                 }
                 index += 1;
