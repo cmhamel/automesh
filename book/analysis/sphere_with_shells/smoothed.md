@@ -10,7 +10,7 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells
 
 ## Taubin Smoothing
 
-`sr2s10` | `sr2s10`
+`sr2s10` | `sr2s50`
 :---: | :---:
 ![](img/sr2s10.png) | ![](img/sr2s50.png)
 
@@ -57,7 +57,7 @@ smooth \
 
 automesh metrics \
 --input sr2s10.inp \
---output sr2s10.csv \
+--output sr2s10.csv
 ```
 
 ```sh
@@ -72,15 +72,22 @@ smooth \
 
 automesh metrics \
 --input sr2s50.inp \
---output sr2s50.csv \
+--output sr2s50.csv
 ```
 
 With [`figio`](https://pypi.org/project/figio/) and
-the [`hist_sr2sx.yml`](recipes/hist_sr2sx.yml) recipe, we
-obtain the following element quality metrics:
+the [`hist_sr2sx.yml`](recipes/hist_sr2sx.yml) recipe,
+
+```sh
+cd ~/autotwin/automesh/book/analysis/sphere_with_shells/recipes
+figio hist_sr2sx.yml
+```
+we obtain the following element quality metrics:
 
 ![hist_sr2sx_aspect.png](img/hist_sr2sx_aspect.png)
 
 ![hist_sr2sx_msj.png](img/hist_sr2sx_msj.png)
 
 ![hist_sr2sx_skew.png](img/hist_sr2sx_skew.png)
+
+![hist_sr2sx_vol.png](img/hist_sr2sx_vol.png)

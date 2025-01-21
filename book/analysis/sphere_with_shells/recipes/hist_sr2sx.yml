@@ -28,6 +28,16 @@ hmodel_s10_skew:
     color: blue
     label: sr2s10
     linewidth: 2.0
+hmodel_s10_vol:
+  folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
+  file: sr2s10.csv
+  skip_rows: 1
+  ycolumn: 3
+  plot_kwargs:
+    alpha: 0.7
+    color: blue
+    label: sr2s10
+    linewidth: 2.0
 hmodel_s50_aspect:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s50.csv
@@ -52,7 +62,17 @@ hmodel_s50_skew:
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
   file: sr2s50.csv
   skip_rows: 1
-  ycolumn: 0
+  ycolumn: 2
+  plot_kwargs:
+    alpha: 0.7
+    color: orange
+    label: sr2s50
+    linewidth: 2.0
+hmodel_s50_vol:
+  folder: ~/autotwin/automesh/book/analysis/sphere_with_shells
+  file: sr2s50.csv
+  skip_rows: 1
+  ycolumn: 3
   plot_kwargs:
     alpha: 0.7
     color: orange
@@ -91,6 +111,19 @@ hfigure_skew:
   size: [8.0, 6.0]
   title: Maximum Skew
   xlabel: Maximum Skew
+  ylabel: Frequency
+  details: true
+  display: true
+  dpi: 100
+  latex: false
+  save: true
+hfigure_vol:
+  models: [hmodel_s10_vol, hmodel_s50_vol]
+  folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
+  file: hist_sr2sx_vol.png
+  size: [8.0, 6.0]
+  title: Element Volume
+  xlabel: Element Volume
   ylabel: Frequency
   details: true
   display: true
