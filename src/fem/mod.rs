@@ -4,6 +4,11 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
+
+mod hex;
+
+pub use hex::NUM_NODES_HEX;
+
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
@@ -30,9 +35,6 @@ const ELEMENT_NUMBERING_OFFSET: usize = 1;
 const ELEMENT_TYPE: &str = "C3D8R";
 pub const NODE_NUMBERING_OFFSET: usize = 1;
 
-/// The number of nodes in a hexahedral finite element.
-pub const NUM_NODES_HEX: usize = 8;
-
 /// A vector of finite element block IDs.
 pub type Blocks = Vec<u8>;
 
@@ -41,10 +43,10 @@ pub type Metrics = Array1<f64>;
 pub type Nodes = Vec<usize>;
 pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
-pub type HexConnectivity = Connectivity<NUM_NODES_HEX>;
-
-/// ???
-pub trait FiniteElementsNew<const NODES_PER_ELEMENT: usize> {
+/// Common methods for finite element meshes.
+pub trait FiniteElementMesh<const NODES_PER_ELEMENT: usize, const NODES_CONN_ELEMENT: usize> {
+    /// Returns the nodes connected to the given node within an element.
+    fn connected_nodes(node: &usize) -> [usize; NODES_CONN_ELEMENT];
     /// Constructs and returns a new finite elements type from data.
     fn from_data(
         element_blocks: Blocks,
@@ -126,7 +128,50 @@ pub trait FiniteElementsNew<const NODES_PER_ELEMENT: usize> {
         Ok(())
     }
     /// Calculates and sets the node-to-node connectivity.
-    fn node_node_connectivity(&mut self) -> Result<(), &str>;
+    fn node_node_connectivity(&mut self) -> Result<(), &str> {
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if !node_element_connectivity.is_empty() {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
+            let mut element_connectivity = [0; NODES_PER_ELEMENT];
+            let element_node_connectivity = self.get_element_node_connectivity();
+            let number_of_nodes = self.get_nodal_coordinates().len();
+            let mut node_node_connectivity: VecConnectivity = vec![vec![]; number_of_nodes];
+            node_node_connectivity
+                .iter_mut()
+                .zip(node_element_connectivity.iter().enumerate())
+                .try_for_each(|(connectivity, (node, node_connectivity))| {
+                    node_connectivity.iter().try_for_each(|element| {
+                        element_connectivity.clone_from(
+                            &element_node_connectivity[element - ELEMENT_NUMBERING_OFFSET],
+                        );
+                        if let Some(neighbors) = element_connectivity.iter().position(|&n| n == node + NODE_NUMBERING_OFFSET) {
+                            Self::connected_nodes(&neighbors).iter().for_each(|&neighbor|
+                                connectivity.push(element_connectivity[neighbor])
+                            );
+                            Ok(())
+                        } else {
+                            Err("The element-to-node connectivity has been incorrectly calculated")
+                        }
+                    })
+                })?;
+            node_node_connectivity.iter_mut().for_each(|connectivity| {
+                connectivity.sort();
+                connectivity.dedup();
+            });
+            self.set_node_node_connectivity(node_node_connectivity)?;
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mNode-to-node connectivity\x1b[0m {:?} ",
+                time.elapsed()
+            );
+            Ok(())
+        } else {
+            Err("Need to calculate the node-to-element connectivity first")
+        }
+    }
+    /// Smooths the nodal coordinates according to the provided smoothing method.
+    fn smooth(&mut self, method: Smoothing) -> Result<(), &str>;
     /// Writes the finite elements data to a new Exodus file.
     fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
         write_finite_elements_to_exodus(
@@ -181,11 +226,26 @@ pub trait FiniteElementsNew<const NODES_PER_ELEMENT: usize> {
     fn get_exterior_nodes(&self) -> &Nodes;
     /// Returns a reference to the nodal coordinates.
     fn get_nodal_coordinates(&self) -> &Coordinates;
+    /// Returns a reference to the node-to-element connectivity.
+    fn get_node_element_connectivity(&self) -> &VecConnectivity;
     /// Returns a reference to the node-to-node connectivity.
     fn get_node_node_connectivity(&self) -> &VecConnectivity;
     /// Returns a reference to the prescribed nodes.
     fn get_prescribed_nodes(&self) -> &Nodes;
+    /// Sets the node-to-node connectivity.
+    fn set_node_node_connectivity(&mut self, node_node_connectivity: VecConnectivity) -> Result<(), &str>;
 }
+
+
+
+
+
+
+
+
+
+
+pub type HexConnectivity = Connectivity<NUM_NODES_HEX>;
 
 /// The finite elements type.
 pub struct FiniteElements<const N: usize> {
@@ -206,7 +266,7 @@ pub struct FiniteElements<const N: usize> {
 }
 
 /// The hexahedral finite elements type.
-pub type HexahedralFiniteElements = FiniteElements<NUM_NODES_HEX>;
+pub type HexahedralFiniteElementsOld = FiniteElements<NUM_NODES_HEX>;
 
 /// Possible smoothing methods.
 pub enum Smoothing {
@@ -215,7 +275,7 @@ pub enum Smoothing {
 }
 
 /// Inherent implementation of hexahedral finite elements.
-impl HexahedralFiniteElements {
+impl HexahedralFiniteElementsOld {
     /// Constructs and returns a new finite elements type from data.
     pub fn from_data(
         element_blocks: Blocks,
@@ -646,7 +706,7 @@ fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
 }
 
 fn smooth_hexahedral_finite_elements(
-    finite_elements: &mut HexahedralFiniteElements,
+    finite_elements: &mut HexahedralFiniteElementsOld,
     method: Smoothing,
 ) -> Result<(), &str> {
     if !finite_elements.get_node_node_connectivity().is_empty() {

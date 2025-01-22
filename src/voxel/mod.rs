@@ -8,7 +8,7 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, HexConnectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET},
+    fem::{Blocks, HexConnectivity, HexahedralFiniteElementsOld, NODE_NUMBERING_OFFSET},
     Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
@@ -193,10 +193,10 @@ impl Voxels {
         remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElements, String> {
+    ) -> Result<HexahedralFiniteElementsOld, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
-        Ok(HexahedralFiniteElements::from_data(
+        Ok(HexahedralFiniteElementsOld::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,
