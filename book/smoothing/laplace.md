@@ -71,7 +71,7 @@ node | `x` | `y` | `z`
 
 ![free_laplace_iter_1.png](free_laplace_iter_1.png)
 
-Figure: Two element test problem (left) original configuration, (right) subject to two iterations of Laplace smoothing.
+Figure: Two element test problem (left) original configuration, (right) subject to one iteration of Laplace smoothing.
 
 ### Iteration `2`
 

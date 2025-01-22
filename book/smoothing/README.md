@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Both Laplacian smoothing and Taubin smoothing[^Taubin_1995a] [^Taubin_1995b] are smoothing operations that adjust the positions of the nodes in a finite element mesh.
+Both Laplacian smoothing[^Sorkine_2005] and Taubin smoothing[^Taubin_1995a] [^Taubin_1995b] are smoothing operations that adjust the positions of the nodes in a finite element mesh.
 
 Laplacian smoothing, based on the Laplacian operator, computes the average position of a point's neighbors and moves the point toward the average.  This reduces high-frequency noise but can result in a loss of shape and detail, with overall shrinkage.
 
@@ -217,6 +217,8 @@ Chen[^Chen_2010] used medical image voxel data to create a structured hexahedral
 Chen used hierarchical Taubin mesh smoothing for eight (8) iterations, with $\lambda = 0.6307$ and $\mu = -0.6732$ to smooth the outer and inner surfaces of the mesh.
 
 ## References
+
+[^Sorkine_2005]: Sorkine O. Laplacian mesh processing. Eurographics (State of the Art Reports). 2005 Sep;4(4):1.  [paper](https://doi.org/10.2312/egst.20051044)
 
 [^Taubin_1995a]: Taubin G. Curve and surface smoothing without shrinkage. In *Proceedings of IEEE international conference on computer vision* 1995 Jun 20 (pp. 852-857). IEEE.  [paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=466848)
 
