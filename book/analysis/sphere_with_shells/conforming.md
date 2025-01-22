@@ -85,4 +85,4 @@ recipe | [log_strain_sr2c.yml](recipes/log_strain_sr2c.yml) | [log_strain_sr3c.y
 rate of deformation | ![rate_of_deformation_sr2c.svg](img/rate_of_deformation_sr2c.svg) | ![rate_of_deformation_sr3c.svg](img/rate_of_deformation_sr3c.svg) | ![rate_of_deformation_sr4c.svg](img/rate_of_deformation_sr4c.svg)
 recipe | [rate_of_deformation_sr2c.yml](recipes/rate_of_deformation_sr2c.yml) | [rate_of_deformation_sr3c.yml](recipes/rate_of_deformation_sr3c.yml) | [rate_of_deformation_sr4c.yml](recipes/rate_of_deformation_sr4c.yml)
 
-Figure: Conforming mesh midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
+Figure: Conforming mesh midline section and tracer plots at 1 cm interval along the $x$-axis for displacement magnitude, log strain, and rate of deformation (10,000 Hz acquisition rate, $\Delta t$ = 0.0001 s).

@@ -272,7 +272,7 @@ recipe | [log_strain_sr2.yml](recipes/log_strain_sr2.yml) | [log_strain_sr3.yml]
 rate of deformation | ![rate_of_deformation_sr2.svg](img/rate_of_deformation_sr2.svg) | ![rate_of_deformation_sr3.svg](img/rate_of_deformation_sr3.svg) | ![rate_of_deformation_sr4.svg](img/rate_of_deformation_sr4.svg)
 recipe | [rate_of_deformation_sr2.yml](recipes/rate_of_deformation_sr2.yml) | [rate_of_deformation_sr3.yml](recipes/rate_of_deformation_sr3.yml) | [rate_of_deformation_sr4.yml](recipes/rate_of_deformation_sr4.yml)
 
-Figure: Voxel mesh midline section, with maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $y=x$ axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
+Figure:  Voxel mesh midline section, with contour plot of maximum principal log strain at selected times from 0.000 s to 0.020 s (1,000 Hz sample rate, $\Delta t$ = 0.001 s), and tracer plots at 1 cm interval along the $x$-axis for displacement magnitude, log strain, and rate of deformation (4,000 Hz acquisition rate, $\Delta t$ = 0.00025 s).
 
 ## References
 
