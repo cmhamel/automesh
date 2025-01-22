@@ -15,7 +15,7 @@ version = "0.2.10"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-clap = { version = "=4.5.26", features = ["derive"] }
+clap = { version = "=4.5.27", features = ["derive"] }
 chrono = "=0.4.39"
 conspire = {version = "=0.5.2", features = ["math"]}
 ndarray = {version = "=0.15.6"}
