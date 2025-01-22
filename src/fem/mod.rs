@@ -43,6 +43,150 @@ pub type ReorderedConnectivity = Vec<Vec<i32>>;
 
 pub type HexConnectivity = Connectivity<NUM_NODES_HEX>;
 
+/// ???
+pub trait FiniteElementsNew<const NODES_PER_ELEMENT: usize> {
+    /// Constructs and returns a new finite elements type from data.
+    fn from_data(
+        element_blocks: Blocks,
+        element_node_connectivity: Connectivity<NODES_PER_ELEMENT>,
+        nodal_coordinates: Coordinates,
+    ) -> Self;
+    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
+        let nodal_coordinates = self.get_nodal_coordinates();
+        node_node_connectivity
+            .iter()
+            .enumerate()
+            .map(|(node, connectivity)| {
+                if connectivity.is_empty() {
+                    Coordinate::zero()
+                } else {
+                    connectivity
+                        .iter()
+                        .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+                        .sum::<Coordinate>()
+                        / (connectivity.len() as f64)
+                        - nodal_coordinates[node].copy()
+                }
+            })
+            .collect()
+    }
+    /// Calculates and sets the nodal hierarchy.
+    fn nodal_hierarchy(&mut self) -> Result<(), &str>;
+    /// Calculates and sets the nodal influencers.
+    fn nodal_influencers(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let mut nodal_influencers: VecConnectivity = self.get_node_node_connectivity().clone();
+        let prescribed_nodes = self.get_prescribed_nodes();
+        if !self.get_exterior_nodes().is_empty() {
+            let mut boundary_nodes = self.get_boundary_nodes().clone();
+            boundary_nodes
+                .retain(|boundary_node| prescribed_nodes.binary_search(boundary_node).is_err());
+            boundary_nodes.iter().for_each(|boundary_node| {
+                nodal_influencers[boundary_node - NODE_NUMBERING_OFFSET].retain(|node| {
+                    boundary_nodes.binary_search(node).is_ok()
+                        || prescribed_nodes.binary_search(node).is_ok()
+                })
+            });
+        }
+        prescribed_nodes.iter().for_each(|prescribed_node| {
+            nodal_influencers[prescribed_node - NODE_NUMBERING_OFFSET].clear()
+        });
+        panic!("CANNOT TAKE GET FIELD IN THE DEFAULT METHOD");
+        // self.nodal_influencers = nodal_influencers;
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mNodal influencers\x1b[0m {:?} ",
+            time.elapsed()
+        );
+    }
+    /// Calculates and sets the node-to-element connectivity.
+    fn node_element_connectivity(&mut self) -> Result<(), &str> {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let number_of_nodes = self.get_nodal_coordinates().len();
+        let mut node_element_connectivity = vec![vec![]; number_of_nodes];
+        self.get_element_node_connectivity()
+            .iter()
+            .enumerate()
+            .for_each(|(element, connectivity)| {
+                connectivity.iter().for_each(|node| {
+                    node_element_connectivity[node - NODE_NUMBERING_OFFSET]
+                        .push(element + ELEMENT_NUMBERING_OFFSET)
+                })
+            });
+        panic!("CANNOT TAKE GET FIELD IN THE DEFAULT METHOD");
+        // self.node_element_connectivity = node_element_connectivity;
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        Ok(())
+    }
+    /// Calculates and sets the node-to-node connectivity.
+    fn node_node_connectivity(&mut self) -> Result<(), &str>;
+    /// Writes the finite elements data to a new Exodus file.
+    fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
+        write_finite_elements_to_exodus(
+            file_path,
+            self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Writes the finite elements data to a new Abaqus file.
+    fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
+        write_finite_elements_to_abaqus(
+            file_path,
+            self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Writes the finite elements data to a new Mesh file.
+    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
+        write_finite_elements_to_mesh(
+            file_path,
+            self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Writes the finite elements quality metrics to a new file.
+    fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
+        write_finite_elements_metrics(
+            file_path,
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Writes the finite elements data to a new VTK file.
+    fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
+        write_finite_elements_to_vtk(
+            file_path,
+            self.get_element_blocks(),
+            self.get_element_node_connectivity(),
+            self.get_nodal_coordinates(),
+        )
+    }
+    /// Returns a reference to the boundary nodes.
+    fn get_boundary_nodes(&self) -> &Nodes;
+    /// Returns a reference to the element blocks.
+    fn get_element_blocks(&self) -> &Blocks;
+    /// Returns a reference to element-to-node connectivity.
+    fn get_element_node_connectivity(&self) -> &Connectivity<NODES_PER_ELEMENT>;
+    /// Returns a reference to the exterior nodes.
+    fn get_exterior_nodes(&self) -> &Nodes;
+    /// Returns a reference to the nodal coordinates.
+    fn get_nodal_coordinates(&self) -> &Coordinates;
+    /// Returns a reference to the node-to-node connectivity.
+    fn get_node_node_connectivity(&self) -> &VecConnectivity;
+    /// Returns a reference to the prescribed nodes.
+    fn get_prescribed_nodes(&self) -> &Nodes;
+}
+
 /// The finite elements type.
 pub struct FiniteElements<const N: usize> {
     boundary_nodes: Nodes,
@@ -95,7 +239,7 @@ impl HexahedralFiniteElements {
             prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
         }
     }
-    /// Calculates the discrete Laplacian for the given node-to-node connectivity.
+    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     pub fn calculate_laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
         let nodal_coordinates = self.get_nodal_coordinates();
         node_node_connectivity
@@ -115,7 +259,7 @@ impl HexahedralFiniteElements {
             })
             .collect()
     }
-    /// Calculates the nodal hierarchy.
+    /// Calculates and sets the nodal hierarchy.
     pub fn calculate_nodal_hierarchy(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if !node_element_connectivity.is_empty() {
@@ -146,10 +290,10 @@ impl HexahedralFiniteElements {
                         // THIS IS WHERE IT IS ASSUMED THAT THE MESH IS PERFECTLY STRUCTURED
                         // ONLY AFFECTS HIERARCHICAL SMOOTHING
                         //
-                        if number_of_connected_elements < 8 {
+                        if number_of_connected_elements < NUM_NODES_HEX {
                             exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                         }
-                    } else if number_of_connected_elements < 8 {
+                    } else if number_of_connected_elements < NUM_NODES_HEX {
                         exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
                     } else {
                         interior_nodes.push(node + NODE_NUMBERING_OFFSET);
@@ -234,6 +378,13 @@ impl HexahedralFiniteElements {
         if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
             let time = Instant::now();
+            //
+            // THIS ASSUMES the element-to-node connectivity has 8 (are hexes)
+            // can use a const getter method instead of NUM_NODES_HEX
+            //
+            // also uses the exodus node numbering for hexes to match
+            // turn that into its own method somehow to be called here
+            //
             let mut element_connectivity = [0; NUM_NODES_HEX];
             let element_node_connectivity = self.get_element_node_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
@@ -471,10 +622,10 @@ impl HexahedralFiniteElements {
     }
 }
 
-fn reorder_connectivity(
+fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
     element_blocks: &Blocks,
     element_blocks_unique: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
 ) -> ReorderedConnectivity {
     element_blocks_unique
         .iter()
@@ -661,10 +812,10 @@ fn finite_element_data_from_inp(
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
-fn write_finite_elements_to_exodus(
+fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorNetCDF> {
     let mut file = create(file_path)?;
@@ -753,10 +904,10 @@ fn write_finite_elements_to_exodus(
     Ok(())
 }
 
-fn write_finite_elements_to_abaqus(
+fn write_finite_elements_to_abaqus<const NUM_NODES_ELEMENT: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let element_number_width = get_width(element_node_connectivity);
@@ -825,10 +976,10 @@ fn write_nodal_coordinates_to_inp(
     result
 }
 
-fn write_element_node_connectivity_to_inp(
+fn write_element_node_connectivity_to_inp<const NUM_NODES_ELEMENT: usize>(
     file: &mut BufWriter<File>,
     element_blocks: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     element_number_width: &usize,
     node_number_width: &usize,
 ) -> Result<(), ErrorIO> {
@@ -912,10 +1063,10 @@ fn get_width<T>(input: &[T]) -> usize {
     input.len().to_string().chars().count()
 }
 
-fn write_finite_elements_to_mesh(
+fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let mesh_file = File::create(file_path)?;
@@ -942,10 +1093,10 @@ fn write_finite_elements_to_mesh(
     file.flush()
 }
 
-fn write_finite_elements_to_vtk(
+fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorVtk> {
     let connectivity = element_node_connectivity
@@ -990,9 +1141,9 @@ fn write_finite_elements_to_vtk(
     .export_be(&file)
 }
 
-fn write_finite_elements_metrics(
+fn write_finite_elements_metrics<const NUM_NODES_ELEMENT: usize>(
     file_path: &str,
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let maximum_edge_ratios =
@@ -1056,8 +1207,8 @@ fn write_finite_elements_metrics(
     Ok(())
 }
 
-fn calculate_maximum_edge_ratios(
-    element_node_connectivity: &HexConnectivity,
+fn calculate_maximum_edge_ratios<const NUM_NODES_ELEMENT: usize>(
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1109,8 +1260,8 @@ fn calculate_maximum_edge_ratios(
     maximum_edge_ratios
 }
 
-fn calculate_minimum_scaled_jacobians(
-    element_node_connectivity: &HexConnectivity,
+fn calculate_minimum_scaled_jacobians<const NUM_NODES_ELEMENT: usize>(
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1210,8 +1361,8 @@ fn calculate_minimum_scaled_jacobians(
     minimum_scaled_jacobians
 }
 
-fn calculate_element_principal_axes(
-    connectivity: &[usize; NUM_NODES_HEX],
+fn calculate_element_principal_axes<const NUM_NODES_ELEMENT: usize>(
+    connectivity: &[usize; NUM_NODES_ELEMENT],
     nodal_coordinates: &Coordinates,
 ) -> (Vector, Vector, Vector) {
     let x1 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
@@ -1241,8 +1392,8 @@ fn calculate_element_principal_axes(
     (x1, x2, x3)
 }
 
-fn calculate_maximum_skews(
-    element_node_connectivity: &HexConnectivity,
+fn calculate_maximum_skews<const NUM_NODES_ELEMENT: usize>(
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1271,8 +1422,8 @@ fn calculate_maximum_skews(
     maximum_skews
 }
 
-fn calculate_element_volumes(
-    element_node_connectivity: &HexConnectivity,
+fn calculate_element_volumes<const NUM_NODES_ELEMENT: usize>(
+    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
