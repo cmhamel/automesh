@@ -4,6 +4,29 @@
 
 *In order of most recent to least recent.*
 
+## 2025-01-22
+
+### Toward isosurfaces
+
+* **Option 1** (NW example)
+  * origami quadtree -> trimesh (.stl) -> Taubin smoothing
+* **Option 2** (NE example)
+  * marching cubes from *dual* segmentation
+
+### Questions
+
+* volume preservation (avoid shrinking volumes)
+* interface conformity (surface-to-surface matching)
+
+### TODO
+
+* MRB - refactor smoothing on generalized types, such as tris, quads, and hexes
+* CBH - smoothing unit tests
+  * The actual tessellation example from the Taubin paper
+  * Single 3D cube into 12 triangles, then 36 quads, then continued refinement
+* CBH - Sculpt to generate an isosurface without smoothing on a sphere or cube
+* CBH - continue smoothed simulations, compare with conforming and voxel cases
+
 ## 2025-01-02
 
 * schedule meeting
