@@ -57,7 +57,7 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
         }
     }
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
-        todo!()
+        unimplemented!()
     }
     fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
@@ -115,30 +115,9 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
     }
     fn set_prescribed_nodes(
         &mut self,
-        homogeneous: Option<Nodes>,
-        inhomogeneous: Option<(Coordinates, Nodes)>,
+        _homogeneous: Option<Nodes>,
+        _inhomogeneous: Option<(Coordinates, Nodes)>,
     ) -> Result<(), &str> {
-        if let Some(homogeneous_nodes) = homogeneous {
-            self.prescribed_nodes_homogeneous = homogeneous_nodes;
-            self.prescribed_nodes_homogeneous.sort();
-            self.prescribed_nodes_homogeneous.dedup();
-        }
-        if let Some(inhomogeneous_nodes) = inhomogeneous {
-            self.prescribed_nodes_inhomogeneous = inhomogeneous_nodes.1;
-            self.prescribed_nodes_inhomogeneous_coordinates = inhomogeneous_nodes.0;
-            let mut sorted_unique = self.prescribed_nodes_inhomogeneous.clone();
-            sorted_unique.sort();
-            sorted_unique.dedup();
-            if sorted_unique != self.prescribed_nodes_inhomogeneous {
-                return Err("Inhomogeneously-prescribed nodes must be sorted and unique.");
-            }
-        }
-        self.prescribed_nodes = self
-            .prescribed_nodes_homogeneous
-            .clone()
-            .into_iter()
-            .chain(self.prescribed_nodes_inhomogeneous.clone())
-            .collect();
-        Ok(())
+        unimplemented!("Too wet!")
     }
 }
