@@ -1,4 +1,4 @@
-use automesh::{Nel, Scale, Vector, Voxels, NSD};
+use automesh::{FiniteElements, Nel, Scale, Vector, Voxels, NSD};
 use conspire::math::{Tensor, TensorArray, TensorVec};
 
 const GOLD_DATA: [[[u8; 3]; 5]; 4] = [

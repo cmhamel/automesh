@@ -8,8 +8,11 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, HexConnectivity, HexahedralFiniteElementsOld, NODE_NUMBERING_OFFSET},
-    Coordinate, Coordinates, Octree, Tree, Vector, NSD,
+    fem::{
+        hex::{HexahedralFiniteElements, NUM_NODES_HEX},
+        Blocks, FiniteElements, NODE_NUMBERING_OFFSET,
+    },
+    Connectivity, Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};
@@ -193,10 +196,10 @@ impl Voxels {
         remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElementsOld, String> {
+    ) -> Result<HexahedralFiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
-        Ok(HexahedralFiniteElementsOld::from_data(
+        Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,
@@ -267,10 +270,10 @@ fn initial_element_node_connectivity(
     filtered_voxel_data: &VoxelDataSized<NSD>,
     nelxplus1: &usize,
     nelyplus1: &usize,
-) -> HexConnectivity {
+) -> Connectivity<NUM_NODES_HEX> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let element_node_connectivity: HexConnectivity = filtered_voxel_data
+    let element_node_connectivity: Connectivity<NUM_NODES_HEX> = filtered_voxel_data
         .iter()
         .map(|&[i, j, k]| {
             [
@@ -297,7 +300,7 @@ fn initial_element_node_connectivity(
 }
 
 fn initial_nodal_coordinates(
-    element_node_connectivity: &HexConnectivity,
+    element_node_connectivity: &Connectivity<NUM_NODES_HEX>,
     filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
     scale: Scale,
@@ -364,7 +367,7 @@ fn initial_nodal_coordinates(
 }
 
 fn renumber_nodes(
-    element_node_connectivity: &mut HexConnectivity,
+    element_node_connectivity: &mut Connectivity<NUM_NODES_HEX>,
     mut initial_nodal_coordinates: InitialNodalCoordinates,
     number_of_nodes_unfiltered: usize,
 ) -> Coordinates {
@@ -406,7 +409,7 @@ fn finite_element_data_from_data(
     remove: Option<Blocks>,
     scale: Scale,
     translate: &Vector,
-) -> Result<(Blocks, HexConnectivity, Coordinates), String> {
+) -> Result<(Blocks, Connectivity<NUM_NODES_HEX>, Coordinates), String> {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;
     let nelyplus1 = shape[1] + 1;

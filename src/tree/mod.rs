@@ -4,7 +4,8 @@ use std::time::Instant;
 use super::{
     fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     voxel::{Nel, Scale},
-    Coordinate, Coordinates, HexahedralFiniteElementsOld, Vector, VoxelData, Voxels, NSD,
+    Coordinate, Coordinates, FiniteElements, HexahedralFiniteElements, Vector, VoxelData, Voxels,
+    NSD,
 };
 use conspire::math::{TensorArray, TensorVec};
 use ndarray::{s, Axis};
@@ -72,13 +73,13 @@ pub trait Tree {
         remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElementsOld, String>;
+    ) -> Result<HexahedralFiniteElements, String>;
     fn octree_into_finite_elements(
         self,
         remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElementsOld, String>;
+    ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
@@ -1080,7 +1081,7 @@ impl Tree for Octree {
         _remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElementsOld, String> {
+    ) -> Result<HexahedralFiniteElements, String> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let xtranslate = translate[0];
@@ -1310,7 +1311,7 @@ impl Tree for Octree {
                 }
             }
         });
-        let fem = Ok(HexahedralFiniteElementsOld::from_data(
+        let fem = Ok(HexahedralFiniteElements::from_data(
             vec![1; element_node_connectivity.len()],
             element_node_connectivity,
             nodal_coordinates,
@@ -1327,7 +1328,7 @@ impl Tree for Octree {
         remove: Option<Blocks>,
         scale: Scale,
         translate: &Vector,
-    ) -> Result<HexahedralFiniteElementsOld, String> {
+    ) -> Result<HexahedralFiniteElements, String> {
         let xtranslate = translate[0];
         let ytranslate = translate[1];
         let ztranslate = translate[2];
@@ -1376,7 +1377,7 @@ impl Tree for Octree {
                 nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
                 index += NUM_NODES_HEX;
             });
-        Ok(HexahedralFiniteElementsOld::from_data(
+        Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,

@@ -1,4 +1,6 @@
-use automesh::{HexahedralFiniteElementsOld, Nel, Octree, Scale, Smoothing, Tree, Vector, Voxels};
+use automesh::{
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tree, Vector, Voxels,
+};
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -410,19 +412,19 @@ impl From<WriteNpyError> for ErrorWrapper {
 
 #[allow(clippy::large_enum_variant)]
 enum InputTypes {
-    Abaqus(HexahedralFiniteElementsOld),
+    Abaqus(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
 }
 
 #[allow(clippy::large_enum_variant)]
 enum OutputTypes {
-    Abaqus(HexahedralFiniteElementsOld),
-    Exodus(HexahedralFiniteElementsOld),
-    Mesh(HexahedralFiniteElementsOld),
+    Abaqus(HexahedralFiniteElements),
+    Exodus(HexahedralFiniteElements),
+    Mesh(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
-    Vtk(HexahedralFiniteElementsOld),
+    Vtk(HexahedralFiniteElements),
 }
 
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
@@ -771,7 +773,7 @@ fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrappe
 }
 
 fn metrics_inner(
-    fem: &HexahedralFiniteElementsOld,
+    fem: &HexahedralFiniteElements,
     output: String,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
@@ -898,7 +900,7 @@ fn smooth(
 
 #[allow(clippy::too_many_arguments)]
 fn apply_smoothing_method(
-    output_type: &mut HexahedralFiniteElementsOld,
+    output_type: &mut HexahedralFiniteElements,
     output: &str,
     iterations: usize,
     method: Option<String>,
@@ -925,12 +927,12 @@ fn apply_smoothing_method(
         if !quiet {
             println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
         }
-        output_type.calculate_node_element_connectivity()?;
-        output_type.calculate_node_node_connectivity()?;
+        output_type.node_element_connectivity()?;
+        output_type.node_node_connectivity()?;
         if hierarchical {
-            output_type.calculate_nodal_hierarchy()?;
+            output_type.nodal_hierarchy()?;
         }
-        output_type.calculate_nodal_influencers();
+        output_type.nodal_influencers();
         match smoothing_method.as_str() {
             "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
             | "laplace" => {
@@ -975,7 +977,7 @@ fn read_input(
             if !quiet {
                 println!();
             }
-            InputTypes::Abaqus(HexahedralFiniteElementsOld::from_inp(input)?)
+            InputTypes::Abaqus(HexahedralFiniteElements::from_inp(input)?)
         }
         Some("npy") => {
             if !quiet {

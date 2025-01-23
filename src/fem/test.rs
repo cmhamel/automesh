@@ -1,7 +1,8 @@
 use super::{
     calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
-    calculate_minimum_scaled_jacobians, Blocks, Coordinates, FiniteElements, HexConnectivity,
-    Nodes, Smoothing, VecConnectivity,
+    calculate_minimum_scaled_jacobians,
+    hex::{HexahedralFiniteElements, NUM_NODES_HEX},
+    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Smoothing, VecConnectivity,
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -26,7 +27,7 @@ impl FooClone for Coordinates {
 #[allow(clippy::too_many_arguments)]
 fn test_finite_elements(
     element_blocks: Blocks,
-    element_node_connectivity: HexConnectivity,
+    element_node_connectivity: Connectivity<NUM_NODES_HEX>,
     nodal_coordinates: Coordinates,
     node_element_connectivity_gold: VecConnectivity,
     node_node_connectivity_gold: VecConnectivity,
@@ -37,25 +38,23 @@ fn test_finite_elements(
     smoothed_coordinates_gold: Option<Vec<Coordinates>>,
     nodal_influencers_gold: VecConnectivity,
 ) {
-    let mut finite_elements = FiniteElements::from_data(
+    let mut finite_elements = HexahedralFiniteElements::from_data(
         element_blocks.clone(),
         element_node_connectivity.clone(),
         nodal_coordinates.clone_foo(),
     );
     assert_eq!(
-        finite_elements.calculate_node_node_connectivity(),
+        finite_elements.node_node_connectivity(),
         Err("Need to calculate the node-to-element connectivity first")
     );
     assert_eq!(
-        finite_elements.calculate_nodal_hierarchy(),
+        finite_elements.nodal_hierarchy(),
         Err("Need to calculate the node-to-element connectivity first")
     );
-    finite_elements
-        .calculate_node_element_connectivity()
-        .unwrap();
-    finite_elements.calculate_node_node_connectivity().unwrap();
-    finite_elements.calculate_nodal_hierarchy().unwrap();
-    finite_elements.calculate_nodal_influencers();
+    finite_elements.node_element_connectivity().unwrap();
+    finite_elements.node_node_connectivity().unwrap();
+    finite_elements.nodal_hierarchy().unwrap();
+    finite_elements.nodal_influencers();
     assert_eq!(
         finite_elements.get_nodal_influencers(),
         &nodal_influencers_gold
@@ -72,8 +71,7 @@ fn test_finite_elements(
     assert_eq!(finite_elements.get_interface_nodes(), &interface_nodes_gold);
     assert_eq!(finite_elements.get_interior_nodes(), &interior_nodes_gold);
     if let Some(gold) = laplacian_gold {
-        let laplacian =
-            finite_elements.calculate_laplacian(finite_elements.get_node_node_connectivity());
+        let laplacian = finite_elements.laplacian(finite_elements.get_node_node_connectivity());
         assert!(laplacian.len() == gold.len());
         laplacian
             .iter()
@@ -94,17 +92,15 @@ fn test_finite_elements(
     if let Some(gold_set) = smoothed_coordinates_gold {
         gold_set.iter().enumerate().for_each(|(index, gold)| {
             let iterations = index + 1;
-            let mut finite_elements = FiniteElements::from_data(
+            let mut finite_elements = HexahedralFiniteElements::from_data(
                 element_blocks.clone(),
                 element_node_connectivity.clone(),
                 nodal_coordinates.clone_foo(),
             );
-            finite_elements
-                .calculate_node_element_connectivity()
-                .unwrap();
-            finite_elements.calculate_node_node_connectivity().unwrap();
-            finite_elements.calculate_nodal_hierarchy().unwrap();
-            finite_elements.calculate_nodal_influencers();
+            finite_elements.node_element_connectivity().unwrap();
+            finite_elements.node_node_connectivity().unwrap();
+            finite_elements.nodal_hierarchy().unwrap();
+            finite_elements.nodal_influencers();
             finite_elements
                 .smooth(Smoothing::Laplacian(iterations, SMOOTHING_SCALE))
                 .unwrap();
@@ -125,16 +121,14 @@ fn test_finite_elements(
                 },
             );
         });
-        let mut finite_elements = FiniteElements::from_data(
+        let mut finite_elements = HexahedralFiniteElements::from_data(
             element_blocks.clone(),
             element_node_connectivity.clone(),
             nodal_coordinates.clone_foo(),
         );
-        finite_elements
-            .calculate_node_element_connectivity()
-            .unwrap();
-        finite_elements.calculate_node_node_connectivity().unwrap();
-        finite_elements.calculate_nodal_hierarchy().unwrap();
+        finite_elements.node_element_connectivity().unwrap();
+        finite_elements.node_node_connectivity().unwrap();
+        finite_elements.nodal_hierarchy().unwrap();
         let prescribed_nodes = finite_elements.get_boundary_nodes().clone();
         finite_elements
             .set_prescribed_nodes(Some(prescribed_nodes), None)
@@ -1643,13 +1637,14 @@ fn bracket() {
         [1.5, 4.0, 1.0],
         [3.5, 4.0, 1.0],
     ]);
-    let mut finite_elements =
-        FiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates);
-    finite_elements
-        .calculate_node_element_connectivity()
-        .unwrap();
-    finite_elements.calculate_node_node_connectivity().unwrap();
-    finite_elements.calculate_nodal_hierarchy().unwrap();
+    let mut finite_elements = HexahedralFiniteElements::from_data(
+        element_blocks,
+        element_node_connectivity,
+        nodal_coordinates,
+    );
+    finite_elements.node_element_connectivity().unwrap();
+    finite_elements.node_node_connectivity().unwrap();
+    finite_elements.nodal_hierarchy().unwrap();
     finite_elements
         .set_prescribed_nodes(
             Some(prescribed_nodes_homogeneous),
@@ -1659,7 +1654,7 @@ fn bracket() {
             )),
         )
         .unwrap();
-    finite_elements.calculate_nodal_influencers();
+    finite_elements.nodal_influencers();
     finite_elements
         .smooth(Smoothing::Laplacian(10, SMOOTHING_SCALE))
         .unwrap();
@@ -2919,17 +2914,17 @@ fn valence_3_and_4_noised() {
     // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
 
     // Gold values
-    let maximum_edge_ratios_gold = vec![1.2922598186116965, 1.167883631481492];
-    let mininum_scaled_jacobians_gold = vec![0.19173666980464177, 0.3743932367172326];
-    let maximum_skews_gold = vec![0.6797482929789989, 0.4864935739781938];
-    let element_volumes_gold = vec![1.24779970625, 0.9844007500000004];
+    let maximum_edge_ratios_gold = [1.2922598186116965, 1.167883631481492];
+    let mininum_scaled_jacobians_gold = [0.19173666980464177, 0.3743932367172326];
+    let maximum_skews_gold = [0.6797482929789989, 0.4864935739781938];
+    let element_volumes_gold = [1.24779970625, 0.9844007500000004];
 
     // Small tolerance for comparison of two floats
     let epsilon = 1e-10;
 
     let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
 
-    let nodal_coordinates = vec![
+    let nodal_coordinates = [
         Coordinates::new(&[
             [0.110000e0, 0.120000e0, -0.130000e0],
             [1.200000e0, -0.200000e0, 0.000000e0],
@@ -2954,26 +2949,22 @@ fn valence_3_and_4_noised() {
 
     let maximum_edge_ratios: Vec<f64> = nodal_coordinates
         .iter()
-        .map(|x| calculate_maximum_edge_ratios(&element_node_connectivity, x).to_vec())
-        .flatten()
+        .flat_map(|x| calculate_maximum_edge_ratios(&element_node_connectivity, x).to_vec())
         .collect();
 
     let minimum_scaled_jacobians: Vec<f64> = nodal_coordinates
         .iter()
-        .map(|x| calculate_minimum_scaled_jacobians(&element_node_connectivity, x).to_vec())
-        .flatten()
+        .flat_map(|x| calculate_minimum_scaled_jacobians(&element_node_connectivity, x).to_vec())
         .collect();
 
     let maximum_skews: Vec<f64> = nodal_coordinates
         .iter()
-        .map(|x| calculate_maximum_skews(&element_node_connectivity, x).to_vec())
-        .flatten()
+        .flat_map(|x| calculate_maximum_skews(&element_node_connectivity, x).to_vec())
         .collect();
 
     let element_volumes: Vec<f64> = nodal_coordinates
         .iter()
-        .map(|x| calculate_element_volumes(&element_node_connectivity, x).to_vec())
-        .flatten()
+        .flat_map(|x| calculate_element_volumes(&element_node_connectivity, x).to_vec())
         .collect();
 
     // Assert that the calculated values are approximately equal to the gold values

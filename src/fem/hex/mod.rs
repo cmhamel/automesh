@@ -1,5 +1,11 @@
+#[cfg(feature = "python")]
+pub mod py;
+
+use super::{
+    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity,
+    ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET,
+};
 use conspire::math::TensorVec;
-use super::{Blocks, Connectivity, Coordinates, FiniteElementMesh, Nodes, Smoothing, VecConnectivity, NODE_NUMBERING_OFFSET, ELEMENT_NUMBERING_OFFSET};
 
 /// The number of nodes in a hexahedral finite element.
 pub const NUM_NODES_HEX: usize = 8;
@@ -25,7 +31,7 @@ pub struct HexahedralFiniteElements {
     prescribed_nodes_inhomogeneous_coordinates: Coordinates,
 }
 
-impl FiniteElementMesh<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFiniteElements {
+impl FiniteElements<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFiniteElements {
     fn connected_nodes(node: &usize) -> [usize; NODES_CONN_ELEMENT_HEX] {
         match node {
             0 => [1, 3, 4],
@@ -123,12 +129,6 @@ impl FiniteElementMesh<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFini
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
-    fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
-        //
-        // can any of this be in a default method?
-        //
-        panic!()
-    }
     fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
     }
@@ -141,8 +141,20 @@ impl FiniteElementMesh<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFini
     fn get_exterior_nodes(&self) -> &Nodes {
         &self.exterior_nodes
     }
+    fn get_interface_nodes(&self) -> &Nodes {
+        &self.interface_nodes
+    }
+    fn get_interior_nodes(&self) -> &Nodes {
+        &self.interior_nodes
+    }
     fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
+    }
+    fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+        &mut self.nodal_coordinates
+    }
+    fn get_nodal_influencers(&self) -> &VecConnectivity {
+        &self.nodal_influencers
     }
     fn get_node_element_connectivity(&self) -> &VecConnectivity {
         &self.node_element_connectivity
@@ -153,12 +165,50 @@ impl FiniteElementMesh<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFini
     fn get_prescribed_nodes(&self) -> &Nodes {
         &self.prescribed_nodes
     }
-    fn set_node_node_connectivity(&mut self, node_node_connectivity: VecConnectivity) -> Result<(), &str> {
-        if self.node_node_connectivity.is_empty() {
-            self.node_node_connectivity = node_node_connectivity;
-            Ok(())
-        } else {
-            Err("Already set the node-to-node connectivity")
+    fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_homogeneous
+    }
+    fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_inhomogeneous
+    }
+    fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
+        &self.prescribed_nodes_inhomogeneous_coordinates
+    }
+    fn set_nodal_influencers(&mut self, nodal_influencers: VecConnectivity) {
+        self.nodal_influencers = nodal_influencers
+    }
+    fn set_node_element_connectivity(&mut self, node_element_connectivity: VecConnectivity) {
+        self.node_element_connectivity = node_element_connectivity
+    }
+    fn set_node_node_connectivity(&mut self, node_node_connectivity: VecConnectivity) {
+        self.node_node_connectivity = node_node_connectivity;
+    }
+    fn set_prescribed_nodes(
+        &mut self,
+        homogeneous: Option<Nodes>,
+        inhomogeneous: Option<(Coordinates, Nodes)>,
+    ) -> Result<(), &str> {
+        if let Some(homogeneous_nodes) = homogeneous {
+            self.prescribed_nodes_homogeneous = homogeneous_nodes;
+            self.prescribed_nodes_homogeneous.sort();
+            self.prescribed_nodes_homogeneous.dedup();
         }
+        if let Some(inhomogeneous_nodes) = inhomogeneous {
+            self.prescribed_nodes_inhomogeneous = inhomogeneous_nodes.1;
+            self.prescribed_nodes_inhomogeneous_coordinates = inhomogeneous_nodes.0;
+            let mut sorted_unique = self.prescribed_nodes_inhomogeneous.clone();
+            sorted_unique.sort();
+            sorted_unique.dedup();
+            if sorted_unique != self.prescribed_nodes_inhomogeneous {
+                return Err("Inhomogeneously-prescribed nodes must be sorted and unique.");
+            }
+        }
+        self.prescribed_nodes = self
+            .prescribed_nodes_homogeneous
+            .clone()
+            .into_iter()
+            .chain(self.prescribed_nodes_inhomogeneous.clone())
+            .collect();
+        Ok(())
     }
 }
