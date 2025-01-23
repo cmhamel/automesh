@@ -4,7 +4,8 @@ use std::time::Instant;
 use super::{
     fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
     voxel::{Nel, Scale},
-    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels, NSD,
+    Coordinate, Coordinates, FiniteElements, HexahedralFiniteElements, Vector, VoxelData, Voxels,
+    NSD,
 };
 use conspire::math::{TensorArray, TensorVec};
 use ndarray::{s, Axis};

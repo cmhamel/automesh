@@ -68,6 +68,8 @@ fn compare_files(
 
 #[cfg(not(target_os = "windows"))]
 mod read_inp {
+    use automesh::HexahedralFiniteElements;
+
     use super::*;
     #[test]
     fn letter_f_3d() {
@@ -80,7 +82,7 @@ mod read_inp {
             )
             .unwrap();
         fem.write_inp("target/letter_f_3d.inp").unwrap();
-        let read = FiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
+        let read = HexahedralFiniteElements::from_inp("target/letter_f_3d.inp").unwrap();
         assert_eq!(fem.get_element_blocks(), read.get_element_blocks());
         assert_eq!(
             fem.get_element_node_connectivity(),

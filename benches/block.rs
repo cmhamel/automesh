@@ -1,7 +1,9 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{FiniteElements, Octree, Smoothing, Tree, Vector, Voxels};
+use automesh::{
+    FiniteElements, HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels, NSD,
+};
 use conspire::math::TensorArray;
 use std::{
     fs::{read_dir, remove_file},
@@ -10,8 +12,8 @@ use std::{
 use test::Bencher;
 
 const REMOVE: Option<Vec<u8>> = None;
-const SCALE: [f64; 3] = [1.0, 1.0, 1.0];
-const TRANSLATE: [f64; 3] = [0.0, 0.0, 0.0];
+const SCALE: [f64; NSD] = [1.0, 1.0, 1.0];
+const TRANSLATE: [f64; NSD] = [0.0, 0.0, 0.0];
 
 const SMOOTHING_ITERATIONS: usize = 1;
 const SMOOTHING_PASS_BAND: f64 = 0.1;
@@ -35,57 +37,57 @@ macro_rules! bench_block {
     ($nel: expr) => {
         const NEL: [usize; 3] = [$nel, $nel, $nel];
         #[bench]
-        fn calculate_laplacian(bencher: &mut Bencher) -> Result<(), String> {
+        fn laplacian(bencher: &mut Bencher) -> Result<(), String> {
             let voxels =
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
             let node_node_connectivity = fem.get_node_node_connectivity();
-            bencher.iter(|| fem.calculate_laplacian(node_node_connectivity));
+            bencher.iter(|| fem.laplacian(node_node_connectivity));
             Ok(())
         }
         #[bench]
-        fn calculate_nodal_hierarchy(bencher: &mut Bencher) -> Result<(), String> {
+        fn nodal_hierarchy(bencher: &mut Bencher) -> Result<(), String> {
             let voxels =
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
-            bencher.iter(|| fem.calculate_nodal_hierarchy().unwrap());
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
+            bencher.iter(|| fem.nodal_hierarchy().unwrap());
             Ok(())
         }
         #[bench]
-        fn calculate_nodal_influencers(bencher: &mut Bencher) -> Result<(), String> {
+        fn nodal_influencers(bencher: &mut Bencher) -> Result<(), String> {
             let voxels =
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
-            fem.calculate_nodal_hierarchy()?;
-            bencher.iter(|| fem.calculate_nodal_influencers());
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
+            fem.nodal_hierarchy()?;
+            bencher.iter(|| fem.nodal_influencers());
             Ok(())
         }
         #[bench]
-        fn calculate_node_element_connectivity(bencher: &mut Bencher) -> Result<(), String> {
+        fn node_element_connectivity(bencher: &mut Bencher) -> Result<(), String> {
             let voxels =
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            bencher.iter(|| fem.calculate_node_element_connectivity().unwrap());
+            bencher.iter(|| fem.node_element_connectivity().unwrap());
             Ok(())
         }
         #[bench]
-        fn calculate_node_node_connectivity(bencher: &mut Bencher) -> Result<(), String> {
+        fn node_node_connectivity(bencher: &mut Bencher) -> Result<(), String> {
             let voxels =
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            bencher.iter(|| fem.calculate_node_node_connectivity().unwrap());
+            fem.node_element_connectivity()?;
+            bencher.iter(|| fem.node_node_connectivity().unwrap());
             Ok(())
         }
         #[bench]
@@ -95,7 +97,7 @@ macro_rules! bench_block {
             let fem = voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
             let inp = format!("target/block_{}.inp", $nel);
             fem.write_inp(&inp).unwrap();
-            bencher.iter(|| FiniteElements::from_inp(&inp).unwrap());
+            bencher.iter(|| HexahedralFiniteElements::from_inp(&inp).unwrap());
             Ok(())
         }
         #[bench]
@@ -134,10 +136,10 @@ macro_rules! bench_block {
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
-            fem.calculate_nodal_hierarchy()?;
-            fem.calculate_nodal_influencers();
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
+            fem.nodal_hierarchy()?;
+            fem.nodal_influencers();
             let prescribed_nodes = fem.get_boundary_nodes().clone();
             bencher.iter(|| {
                 fem.set_prescribed_nodes(Some(prescribed_nodes.clone()), None)
@@ -151,9 +153,9 @@ macro_rules! bench_block {
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
-            fem.calculate_nodal_influencers();
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
+            fem.nodal_influencers();
             bencher.iter(|| {
                 fem.smooth(Smoothing::Laplacian(
                     SMOOTHING_ITERATIONS,
@@ -169,9 +171,9 @@ macro_rules! bench_block {
                 Voxels::from_spn(&format!("benches/block/block_{}.spn", $nel), NEL.into())?;
             let mut fem =
                 voxels.into_finite_elements(REMOVE, SCALE.into(), &Vector::new(TRANSLATE))?;
-            fem.calculate_node_element_connectivity()?;
-            fem.calculate_node_node_connectivity()?;
-            fem.calculate_nodal_influencers();
+            fem.node_element_connectivity()?;
+            fem.node_node_connectivity()?;
+            fem.nodal_influencers();
             bencher.iter(|| {
                 fem.smooth(Smoothing::Taubin(
                     SMOOTHING_ITERATIONS,

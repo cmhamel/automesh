@@ -1,6 +1,6 @@
 use super::{
     super::{
-        fem::py::FiniteElements,
+        fem::hex::py::HexahedralFiniteElements,
         py::{IntoFoo, PyIntermediateError},
         Blocks, NSD,
     },
@@ -30,7 +30,7 @@ impl Voxels {
         remove: Option<Blocks>,
         scale: [f64; NSD],
         translate: [f64; NSD],
-    ) -> Result<FiniteElements, PyIntermediateError> {
+    ) -> Result<HexahedralFiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(
                 &self.data,
@@ -38,7 +38,7 @@ impl Voxels {
                 scale.into(),
                 &Vector::new(translate),
             )?;
-        Ok(FiniteElements::from_data(
+        Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates.as_foo(),
