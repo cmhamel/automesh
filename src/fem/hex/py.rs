@@ -10,11 +10,6 @@ use super::{
 };
 use pyo3::prelude::*;
 
-pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    parent_module.add_class::<HexahedralFiniteElements>()?;
-    Ok(())
-}
-
 /// The hexahedral finite elements class.
 #[pyclass]
 pub struct HexahedralFiniteElements {

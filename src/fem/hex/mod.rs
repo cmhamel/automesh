@@ -13,7 +13,7 @@ pub const NUM_NODES_HEX: usize = 8;
 /// The number of nodes a given node is connected to in a hexahedral finite element.
 pub const NODES_CONN_ELEMENT_HEX: usize = 3;
 
-/// The hexahedral finite elements mesh type.
+/// The hexahedral finite elements type.
 pub struct HexahedralFiniteElements {
     boundary_nodes: Nodes,
     element_blocks: Blocks,

@@ -5,6 +5,7 @@ pub mod py;
 pub mod test;
 
 pub mod hex;
+pub mod tri;
 
 pub use hex::NUM_NODES_HEX;
 

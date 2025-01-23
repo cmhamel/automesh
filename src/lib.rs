@@ -16,7 +16,9 @@ mod fem;
 mod tree;
 mod voxel;
 
-pub use fem::{hex::HexahedralFiniteElements, Blocks, FiniteElements, Smoothing};
+pub use fem::{
+    hex::HexahedralFiniteElements, tri::TriangularFiniteElements, Blocks, FiniteElements, Smoothing,
+};
 pub use tree::{Octree, Tree};
 pub use voxel::{Nel, Scale, VoxelData, Voxels};
 
