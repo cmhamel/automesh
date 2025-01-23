@@ -1,7 +1,5 @@
-use super::{
-    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity,
-    ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET,
-};
+use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity};
+use conspire::math::TensorVec;
 
 /// The number of nodes in a triangular finite element.
 pub const NUM_NODES_TRI: usize = 3;
@@ -25,4 +23,122 @@ pub struct TriangularFiniteElements {
     prescribed_nodes_homogeneous: Nodes,
     prescribed_nodes_inhomogeneous: Nodes,
     prescribed_nodes_inhomogeneous_coordinates: Coordinates,
+}
+
+impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteElements {
+    fn connected_nodes(node: &usize) -> [usize; NODES_CONN_ELEMENT_TRI] {
+        match node {
+            0 => [1, 2],
+            1 => [0, 2],
+            2 => [0, 1],
+            _ => panic!(),
+        }
+    }
+    fn from_data(
+        element_blocks: Blocks,
+        element_node_connectivity: Connectivity<NUM_NODES_TRI>,
+        nodal_coordinates: Coordinates,
+    ) -> Self {
+        Self {
+            boundary_nodes: vec![],
+            element_blocks,
+            element_node_connectivity,
+            exterior_nodes: vec![],
+            interface_nodes: vec![],
+            interior_nodes: vec![],
+            nodal_coordinates,
+            nodal_influencers: vec![],
+            node_element_connectivity: vec![],
+            node_node_connectivity: vec![],
+            prescribed_nodes: vec![],
+            prescribed_nodes_homogeneous: vec![],
+            prescribed_nodes_inhomogeneous: vec![],
+            prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
+        }
+    }
+    fn nodal_hierarchy(&mut self) -> Result<(), &str> {
+        todo!()
+    }
+    fn get_boundary_nodes(&self) -> &Nodes {
+        &self.boundary_nodes
+    }
+    fn get_element_blocks(&self) -> &Blocks {
+        &self.element_blocks
+    }
+    fn get_element_node_connectivity(&self) -> &Connectivity<NUM_NODES_TRI> {
+        &self.element_node_connectivity
+    }
+    fn get_exterior_nodes(&self) -> &Nodes {
+        &self.exterior_nodes
+    }
+    fn get_interface_nodes(&self) -> &Nodes {
+        &self.interface_nodes
+    }
+    fn get_interior_nodes(&self) -> &Nodes {
+        &self.interior_nodes
+    }
+    fn get_nodal_coordinates(&self) -> &Coordinates {
+        &self.nodal_coordinates
+    }
+    fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+        &mut self.nodal_coordinates
+    }
+    fn get_nodal_influencers(&self) -> &VecConnectivity {
+        &self.nodal_influencers
+    }
+    fn get_node_element_connectivity(&self) -> &VecConnectivity {
+        &self.node_element_connectivity
+    }
+    fn get_node_node_connectivity(&self) -> &VecConnectivity {
+        &self.node_node_connectivity
+    }
+    fn get_prescribed_nodes(&self) -> &Nodes {
+        &self.prescribed_nodes
+    }
+    fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_homogeneous
+    }
+    fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_inhomogeneous
+    }
+    fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
+        &self.prescribed_nodes_inhomogeneous_coordinates
+    }
+    fn set_nodal_influencers(&mut self, nodal_influencers: VecConnectivity) {
+        self.nodal_influencers = nodal_influencers
+    }
+    fn set_node_element_connectivity(&mut self, node_element_connectivity: VecConnectivity) {
+        self.node_element_connectivity = node_element_connectivity
+    }
+    fn set_node_node_connectivity(&mut self, node_node_connectivity: VecConnectivity) {
+        self.node_node_connectivity = node_node_connectivity;
+    }
+    fn set_prescribed_nodes(
+        &mut self,
+        homogeneous: Option<Nodes>,
+        inhomogeneous: Option<(Coordinates, Nodes)>,
+    ) -> Result<(), &str> {
+        if let Some(homogeneous_nodes) = homogeneous {
+            self.prescribed_nodes_homogeneous = homogeneous_nodes;
+            self.prescribed_nodes_homogeneous.sort();
+            self.prescribed_nodes_homogeneous.dedup();
+        }
+        if let Some(inhomogeneous_nodes) = inhomogeneous {
+            self.prescribed_nodes_inhomogeneous = inhomogeneous_nodes.1;
+            self.prescribed_nodes_inhomogeneous_coordinates = inhomogeneous_nodes.0;
+            let mut sorted_unique = self.prescribed_nodes_inhomogeneous.clone();
+            sorted_unique.sort();
+            sorted_unique.dedup();
+            if sorted_unique != self.prescribed_nodes_inhomogeneous {
+                return Err("Inhomogeneously-prescribed nodes must be sorted and unique.");
+            }
+        }
+        self.prescribed_nodes = self
+            .prescribed_nodes_homogeneous
+            .clone()
+            .into_iter()
+            .chain(self.prescribed_nodes_inhomogeneous.clone())
+            .collect();
+        Ok(())
+    }
 }
