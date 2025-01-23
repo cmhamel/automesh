@@ -1,3 +1,6 @@
+#[cfg(feature = "python")]
+pub mod py;
+
 use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity};
 use conspire::math::TensorVec;
 
