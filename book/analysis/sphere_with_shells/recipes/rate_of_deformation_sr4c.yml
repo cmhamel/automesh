@@ -1,116 +1,116 @@
 m0:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 14
+  ycolumn: 27
   plot_kwargs:
     label: r=0 cm
     linestyle: "--"
 m1:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 15
+  ycolumn: 28
   plot_kwargs:
     label: r=1 cm
     linestyle: ":"
 m2:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 16
+  ycolumn: 29
   plot_kwargs:
     label: r=2 cm
-    marker: "$2$"
+    # marker: "$2$"
 m3:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 17
+  ycolumn: 30
   plot_kwargs:
     label: r=3 cm
 m4:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 18
+  ycolumn: 31
   plot_kwargs:
     label: r=4 cm
-    marker: "$4$"
+    # marker: "$4$"
 m5:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 19
+  ycolumn: 32
   plot_kwargs:
     label: r=5 cm
 m6:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 20
+  ycolumn: 33
   plot_kwargs:
     label: r=6 cm
-    marker: "$6$"
+    # marker: "$6$"
 m7:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 21
+  ycolumn: 34
   plot_kwargs:
     label: r=7 cm
 m8:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 22
+  ycolumn: 35
   plot_kwargs:
     label: r=8 cm
-    marker: "$8$"
+    # marker: "$8$"
 m9:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 23
+  ycolumn: 36
   plot_kwargs:
     label: r=9 cm
 m10:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 24
+  ycolumn: 37
   plot_kwargs:
     label: r=10 cm
-    marker: "$10$"
+    # marker: "$10$"
 m11:
   class: model
-  folder: ~/autotwin/ssm/input/sr2
+  folder: ~/autotwin/ssm/input/sr4c
   file: history.csv
   skip_rows: 3
-  ycolumn: 25
+  ycolumn: 38
   plot_kwargs:
     label: r=11 cm
 figure:
   class: view
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
-  file: log_strain_sr2.svg
+  file: rate_of_deformation_sr4c.svg
   size: [8.0, 6.0]
-  title: Maximum Principal Log Strain at Various Radii (sr2)
+  title: Maximum Principal Rate of Deformation at Various Radii (sr4c)
   xlabel: time (s)
-  ylabel: maximum principal log strain (cm/cm)
+  ylabel: maximum principal rate of deformation (1/s)
   xlim: [-0.001, 0.021]
-  ylim: [-0.01, 1.86]
+  ylim: [-5.0, 2675.0]
   details: true
   display: true
   dpi: 100

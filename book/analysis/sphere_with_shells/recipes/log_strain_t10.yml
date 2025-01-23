@@ -41,6 +41,14 @@ m10_sr3c:
   ycolumn: 24
   plot_kwargs:
     label: sr3c
+m10_sr4c:
+  class: model
+  folder: ~/autotwin/ssm/input/sr4c
+  file: history.csv
+  skip_rows: 3
+  ycolumn: 24
+  plot_kwargs:
+    label: sr4c
 figure:
   class: view
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
@@ -50,7 +58,7 @@ figure:
   xlabel: time (s)
   ylabel: maximum principal log strain (cm/cm)
   xlim: [-0.001, 0.021]
-  ylim: [-0.01, 1.46]
+  ylim: [-0.01, 1.86]
   details: true
   display: true
   dpi: 100

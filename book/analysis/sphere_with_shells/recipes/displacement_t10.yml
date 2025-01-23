@@ -41,6 +41,14 @@ m10_sr3c:
   ycolumn: 11
   plot_kwargs:
     label: sr3c
+m10_sr4c:
+  class: model
+  folder: ~/autotwin/ssm/input/sr4c
+  file: history.csv
+  skip_rows: 3
+  ycolumn: 11
+  plot_kwargs:
+    label: sr4c
 figure:
   class: view
   folder: ~/autotwin/automesh/book/analysis/sphere_with_shells/img
