@@ -1,11 +1,11 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tree, Vector, Voxels,
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree, Vector, Voxels,
 };
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
-use std::{io::Error as ErrorIO, path::Path, time::Instant};
+use std::{io::Error as ErrorIO, path::Path, process::Output, time::Instant};
 use vtkio::Error as ErrorVtk;
 
 macro_rules! about {
@@ -92,6 +92,61 @@ enum Commands {
         /// Number of voxels in the z-direction
         #[arg(long, short = 'z', value_name = "NEL")]
         nelz: Option<usize>,
+
+        /// Pass to quiet the terminal output
+        #[arg(action, long, short)]
+        quiet: bool,
+    },
+
+    /// Creates an isosurface mesh from a tessellation:
+    /// stl -> (exo | inp | mesh | vtk)
+    Isomesh {
+        /// Tessellation input file (stl)
+        #[arg(long, short, value_name = "FILE")]
+        input: String,
+
+        /// Mesh output file (exo | inp | mesh | vtk)
+        #[arg(long, short, value_name = "FILE")]
+        output: String,
+
+        // /// Scaling (> 0.0) in the x-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // xscale: f64,
+
+        // /// Scaling (> 0.0) in the y-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // yscale: f64,
+
+        // /// Scaling (> 0.0) in the z-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // zscale: f64,
+
+        // /// Translation in the x-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // xtranslate: f64,
+
+        // /// Translation in the y-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // ytranslate: f64,
+
+        // /// Translation in the z-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // ztranslate: f64,
 
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
@@ -189,9 +244,9 @@ enum Commands {
         dual: bool,
     },
 
-    /// Quality metrics for an existing finite element mesh: inp -> csv
+    /// Quality metrics for an existing finite element mesh: (inp | stl) -> csv
     Metrics {
-        /// Mesh input file (inp)
+        /// Mesh (inp) or tessellation (stl) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
@@ -288,18 +343,18 @@ enum Commands {
         boundaries: bool,
     },
 
-    /// Applies smoothing to an existing finite element mesh:
-    /// inp -> (exo | inp | mesh | vtk)
+    /// Applies smoothing to an existing mesh or tessellation:
+    /// inp -> (exo | inp | mesh | vtk), stl -> stl
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Mesh input file (inp)
+        /// Mesh (inp) or tessellation (stl) input file 
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Smoothed mesh output file (exo | inp | mesh | vtk)
+        /// Smoothed mesh (exo | inp | mesh | vtk) or tessellation (stl) output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -424,6 +479,7 @@ enum InputTypes {
     Abaqus(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
+    Stl(Tessellation),
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -433,6 +489,7 @@ enum OutputTypes {
     Mesh(HexahedralFiniteElements),
     Npy(Voxels),
     Spn(Voxels),
+    Stl(Tessellation),
     Vtk(HexahedralFiniteElements),
 }
 
@@ -471,6 +528,30 @@ fn main() -> Result<(), ErrorWrapper> {
         }) => {
             is_quiet = quiet;
             defeature(input, output, min, nelx, nely, nelz, quiet)
+        }
+        Some(Commands::Isomesh {
+            input,
+            output,
+            // xscale,
+            // yscale,
+            // zscale,
+            // xtranslate,
+            // ytranslate,
+            // ztranslate,
+            quiet
+        }) => {
+            is_quiet = quiet;
+            isomesh(
+                input,
+                output,
+                // xscale,
+                // yscale,
+                // zscale,
+                // xtranslate,
+                // ytranslate,
+                // ztranslate,
+                quiet,
+            )
         }
         Some(Commands::Mesh {
             meshing,
@@ -582,6 +663,7 @@ fn convert(
             Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
             _ => invalid_output(&output, output_extension),
         },
+        InputTypes::Stl(_) => todo!(),
     }
 }
 
@@ -630,6 +712,34 @@ fn defeature(
             ))?
         }
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn isomesh(
+    input: String,
+    output: String,
+    // xscale: f64,
+    // yscale: f64,
+    // zscale: f64,
+    // xtranslate: f64,
+    // ytranslate: f64,
+    // ztranslate: f64,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let time = Instant::now();
+    if !quiet {
+        println!("     \x1b[1;96mIsomeshing\x1b[0m {}", output);
+    }
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+        Some("stl") => write_output(output, OutputTypes::Stl(output_type), quiet)?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+        _ => invalid_output(&output, output_extension)?,
+    }
+    Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -776,7 +886,8 @@ fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrappe
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No metrics for segmentation file {}", input))?
-        }
+        },
+        InputTypes::Stl(_) => todo!(),
     };
     metrics_inner(&output_type, output, quiet)
 }
@@ -882,7 +993,8 @@ fn smooth(
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No smoothing for segmentation file {}", input))?
-        }
+        },
+        InputTypes::Stl(_) => todo!(),
     };
     apply_smoothing_method(
         &mut output_type,
@@ -1037,6 +1149,8 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
         OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
         OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
         OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
+        // OutputTypes::Stl(_) => todo!(),
+        OutputTypes::Stl(tessellation) => tessellation.write_stl(&output)?,
         OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
     }
     if !quiet {

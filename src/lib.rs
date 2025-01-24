@@ -13,12 +13,14 @@
 mod py;
 
 mod fem;
+mod tessellation;
 mod tree;
 mod voxel;
 
 pub use fem::{
     hex::HexahedralFiniteElements, tri::TriangularFiniteElements, Blocks, FiniteElements, Smoothing,
 };
+pub use tessellation::Tessellation;
 pub use tree::{Octree, Tree};
 pub use voxel::{Nel, Scale, VoxelData, Voxels};
 
