@@ -195,7 +195,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Quality metrics output file (csv)
+        /// Quality metrics output file (csv | npy)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -319,7 +319,7 @@ enum Commands {
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
 
-        /// Name of the quality metrics file
+        /// Name of the quality metrics file (csv | npy)
         #[arg(long, value_name = "FILE")]
         metrics: Option<String>,
 
