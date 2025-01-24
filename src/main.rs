@@ -39,13 +39,14 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Converts between mesh or segmentation file types
+    /// Converts between mesh or segmentation file types:
+    /// inp -> (exo | mesh | vtk), npy -> spn, spn -> npy
     Convert {
-        /// Name of the original mesh or segmentation file
+        /// Mesh (inp) or segmentation (npy | spn) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the converted mesh or segmentation file
+        /// Mesh (exo | mesh | vtk) or segmentation (npy | spn) output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -66,13 +67,13 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Defeatures and creates a new segmentation
+    /// Defeatures and creates a new segmentation: (npy | spn) -> (npy | spn)
     Defeature {
-        /// Name of the original segmentation file
+        /// Segmentation input file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the defeatured segmentation file
+        /// Defeatured segmentation output file (npz | spn)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -97,16 +98,17 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a finite element mesh from a segmentation
+    /// Creates a finite element mesh from a segmentation:
+    /// (npy | spn) -> (exo | inp | mesh | vtk)
     Mesh {
         #[command(subcommand)]
         meshing: Option<MeshingCommands>,
 
-        /// Name of the segmentation input file
+        /// Segmentation input file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the mesh output file
+        /// Mesh output file (exo | inp | mesh | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -178,17 +180,22 @@ enum Commands {
         quiet: bool,
 
         /// Pass to mesh using dualization
-        #[arg(action, hide = true, long, short)]
+        // #[arg(action, hide = true, long, short)]
+        // #TODO: Ask MRB:
+        // Command mesh: Short option names must be unique for each argument,
+        // but '-d' is in use by both 'defeature' and 'dual'
+        // #[arg(action, long, short = 'u')]
+        #[arg(action, hide = true, long, short = 'u')]
         dual: bool,
     },
 
-    /// Quality metrics for an existing finite element mesh
+    /// Quality metrics for an existing finite element mesh: inp -> csv
     Metrics {
-        /// Name of the mesh input file
+        /// Mesh input file (inp)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the quality metrics output file
+        /// Quality metrics output file (csv)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -197,14 +204,15 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a balanced octree from a segmentation
+    /// Creates a balanced octree from a segmentation:
+    /// (npy | spn) -> (exo | inp | mesh | vtk)
     #[command(hide = true)]
     Octree {
-        /// Name of the segmentation input file
+        /// Segmentation input file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the octree output file
+        /// Octree output file (exo | inp | mesh | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -280,17 +288,18 @@ enum Commands {
         boundaries: bool,
     },
 
-    /// Applies smoothing to an existing finite element mesh
+    /// Applies smoothing to an existing finite element mesh:
+    /// inp -> (exo | inp | mesh | vtk)
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Name of the original mesh file
+        /// Mesh input file (inp)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Name of the smoothed mesh file
+        /// Smoothed mesh output file (exo | inp | mesh | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
