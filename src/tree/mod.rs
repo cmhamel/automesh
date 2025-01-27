@@ -7,7 +7,7 @@ use super::{
     Coordinate, Coordinates, FiniteElements, HexahedralFiniteElements, Vector, VoxelData, Voxels,
     NSD,
 };
-use conspire::math::{TensorArray, TensorVec, TensorRank1Vec};
+use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
