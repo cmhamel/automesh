@@ -7,7 +7,7 @@ use super::{
     Coordinate, Coordinates, FiniteElements, HexahedralFiniteElements, Vector, VoxelData, Voxels,
     NSD,
 };
-use conspire::math::{TensorArray, TensorVec};
+use conspire::math::{TensorArray, TensorVec, TensorRank1Vec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -1094,11 +1094,13 @@ impl Tree for Octree {
         self.iter().enumerate().for_each(|(cell_index, cell)| {
             if cell.get_cells().is_none() {
                 cells_nodes[cell_index] = node_index;
-                nodal_coordinates.append(&mut vec![Coordinate::new([
-                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate,
-                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate,
-                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate,
-                ])]);
+                nodal_coordinates.append(&mut TensorRank1Vec::new(
+                    &[Coordinate::new([
+                        0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate,
+                        0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate,
+                        0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate,
+                    ])]
+                ));
                 node_index += 1;
             }
         });
