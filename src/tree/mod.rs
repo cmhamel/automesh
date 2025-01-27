@@ -1094,11 +1094,11 @@ impl Tree for Octree {
         self.iter().enumerate().for_each(|(cell_index, cell)| {
             if cell.get_cells().is_none() {
                 cells_nodes[cell_index] = node_index;
-                nodal_coordinates.append(&mut TensorRank1Vec::new(&[
+                nodal_coordinates.append(&mut TensorRank1Vec::new(&[[
                     0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate,
                     0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate,
                     0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate,
-                ]));
+                ]]));
                 node_index += 1;
             }
         });
