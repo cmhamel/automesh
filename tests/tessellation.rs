@@ -1,5 +1,7 @@
 // use automesh::{Tessellation, NSD};
 use automesh::Tessellation;
+use std::fs::OpenOptions;
+use stl_io::{Triangle, Vertex};
 
 mod from_stl {
     use super::*;
@@ -64,5 +66,16 @@ mod write_stl {
         for fi in face_iter {
             println!("Face: {:?}", fi);
         }
+
+        let mesh_iter = tess.get_data().faces.iter().map(|face|
+            Triangle {
+                normal: face.normal,
+                vertices: face.vertices.iter().map(|&vertex|
+                    tess.get_data().vertices[vertex]
+                ).collect::<Vec<Vertex>>().try_into().unwrap()
+            }
+        );
+        let mut file = OpenOptions::new().write(true).create_new(true).open("meshity.stl").unwrap();
+        stl_io::write_stl(&mut file, mesh_iter).unwrap();
     }
 }

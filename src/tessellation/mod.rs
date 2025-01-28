@@ -4,8 +4,8 @@
 /// Just as voxels are not hexes, tessellations (stl file) are not 3D triangles.
 ///
 /// Read in the stl, save to Tessellation type, and then write out as a stl (stl -> stl)
-/// Convert the stl into a 3D triangular finite element mesh (stl -> inp)
 /// Smooth an stl and write out a smoothed stl (stl -> stl')
+/// Convert the stl into a 3D triangular finite element mesh (stl -> inp)
 
 /// Reference:
 /// https://github.com/hmeyer/stl_io
@@ -22,7 +22,6 @@ use stl_io::{read_stl, IndexedMesh};
 pub struct Tessellation {
     data: stl_io::IndexedMesh
 }
-
 
 /// Inherent implementation of the tessellation type
 impl Tessellation {
