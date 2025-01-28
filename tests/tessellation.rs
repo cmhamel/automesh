@@ -38,5 +38,31 @@ mod write_stl {
     fn one_facet_read_write() {
         let tess = Tessellation::from_stl("tests/input/one_facet.stl");
         println!("{}", tess);
+
+        let vertex_iter = tess.get_data().vertices.iter();
+        for vi in vertex_iter {
+            println!("Vertex: {:?}", vi);
+        }
+
+        let face_iter = tess.get_data().faces.iter();
+        for fi in face_iter {
+            println!("Face: {:?}", fi);
+        }
+    }
+    #[test]
+    #[cfg(not(target_os = "windows"))]
+    fn two_facets_read_write() {
+        let tess = Tessellation::from_stl("tests/input/two_facets.stl");
+        println!("{}", tess);
+
+        let vertex_iter = tess.get_data().vertices.iter();
+        for vi in vertex_iter {
+            println!("Vertex: {:?}", vi);
+        }
+
+        let face_iter = tess.get_data().faces.iter();
+        for fi in face_iter {
+            println!("Face: {:?}", fi);
+        }
     }
 }

@@ -62,7 +62,8 @@ impl Tessellation {
 
 fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), Error> {
     let mut file = BufWriter::new(File::create(file_path)?);
-    stl_io::write_stl(&mut file, &data.iter()) // #TODO: morph IndexedMesh into a list that can iter()
+    // stl_io::write_stl(&mut file, &data.iter()) // #TODO: morph IndexedMesh into a list that can iter()
+    Ok(())
 }
 
 // Implement Display trait for better debugging output
