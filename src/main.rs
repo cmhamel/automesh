@@ -539,20 +539,21 @@ fn main() -> Result<(), ErrorWrapper> {
             // ytranslate,
             // ztranslate,
             quiet
-        }) => {
-            is_quiet = quiet;
-            isomesh(
-                input,
-                output,
-                // xscale,
-                // yscale,
-                // zscale,
-                // xtranslate,
-                // ytranslate,
-                // ztranslate,
-                quiet,
-            )
-        }
+        }) => todo!(),
+        // }) => {
+        //     is_quiet = quiet;
+        //     isomesh(
+        //         input,
+        //         output,
+        //         // xscale,
+        //         // yscale,
+        //         // zscale,
+        //         // xtranslate,
+        //         // ytranslate,
+        //         // ztranslate,
+        //         quiet,
+        //     )
+        // }
         Some(Commands::Mesh {
             meshing,
             input,
@@ -714,33 +715,33 @@ fn defeature(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn isomesh(
-    input: String,
-    output: String,
-    // xscale: f64,
-    // yscale: f64,
-    // zscale: f64,
-    // xtranslate: f64,
-    // ytranslate: f64,
-    // ztranslate: f64,
-    quiet: bool,
-) -> Result<(), ErrorWrapper> {
-    let time = Instant::now();
-    if !quiet {
-        println!("     \x1b[1;96mIsomeshing\x1b[0m {}", output);
-    }
-    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-        Some("stl") => write_output(output, OutputTypes::Stl(output_type), quiet)?,
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => invalid_output(&output, output_extension)?,
-    }
-    Ok(())
-}
+// #[allow(clippy::too_many_arguments)]
+// fn isomesh(
+//     input: String,
+//     output: String,
+//     // xscale: f64,
+//     // yscale: f64,
+//     // zscale: f64,
+//     // xtranslate: f64,
+//     // ytranslate: f64,
+//     // ztranslate: f64,
+//     quiet: bool,
+// ) -> Result<(), ErrorWrapper> {
+//     let time = Instant::now();
+//     if !quiet {
+//         println!("     \x1b[1;96mIsomeshing\x1b[0m {}", output);
+//     }
+//     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+//     match output_extension {
+//         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+//         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+//         Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+//         Some("stl") => write_output(output, OutputTypes::Stl(output_type), quiet)?,
+//         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+//         _ => invalid_output(&output, output_extension)?,
+//     }
+//     Ok(())
+// }
 
 #[allow(clippy::too_many_arguments)]
 fn mesh(
@@ -1149,8 +1150,8 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
         OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
         OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
         OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
-        // OutputTypes::Stl(_) => todo!(),
-        OutputTypes::Stl(tessellation) => tessellation.write_stl(&output)?,
+        OutputTypes::Stl(_) => todo!(),
+        // OutputTypes::Stl(tessellation) => tessellation.write_stl(&output)?,
         OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
     }
     if !quiet {

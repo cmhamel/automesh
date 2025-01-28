@@ -12,9 +12,11 @@
 
 use std::fmt;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{BufWriter, Error};
+// use std::io::{self, Write};
 // use std::path::Path;
-use stl_io::{read_stl, write_stl};
+use stl_io::{read_stl, IndexedMesh};
+//use stl_io::{read_stl, write_stl};
 
 /// The tessellation type.
 pub struct Tessellation {
@@ -34,22 +36,33 @@ impl Tessellation {
     //     Self { data }
     // }
     
-    /// Constructs and returns a new tesselation type from a STL file.
+    /// Constructs and returns a new tessellation type from a STL file.
     pub fn from_stl(file_path: &str) -> Self {
         let mut file = File::open(file_path).expect("Failed to open STL file.");
-        let data = read_stl(&mut file).expect("Failed to read STL file.");
+        let data: IndexedMesh = read_stl(&mut file).expect("Failed to read STL file.");
         Self { data }
     }
-
-    /// Write the internal tessellation data to a binary STL file.
-    pub fn write_stl<P: AsRef<std::path::Path>>(&self, path: P) -> io::Result<()> {
-        let mut file = File::create(path)?; // Create a new file for writing
-        // #TODO: Ask MRB
-        write_stl(&mut file, &self.data)?; // Write the data to the file
-        // write_stl(&mut file, self.data.clone())?; // Write the data to the file
-        Ok(())
+    /// Returns a reference to the internal tessellation data.
+    pub fn get_data(&self) -> &IndexedMesh {
+        &self.data
     }
+    /// Write the internal tessellation data to a binary STL file.
+    pub fn write_stl(&self, file_path: &str) -> Result<(), Error> {
+        write_tessellation_to_stl(self.get_data(), file_path)
+    }
+    // pub fn write_stl<P: AsRef<std::path::Path>>(&self, path: P) -> io::Result<()> {
+    //     let mut file = File::create(path)?; // Create a new file for writing
+    //     // #TODO: Ask MRB
+    //     write_stl(&mut file, &self.data)?; // Write the data to the file
+    //     // write_stl(&mut file, self.data.clone())?; // Write the data to the file
+    //     Ok(())
+    // }
 
+}
+
+fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), Error> {
+    let mut file = BufWriter::new(File::create(file_path)?);
+    stl_io::write_stl(&mut file, &data.iter()) // #TODO: morph IndexedMesh into a list that can iter()
 }
 
 // Implement Display trait for better debugging output
