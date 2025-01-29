@@ -63,9 +63,6 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
         }
     }
     fn from_tessellation(tessellation: Tessellation) -> Self {
-        //
-        // do you need to use the normal for node numbering?
-        //
         let data = tessellation.get_data();
         let element_blocks = vec![1; data.faces.len()];
         let nodal_coordinates = data
