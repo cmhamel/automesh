@@ -28,6 +28,7 @@ MANIFEST
 *.mesh
 *.npy
 *.spn
+*.stl
 *.vtk
 
 # ignore build binaries

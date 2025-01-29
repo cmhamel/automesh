@@ -3,7 +3,7 @@ pub mod py;
 
 use super::{
     Blocks, Connectivity, Coordinate, Coordinates, FiniteElements, Nodes, Tessellation,
-    VecConnectivity,
+    VecConnectivity, NODE_NUMBERING_OFFSET,
 };
 use conspire::math::{TensorArray, TensorVec};
 
@@ -70,7 +70,9 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
             .iter()
             .map(|&vertex| Coordinate::new([vertex[0].into(), vertex[1].into(), vertex[2].into()]))
             .collect();
-        let element_node_connectivity = data.faces.iter().map(|face| face.vertices).collect();
+        let element_node_connectivity = data.faces.iter().map(|face|
+            [face.vertices[0] + NODE_NUMBERING_OFFSET, face.vertices[1] + NODE_NUMBERING_OFFSET, face.vertices[2] + NODE_NUMBERING_OFFSET]
+        ).collect();
         Self::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
