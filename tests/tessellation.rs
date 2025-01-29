@@ -56,7 +56,10 @@ mod write_stl {
 
         let file_gold = "tests/input/two_facets.stl";
         let tess = Tessellation::from_stl(file_gold);
-        println!("Read tessellation data from gold reference file: {}", file_gold);
+        println!(
+            "Read tessellation data from gold reference file: {}",
+            file_gold
+        );
         println!("{}", tess);
 
         let vertex_iter = tess.get_data().vertices.iter();
@@ -90,11 +93,9 @@ mod write_stl {
         // Now read the written file back in, and compare the data read in to
         // the original data obtained from reading in the gold data.
 
-
         // Finally, clean up: delete the written data set.
         match remove_file(file_out) {
-            Ok(_) => println!("")
+            Ok(_) => println!(""),
         }
-
     }
 }

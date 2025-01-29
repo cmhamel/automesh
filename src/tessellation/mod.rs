@@ -1,4 +1,7 @@
-use super::{FiniteElements, TriangularFiniteElements, Vector, fem::{NODE_NUMBERING_OFFSET, tri::NUM_NODES_TRI}};
+use super::{
+    fem::{tri::NUM_NODES_TRI, NODE_NUMBERING_OFFSET},
+    FiniteElements, TriangularFiniteElements, Vector,
+};
 use conspire::math::{Tensor, TensorArray};
 use std::fmt;
 use std::fs::File;
@@ -39,7 +42,11 @@ impl Tessellation {
             .get_element_node_connectivity()
             .iter()
             .map(|&connectivity| {
-                vertices_tri = [connectivity[0] - NODE_NUMBERING_OFFSET, connectivity[1] - NODE_NUMBERING_OFFSET, connectivity[2] - NODE_NUMBERING_OFFSET];
+                vertices_tri = [
+                    connectivity[0] - NODE_NUMBERING_OFFSET,
+                    connectivity[1] - NODE_NUMBERING_OFFSET,
+                    connectivity[2] - NODE_NUMBERING_OFFSET,
+                ];
                 normal = (&nodal_coordinates[vertices_tri[1]]
                     - &nodal_coordinates[vertices_tri[0]])
                     .cross(
@@ -60,7 +67,7 @@ impl Tessellation {
     /// Constructs and returns a new tessellation type from an STL file.
     pub fn from_stl(file_path: &str) -> Result<Self, Error> {
         let mut file = File::open(file_path)?;
-        let data= read_stl(&mut file)?;
+        let data = read_stl(&mut file)?;
         Ok(Self { data })
     }
     /// Returns a reference to the internal tessellation data.
@@ -76,15 +83,15 @@ impl Tessellation {
 fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), Error> {
     let mut file = BufWriter::new(File::create(file_path)?);
     let mesh_iter = data.faces.iter().map(|face| Triangle {
-                    normal: face.normal,
-                    vertices: face
-                        .vertices
-                        .iter()
-                        .map(|&vertex| data.vertices[vertex])
-                        .collect::<Vec<Vertex>>()
-                        .try_into()
-                        .unwrap(),
-                });
+        normal: face.normal,
+        vertices: face
+            .vertices
+            .iter()
+            .map(|&vertex| data.vertices[vertex])
+            .collect::<Vec<Vertex>>()
+            .try_into()
+            .unwrap(),
+    });
     write_stl(&mut file, mesh_iter)?;
     Ok(())
 }
