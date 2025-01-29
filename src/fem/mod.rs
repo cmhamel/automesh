@@ -12,7 +12,7 @@ pub use hex::NUM_NODES_HEX;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{Connectivity, Coordinate, Coordinates, Vector, NSD};
+use super::{Connectivity, Coordinate, Coordinates, Tessellation, Vector, NSD};
 use chrono::Utc;
 use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Array1, Array2};
@@ -62,6 +62,8 @@ where
         element_node_connectivity: Connectivity<NODES_PER_ELEMENT>,
         nodal_coordinates: Coordinates,
     ) -> Self;
+    /// Constructs a finite elements type from a tessellation, consuming the tessellation type.
+    fn from_tessellation(tessellation: Tessellation) -> Self;
     /// Constructs and returns a new finite elements type from an Abaqus input file.
     fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =

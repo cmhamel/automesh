@@ -1,7 +1,7 @@
 #[cfg(feature = "python")]
 pub mod py;
 
-use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity};
+use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Tessellation, VecConnectivity};
 use conspire::math::TensorVec;
 
 /// The number of nodes in a triangular finite element.
@@ -58,6 +58,9 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
             prescribed_nodes_inhomogeneous: vec![],
             prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
         }
+    }
+    fn from_tessellation(tessellation: Tessellation) -> Self {
+        unimplemented!()
     }
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         unimplemented!()

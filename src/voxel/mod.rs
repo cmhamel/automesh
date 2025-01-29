@@ -145,7 +145,7 @@ impl Voxels {
             data: voxel_data_from_npy(file_path)?,
         })
     }
-    /// Constructs and returns a new voxels type from an Octree file.
+    /// Constructs and returns a new voxels type from an Octree.
     pub fn from_octree(nel: Nel, mut tree: Octree) -> Self {
         let mut data = VoxelData::from(nel);
         let mut length = 0;

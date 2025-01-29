@@ -2,7 +2,7 @@
 pub mod py;
 
 use super::{
-    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, VecConnectivity,
+    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Tessellation, VecConnectivity,
     ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET,
 };
 use conspire::math::TensorVec;
@@ -66,6 +66,9 @@ impl FiniteElements<NUM_NODES_HEX, NODES_CONN_ELEMENT_HEX> for HexahedralFiniteE
             prescribed_nodes_inhomogeneous: vec![],
             prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
         }
+    }
+    fn from_tessellation(_tessellation: Tessellation) -> Self {
+        unimplemented!()
     }
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
