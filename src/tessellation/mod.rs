@@ -1,3 +1,5 @@
+use crate::fem::tri::NUM_NODES_TRI;
+
 /// Goals:
 /// Make tessellations create 3D tri meshes,
 /// similar to how voxels create 3D hex meshes.
@@ -9,16 +11,15 @@
 
 /// Reference:
 /// https://github.com/hmeyer/stl_io
-use super::{FiniteElements, TriangularFiniteElements, Vector};
+use super::{FiniteElements, TriangularFiniteElements, Vector, fem::NODE_NUMBERING_OFFSET};
 use conspire::math::{Tensor, TensorArray};
 use std::fmt;
 use std::fs::File;
 use std::io::{BufWriter, Error};
-use std::ops::Index;
+// use std::ops::Index;
 // use std::io::{self, Write};
 // use std::path::Path;
-use stl_io::{read_stl, IndexedMesh, IndexedTriangle, Normal, Vertex};
-//use stl_io::{read_stl, write_stl};
+use stl_io::{read_stl, write_stl, IndexedMesh, IndexedTriangle, Normal, Triangle, Vertex};
 
 /// The tessellation type.
 pub struct Tessellation {
@@ -40,6 +41,7 @@ impl Tessellation {
     /// Constructs a tessellation from finite elements, consuming the finite elements.
     pub fn from_finite_elements(finite_elements: TriangularFiniteElements) -> Self {
         let mut normal = Vector::zero();
+        let mut vertices_tri = [0; NUM_NODES_TRI];
         let nodal_coordinates = finite_elements.get_nodal_coordinates();
         let vertices = nodal_coordinates
             .iter()
@@ -55,16 +57,17 @@ impl Tessellation {
             .get_element_node_connectivity()
             .iter()
             .map(|&connectivity| {
-                normal = (&nodal_coordinates[connectivity[1]]
-                    - &nodal_coordinates[connectivity[0]])
+                vertices_tri = [connectivity[0] - NODE_NUMBERING_OFFSET, connectivity[1] - NODE_NUMBERING_OFFSET, connectivity[2] - NODE_NUMBERING_OFFSET];
+                normal = (&nodal_coordinates[vertices_tri[1]]
+                    - &nodal_coordinates[vertices_tri[0]])
                     .cross(
-                        &(&nodal_coordinates[connectivity[2]]
-                            - &nodal_coordinates[connectivity[0]]),
+                        &(&nodal_coordinates[vertices_tri[2]]
+                            - &nodal_coordinates[vertices_tri[0]]),
                     )
                     .normalized();
                 IndexedTriangle {
                     normal: Normal::new([normal[0] as f32, normal[1] as f32, normal[2] as f32]),
-                    vertices: connectivity,
+                    vertices: vertices_tri,
                 }
             })
             .collect();
@@ -97,7 +100,17 @@ impl Tessellation {
 
 fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), Error> {
     let mut file = BufWriter::new(File::create(file_path)?);
-    // stl_io::write_stl(&mut file, &data.iter()) // #TODO: morph IndexedMesh into a list that can iter()
+    let mesh_iter = data.faces.iter().map(|face| Triangle {
+                    normal: face.normal,
+                    vertices: face
+                        .vertices
+                        .iter()
+                        .map(|&vertex| data.vertices[vertex])
+                        .collect::<Vec<Vertex>>()
+                        .try_into()
+                        .unwrap(),
+                });
+    write_stl(&mut file, mesh_iter)?;
     Ok(())
 }
 
