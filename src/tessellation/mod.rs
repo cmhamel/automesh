@@ -9,20 +9,16 @@ use std::io::{BufWriter, Error};
 use stl_io::{read_stl, write_stl, IndexedMesh, IndexedTriangle, Normal, Triangle, Vertex};
 
 /// The tessellation type.
+#[derive(Debug, PartialEq)]
 pub struct Tessellation {
     data: IndexedMesh,
 }
 
 impl Tessellation {
-    // /// Create a new tessellation from a file.
-    // pub fn new<P: AsRef<std::path::Path>>(path: P) -> Self {
-    //     // let data = read_stl(&mut path).unwrap();
-    //     // let data = read_stl(&mut path).expect("Failed to read STL file.");
-    //     // Open the file and create a file handle
-    //     let mut file = File::open(path).expect("Failed to open STL file.");
-    //     let data = read_stl(&mut file).expect("Failed to read STL file.");
-    //     Self { data }
-    // }
+    /// Construct a tessellation from an IndexedMesh.
+    pub fn new(indexed_mesh: IndexedMesh) -> Self {
+        Self { data: indexed_mesh }
+    }
     /// Constructs a tessellation from finite elements, consuming the finite elements.
     pub fn from_finite_elements(finite_elements: TriangularFiniteElements) -> Self {
         let mut normal = Vector::zero();
