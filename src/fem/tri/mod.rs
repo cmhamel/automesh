@@ -1,8 +1,11 @@
 #[cfg(feature = "python")]
 pub mod py;
 
-use super::{Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Tessellation, VecConnectivity};
-use conspire::math::TensorVec;
+use super::{
+    Blocks, Connectivity, Coordinate, Coordinates, FiniteElements, Nodes, Tessellation,
+    VecConnectivity,
+};
+use conspire::math::{TensorArray, TensorVec};
 
 /// The number of nodes in a triangular finite element.
 pub const NUM_NODES_TRI: usize = 3;
@@ -60,7 +63,18 @@ impl FiniteElements<NUM_NODES_TRI, NODES_CONN_ELEMENT_TRI> for TriangularFiniteE
         }
     }
     fn from_tessellation(tessellation: Tessellation) -> Self {
-        unimplemented!()
+        //
+        // do you need to use the normal for node numbering?
+        //
+        let data = tessellation.get_data();
+        let element_blocks = vec![1; data.faces.len()];
+        let nodal_coordinates = data
+            .vertices
+            .iter()
+            .map(|&vertex| Coordinate::new([vertex[0].into(), vertex[1].into(), vertex[2].into()]))
+            .collect();
+        let element_node_connectivity = data.faces.iter().map(|face| face.vertices).collect();
+        Self::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         unimplemented!()

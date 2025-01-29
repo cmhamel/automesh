@@ -9,18 +9,20 @@
 
 /// Reference:
 /// https://github.com/hmeyer/stl_io
+use super::{FiniteElements, TriangularFiniteElements, Vector};
+use conspire::math::{Tensor, TensorArray};
 use std::fmt;
 use std::fs::File;
 use std::io::{BufWriter, Error};
 use std::ops::Index;
 // use std::io::{self, Write};
 // use std::path::Path;
-use stl_io::{read_stl, IndexedMesh, IndexedTriangle};
+use stl_io::{read_stl, IndexedMesh, IndexedTriangle, Normal, Vertex};
 //use stl_io::{read_stl, write_stl};
 
 /// The tessellation type.
 pub struct Tessellation {
-    data: stl_io::IndexedMesh,
+    data: IndexedMesh,
 }
 
 /// Inherent implementation of the tessellation type
@@ -35,6 +37,41 @@ impl Tessellation {
     //     Self { data }
     // }
 
+    /// Constructs a tessellation from finite elements, consuming the finite elements.
+    pub fn from_finite_elements(finite_elements: TriangularFiniteElements) -> Self {
+        let mut normal = Vector::zero();
+        let nodal_coordinates = finite_elements.get_nodal_coordinates();
+        let vertices = nodal_coordinates
+            .iter()
+            .map(|coordinate| {
+                Vertex::new([
+                    coordinate[0] as f32,
+                    coordinate[1] as f32,
+                    coordinate[2] as f32,
+                ])
+            })
+            .collect();
+        let faces = finite_elements
+            .get_element_node_connectivity()
+            .iter()
+            .map(|&connectivity| {
+                normal = (&nodal_coordinates[connectivity[1]]
+                    - &nodal_coordinates[connectivity[0]])
+                    .cross(
+                        &(&nodal_coordinates[connectivity[2]]
+                            - &nodal_coordinates[connectivity[0]]),
+                    )
+                    .normalized();
+                IndexedTriangle {
+                    normal: Normal::new([normal[0] as f32, normal[1] as f32, normal[2] as f32]),
+                    vertices: connectivity,
+                }
+            })
+            .collect();
+        Self {
+            data: IndexedMesh { vertices, faces },
+        }
+    }
     /// Constructs and returns a new tessellation type from a STL file.
     pub fn from_stl(file_path: &str) -> Self {
         let mut file = File::open(file_path).expect("Failed to open STL file.");

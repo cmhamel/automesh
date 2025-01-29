@@ -62,7 +62,7 @@ where
         element_node_connectivity: Connectivity<NODES_PER_ELEMENT>,
         nodal_coordinates: Coordinates,
     ) -> Self;
-    /// Constructs a finite elements type from a tessellation, consuming the tessellation type.
+    /// Constructs a finite elements from a tessellation, consuming the tessellation.
     fn from_tessellation(tessellation: Tessellation) -> Self;
     /// Constructs and returns a new finite elements type from an Abaqus input file.
     fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
