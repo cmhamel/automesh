@@ -133,7 +133,6 @@ pub struct Voxels {
     data: VoxelData,
 }
 
-/// Inherent implementation of the voxels type.
 impl Voxels {
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
