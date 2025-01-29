@@ -4,6 +4,20 @@
 
 *In order of most recent to least recent.*
 
+## 2025-01-29
+
+* Goals
+  * "skin" of a segmentation -> quads -> (2 tris) -> stl (isosurface)
+    * similar to "dual marching cubes"
+    * smoothing of any generic edge connectivity (adjacency matrix in graph theory?)
+    * tris tests (CBH) - test and documentation
+    * stl -> tri (MRB) - implementation and architecture
+  * octree
+    * segementation - balanced quad tree origami "skin" surface -> quad surface -> tri surface
+    * 6 templates conference paper, turn in to connected trianges, https://www.cs.umd.edu/users/hjs//pubs/reddyasae01.pdf, page 12
+  * defeaturing - currently paused
+  * dualization - paused
+
 ## 2025-01-22
 
 ### Toward isosurfaces

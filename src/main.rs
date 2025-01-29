@@ -1,5 +1,6 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree, Vector, Voxels,
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree,
+    Vector, Voxels,
 };
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
@@ -147,7 +148,6 @@ enum Commands {
         //     value_name = "VAL"
         // )]
         // ztranslate: f64,
-
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
@@ -350,7 +350,7 @@ enum Commands {
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Mesh (inp) or tessellation (stl) input file 
+        /// Mesh (inp) or tessellation (stl) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
@@ -538,7 +538,7 @@ fn main() -> Result<(), ErrorWrapper> {
             // xtranslate,
             // ytranslate,
             // ztranslate,
-            quiet
+            quiet,
         }) => todo!(),
         // }) => {
         //     is_quiet = quiet;
@@ -887,7 +887,7 @@ fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrappe
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No metrics for segmentation file {}", input))?
-        },
+        }
         InputTypes::Stl(_) => todo!(),
     };
     metrics_inner(&output_type, output, quiet)
@@ -994,7 +994,7 @@ fn smooth(
         InputTypes::Abaqus(finite_elements) => finite_elements,
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No smoothing for segmentation file {}", input))?
-        },
+        }
         InputTypes::Stl(_) => todo!(),
     };
     apply_smoothing_method(

@@ -1,4 +1,4 @@
-/// Goals: 
+/// Goals:
 /// Make tessellations create 3D tri meshes,
 /// similar to how voxels create 3D hex meshes.
 /// Just as voxels are not hexes, tessellations (stl file) are not 3D triangles.
@@ -9,18 +9,18 @@
 
 /// Reference:
 /// https://github.com/hmeyer/stl_io
-
 use std::fmt;
 use std::fs::File;
 use std::io::{BufWriter, Error};
+use std::ops::Index;
 // use std::io::{self, Write};
 // use std::path::Path;
-use stl_io::{read_stl, IndexedMesh};
+use stl_io::{read_stl, IndexedMesh, IndexedTriangle};
 //use stl_io::{read_stl, write_stl};
 
 /// The tessellation type.
 pub struct Tessellation {
-    data: stl_io::IndexedMesh
+    data: stl_io::IndexedMesh,
 }
 
 /// Inherent implementation of the tessellation type
@@ -34,7 +34,7 @@ impl Tessellation {
     //     let data = read_stl(&mut file).expect("Failed to read STL file.");
     //     Self { data }
     // }
-    
+
     /// Constructs and returns a new tessellation type from a STL file.
     pub fn from_stl(file_path: &str) -> Self {
         let mut file = File::open(file_path).expect("Failed to open STL file.");
@@ -56,7 +56,6 @@ impl Tessellation {
     //     // write_stl(&mut file, self.data.clone())?; // Write the data to the file
     //     Ok(())
     // }
-
 }
 
 fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), Error> {
@@ -68,9 +67,12 @@ fn write_tessellation_to_stl(data: &IndexedMesh, file_path: &str) -> Result<(), 
 // Implement Display trait for better debugging output
 impl fmt::Display for Tessellation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Tessellation with {} vertices and {} faces",
-               self.data.vertices.len(),
-               self.data.faces.len())
+        write!(
+            f,
+            "Tessellation with {} vertices and {} faces",
+            self.data.vertices.len(),
+            self.data.faces.len()
+        )
     }
 }
 
@@ -79,7 +81,7 @@ impl fmt::Display for Tessellation {
 
 // /// The multiplying scale in each direction.
 // pub struct Scale(Vector);
-// 
+//
 // impl Scale {
 //     pub fn x(&self) -> &f64 {
 //         &self.0[0]
@@ -91,7 +93,7 @@ impl fmt::Display for Tessellation {
 //         &self.0[2]
 //     }
 // }
-// 
+//
 // impl From<[f64; NSD]> for Scale {
 //     fn from(scale: [f64; NSD]) -> Self {
 //         if scale.iter().any(|&entry| entry <= 0.0) {
@@ -102,58 +104,57 @@ impl fmt::Display for Tessellation {
 //     }
 // }
 
-
 // #[derive(Debug)]
 // struct Vertex {
 //     x: f64,
 //     y: f64,
 //     z: f64,
 // }
-// 
+//
 // impl fmt::Display for Vertex {
 //     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 //         write!(f, "vertex {:.6e} {:.6e} {:.6e}\n", self.x, self.y, self.z)
 //     }
 // }
-// 
+//
 // #[derive(Debug)]
 // struct Normal {
 //     x: f64,
 //     y: f64,
 //     z: f64,
 // }
-// 
+//
 // impl fmt::Display for Normal {
 //     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 //         write!(f, "normal {:.6e} {:.6e} {:.6e}\n", self.x, self.y, self.z)
 //     }
 // }
-// 
+//
 // #[derive(Debug)]
 // struct OuterLoop {
 //     vertices: Vec<Vertex>,
 // }
-// 
+//
 // impl fmt::Display for OuterLoop {
 //     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 //         let vertices_str: Vec<String> = self.vertices.iter().map(|v| v.to_string()).collect();
 //         write!(f, "\nouter loop\n{}\nendloop", vertices_str.join(""))
 //     }
 // }
-// 
+//
 // #[derive(Debug)]
 // struct Facet {
 //     normal: Normal,
 //     outer_loop: OuterLoop,
 // }
-// 
+//
 // impl fmt::Display for Facet {
 //     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 //         write!(f, "facet normal {}\n    {}", self.normal, self.outer_loop)
 //     }
 // }
-// 
-// 
+//
+//
 // #[derive(Debug)]
 // struct Tessellation {
 //     name: String,
@@ -165,11 +166,11 @@ impl fmt::Display for Tessellation {
 //     let reader = io::BufReader::new(file);
 //     let mut facets = Vec::new();
 //     let mut current_facet: Option<Facet> = None;
-// 
+//
 //     for line in reader.lines() {
 //         let line = line?;
 //         let trimmed = line.trim();
-// 
+//
 //         if trimmed.starts_with("facet normal") {
 //             // Parse the normal vector
 //             // example:
@@ -205,69 +206,69 @@ impl fmt::Display for Tessellation {
 //             }
 //         }
 //     }
-// 
+//
 //     Ok(facets)
 // }
 
 // fn main() -> io::Result<()> {
 //     println!("Hello, world!");
-// 
+//
 //     let vertex = Vertex {
 //         x: 1.0,
 //         y: 0.0,
 //         z: 1.0,
 //     };
-// 
+//
 //     println!("{}", vertex);
-// 
-// 
+//
+//
 //     let facets = read_stl("/Users/chovey/autotwin/automesh/tests/input/single.stl")?;
-// 
+//
 //     for facet in facets {
 //         // println!("{:?}", facet);
 //         println!("{}", facet);
 //     }
-// 
+//
 //     let aa: Vec<f64> = vec![1.0, 2.0, 3.0];
 //     println!("aa {:?}", aa);
-// 
+//
 //     let mut aa2 = Vec::new();
 //     aa2.push(2.0);
 //     aa2.push(3.0);
 //     aa2.push(4.0);
 //     println!("aa2 {:?}", aa2);
-// 
+//
 //     // Create a new vector of length NSD, initialized with 0.0
 //     let vec_nsd: Vec<f64> = vec![0.0; NSD];
-// 
+//
 //     // Print the vector
 //     println!("vec_nsd {:?}", vec_nsd);
-// 
+//
 //     // Given scale as usize
 //     let scale: usize = 2;
-// 
+//
 //     // Convert usize to f64
 //     let scale_f64: f64 = scale as f64;
-// 
+//
 //     let bb: Vec<f64> = aa.iter().map(|&x| x * scale_f64).collect();
 //     println!("bb {:?}", bb);
-// 
+//
 //     let cc: Vec<f64> = aa.iter().map(|&x| x * x).collect();
 //     println!("cc {:?}", cc);
-// 
+//
 //     let dd: Vec<f64> = aa.iter().map(|&x| square(x)).collect();
 //     println!("dd {:?}", dd);
-// 
+//
 //     let ee: Vec<f64> = dd.iter().map(|&x| square_root(x)).collect();
 //     println!("ee {:?}", ee);
-// 
+//
 //     Ok(())
 // }
-// 
+//
 // fn square(x: f64) -> f64 {
 //     x * x
 // }
-// 
+//
 // fn square_root(x: f64) -> f64 {
 //     x.sqrt()
 // }
