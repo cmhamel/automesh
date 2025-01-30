@@ -9,9 +9,9 @@ use std::time::Instant;
 
 use super::{
     fem::{
-        Blocks, HexahedralFiniteElements, NODE_NUMBERING_OFFSET, HEX,
+        Blocks, Connectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET, HEX,
     },
-    Connectivity, Coordinate, Coordinates, Octree, Tree, Vector, NSD,
+    Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};

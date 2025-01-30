@@ -19,7 +19,7 @@ mod voxel;
 
 pub use fem::{
     HexahedralFiniteElements, TriangularFiniteElements,
-    Blocks, FiniteElements, Smoothing,
+    Blocks, FiniteElements, Smoothing, Connectivity,
 };
 pub use tessellation::Tessellation;
 pub use tree::{Octree, Tree};
@@ -29,9 +29,6 @@ use conspire::math::{TensorRank1, TensorRank1Vec};
 
 /// The number of spatial dimensions.
 pub const NSD: usize = 3;
-
-/// An element-to-node connectivity.
-pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 
 /// A three-dimensional coordinate.
 pub type Coordinate = TensorRank1<NSD, 1>;

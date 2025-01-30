@@ -2,10 +2,9 @@
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, NODE_NUMBERING_OFFSET, HEX},
-    voxel::{Nel, Scale},
-    Coordinate, Coordinates, HexahedralFiniteElements, Vector, VoxelData, Voxels,
-    NSD,
+    fem::{Blocks, HexahedralFiniteElements, NODE_NUMBERING_OFFSET, HEX},
+    voxel::{Nel, Scale, VoxelData, Voxels},
+    Coordinate, Coordinates, Vector, NSD,
 };
 use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};

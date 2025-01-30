@@ -7,7 +7,7 @@ pub mod test;
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{Connectivity, Coordinate, Coordinates, Tessellation, Vector, NSD};
+use super::{Coordinate, Coordinates, Tessellation, Vector, NSD};
 use chrono::Utc;
 use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Array1, Array2};
@@ -32,6 +32,9 @@ pub const NODE_NUMBERING_OFFSET: usize = 1;
 
 /// A vector of finite element block IDs.
 pub type Blocks = Vec<u8>;
+
+/// An element-to-node connectivity.
+pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 
 pub type VecConnectivity = Vec<Vec<usize>>;
 pub type Metrics = Array1<f64>;
@@ -137,31 +140,44 @@ where
             nodal_coordinates,
         ))
     }
-    /// Constructs finite elements from a tessellation, consuming the tessellation.
-    pub fn from_tessellation(tessellation: Tessellation) -> Self {
-        if N != TRI {
-            panic!("Only implemented from_tessellation method for hexes.")
-        }
-        todo!()
-        // let data = tessellation.get_data();
-        // let element_blocks = vec![1; data.faces.len()];
-        // let nodal_coordinates = data
-        //     .vertices
-        //     .iter()
-        //     .map(|&vertex| Coordinate::new([vertex[0].into(), vertex[1].into(), vertex[2].into()]))
-        //     .collect();
-        // let element_node_connectivity = data
-        //     .faces
-        //     .iter()
-        //     .map(|face| {
-        //         [
-        //             face.vertices[0] + NODE_NUMBERING_OFFSET,
-        //             face.vertices[1] + NODE_NUMBERING_OFFSET,
-        //             face.vertices[2] + NODE_NUMBERING_OFFSET,
-        //         ]
-        //     })
-        //     .collect();
-        // Self::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
+    /// Converts the finite elements into a tessellation, consuming the finite elements.
+    pub fn into_tesselation(self) -> Tessellation {
+        let mut normal = Vector::zero();
+        let mut vertices_tri = [0; TRI];
+        let nodal_coordinates = self.get_nodal_coordinates();
+        let vertices = nodal_coordinates
+            .iter()
+            .map(|coordinate| {
+                stl_io::Vertex::new([
+                    coordinate[0] as f32,
+                    coordinate[1] as f32,
+                    coordinate[2] as f32,
+                ])
+            })
+            .collect();
+        let faces = self
+            .get_element_node_connectivity()
+            .iter()
+            .map(|&connectivity| {
+                vertices_tri = [
+                    connectivity[0] - NODE_NUMBERING_OFFSET,
+                    connectivity[1] - NODE_NUMBERING_OFFSET,
+                    connectivity[2] - NODE_NUMBERING_OFFSET,
+                ];
+                normal = (&nodal_coordinates[vertices_tri[1]]
+                    - &nodal_coordinates[vertices_tri[0]])
+                    .cross(
+                        &(&nodal_coordinates[vertices_tri[2]]
+                            - &nodal_coordinates[vertices_tri[0]]),
+                    )
+                    .normalized();
+                stl_io::IndexedTriangle {
+                    normal: stl_io::Normal::new([normal[0] as f32, normal[1] as f32, normal[2] as f32]),
+                    vertices: vertices_tri,
+                }
+            })
+            .collect();
+        Tessellation::new(stl_io::IndexedMesh{vertices, faces})
     }
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     pub fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {

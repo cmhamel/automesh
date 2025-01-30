@@ -1,12 +1,12 @@
 use super::{
-    fem::{TRI, NODE_NUMBERING_OFFSET},
-    TriangularFiniteElements, Vector,
+    Coordinate,
+    fem::{NODE_NUMBERING_OFFSET, TriangularFiniteElements},
 };
-use conspire::math::{Tensor, TensorArray};
+use conspire::math::TensorArray;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufWriter, Error};
-use stl_io::{read_stl, write_stl, IndexedMesh, IndexedTriangle, Normal, Triangle, Vertex};
+use stl_io::{read_stl, write_stl, IndexedMesh, Triangle, Vertex};
 
 /// The tessellation type.
 #[derive(Debug, PartialEq)]
@@ -19,52 +19,33 @@ impl Tessellation {
     pub fn new(indexed_mesh: IndexedMesh) -> Self {
         Self { data: indexed_mesh }
     }
-    /// Constructs a tessellation from finite elements, consuming the finite elements.
-    pub fn from_finite_elements(finite_elements: TriangularFiniteElements) -> Self {
-        let mut normal = Vector::zero();
-        let mut vertices_tri = [0; TRI];
-        let nodal_coordinates = finite_elements.get_nodal_coordinates();
-        let vertices = nodal_coordinates
-            .iter()
-            .map(|coordinate| {
-                Vertex::new([
-                    coordinate[0] as f32,
-                    coordinate[1] as f32,
-                    coordinate[2] as f32,
-                ])
-            })
-            .collect();
-        let faces = finite_elements
-            .get_element_node_connectivity()
-            .iter()
-            .map(|&connectivity| {
-                vertices_tri = [
-                    connectivity[0] - NODE_NUMBERING_OFFSET,
-                    connectivity[1] - NODE_NUMBERING_OFFSET,
-                    connectivity[2] - NODE_NUMBERING_OFFSET,
-                ];
-                normal = (&nodal_coordinates[vertices_tri[1]]
-                    - &nodal_coordinates[vertices_tri[0]])
-                    .cross(
-                        &(&nodal_coordinates[vertices_tri[2]]
-                            - &nodal_coordinates[vertices_tri[0]]),
-                    )
-                    .normalized();
-                IndexedTriangle {
-                    normal: Normal::new([normal[0] as f32, normal[1] as f32, normal[2] as f32]),
-                    vertices: vertices_tri,
-                }
-            })
-            .collect();
-        Self {
-            data: IndexedMesh { vertices, faces },
-        }
-    }
     /// Constructs and returns a new tessellation type from an STL file.
     pub fn from_stl(file_path: &str) -> Result<Self, Error> {
         let mut file = File::open(file_path)?;
         let data = read_stl(&mut file)?;
         Ok(Self { data })
+    }
+    /// Converts the tessellation into finite elements, consuming the tessellation.
+    pub fn into_finite_elements(self) -> TriangularFiniteElements {
+        let data = self.get_data();
+        let element_blocks = vec![1; data.faces.len()];
+        let nodal_coordinates = data
+            .vertices
+            .iter()
+            .map(|&vertex| Coordinate::new([vertex[0].into(), vertex[1].into(), vertex[2].into()]))
+            .collect();
+        let element_node_connectivity = data
+            .faces
+            .iter()
+            .map(|face| {
+                [
+                    face.vertices[0] + NODE_NUMBERING_OFFSET,
+                    face.vertices[1] + NODE_NUMBERING_OFFSET,
+                    face.vertices[2] + NODE_NUMBERING_OFFSET,
+                ]
+            })
+            .collect();
+        TriangularFiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
     }
     /// Returns a reference to the internal tessellation data.
     pub fn get_data(&self) -> &IndexedMesh {
