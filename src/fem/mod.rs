@@ -76,32 +76,28 @@ pub type TriangularFiniteElements = FiniteElements<TRI>;
 
 impl<const N: usize> FiniteElements<N>
 where
-    Self: Sized
+    Self: Sized,
 {
     /// Returns the nodes connected to the given node within an element.
     pub fn connected_nodes(node: &usize) -> Vec<usize> {
         match N {
-            HEX => {
-                match node {
-                    0 => vec![1, 3, 4],
-                    1 => vec![0, 2, 5],
-                    2 => vec![1, 3, 6],
-                    3 => vec![0, 2, 7],
-                    4 => vec![0, 5, 7],
-                    5 => vec![1, 4, 6],
-                    6 => vec![2, 5, 7],
-                    7 => vec![3, 4, 6],
-                    _ => panic!(),
-                }
-            }
-            TRI => {
-                match node {
-                    0 => vec![1, 2],
-                    1 => vec![0, 2],
-                    2 => vec![0, 1],
-                    _ => panic!(),
-                }
-            }
+            HEX => match node {
+                0 => vec![1, 3, 4],
+                1 => vec![0, 2, 5],
+                2 => vec![1, 3, 6],
+                3 => vec![0, 2, 7],
+                4 => vec![0, 5, 7],
+                5 => vec![1, 4, 6],
+                6 => vec![2, 5, 7],
+                7 => vec![3, 4, 6],
+                _ => panic!(),
+            },
+            TRI => match node {
+                0 => vec![1, 2],
+                1 => vec![0, 2],
+                2 => vec![0, 1],
+                _ => panic!(),
+            },
             _ => {
                 panic!()
             }
@@ -175,12 +171,16 @@ where
                     )
                     .normalized();
                 stl_io::IndexedTriangle {
-                    normal: stl_io::Normal::new([normal[0] as f32, normal[1] as f32, normal[2] as f32]),
+                    normal: stl_io::Normal::new([
+                        normal[0] as f32,
+                        normal[1] as f32,
+                        normal[2] as f32,
+                    ]),
                     vertices: vertices_tri,
                 }
             })
             .collect();
-        Tessellation::new(stl_io::IndexedMesh{vertices, faces})
+        Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     pub fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
@@ -232,7 +232,7 @@ where
     /// Calculates and sets the nodal hierarchy.
     pub fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         if N != HEX {
-            return Err("Only implemented nodal_hierarchy method for hexes.")
+            return Err("Only implemented nodal_hierarchy method for hexes.");
         }
         let node_element_connectivity = self.get_node_element_connectivity();
         if !node_element_connectivity.is_empty() {
@@ -737,10 +737,7 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
                 format!("num_el_in_blk{}", current_block).as_str(),
                 number_of_elements,
             )?;
-            file.add_dimension(
-                format!("num_nod_per_el{}", current_block).as_str(),
-                HEX,
-            )?;
+            file.add_dimension(format!("num_nod_per_el{}", current_block).as_str(), HEX)?;
             let mut connectivities = file.add_variable::<i32>(
                 format!("connect{}", current_block).as_str(),
                 &[

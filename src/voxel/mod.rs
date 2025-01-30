@@ -8,9 +8,7 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{
-        Blocks, Connectivity, HexahedralFiniteElements, NODE_NUMBERING_OFFSET, HEX,
-    },
+    fem::{Blocks, Connectivity, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
     Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;

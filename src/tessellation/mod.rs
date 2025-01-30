@@ -1,6 +1,6 @@
 use super::{
+    fem::{TriangularFiniteElements, NODE_NUMBERING_OFFSET},
     Coordinate,
-    fem::{NODE_NUMBERING_OFFSET, TriangularFiniteElements},
 };
 use conspire::math::TensorArray;
 use std::fmt;
@@ -45,7 +45,11 @@ impl Tessellation {
                 ]
             })
             .collect();
-        TriangularFiniteElements::from_data(element_blocks, element_node_connectivity, nodal_coordinates)
+        TriangularFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        )
     }
     /// Returns a reference to the internal tessellation data.
     pub fn get_data(&self) -> &IndexedMesh {

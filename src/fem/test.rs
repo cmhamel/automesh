@@ -1,7 +1,7 @@
 use super::{
     calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
-    calculate_minimum_scaled_jacobians,
-    Blocks, Connectivity, Coordinates, HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX
+    calculate_minimum_scaled_jacobians, Blocks, Connectivity, Coordinates,
+    HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX,
 };
 use conspire::math::{Tensor, TensorVec};
 

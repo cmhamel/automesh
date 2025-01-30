@@ -1,5 +1,6 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree, TriangularFiniteElements, Vector, Voxels
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree,
+    Vector, Voxels,
 };
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
@@ -428,14 +429,14 @@ enum InputTypes {
 }
 
 #[allow(clippy::large_enum_variant)]
-enum OutputTypes {
-    Abaqus(HexahedralFiniteElements),
-    Exodus(HexahedralFiniteElements),
-    Mesh(HexahedralFiniteElements),
+enum OutputTypes<const N: usize> {
+    Abaqus(FiniteElements<N>),
+    Exodus(FiniteElements<N>),
+    Mesh(FiniteElements<N>),
     Npy(Voxels),
     Spn(Voxels),
     Stl(Tessellation),
-    Vtk(HexahedralFiniteElements),
+    Vtk(FiniteElements<N>),
 }
 
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
@@ -580,11 +581,19 @@ fn convert(
             _ => invalid_output(&output, output_extension),
         },
         InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
-            Some("spn") => write_output(output, OutputTypes::Spn(voxels), quiet),
-            Some("npy") => write_output(output, OutputTypes::Npy(voxels), quiet),
+            Some("spn") => write_output(output, OutputTypes::<0>::Spn(voxels), quiet),
+            Some("npy") => write_output(output, OutputTypes::<0>::Npy(voxels), quiet),
             _ => invalid_output(&output, output_extension),
         },
-        InputTypes::Stl(_) => todo!(),
+        InputTypes::Stl(tessellation) => {
+            let finite_elements = tessellation.into_finite_elements();
+            match output_extension {
+                Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+                Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+                Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
+                _ => invalid_output(&output, output_extension),
+            }
+        }
     }
 }
 
@@ -609,7 +618,7 @@ fn defeature(
                 if !quiet {
                     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
-                write_output(output, OutputTypes::Npy(voxels), quiet)
+                write_output(output, OutputTypes::<0>::Npy(voxels), quiet)
             }
             Some("spn") => {
                 let time = Instant::now();
@@ -620,7 +629,7 @@ fn defeature(
                 if !quiet {
                     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
-                write_output(output, OutputTypes::Spn(voxels), quiet)
+                write_output(output, OutputTypes::<0>::Spn(voxels), quiet)
             }
             _ => invalid_output(&output, output_extension),
         },
@@ -882,44 +891,69 @@ fn smooth(
     metrics: Option<String>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
-    let mut output_type = match read_input(&input, None, None, None, quiet)? {
-        InputTypes::Abaqus(finite_elements) => {
-            finite_elements
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match read_input(&input, None, None, None, quiet)? {
+        InputTypes::Abaqus(mut finite_elements) => {
+            apply_smoothing_method(
+                &mut finite_elements,
+                &output,
+                iterations,
+                method,
+                hierarchical,
+                pass_band,
+                scale,
+                quiet,
+            )?;
+            if let Some(file) = metrics {
+                metrics_inner(&finite_elements, file, quiet)?
+            }
+            match output_extension {
+                Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+                Some("inp") => write_output(output, OutputTypes::Abaqus(finite_elements), quiet),
+                Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+                Some("stl") => write_output(
+                    output,
+                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    quiet,
+                ),
+                Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
+                _ => invalid_output(&output, output_extension),
+            }
+        }
+        InputTypes::Stl(tesselation) => {
+            let mut finite_elements = tesselation.into_finite_elements();
+            apply_smoothing_method(
+                &mut finite_elements,
+                &output,
+                iterations,
+                method,
+                hierarchical,
+                pass_band,
+                scale,
+                quiet,
+            )?;
+            match output_extension {
+                Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+                Some("inp") => write_output(output, OutputTypes::Abaqus(finite_elements), quiet),
+                Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+                Some("stl") => write_output(
+                    output,
+                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    quiet,
+                ),
+                Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
+                _ => invalid_output(&output, output_extension),
+            }
         }
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No smoothing for segmentation file {}", input))?
         }
-        InputTypes::Stl(tesselation) => {
-            todo!()
-            // TriangularFiniteElements::from_tessellation(tessellation)
-        }
-    };
-    apply_smoothing_method(
-        &mut output_type,
-        &output,
-        iterations,
-        method,
-        hierarchical,
-        pass_band,
-        scale,
-        quiet,
-    )?;
-    if let Some(file) = metrics {
-        metrics_inner(&output_type, file, quiet)?
-    }
-    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet),
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet),
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet),
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet),
-        _ => invalid_output(&output, output_extension),
     }
 }
 
 #[allow(clippy::too_many_arguments)]
-fn apply_smoothing_method(
-    output_type: &mut HexahedralFiniteElements,
+fn apply_smoothing_method<const N: usize>(
+    output_type: &mut FiniteElements<N>,
     output: &str,
     iterations: usize,
     method: Option<String>,
@@ -1019,6 +1053,12 @@ fn read_input(
                 InputTypes::Spn(Voxels::from_spn(input, nel)?)
             }
         }
+        Some("stl") => {
+            if !quiet {
+                println!();
+            }
+            InputTypes::Stl(Tessellation::from_stl(input)?)
+        }
         _ => {
             if !quiet {
                 println!();
@@ -1036,7 +1076,11 @@ fn read_input(
     Ok(result)
 }
 
-fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result<(), ErrorWrapper> {
+fn write_output<const N: usize>(
+    output: String,
+    output_type: OutputTypes<N>,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mWriting\x1b[0m {}", output);
@@ -1047,8 +1091,7 @@ fn write_output(output: String, output_type: OutputTypes, quiet: bool) -> Result
         OutputTypes::Mesh(fem) => fem.write_mesh(&output)?,
         OutputTypes::Npy(voxels) => voxels.write_npy(&output)?,
         OutputTypes::Spn(voxels) => voxels.write_spn(&output)?,
-        OutputTypes::Stl(_) => todo!(),
-        // OutputTypes::Stl(tessellation) => tessellation.write_stl(&output)?,
+        OutputTypes::Stl(tessellation) => tessellation.write_stl(&output)?,
         OutputTypes::Vtk(fem) => fem.write_vtk(&output)?,
     }
     if !quiet {

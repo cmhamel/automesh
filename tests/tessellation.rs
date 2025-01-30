@@ -86,7 +86,7 @@ mod write_stl {
     fn one_facet_write_read() {
         // Write a binary stl from a gold standard.
         let file_gold = "tests/input/one_facet.stl";
-        let tess_gold = Tessellation::from_stl(&file_gold).unwrap();
+        let tess_gold = Tessellation::from_stl(file_gold).unwrap();
         println!("gold: {:?}", tess_gold);
         let file_test = "tests/input/one_facet_test.stl";
         let mesh_iter = tess_gold.get_data().faces.iter().map(|face| Triangle {
@@ -110,7 +110,7 @@ mod write_stl {
             file_test
         );
         // Read the binary data back in and assure it equals the gold standard.
-        let tess_test = Tessellation::from_stl(&file_test).unwrap();
+        let tess_test = Tessellation::from_stl(file_test).unwrap();
         assert_eq!(tess_test, tessellation_one_facet());
         // Delete the temporary test stl.
         match remove_file(file_test) {
