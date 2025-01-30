@@ -2,10 +2,9 @@
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, NODE_NUMBERING_OFFSET, NUM_NODES_HEX},
-    voxel::{Nel, Scale},
-    Coordinate, Coordinates, FiniteElements, HexahedralFiniteElements, Vector, VoxelData, Voxels,
-    NSD,
+    fem::{Blocks, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    voxel::{Nel, Scale, VoxelData, Voxels},
+    Coordinate, Coordinates, Vector, NSD,
 };
 use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};
@@ -1347,7 +1346,7 @@ impl Tree for Octree {
             .count();
         let mut element_blocks = vec![0; num_elements];
         let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
-        let mut nodal_coordinates: Coordinates = (0..num_elements * NUM_NODES_HEX)
+        let mut nodal_coordinates: Coordinates = (0..num_elements * HEX)
             .map(|_| Coordinate::zero())
             .collect();
         let mut index = 0;
@@ -1375,7 +1374,7 @@ impl Tree for Octree {
                 nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
                 nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
                 nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
-                index += NUM_NODES_HEX;
+                index += HEX;
             });
         Ok(HexahedralFiniteElements::from_data(
             element_blocks,

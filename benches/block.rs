@@ -1,9 +1,7 @@
 #![feature(test)]
 
 extern crate test;
-use automesh::{
-    FiniteElements, HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels, NSD,
-};
+use automesh::{HexahedralFiniteElements, Octree, Smoothing, Tree, Vector, Voxels, NSD};
 use conspire::math::TensorArray;
 use std::{
     fs::{read_dir, remove_file},

@@ -4,15 +4,10 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
-pub mod hex;
-pub mod tri;
-
-pub use hex::NUM_NODES_HEX;
-
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use super::{Connectivity, Coordinate, Coordinates, Vector, NSD};
+use super::{Coordinate, Coordinates, Tessellation, Vector, NSD};
 use chrono::Utc;
 use conspire::math::{Tensor, TensorArray, TensorVec};
 use ndarray::{s, Array1, Array2};
@@ -32,11 +27,13 @@ use vtkio::{
 };
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
-const ELEMENT_TYPE: &str = "C3D8R";
 pub const NODE_NUMBERING_OFFSET: usize = 1;
 
 /// A vector of finite element block IDs.
 pub type Blocks = Vec<u8>;
+
+/// An element-to-node connectivity.
+pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 
 pub type VecConnectivity = Vec<Vec<usize>>;
 pub type Metrics = Array1<f64>;
@@ -49,21 +46,87 @@ pub enum Smoothing {
     Taubin(usize, f64, f64),
 }
 
-/// Common methods for finite elements.
-pub trait FiniteElements<const NODES_PER_ELEMENT: usize, const NODES_CONN_ELEMENT: usize>
+/// The finite elements type.
+pub struct FiniteElements<const N: usize> {
+    boundary_nodes: Nodes,
+    element_blocks: Blocks,
+    element_node_connectivity: Connectivity<N>,
+    exterior_nodes: Nodes,
+    interface_nodes: Nodes,
+    interior_nodes: Nodes,
+    nodal_coordinates: Coordinates,
+    nodal_influencers: VecConnectivity,
+    node_element_connectivity: VecConnectivity,
+    node_node_connectivity: VecConnectivity,
+    prescribed_nodes: Nodes,
+    prescribed_nodes_homogeneous: Nodes,
+    prescribed_nodes_inhomogeneous: Nodes,
+    prescribed_nodes_inhomogeneous_coordinates: Coordinates,
+}
+
+pub const HEX: usize = 8;
+pub const TRI: usize = 3;
+
+/// The hexahedral finite elements type.
+pub type HexahedralFiniteElements = FiniteElements<HEX>;
+
+/// The triangular finite elements type.
+pub type TriangularFiniteElements = FiniteElements<TRI>;
+
+impl<const N: usize> FiniteElements<N>
 where
     Self: Sized,
 {
     /// Returns the nodes connected to the given node within an element.
-    fn connected_nodes(node: &usize) -> [usize; NODES_CONN_ELEMENT];
+    pub fn connected_nodes(node: &usize) -> Vec<usize> {
+        match N {
+            HEX => match node {
+                0 => vec![1, 3, 4],
+                1 => vec![0, 2, 5],
+                2 => vec![1, 3, 6],
+                3 => vec![0, 2, 7],
+                4 => vec![0, 5, 7],
+                5 => vec![1, 4, 6],
+                6 => vec![2, 5, 7],
+                7 => vec![3, 4, 6],
+                _ => panic!(),
+            },
+            TRI => match node {
+                0 => vec![1, 2],
+                1 => vec![0, 2],
+                2 => vec![0, 1],
+                _ => panic!(),
+            },
+            _ => {
+                panic!()
+            }
+        }
+    }
     /// Constructs and returns a new finite elements type from data.
-    fn from_data(
+    pub fn from_data(
         element_blocks: Blocks,
-        element_node_connectivity: Connectivity<NODES_PER_ELEMENT>,
+        element_node_connectivity: Connectivity<N>,
         nodal_coordinates: Coordinates,
-    ) -> Self;
+    ) -> Self {
+        Self {
+            boundary_nodes: vec![],
+            element_blocks,
+            element_node_connectivity,
+            exterior_nodes: vec![],
+            interface_nodes: vec![],
+            interior_nodes: vec![],
+            nodal_coordinates,
+            nodal_influencers: vec![],
+            node_element_connectivity: vec![],
+            node_node_connectivity: vec![],
+            prescribed_nodes: vec![],
+            prescribed_nodes_homogeneous: vec![],
+            prescribed_nodes_inhomogeneous: vec![],
+            prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
+        }
+    }
     /// Constructs and returns a new finite elements type from an Abaqus input file.
-    fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
+    pub fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_inp(file_path)?;
         Ok(Self::from_data(
@@ -72,8 +135,54 @@ where
             nodal_coordinates,
         ))
     }
+    /// Converts the finite elements into a tessellation, consuming the finite elements.
+    pub fn into_tesselation(self) -> Tessellation {
+        if N != TRI {
+            panic!("Only implemented into_tesselation method for hexes.")
+        }
+        let mut normal = Vector::zero();
+        let mut vertices_tri = [0; TRI];
+        let nodal_coordinates = self.get_nodal_coordinates();
+        let vertices = nodal_coordinates
+            .iter()
+            .map(|coordinate| {
+                stl_io::Vertex::new([
+                    coordinate[0] as f32,
+                    coordinate[1] as f32,
+                    coordinate[2] as f32,
+                ])
+            })
+            .collect();
+        let faces = self
+            .get_element_node_connectivity()
+            .iter()
+            .map(|&connectivity| {
+                vertices_tri = [
+                    connectivity[0] - NODE_NUMBERING_OFFSET,
+                    connectivity[1] - NODE_NUMBERING_OFFSET,
+                    connectivity[2] - NODE_NUMBERING_OFFSET,
+                ];
+                normal = (&nodal_coordinates[vertices_tri[1]]
+                    - &nodal_coordinates[vertices_tri[0]])
+                    .cross(
+                        &(&nodal_coordinates[vertices_tri[2]]
+                            - &nodal_coordinates[vertices_tri[0]]),
+                    )
+                    .normalized();
+                stl_io::IndexedTriangle {
+                    normal: stl_io::Normal::new([
+                        normal[0] as f32,
+                        normal[1] as f32,
+                        normal[2] as f32,
+                    ]),
+                    vertices: vertices_tri,
+                }
+            })
+            .collect();
+        Tessellation::new(stl_io::IndexedMesh { vertices, faces })
+    }
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
-    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
+    pub fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
         let nodal_coordinates = self.get_nodal_coordinates();
         node_node_connectivity
             .iter()
@@ -92,10 +201,8 @@ where
             })
             .collect()
     }
-    /// Calculates and sets the nodal hierarchy.
-    fn nodal_hierarchy(&mut self) -> Result<(), &str>;
     /// Calculates and sets the nodal influencers.
-    fn nodal_influencers(&mut self) {
+    pub fn nodal_influencers(&mut self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut nodal_influencers: VecConnectivity = self.get_node_node_connectivity().clone();
@@ -114,15 +221,81 @@ where
         prescribed_nodes.iter().for_each(|prescribed_node| {
             nodal_influencers[prescribed_node - NODE_NUMBERING_OFFSET].clear()
         });
-        self.set_nodal_influencers(nodal_influencers);
+        self.nodal_influencers = nodal_influencers;
         #[cfg(feature = "profile")]
         println!(
             "             \x1b[1;93mNodal influencers\x1b[0m {:?} ",
             time.elapsed()
         );
     }
+    /// Calculates and sets the nodal hierarchy.
+    pub fn nodal_hierarchy(&mut self) -> Result<(), &str> {
+        if N != HEX {
+            return Err("Only implemented nodal_hierarchy method for hexes.");
+        }
+        let node_element_connectivity = self.get_node_element_connectivity();
+        if !node_element_connectivity.is_empty() {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
+            let element_blocks = self.get_element_blocks();
+            let mut connected_blocks: Blocks = vec![];
+            let mut exterior_nodes = vec![];
+            let mut interface_nodes = vec![];
+            let mut interior_nodes = vec![];
+            let mut number_of_connected_blocks = 0;
+            let mut number_of_connected_elements = 0;
+            node_element_connectivity
+                .iter()
+                .enumerate()
+                .for_each(|(node, connected_elements)| {
+                    connected_blocks = connected_elements
+                        .iter()
+                        .map(|element| element_blocks[element - ELEMENT_NUMBERING_OFFSET])
+                        .collect();
+                    connected_blocks.sort();
+                    connected_blocks.dedup();
+                    number_of_connected_blocks = connected_blocks.len();
+                    number_of_connected_elements = connected_elements.len();
+                    if number_of_connected_blocks > 1 {
+                        interface_nodes.push(node + NODE_NUMBERING_OFFSET);
+                        //
+                        // THIS IS WHERE IT IS ASSUMED THAT THE MESH IS PERFECTLY STRUCTURED
+                        // ONLY AFFECTS HIERARCHICAL SMOOTHING
+                        //
+                        if number_of_connected_elements < HEX {
+                            exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
+                        }
+                    } else if number_of_connected_elements < HEX {
+                        exterior_nodes.push(node + NODE_NUMBERING_OFFSET);
+                    } else {
+                        interior_nodes.push(node + NODE_NUMBERING_OFFSET);
+                    }
+                });
+            exterior_nodes.sort();
+            interior_nodes.sort();
+            interface_nodes.sort();
+            self.boundary_nodes = exterior_nodes
+                .clone()
+                .into_iter()
+                .chain(interface_nodes.clone())
+                .collect();
+            self.boundary_nodes.sort();
+            self.boundary_nodes.dedup();
+            self.exterior_nodes = exterior_nodes;
+            self.interface_nodes = interface_nodes;
+            self.interior_nodes = interior_nodes;
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mNodal hierarchy\x1b[0m {:?} ",
+                time.elapsed()
+            );
+            Ok(())
+        } else {
+            Err("Need to calculate the node-to-element connectivity first")
+        }
+    }
     /// Calculates and sets the node-to-element connectivity.
-    fn node_element_connectivity(&mut self) -> Result<(), &str> {
+    pub fn node_element_connectivity(&mut self) -> Result<(), &str> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let number_of_nodes = self.get_nodal_coordinates().len();
@@ -136,7 +309,7 @@ where
                         .push(element + ELEMENT_NUMBERING_OFFSET)
                 })
             });
-        self.set_node_element_connectivity(node_element_connectivity);
+        self.node_element_connectivity = node_element_connectivity;
         #[cfg(feature = "profile")]
         println!(
             "           \x1b[1;93m⤷ Node-to-element connectivity\x1b[0m {:?} ",
@@ -145,12 +318,12 @@ where
         Ok(())
     }
     /// Calculates and sets the node-to-node connectivity.
-    fn node_node_connectivity(&mut self) -> Result<(), &str> {
+    pub fn node_node_connectivity(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
             let time = Instant::now();
-            let mut element_connectivity = [0; NODES_PER_ELEMENT];
+            let mut element_connectivity = [0; N];
             let element_node_connectivity = self.get_element_node_connectivity();
             let number_of_nodes = self.get_nodal_coordinates().len();
             let mut node_node_connectivity: VecConnectivity = vec![vec![]; number_of_nodes];
@@ -181,7 +354,7 @@ where
                 connectivity.sort();
                 connectivity.dedup();
             });
-            self.set_node_node_connectivity(node_node_connectivity);
+            self.node_node_connectivity = node_node_connectivity;
             #[cfg(feature = "profile")]
             println!(
                 "             \x1b[1;93mNode-to-node connectivity\x1b[0m {:?} ",
@@ -193,7 +366,7 @@ where
         }
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
+    pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
         if !self.get_node_node_connectivity().is_empty() {
             let smoothing_iterations;
             let smoothing_scale_deflate;
@@ -265,7 +438,7 @@ where
         }
     }
     /// Writes the finite elements data to a new Exodus file.
-    fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
+    pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
         write_finite_elements_to_exodus(
             file_path,
             self.get_element_blocks(),
@@ -274,7 +447,7 @@ where
         )
     }
     /// Writes the finite elements data to a new Abaqus file.
-    fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
+    pub fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_abaqus(
             file_path,
             self.get_element_blocks(),
@@ -283,7 +456,7 @@ where
         )
     }
     /// Writes the finite elements data to a new Mesh file.
-    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
+    pub fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_mesh(
             file_path,
             self.get_element_blocks(),
@@ -292,7 +465,7 @@ where
         )
     }
     /// Writes the finite elements quality metrics to a new file.
-    fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
+    pub fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_metrics(
             file_path,
             self.get_element_node_connectivity(),
@@ -300,7 +473,7 @@ where
         )
     }
     /// Writes the finite elements data to a new VTK file.
-    fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
+    pub fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
         write_finite_elements_to_vtk(
             file_path,
             self.get_element_blocks(),
@@ -309,53 +482,100 @@ where
         )
     }
     /// Returns a reference to the boundary nodes.
-    fn get_boundary_nodes(&self) -> &Nodes;
+    pub fn get_boundary_nodes(&self) -> &Nodes {
+        &self.boundary_nodes
+    }
     /// Returns a reference to the element blocks.
-    fn get_element_blocks(&self) -> &Blocks;
+    pub fn get_element_blocks(&self) -> &Blocks {
+        &self.element_blocks
+    }
     /// Returns a reference to element-to-node connectivity.
-    fn get_element_node_connectivity(&self) -> &Connectivity<NODES_PER_ELEMENT>;
+    pub fn get_element_node_connectivity(&self) -> &Connectivity<N> {
+        &self.element_node_connectivity
+    }
     /// Returns a reference to the exterior nodes.
-    fn get_exterior_nodes(&self) -> &Nodes;
+    pub fn get_exterior_nodes(&self) -> &Nodes {
+        &self.exterior_nodes
+    }
     /// Returns a reference to the interface nodes.
-    fn get_interface_nodes(&self) -> &Nodes;
+    pub fn get_interface_nodes(&self) -> &Nodes {
+        &self.interface_nodes
+    }
     /// Returns a reference to the interior nodes.
-    fn get_interior_nodes(&self) -> &Nodes;
+    pub fn get_interior_nodes(&self) -> &Nodes {
+        &self.interior_nodes
+    }
     /// Returns a reference to the nodal coordinates.
-    fn get_nodal_coordinates(&self) -> &Coordinates;
+    pub fn get_nodal_coordinates(&self) -> &Coordinates {
+        &self.nodal_coordinates
+    }
     /// Returns a mutable reference to the nodal coordinates.
-    fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates;
+    pub fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+        &mut self.nodal_coordinates
+    }
     /// Returns a reference to the nodal influencers.
-    fn get_nodal_influencers(&self) -> &VecConnectivity;
+    pub fn get_nodal_influencers(&self) -> &VecConnectivity {
+        &self.nodal_influencers
+    }
     /// Returns a reference to the node-to-element connectivity.
-    fn get_node_element_connectivity(&self) -> &VecConnectivity;
+    pub fn get_node_element_connectivity(&self) -> &VecConnectivity {
+        &self.node_element_connectivity
+    }
     /// Returns a reference to the node-to-node connectivity.
-    fn get_node_node_connectivity(&self) -> &VecConnectivity;
+    pub fn get_node_node_connectivity(&self) -> &VecConnectivity {
+        &self.node_node_connectivity
+    }
     /// Returns a reference to the prescribed nodes.
-    fn get_prescribed_nodes(&self) -> &Nodes;
+    pub fn get_prescribed_nodes(&self) -> &Nodes {
+        &self.prescribed_nodes
+    }
     /// Returns a reference to the homogeneously-prescribed nodes.
-    fn get_prescribed_nodes_homogeneous(&self) -> &Nodes;
+    pub fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_homogeneous
+    }
     /// Returns a reference to the inhomogeneously-prescribed nodes.
-    fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes;
+    pub fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
+        &self.prescribed_nodes_inhomogeneous
+    }
     /// Returns a reference to the coordinates of the inhomogeneously-prescribed nodes.
-    fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates;
-    /// Sets the nodal influencers.
-    fn set_nodal_influencers(&mut self, nodal_influencers: VecConnectivity);
-    /// Sets the node-to-element connectivity.
-    fn set_node_element_connectivity(&mut self, node_element_connectivity: VecConnectivity);
-    /// Sets the node-to-node connectivity.
-    fn set_node_node_connectivity(&mut self, node_node_connectivity: VecConnectivity);
+    pub fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
+        &self.prescribed_nodes_inhomogeneous_coordinates
+    }
     /// Sets the prescribed nodes if opted to do so.
-    fn set_prescribed_nodes(
+    pub fn set_prescribed_nodes(
         &mut self,
         homogeneous: Option<Nodes>,
         inhomogeneous: Option<(Coordinates, Nodes)>,
-    ) -> Result<(), &str>;
+    ) -> Result<(), &str> {
+        if let Some(homogeneous_nodes) = homogeneous {
+            self.prescribed_nodes_homogeneous = homogeneous_nodes;
+            self.prescribed_nodes_homogeneous.sort();
+            self.prescribed_nodes_homogeneous.dedup();
+        }
+        if let Some(inhomogeneous_nodes) = inhomogeneous {
+            self.prescribed_nodes_inhomogeneous = inhomogeneous_nodes.1;
+            self.prescribed_nodes_inhomogeneous_coordinates = inhomogeneous_nodes.0;
+            let mut sorted_unique = self.prescribed_nodes_inhomogeneous.clone();
+            sorted_unique.sort();
+            sorted_unique.dedup();
+            if sorted_unique != self.prescribed_nodes_inhomogeneous {
+                return Err("Inhomogeneously-prescribed nodes must be sorted and unique.");
+            }
+        }
+        self.prescribed_nodes = self
+            .prescribed_nodes_homogeneous
+            .clone()
+            .into_iter()
+            .chain(self.prescribed_nodes_inhomogeneous.clone())
+            .collect();
+        Ok(())
+    }
 }
 
-fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
+fn reorder_connectivity<const N: usize>(
     element_blocks: &Blocks,
     element_blocks_unique: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
 ) -> ReorderedConnectivity {
     element_blocks_unique
         .iter()
@@ -375,9 +595,9 @@ fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
         .collect()
 }
 
-fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
+fn finite_element_data_from_inp<const N: usize>(
     file_path: &str,
-) -> Result<(Blocks, Connectivity<NUM_NODES_ELEMENT>, Coordinates), ErrorIO> {
+) -> Result<(Blocks, Connectivity<N>, Coordinates), ErrorIO> {
     let inp_file = File::open(file_path)?;
     let mut file = BufReader::new(inp_file);
     let mut buffer = String::new();
@@ -423,7 +643,7 @@ fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
     file.read_line(&mut buffer)?;
     let mut current_block = 0;
     let mut element_blocks: Blocks = vec![];
-    let mut element_node_connectivity: Connectivity<NUM_NODES_ELEMENT> = vec![];
+    let mut element_node_connectivity: Connectivity<N> = vec![];
     let mut element_numbers = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
@@ -464,10 +684,10 @@ fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
-fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_exodus<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorNetCDF> {
     let mut file = create(file_path)?;
@@ -516,10 +736,7 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
                 format!("num_el_in_blk{}", current_block).as_str(),
                 number_of_elements,
             )?;
-            file.add_dimension(
-                format!("num_nod_per_el{}", current_block).as_str(),
-                NUM_NODES_HEX,
-            )?;
+            file.add_dimension(format!("num_nod_per_el{}", current_block).as_str(), N)?;
             let mut connectivities = file.add_variable::<i32>(
                 format!("connect{}", current_block).as_str(),
                 &[
@@ -527,7 +744,11 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
                     format!("num_nod_per_el{}", current_block).as_str(),
                 ],
             )?;
-            connectivities.put_attribute("elem_type", "HEX8")?;
+            match N {
+                HEX => connectivities.put_attribute("elem_type", "HEX8")?,
+                TRI => connectivities.put_attribute("elem_type", "TRI3")?,
+                _ => panic!(),
+            };
             connectivities.put_values(&block_connectivity, (.., ..))?;
             Ok::<_, ErrorNetCDF>(())
         })?;
@@ -556,10 +777,10 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
     Ok(())
 }
 
-fn write_finite_elements_to_abaqus<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_abaqus<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let element_number_width = get_width(element_node_connectivity);
@@ -628,15 +849,20 @@ fn write_nodal_coordinates_to_inp(
     result
 }
 
-fn write_element_node_connectivity_to_inp<const NUM_NODES_ELEMENT: usize>(
+fn write_element_node_connectivity_to_inp<const N: usize>(
     file: &mut BufWriter<File>,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     element_number_width: &usize,
     node_number_width: &usize,
 ) -> Result<(), ErrorIO> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    let element_type = match N {
+        HEX => "C3D8R",
+        TRI => "TRI3",
+        _ => panic!(),
+    };
     file.write_all(
         "********************************** E L E M E N T S ****************************\n"
             .as_bytes(),
@@ -649,7 +875,7 @@ fn write_element_node_connectivity_to_inp<const NUM_NODES_ELEMENT: usize>(
         .clone()
         .try_for_each(|current_block| {
             file.write_all(
-                format!("*ELEMENT, TYPE={}, ELSET=EB{}", ELEMENT_TYPE, current_block).as_bytes(),
+                format!("*ELEMENT, TYPE={}, ELSET=EB{}", element_type, current_block).as_bytes(),
             )?;
             element_blocks
                 .iter()
@@ -715,12 +941,15 @@ fn get_width<T>(input: &[T]) -> usize {
     input.len().to_string().chars().count()
 }
 
-fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_mesh<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    if N != HEX {
+        panic!("Only implemented writing to .mesh for hexes.")
+    }
     let mesh_file = File::create(file_path)?;
     let mut file = BufWriter::new(mesh_file);
     file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
@@ -731,7 +960,10 @@ fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
             .try_for_each(|coordinate| file.write_all(format!("{} ", coordinate).as_bytes()))?;
         file.write_all(b"0\n")
     })?;
-    file.write_all(b"Hexahedra\n")?;
+    match N {
+        HEX => file.write_all(b"Hexahedra\n")?,
+        _ => panic!(),
+    };
     file.write_all(format!("{}\n", element_blocks.len()).as_bytes())?;
     element_node_connectivity
         .iter()
@@ -745,10 +977,10 @@ fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
     file.flush()
 }
 
-fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_vtk<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorVtk> {
     let connectivity = element_node_connectivity
@@ -763,9 +995,13 @@ fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
         .collect();
     let number_of_cells = element_blocks.len();
     let offsets = (0..number_of_cells)
-        .map(|cell| ((cell + 1) * NUM_NODES_HEX) as u64)
+        .map(|cell| ((cell + 1) * N) as u64)
         .collect();
-    let types = vec![CellType::Hexahedron; number_of_cells];
+    let types = match N {
+        HEX => vec![CellType::Hexahedron; number_of_cells],
+        TRI => vec![CellType::Triangle; number_of_cells],
+        _ => panic!(),
+    };
     let file = PathBuf::from(file_path);
     Vtk {
         version: Version { major: 4, minor: 2 },
@@ -793,9 +1029,9 @@ fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
     .export_be(&file)
 }
 
-fn write_finite_elements_metrics<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_metrics<const N: usize>(
     file_path: &str,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let maximum_edge_ratios =
@@ -859,8 +1095,8 @@ fn write_finite_elements_metrics<const NUM_NODES_ELEMENT: usize>(
     Ok(())
 }
 
-fn calculate_maximum_edge_ratios<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_maximum_edge_ratios<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -912,8 +1148,8 @@ fn calculate_maximum_edge_ratios<const NUM_NODES_ELEMENT: usize>(
     maximum_edge_ratios
 }
 
-fn calculate_minimum_scaled_jacobians<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_minimum_scaled_jacobians<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1013,8 +1249,8 @@ fn calculate_minimum_scaled_jacobians<const NUM_NODES_ELEMENT: usize>(
     minimum_scaled_jacobians
 }
 
-fn calculate_element_principal_axes<const NUM_NODES_ELEMENT: usize>(
-    connectivity: &[usize; NUM_NODES_ELEMENT],
+fn calculate_element_principal_axes<const N: usize>(
+    connectivity: &[usize; N],
     nodal_coordinates: &Coordinates,
 ) -> (Vector, Vector, Vector) {
     let x1 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
@@ -1044,8 +1280,8 @@ fn calculate_element_principal_axes<const NUM_NODES_ELEMENT: usize>(
     (x1, x2, x3)
 }
 
-fn calculate_maximum_skews<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_maximum_skews<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1074,8 +1310,8 @@ fn calculate_maximum_skews<const NUM_NODES_ELEMENT: usize>(
     maximum_skews
 }
 
-fn calculate_element_volumes<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_element_volumes<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]

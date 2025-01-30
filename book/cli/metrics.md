@@ -3,15 +3,6 @@
 ```sh
 automesh metrics --help
 <!-- cmdrun automesh metrics --help -->
-
-# example:
-automesh metrics -i single_valence_10.inp -o single_valence_10.csv
-```
-
-## Input/Output File Types
-
-```sh
-inp -> csv
 ```
 
 ## Description

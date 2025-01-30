@@ -13,12 +13,15 @@
 mod py;
 
 mod fem;
+mod tessellation;
 mod tree;
 mod voxel;
 
 pub use fem::{
-    hex::HexahedralFiniteElements, tri::TriangularFiniteElements, Blocks, FiniteElements, Smoothing,
+    Blocks, Connectivity, FiniteElements, HexahedralFiniteElements, Smoothing,
+    TriangularFiniteElements,
 };
+pub use tessellation::Tessellation;
 pub use tree::{Octree, Tree};
 pub use voxel::{Nel, Scale, VoxelData, Voxels};
 
@@ -26,9 +29,6 @@ use conspire::math::{TensorRank1, TensorRank1Vec};
 
 /// The number of spatial dimensions.
 pub const NSD: usize = 3;
-
-/// An element-to-node connectivity.
-pub type Connectivity<const N: usize> = Vec<[usize; N]>;
 
 /// A three-dimensional coordinate.
 pub type Coordinate = TensorRank1<NSD, 1>;

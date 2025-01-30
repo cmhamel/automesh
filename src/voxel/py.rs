@@ -1,6 +1,6 @@
 use super::{
     super::{
-        fem::hex::py::HexahedralFiniteElements,
+        fem::py::HexahedralFiniteElements,
         py::{IntoFoo, PyIntermediateError},
         Blocks, NSD,
     },
