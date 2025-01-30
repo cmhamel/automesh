@@ -181,12 +181,7 @@ enum Commands {
         quiet: bool,
 
         /// Pass to mesh using dualization
-        // #[arg(action, hide = true, long, short)]
-        // #TODO: Ask MRB:
-        // Command mesh: Short option names must be unique for each argument,
-        // but '-d' is in use by both 'defeature' and 'dual'
-        // #[arg(action, long, short = 'u')]
-        #[arg(action, hide = true, long, short = 'u')]
+        #[arg(action, hide = true, long)]
         dual: bool,
     },
 
