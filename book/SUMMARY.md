@@ -20,6 +20,7 @@
 
 - [Command Line Interface](cli/README.md)
   - [Convert](cli/convert.md)
+  - [Defeature](cli/defeature.md)
   - [Mesh](cli/mesh.md)
   - [Metrics](cli/metrics.md)
   - [Smooth](cli/smooth.md)

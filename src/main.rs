@@ -40,13 +40,13 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Converts between mesh or segmentation file types.
+    /// Converts between mesh or segmentation file types
     Convert {
         /// Mesh (inp) or segmentation (npy | spn) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Mesh (exo | mesh | vtk) or segmentation (npy | spn) output file
+        /// Mesh (exo | mesh | stl | vtk) or segmentation (npy | spn) output
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -67,14 +67,13 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Defeatures and creates a new segmentation:
-    /// (npy | spn) -> (npy | spn)
+    /// Defeatures and creates a new segmentation
     Defeature {
         /// Segmentation input file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Defeatured segmentation output file (npz | spn)
+        /// Defeatured segmentation output file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -99,8 +98,7 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a finite element mesh from a segmentation:
-    /// (npy | spn) -> (exo | inp | mesh | vtk)
+    /// Creates a finite element mesh from a segmentation
     Mesh {
         #[command(subcommand)]
         meshing: Option<MeshingCommands>,
@@ -185,10 +183,9 @@ enum Commands {
         dual: bool,
     },
 
-    /// Quality metrics for an existing finite element mesh:
-    /// (inp | stl) -> csv
+    /// Quality metrics for an existing finite element mesh
     Metrics {
-        /// Mesh (inp) or tessellation (stl) input file
+        /// Mesh (inp) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
@@ -201,8 +198,7 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Creates a balanced octree from a segmentation:
-    /// (npy | spn) -> (exo | inp | mesh | vtk)
+    /// Creates a balanced octree from a segmentation
     #[command(hide = true)]
     Octree {
         /// Segmentation input file (npy | spn)
@@ -285,18 +281,17 @@ enum Commands {
         boundaries: bool,
     },
 
-    /// Applies smoothing to an existing mesh or tessellation:
-    /// (inp, stl) -> (exo | inp | mesh | stl | vtk)
+    /// Applies smoothing to an existing mesh
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Mesh (inp) or tessellation (stl) input file
+        /// Mesh (inp | stl) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Smoothed mesh (exo | inp | mesh | vtk) or tessellation (stl) output file
+        /// Smoothed mesh (exo | inp | mesh | stl | vtk) output file
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
