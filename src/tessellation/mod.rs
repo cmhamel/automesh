@@ -1,6 +1,6 @@
 use super::{
-    fem::{tri::NUM_NODES_TRI, NODE_NUMBERING_OFFSET},
-    FiniteElements, TriangularFiniteElements, Vector,
+    fem::{TRI, NODE_NUMBERING_OFFSET},
+    TriangularFiniteElements, Vector,
 };
 use conspire::math::{Tensor, TensorArray};
 use std::fmt;
@@ -22,7 +22,7 @@ impl Tessellation {
     /// Constructs a tessellation from finite elements, consuming the finite elements.
     pub fn from_finite_elements(finite_elements: TriangularFiniteElements) -> Self {
         let mut normal = Vector::zero();
-        let mut vertices_tri = [0; NUM_NODES_TRI];
+        let mut vertices_tri = [0; TRI];
         let nodal_coordinates = finite_elements.get_nodal_coordinates();
         let vertices = nodal_coordinates
             .iter()

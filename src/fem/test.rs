@@ -1,8 +1,7 @@
 use super::{
     calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
     calculate_minimum_scaled_jacobians,
-    hex::{HexahedralFiniteElements, NUM_NODES_HEX},
-    Blocks, Connectivity, Coordinates, FiniteElements, Nodes, Smoothing, VecConnectivity,
+    Blocks, Connectivity, Coordinates, HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -27,7 +26,7 @@ impl FooClone for Coordinates {
 #[allow(clippy::too_many_arguments)]
 fn test_finite_elements(
     element_blocks: Blocks,
-    element_node_connectivity: Connectivity<NUM_NODES_HEX>,
+    element_node_connectivity: Connectivity<HEX>,
     nodal_coordinates: Coordinates,
     node_element_connectivity_gold: VecConnectivity,
     node_node_connectivity_gold: VecConnectivity,

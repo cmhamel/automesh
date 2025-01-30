@@ -1,12 +1,11 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree,
-    Vector, Voxels,
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree, TriangularFiniteElements, Vector, Voxels
 };
 use clap::{Parser, Subcommand};
 use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
-use std::{io::Error as ErrorIO, path::Path, process::Output, time::Instant};
+use std::{io::Error as ErrorIO, path::Path, time::Instant};
 use vtkio::Error as ErrorVtk;
 
 macro_rules! about {
@@ -94,60 +93,6 @@ enum Commands {
         #[arg(long, short = 'z', value_name = "NEL")]
         nelz: Option<usize>,
 
-        /// Pass to quiet the terminal output
-        #[arg(action, long, short)]
-        quiet: bool,
-    },
-
-    /// Creates an isosurface mesh from a tessellation:
-    /// stl -> (exo | inp | mesh | vtk)
-    Isomesh {
-        /// Tessellation input file (stl)
-        #[arg(long, short, value_name = "FILE")]
-        input: String,
-
-        /// Mesh output file (exo | inp | mesh | vtk)
-        #[arg(long, short, value_name = "FILE")]
-        output: String,
-
-        // /// Scaling (> 0.0) in the x-direction
-        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        // xscale: f64,
-
-        // /// Scaling (> 0.0) in the y-direction
-        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        // yscale: f64,
-
-        // /// Scaling (> 0.0) in the z-direction
-        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        // zscale: f64,
-
-        // /// Translation in the x-direction
-        // #[arg(
-        //     long,
-        //     default_value_t = 0.0,
-        //     allow_negative_numbers = true,
-        //     value_name = "VAL"
-        // )]
-        // xtranslate: f64,
-
-        // /// Translation in the y-direction
-        // #[arg(
-        //     long,
-        //     default_value_t = 0.0,
-        //     allow_negative_numbers = true,
-        //     value_name = "VAL"
-        // )]
-        // ytranslate: f64,
-
-        // /// Translation in the z-direction
-        // #[arg(
-        //     long,
-        //     default_value_t = 0.0,
-        //     allow_negative_numbers = true,
-        //     value_name = "VAL"
-        // )]
-        // ztranslate: f64,
         /// Pass to quiet the terminal output
         #[arg(action, long, short)]
         quiet: bool,
@@ -529,31 +474,6 @@ fn main() -> Result<(), ErrorWrapper> {
             is_quiet = quiet;
             defeature(input, output, min, nelx, nely, nelz, quiet)
         }
-        Some(Commands::Isomesh {
-            input,
-            output,
-            // xscale,
-            // yscale,
-            // zscale,
-            // xtranslate,
-            // ytranslate,
-            // ztranslate,
-            quiet,
-        }) => todo!(),
-        // }) => {
-        //     is_quiet = quiet;
-        //     isomesh(
-        //         input,
-        //         output,
-        //         // xscale,
-        //         // yscale,
-        //         // zscale,
-        //         // xtranslate,
-        //         // ytranslate,
-        //         // ztranslate,
-        //         quiet,
-        //     )
-        // }
         Some(Commands::Mesh {
             meshing,
             input,
@@ -714,34 +634,6 @@ fn defeature(
         }
     }
 }
-
-// #[allow(clippy::too_many_arguments)]
-// fn isomesh(
-//     input: String,
-//     output: String,
-//     // xscale: f64,
-//     // yscale: f64,
-//     // zscale: f64,
-//     // xtranslate: f64,
-//     // ytranslate: f64,
-//     // ztranslate: f64,
-//     quiet: bool,
-// ) -> Result<(), ErrorWrapper> {
-//     let time = Instant::now();
-//     if !quiet {
-//         println!("     \x1b[1;96mIsomeshing\x1b[0m {}", output);
-//     }
-//     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-//     match output_extension {
-//         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-//         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-//         Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-//         Some("stl") => write_output(output, OutputTypes::Stl(output_type), quiet)?,
-//         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-//         _ => invalid_output(&output, output_extension)?,
-//     }
-//     Ok(())
-// }
 
 #[allow(clippy::too_many_arguments)]
 fn mesh(
@@ -991,11 +883,16 @@ fn smooth(
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
     let mut output_type = match read_input(&input, None, None, None, quiet)? {
-        InputTypes::Abaqus(finite_elements) => finite_elements,
+        InputTypes::Abaqus(finite_elements) => {
+            finite_elements
+        }
         InputTypes::Npy(_) | InputTypes::Spn(_) => {
             Err(format!("No smoothing for segmentation file {}", input))?
         }
-        InputTypes::Stl(_) => todo!(),
+        InputTypes::Stl(tesselation) => {
+            todo!()
+            // TriangularFiniteElements::from_tessellation(tessellation)
+        }
     };
     apply_smoothing_method(
         &mut output_type,
