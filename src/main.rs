@@ -40,8 +40,7 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Converts between mesh or segmentation file types:
-    /// inp -> (exo | mesh | vtk), npy -> spn, spn -> npy
+    /// Converts between mesh or segmentation file types.
     Convert {
         /// Mesh (inp) or segmentation (npy | spn) input file
         #[arg(long, short, value_name = "FILE")]
@@ -68,7 +67,8 @@ enum Commands {
         quiet: bool,
     },
 
-    /// Defeatures and creates a new segmentation: (npy | spn) -> (npy | spn)
+    /// Defeatures and creates a new segmentation:
+    /// (npy | spn) -> (npy | spn)
     Defeature {
         /// Segmentation input file (npy | spn)
         #[arg(long, short, value_name = "FILE")]
@@ -185,7 +185,8 @@ enum Commands {
         dual: bool,
     },
 
-    /// Quality metrics for an existing finite element mesh: (inp | stl) -> csv
+    /// Quality metrics for an existing finite element mesh:
+    /// (inp | stl) -> csv
     Metrics {
         /// Mesh (inp) or tessellation (stl) input file
         #[arg(long, short, value_name = "FILE")]
@@ -285,7 +286,7 @@ enum Commands {
     },
 
     /// Applies smoothing to an existing mesh or tessellation:
-    /// inp -> (exo | inp | mesh | vtk), stl -> stl
+    /// (inp, stl) -> (exo | inp | mesh | stl | vtk)
     Smooth {
         /// Pass to enable hierarchical control
         #[arg(action, long, short = 'c')]
@@ -571,7 +572,13 @@ fn convert(
     match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Abaqus(finite_elements) => match output_extension {
             Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+            Some("inp") => write_output(output, OutputTypes::Abaqus(finite_elements), quiet),
             Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+            Some("stl") => write_output(
+                output,
+                OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                quiet,
+            ),
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
         },
@@ -584,7 +591,13 @@ fn convert(
             let finite_elements = tessellation.into_finite_elements();
             match output_extension {
                 Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
+                Some("inp") => write_output(output, OutputTypes::Abaqus(finite_elements), quiet),
                 Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
+                Some("stl") => write_output(
+                    output,
+                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    quiet,
+                ),
                 Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
                 _ => invalid_output(&output, output_extension),
             }
