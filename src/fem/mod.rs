@@ -27,7 +27,6 @@ use vtkio::{
 };
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
-const ELEMENT_TYPE: &str = "C3D8R";
 pub const NODE_NUMBERING_OFFSET: usize = 1;
 
 /// A vector of finite element block IDs.
@@ -573,10 +572,10 @@ where
     }
 }
 
-fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
+fn reorder_connectivity<const N: usize>(
     element_blocks: &Blocks,
     element_blocks_unique: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
 ) -> ReorderedConnectivity {
     element_blocks_unique
         .iter()
@@ -596,9 +595,9 @@ fn reorder_connectivity<const NUM_NODES_ELEMENT: usize>(
         .collect()
 }
 
-fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
+fn finite_element_data_from_inp<const N: usize>(
     file_path: &str,
-) -> Result<(Blocks, Connectivity<NUM_NODES_ELEMENT>, Coordinates), ErrorIO> {
+) -> Result<(Blocks, Connectivity<N>, Coordinates), ErrorIO> {
     let inp_file = File::open(file_path)?;
     let mut file = BufReader::new(inp_file);
     let mut buffer = String::new();
@@ -644,7 +643,7 @@ fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
     file.read_line(&mut buffer)?;
     let mut current_block = 0;
     let mut element_blocks: Blocks = vec![];
-    let mut element_node_connectivity: Connectivity<NUM_NODES_ELEMENT> = vec![];
+    let mut element_node_connectivity: Connectivity<N> = vec![];
     let mut element_numbers = vec![];
     while buffer != "**\n" {
         if buffer.trim().chars().take(8).collect::<String>() == "*ELEMENT" {
@@ -685,10 +684,10 @@ fn finite_element_data_from_inp<const NUM_NODES_ELEMENT: usize>(
     Ok((element_blocks, element_node_connectivity, nodal_coordinates))
 }
 
-fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_exodus<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorNetCDF> {
     let mut file = create(file_path)?;
@@ -737,7 +736,7 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
                 format!("num_el_in_blk{}", current_block).as_str(),
                 number_of_elements,
             )?;
-            file.add_dimension(format!("num_nod_per_el{}", current_block).as_str(), HEX)?;
+            file.add_dimension(format!("num_nod_per_el{}", current_block).as_str(), N)?;
             let mut connectivities = file.add_variable::<i32>(
                 format!("connect{}", current_block).as_str(),
                 &[
@@ -745,7 +744,11 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
                     format!("num_nod_per_el{}", current_block).as_str(),
                 ],
             )?;
-            connectivities.put_attribute("elem_type", "HEX8")?;
+            match N {
+                HEX => connectivities.put_attribute("elem_type", "HEX8")?,
+                TRI => connectivities.put_attribute("elem_type", "TRI3")?,
+                _ => panic!(),
+            };
             connectivities.put_values(&block_connectivity, (.., ..))?;
             Ok::<_, ErrorNetCDF>(())
         })?;
@@ -774,10 +777,10 @@ fn write_finite_elements_to_exodus<const NUM_NODES_ELEMENT: usize>(
     Ok(())
 }
 
-fn write_finite_elements_to_abaqus<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_abaqus<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let element_number_width = get_width(element_node_connectivity);
@@ -846,15 +849,20 @@ fn write_nodal_coordinates_to_inp(
     result
 }
 
-fn write_element_node_connectivity_to_inp<const NUM_NODES_ELEMENT: usize>(
+fn write_element_node_connectivity_to_inp<const N: usize>(
     file: &mut BufWriter<File>,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     element_number_width: &usize,
     node_number_width: &usize,
 ) -> Result<(), ErrorIO> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    let element_type = match N {
+        HEX => "C3D8R",
+        TRI => "TRI3",
+        _ => panic!(),
+    };
     file.write_all(
         "********************************** E L E M E N T S ****************************\n"
             .as_bytes(),
@@ -867,7 +875,7 @@ fn write_element_node_connectivity_to_inp<const NUM_NODES_ELEMENT: usize>(
         .clone()
         .try_for_each(|current_block| {
             file.write_all(
-                format!("*ELEMENT, TYPE={}, ELSET=EB{}", ELEMENT_TYPE, current_block).as_bytes(),
+                format!("*ELEMENT, TYPE={}, ELSET=EB{}", element_type, current_block).as_bytes(),
             )?;
             element_blocks
                 .iter()
@@ -933,12 +941,15 @@ fn get_width<T>(input: &[T]) -> usize {
     input.len().to_string().chars().count()
 }
 
-fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_mesh<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    if N != HEX {
+        panic!("Only implemented writing to .mesh for hexes.")
+    }
     let mesh_file = File::create(file_path)?;
     let mut file = BufWriter::new(mesh_file);
     file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
@@ -949,7 +960,10 @@ fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
             .try_for_each(|coordinate| file.write_all(format!("{} ", coordinate).as_bytes()))?;
         file.write_all(b"0\n")
     })?;
-    file.write_all(b"Hexahedra\n")?;
+    match N {
+        HEX => file.write_all(b"Hexahedra\n")?,
+        _ => panic!(),
+    };
     file.write_all(format!("{}\n", element_blocks.len()).as_bytes())?;
     element_node_connectivity
         .iter()
@@ -963,10 +977,10 @@ fn write_finite_elements_to_mesh<const NUM_NODES_ELEMENT: usize>(
     file.flush()
 }
 
-fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_to_vtk<const N: usize>(
     file_path: &str,
     element_blocks: &Blocks,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorVtk> {
     let connectivity = element_node_connectivity
@@ -981,9 +995,13 @@ fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
         .collect();
     let number_of_cells = element_blocks.len();
     let offsets = (0..number_of_cells)
-        .map(|cell| ((cell + 1) * HEX) as u64)
+        .map(|cell| ((cell + 1) * N) as u64)
         .collect();
-    let types = vec![CellType::Hexahedron; number_of_cells];
+    let types = match N {
+        HEX => vec![CellType::Hexahedron; number_of_cells],
+        TRI => vec![CellType::Triangle; number_of_cells],
+        _ => panic!(),
+    };
     let file = PathBuf::from(file_path);
     Vtk {
         version: Version { major: 4, minor: 2 },
@@ -1011,9 +1029,9 @@ fn write_finite_elements_to_vtk<const NUM_NODES_ELEMENT: usize>(
     .export_be(&file)
 }
 
-fn write_finite_elements_metrics<const NUM_NODES_ELEMENT: usize>(
+fn write_finite_elements_metrics<const N: usize>(
     file_path: &str,
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
     let maximum_edge_ratios =
@@ -1077,8 +1095,8 @@ fn write_finite_elements_metrics<const NUM_NODES_ELEMENT: usize>(
     Ok(())
 }
 
-fn calculate_maximum_edge_ratios<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_maximum_edge_ratios<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1130,8 +1148,8 @@ fn calculate_maximum_edge_ratios<const NUM_NODES_ELEMENT: usize>(
     maximum_edge_ratios
 }
 
-fn calculate_minimum_scaled_jacobians<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_minimum_scaled_jacobians<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1231,8 +1249,8 @@ fn calculate_minimum_scaled_jacobians<const NUM_NODES_ELEMENT: usize>(
     minimum_scaled_jacobians
 }
 
-fn calculate_element_principal_axes<const NUM_NODES_ELEMENT: usize>(
-    connectivity: &[usize; NUM_NODES_ELEMENT],
+fn calculate_element_principal_axes<const N: usize>(
+    connectivity: &[usize; N],
     nodal_coordinates: &Coordinates,
 ) -> (Vector, Vector, Vector) {
     let x1 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
@@ -1262,8 +1280,8 @@ fn calculate_element_principal_axes<const NUM_NODES_ELEMENT: usize>(
     (x1, x2, x3)
 }
 
-fn calculate_maximum_skews<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_maximum_skews<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
@@ -1292,8 +1310,8 @@ fn calculate_maximum_skews<const NUM_NODES_ELEMENT: usize>(
     maximum_skews
 }
 
-fn calculate_element_volumes<const NUM_NODES_ELEMENT: usize>(
-    element_node_connectivity: &Connectivity<NUM_NODES_ELEMENT>,
+fn calculate_element_volumes<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
