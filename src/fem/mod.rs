@@ -142,6 +142,9 @@ where
     }
     /// Converts the finite elements into a tessellation, consuming the finite elements.
     pub fn into_tesselation(self) -> Tessellation {
+        if N != TRI {
+            panic!("Only implemented into_tesselation method for hexes.")
+        }
         let mut normal = Vector::zero();
         let mut vertices_tri = [0; TRI];
         let nodal_coordinates = self.get_nodal_coordinates();
