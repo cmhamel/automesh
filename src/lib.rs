@@ -23,7 +23,7 @@ pub use fem::{
 };
 pub use tessellation::Tessellation;
 pub use tree::{Octree, Tree};
-pub use voxel::{Nel, Scale, VoxelData, Voxels};
+pub use voxel::{Nel, Scale, Translate, VoxelData, Voxels};
 
 use conspire::math::{TensorRank1, TensorRank1Vec};
 

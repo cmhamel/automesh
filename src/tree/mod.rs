@@ -3,8 +3,8 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
-    voxel::{Nel, Scale, VoxelData, Voxels},
-    Coordinate, Coordinates, Vector, NSD,
+    voxel::{Nel, Scale, Translate, VoxelData, Voxels},
+    Coordinate, Coordinates, NSD,
 };
 use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};
@@ -71,13 +71,13 @@ pub trait Tree {
         self,
         remove: Option<Blocks>,
         scale: Scale,
-        translate: &Vector,
+        translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
     fn octree_into_finite_elements(
         self,
         remove: Option<Blocks>,
         scale: Scale,
-        translate: &Vector,
+        translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
     fn prune(&mut self);
@@ -1079,13 +1079,10 @@ impl Tree for Octree {
         self,
         _remove: Option<Blocks>,
         scale: Scale,
-        translate: &Vector,
+        translate: Translate,
     ) -> Result<HexahedralFiniteElements, String> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        let xtranslate = translate[0];
-        let ytranslate = translate[1];
-        let ztranslate = translate[2];
         let mut element_node_connectivity = vec![];
         let mut nodal_coordinates = Coordinates::zero(0);
         let mut cells_nodes = vec![0; self.len()];
@@ -1094,9 +1091,12 @@ impl Tree for Octree {
             if cell.get_cells().is_none() {
                 cells_nodes[cell_index] = node_index;
                 nodal_coordinates.append(&mut TensorRank1Vec::new(&[[
-                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate,
-                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate,
-                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate,
+                    0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x()
+                        + translate.x(),
+                    0.5 * (2 * cell.get_min_y() + cell.get_lngth()) as f64 * scale.y()
+                        + translate.y(),
+                    0.5 * (2 * cell.get_min_z() + cell.get_lngth()) as f64 * scale.z()
+                        + translate.z(),
                 ]]));
                 node_index += 1;
             }
@@ -1326,11 +1326,8 @@ impl Tree for Octree {
         self,
         remove: Option<Blocks>,
         scale: Scale,
-        translate: &Vector,
+        translate: Translate,
     ) -> Result<HexahedralFiniteElements, String> {
-        let xtranslate = translate[0];
-        let ytranslate = translate[1];
-        let ztranslate = translate[2];
         let mut x_min = 0.0;
         let mut y_min = 0.0;
         let mut z_min = 0.0;
@@ -1360,12 +1357,12 @@ impl Tree for Octree {
             .for_each(|(cell, (block, connectivity))| {
                 *block = cell.get_block();
                 *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
-                x_min = *cell.get_min_x() as f64 * scale.x() + xtranslate;
-                y_min = *cell.get_min_y() as f64 * scale.y() + ytranslate;
-                z_min = *cell.get_min_z() as f64 * scale.z() + ztranslate;
-                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + xtranslate;
-                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + ytranslate;
-                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + ztranslate;
+                x_min = *cell.get_min_x() as f64 * scale.x() + translate.x();
+                y_min = *cell.get_min_y() as f64 * scale.y() + translate.y();
+                z_min = *cell.get_min_z() as f64 * scale.z() + translate.z();
+                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + translate.x();
+                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + translate.y();
+                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + translate.z();
                 nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
                 nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
                 nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);

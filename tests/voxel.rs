@@ -1,5 +1,5 @@
-use automesh::{Nel, Scale, Vector, Voxels, NSD};
-use conspire::math::{Tensor, TensorArray, TensorVec};
+use automesh::{Nel, Scale, Translate, Voxels, NSD};
+use conspire::math::{Tensor, TensorVec};
 
 const GOLD_DATA: [[[u8; 3]; 5]; 4] = [
     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
@@ -60,7 +60,7 @@ fn assert_fem_data_from_spn_eq_gold<const D: usize, const E: usize, const N: usi
 ) {
     let voxels = Voxels::from_spn(&gold.file_path, gold.nel).unwrap();
     let fem = voxels
-        .into_finite_elements(gold.remove, gold.scale, &gold.translate)
+        .into_finite_elements(gold.remove, gold.scale, gold.translate)
         .unwrap();
     assert_data_eq_gold_1d(fem.get_element_blocks(), &gold.element_blocks);
     assert_data_eq_gold_2d(
@@ -97,7 +97,7 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     /// nodal point composed of (x, y, z) floats in columns.
     element_coordinates: [[f64; NSD]; D],
 
-    /// The fully pathed file input string.
+    /// The full path file input string.
     file_path: String,
 
     /// The number of voxels that compose the segmentation lattice domain in
@@ -111,7 +111,7 @@ struct Gold<const D: usize, const E: usize, const N: usize> {
     scale: Scale,
 
     /// The translation in the [x, y, z] directions to be applied to the domain.
-    translate: Vector,
+    translate: Translate,
 }
 
 /// The default implementation of the `Gold` struct, which is abstract since
@@ -125,8 +125,8 @@ impl<const D: usize, const E: usize, const N: usize> Default for Gold<D, E, N> {
             file_path: "".to_string(),
             nel: [1; NSD].into(),
             remove: Option::Some(vec![0]),
-            scale: [1.0; NSD].into(),
-            translate: Vector::zero(),
+            scale: Default::default(),
+            translate: Default::default(),
         }
     }
 }
@@ -216,7 +216,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
-            translate: Vector::new([0.3, 0.6, 0.9]),
+            translate: [0.3, 0.6, 0.9].into(),
             ..Default::default()
         });
     }
@@ -238,7 +238,7 @@ mod into_finite_elements {
             ],
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
-            translate: Vector::new([-1.0, -2.0, -3.0]),
+            translate: [-1.0, -2.0, -3.0].into(),
             ..Default::default()
         });
     }
@@ -259,7 +259,7 @@ mod into_finite_elements {
                 [10.1, 11.2, 12.3],
             ],
             scale: [10.0, 11.0, 12.0].into(),
-            translate: Vector::new([0.1, 0.2, 0.3]),
+            translate: [0.1, 0.2, 0.3].into(),
             file_path: "tests/input/single.spn".to_string(),
             nel: [1; NSD].into(),
             ..Default::default()
@@ -1413,7 +1413,7 @@ mod from_npy {
     fn xscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, [0.0, 1.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
+            .into_finite_elements(None, [0.0, 1.0, 1.0].into(), [0.0, 0.0, 0.0].into())
             .unwrap();
     }
     #[test]
@@ -1421,7 +1421,7 @@ mod from_npy {
     fn yscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, [1.0, 0.0, 1.0].into(), &Vector::new([0.0, 0.0, 0.0]))
+            .into_finite_elements(None, [1.0, 0.0, 1.0].into(), [0.0, 0.0, 0.0].into())
             .unwrap();
     }
     #[test]
@@ -1429,7 +1429,7 @@ mod from_npy {
     fn zscale_positive() {
         let voxels = Voxels::from_npy("tests/input/letter_f_3d.npy").unwrap();
         voxels
-            .into_finite_elements(None, [1.0, 1.0, 0.0].into(), &Vector::new([0.0, 0.0, 0.0]))
+            .into_finite_elements(None, [1.0, 1.0, 0.0].into(), [0.0, 0.0, 0.0].into())
             .unwrap();
     }
 }
