@@ -101,6 +101,7 @@ impl FromIterator<usize> for Nel {
 }
 
 /// The multiplying scale in each direction.
+#[derive(PartialEq)]
 pub struct Scale(Vector);
 
 impl Scale {
@@ -115,6 +116,12 @@ impl Scale {
     }
 }
 
+impl Default for Scale {
+    fn default() -> Self {
+        Self(Vector::new([1.0; NSD]))
+    }
+}
+
 impl From<[f64; NSD]> for Scale {
     fn from(scale: [f64; NSD]) -> Self {
         if scale.iter().any(|&entry| entry <= 0.0) {
@@ -122,6 +129,34 @@ impl From<[f64; NSD]> for Scale {
         } else {
             Self(Vector::new(scale))
         }
+    }
+}
+
+/// The additive translation in each direction.
+#[derive(PartialEq)]
+pub struct Translate(Vector);
+
+impl Translate {
+    pub fn x(&self) -> &f64 {
+        &self.0[0]
+    }
+    pub fn y(&self) -> &f64 {
+        &self.0[1]
+    }
+    pub fn z(&self) -> &f64 {
+        &self.0[2]
+    }
+}
+
+impl Default for Translate {
+    fn default() -> Self {
+        Self(Vector::new([0.0; NSD]))
+    }
+}
+
+impl From<[f64; NSD]> for Translate {
+    fn from(scale: [f64; NSD]) -> Self {
+        Self(Vector::new(scale))
     }
 }
 
@@ -191,7 +226,7 @@ impl Voxels {
         self,
         remove: Option<Blocks>,
         scale: Scale,
-        translate: &Vector,
+        translate: Translate,
     ) -> Result<HexahedralFiniteElements, String> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
@@ -300,13 +335,10 @@ fn initial_nodal_coordinates(
     filtered_voxel_data: &VoxelDataSized<NSD>,
     number_of_nodes_unfiltered: usize,
     scale: Scale,
-    translate: &Vector,
+    translate: Translate,
 ) -> Result<InitialNodalCoordinates, String> {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    let xtranslate = translate[0];
-    let ytranslate = translate[1];
-    let ztranslate: f64 = translate[2];
     let mut nodal_coordinates: InitialNodalCoordinates =
         (0..number_of_nodes_unfiltered).map(|_| None).collect();
     filtered_voxel_data
@@ -314,44 +346,44 @@ fn initial_nodal_coordinates(
         .zip(element_node_connectivity.iter())
         .for_each(|(&[x, y, z], connectivity)| {
             nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                x as f64 * scale.x() + xtranslate,
-                y as f64 * scale.y() + ytranslate,
-                z as f64 * scale.z() + ztranslate,
+                x as f64 * scale.x() + translate.x(),
+                y as f64 * scale.y() + translate.y(),
+                z as f64 * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (x as f64 + 1.0) * scale.x() + xtranslate,
-                y as f64 * scale.y() + ytranslate,
-                z as f64 * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + translate.x(),
+                y as f64 * scale.y() + translate.y(),
+                z as f64 * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (x as f64 + 1.0) * scale.x() + xtranslate,
-                (y as f64 + 1.0) * scale.y() + ytranslate,
-                z as f64 * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + translate.x(),
+                (y as f64 + 1.0) * scale.y() + translate.y(),
+                z as f64 * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                x as f64 * scale.x() + xtranslate,
-                (y as f64 + 1.0) * scale.y() + ytranslate,
-                z as f64 * scale.z() + ztranslate,
+                x as f64 * scale.x() + translate.x(),
+                (y as f64 + 1.0) * scale.y() + translate.y(),
+                z as f64 * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[4] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                x as f64 * scale.x() + xtranslate,
-                y as f64 * scale.y() + ytranslate,
-                (z as f64 + 1.0) * scale.z() + ztranslate,
+                x as f64 * scale.x() + translate.x(),
+                y as f64 * scale.y() + translate.y(),
+                (z as f64 + 1.0) * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[5] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (x as f64 + 1.0) * scale.x() + xtranslate,
-                y as f64 * scale.y() + ytranslate,
-                (z as f64 + 1.0) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + translate.x(),
+                y as f64 * scale.y() + translate.y(),
+                (z as f64 + 1.0) * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[6] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                (x as f64 + 1.0) * scale.x() + xtranslate,
-                (y as f64 + 1.0) * scale.y() + ytranslate,
-                (z as f64 + 1.0) * scale.z() + ztranslate,
+                (x as f64 + 1.0) * scale.x() + translate.x(),
+                (y as f64 + 1.0) * scale.y() + translate.y(),
+                (z as f64 + 1.0) * scale.z() + translate.z(),
             ]));
             nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET] = Some(Coordinate::new([
-                x as f64 * scale.x() + xtranslate,
-                (y as f64 + 1.0) * scale.y() + ytranslate,
-                (z as f64 + 1.0) * scale.z() + ztranslate,
+                x as f64 * scale.x() + translate.x(),
+                (y as f64 + 1.0) * scale.y() + translate.y(),
+                (z as f64 + 1.0) * scale.z() + translate.z(),
             ]));
         });
     #[cfg(feature = "profile")]
@@ -404,7 +436,7 @@ fn finite_element_data_from_data(
     data: &VoxelData,
     remove: Option<Blocks>,
     scale: Scale,
-    translate: &Vector,
+    translate: Translate,
 ) -> Result<(Blocks, Connectivity<HEX>, Coordinates), String> {
     let shape = data.shape();
     let nelxplus1 = shape[0] + 1;

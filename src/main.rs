@@ -1,9 +1,8 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Tree,
-    Vector, Voxels,
+    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation,
+    Translate, Tree, Voxels,
 };
 use clap::{Parser, Subcommand};
-use conspire::math::TensorArray;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use std::{io::Error as ErrorIO, path::Path, time::Instant};
@@ -697,13 +696,9 @@ fn mesh(
     }
     let time = Instant::now();
     let scale = Scale::from([xscale, yscale, zscale]);
+    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
     if !quiet {
-        let entirely_default = scale.x() == &1.0
-            && yscale == 1.0
-            && zscale == 1.0
-            && xtranslate == 0.0
-            && ytranslate == 0.0
-            && ztranslate == 0.0;
+        let entirely_default = scale == Default::default() && translate == Default::default();
         print!("     \x1b[1;96mMeshing\x1b[0m {}", output);
         if !entirely_default {
             print!(" [");
@@ -735,17 +730,9 @@ fn mesh(
         let (_, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
         tree.pair();
-        tree.into_finite_elements(
-            remove,
-            scale,
-            &Vector::new([xtranslate, ytranslate, ztranslate]),
-        )?
+        tree.into_finite_elements(remove, scale, translate)?
     } else {
-        input_type.into_finite_elements(
-            remove,
-            scale,
-            &Vector::new([xtranslate, ytranslate, ztranslate]),
-        )?
+        input_type.into_finite_elements(remove, scale, translate)?
     };
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
@@ -866,7 +853,7 @@ fn octree(
     let output_type = tree.octree_into_finite_elements(
         remove,
         [xscale, yscale, zscale].into(),
-        &Vector::new([xtranslate, ytranslate, ztranslate]),
+        [xtranslate, ytranslate, ztranslate].into(),
     )?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());

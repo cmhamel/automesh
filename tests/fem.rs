@@ -1,5 +1,5 @@
-use automesh::{Scale, Vector, Voxels, NSD};
-use conspire::math::{Tensor, TensorArray, TensorRank1};
+use automesh::{Scale, Translate, Voxels, NSD};
+use conspire::math::Tensor;
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},
@@ -36,11 +36,11 @@ fn compare_files(
     spn_path: &str,
     nel: [usize; NSD],
     scale: Scale,
-    translate: Vector,
+    translate: Translate,
 ) {
     let voxels = Voxels::from_spn(spn_path, nel.into()).unwrap();
     let fem = voxels
-        .into_finite_elements(Some(vec![0]), scale, &translate)
+        .into_finite_elements(Some(vec![0]), scale, translate)
         .unwrap();
     fem.write_inp(file_path).unwrap();
     let mut gold = String::new();
@@ -78,7 +78,7 @@ mod read_inp {
             .into_finite_elements(
                 Some(vec![0]),
                 [1.0, 1.0, 1.0].into(),
-                &TensorRank1::new([0.0, 0.0, 0.0]),
+                [0.0, 0.0, 0.0].into(),
             )
             .unwrap();
         fem.write_inp("target/letter_f_3d.inp").unwrap();
@@ -106,7 +106,7 @@ mod write_inp {
             "tests/input/letter_f_3d.spn",
             [4, 5, 3],
             [1.0, 1.0, 1.0].into(),
-            TensorRank1::new([0.0, 0.0, 0.0]),
+            [0.0, 0.0, 0.0].into(),
         );
     }
     #[test]
@@ -117,7 +117,7 @@ mod write_inp {
             "tests/input/sparse.spn",
             [5, 5, 5],
             [1.0, 1.0, 1.0].into(),
-            TensorRank1::new([0.0, 0.0, 0.0]),
+            [0.0, 0.0, 0.0].into(),
         );
     }
 }
@@ -131,7 +131,7 @@ mod write_mesh {
             .into_finite_elements(
                 Some(vec![0]),
                 [1.0, 1.0, 1.0].into(),
-                &Vector::new([0.0, 0.0, 0.0]),
+                [0.0, 0.0, 0.0].into(),
             )
             .unwrap();
         fem.write_mesh("target/letter_f_3d.mesh").unwrap();
@@ -147,7 +147,7 @@ mod write_vtk {
             .into_finite_elements(
                 Some(vec![0]),
                 [1.0, 1.0, 1.0].into(),
-                &Vector::new([0.0, 0.0, 0.0]),
+                [0.0, 0.0, 0.0].into(),
             )
             .unwrap();
         fem.write_vtk("target/letter_f_3d.vtk").unwrap();

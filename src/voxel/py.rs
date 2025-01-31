@@ -5,9 +5,8 @@ use super::{
         Blocks, NSD,
     },
     defeature_voxels, finite_element_data_from_data, voxel_data_from_npy, voxel_data_from_spn,
-    write_voxels_to_npy, write_voxels_to_spn, Vector, VoxelData,
+    write_voxels_to_npy, write_voxels_to_spn, VoxelData,
 };
-use conspire::math::TensorArray;
 use pyo3::prelude::*;
 
 pub fn register_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -32,12 +31,7 @@ impl Voxels {
         translate: [f64; NSD],
     ) -> Result<HexahedralFiniteElements, PyIntermediateError> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_data(
-                &self.data,
-                remove,
-                scale.into(),
-                &Vector::new(translate),
-            )?;
+            finite_element_data_from_data(&self.data, remove, scale.into(), translate.into())?;
         Ok(HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
