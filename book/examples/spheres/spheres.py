@@ -4,6 +4,7 @@ it as a .npy file.
 Example
 -------
 source ~/autotwin/automesh/.venv/bin/activate
+cd book/examples/spheres
 python spheres.py
 """
 
