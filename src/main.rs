@@ -184,7 +184,7 @@ enum Commands {
 
     /// Quality metrics for an existing finite element mesh
     Metrics {
-        /// Mesh (inp) input file
+        /// Mesh (inp | stl) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
@@ -420,6 +420,7 @@ enum InputTypes {
 
 #[allow(clippy::large_enum_variant)]
 enum OutputTypes<const N: usize> {
+    // TODO: Ask MRB why Csv is not an OutputTypes variant
     Abaqus(FiniteElements<N>),
     Exodus(FiniteElements<N>),
     Mesh(FiniteElements<N>),
