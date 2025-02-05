@@ -5,9 +5,9 @@ automesh metrics --help
 <!-- cmdrun automesh metrics --help -->
 ```
 
-## Description
+## Hexahedral Metrics
 
-`automesh` implements the following element quality metrics defined in the Verdict report.[^Knupp_2006]
+`automesh` implements the following hexahedral element quality metrics defined in the Verdict report.[^Knupp_2006]
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
@@ -40,7 +40,7 @@ Figure. Illustrate of minimum scaled Jacobian[^Hovey_2023] with acceptable range
 
 * Measures the volume of the element.
 
-## Unit Tests
+## Hexahedral Unit Tests
 
 Inspired by Figure 2 of Livesu *et al.*[^Livesu_2021] reproduced here below
 
@@ -51,9 +51,9 @@ we examine several unit test singleton elements and their metrics.
 valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}_{\max}$ | volume
 :---: | :---: | :---: | :---: | :---: | :---:
 3           | ![](img/single_valence_03.png)        | 1.000000e0 (1.000)    | 8.660253e-1 (0.866)   | 5.000002e-1 (0.500)   | 8.660250e-1 (0.866)
-3' (noised) | ![](img/single_valence_03_noise1.png) | 1.292260e0 (2.325) ** *Cubit: 1.292* | 1.917367e-1 (0.192)   | 6.797483e-1 (0.680)   | 1.247800e0  (1.248)
+3' (noised) | ![](img/single_valence_03_noise1.png) | 1.292260e0 (2.325) ** *Cubit (aspect ratio): 1.292* | 1.917367e-1 (0.192)   | 6.797483e-1 (0.680)   | 1.247800e0  (1.248)
 4           | ![](img/single_valence_04.png)        | 1.000000e0 (1.000)    | 1.000000e0  (1.000)   | 0.000000e0  (0.000)   | 1.000000e0  (1.000)
-4' (noised) | ![](img/single_valence_04_noise2.png) | 1.167884e0 (1.727) ** *Cubit: 1.168* | 3.743932e-1 (0.374)   | 4.864936e-1 (0.486)   | 9.844008e-1 (0.984)
+4' (noised) | ![](img/single_valence_04_noise2.png) | 1.167884e0 (1.727) ** *Cubit (aspect ratio): 1.168* | 3.743932e-1 (0.374)   | 4.864936e-1 (0.486)   | 9.844008e-1 (0.984)
 5           | ![](img/single_valence_05.png)        | 1.000000e0 (1.000)    | 9.510566e-1 (0.951)   | 3.090169e-1 (0.309)   | 9.510570e-1 (0.951)
 6           | ![](img/single_valence_06.png)        | 1.000000e0 (1.000)    | 8.660253e-1 (0.866)   | 5.000002e-1 (0.500)   | 8.660250e-1 (0.866)
 ...         | ...                                   | ...                   | ...                   | ...                   | ...
@@ -63,6 +63,7 @@ Figure: Maximum edge ratio, minimum scaled Jacobian, maximum skew, and volume.
 Leading values are from `automesh`.
 Values in parenthesis are results from [HexaLab](https://www.hexalab.net).[^Hexalab_2023]
 Items with ** indicate where `automesh` and Cubit agree, but HexaLab disagrees.
+  Cubit uses the term *Aspect Ratio* for Edge Ratio.
 
 The connectivity for all elements:
 
@@ -147,6 +148,88 @@ The element coordinates follow:
     7,      0.809017e0,      0.587785e0,      1.000000e0
     8,      1.809017e0,      0.587785e0,      1.000000e0
 ```
+
+## Triangular Metrics
+
+`automesh` implements the following triangular element quality metrics defined in the Verdict report.[^Knupp_2006]
+
+* Maximum edge ratio ${\rm ER}_{\max}$
+* Minium scaled Jacobian ${\rm SJ}_{\min}$
+* Element area
+
+A brief description of each metric follows.
+
+### Maximum Edge Ratio
+
+* ${\rm ER}_{\max}$ measures the ratio of the longest edge to the shortest edge in a mesh element.
+* A ratio of 1.0 indicates perfect element quality, whereas a very large ratio indicates bad element quality.
+* Knupp *et al.*[^Knupp_2006] (page 26) indicate an acceptable range of `[1.0, 1.3]`.
+
+### Minimum Scaled Jacobian
+
+* ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
+* Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
+
+### Element Area
+
+* Measures the area of the element.
+
+## Triangular Unit Tests
+
+We start with `one_facet.stl`:
+
+```sh
+import stl "/Users/chovey/autotwin/automesh/tests/input/one_facet.stl" feature_angle 135.00 merge make_elements
+surface 1 scheme trimesh minimum size 100
+delete mesh surface 1  propagate
+surface 1  scheme trimesh
+mesh surface 1
+quality tri all aspect ratio global draw mesh list detail
+quality tri all scaled jacobian global draw mesh list detail
+quality tri all element area global draw mesh list detail
+```
+
+We use the ABAQUS input file `single_valence_04_noise2.inp`.
+We import the file into Cubit and create a triangular surface mesh:
+
+```sh
+import abaqus mesh geometry  "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_noise2.inp" feature_angle 135.00
+surface 1 scheme trimesh minimum size 100
+surface 2 scheme trimesh minimum size 100
+surface 3 scheme trimesh minimum size 100
+surface 4 scheme trimesh minimum size 100
+surface 5 scheme trimesh minimum size 100
+# surface 6 scheme trimesh minimum size 100 # there is no side 6, two sides were merged
+delete mesh surface all propagate
+surface all scheme trimesh
+mesh surface all
+quality tri all aspect ratio global draw mesh list detail
+quality tri all scaled jacobian global draw mesh list detail
+quality tri all element area global draw mesh list detail
+export stl ascii "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_noise2.stl" mesh  overwrite
+```
+
+We collect these element qualities as follows:
+
+file | element ID | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | area
+:---: | :---: | :---: | :---: | :---:
+`one_facet.stl` | 1 | xxx (1.207e+00) | xxx (8.165e-01) | xxx (5.000e-01)
+`single_valence_04_noise2.inp` | 1 | xxx (1.048e+00) | xxx (8.978e-01) | xxx (4.244e-01)
+*id.* |  2 | xxx (1.150e+00) | xxx (8.314e-01) | xxx (4.429e-01)
+*id.* |  3 | xxx (2.588e+00) | xxx (4.262e-01) | xxx (3.419e-01)
+*id.* |  4 | xxx (1.407e+00) | xxx (7.003e-01) | xxx (5.706e-01)
+*id.* |  5 | xxx (1.061e+00) | xxx (8.800e-01) | xxx (6.679e-01)
+*id.* |  6 | xxx (1.225e+00) | xxx (8.039e-01) | xxx (5.158e-01)
+*id.* |  7 | xxx (1.226e+00) | xxx (7.190e-01) | xxx (6.482e-01)
+*id.* |  8 | xxx (1.156e+00) | xxx (8.061e-01) | xxx (7.041e-01)
+*id.* |  9 | xxx (1.323e+00) | xxx (7.606e-01) | xxx (6.095e-01)
+*id.* | 10 | xxx (1.157e+00) | xxx (7.391e-01) | xxx (5.498e-01)
+*id.* | 11 | xxx (1.405e+00) | xxx (6.392e-01) | xxx (5.695e-01)
+*id.* | 12 | xxx (1.463e+00) | xxx (5.947e-01) | xxx (4.022e-01)
+
+Figure: Maximum edge ratio, minimum scaled Jacobian, and area.
+Leading values are from `automesh`.
+Values in parenthesis are results from Cubit.  Cubit uses the term *Aspect Ratio* for Edge Ratio.
 
 ## References
 
