@@ -1032,6 +1032,9 @@ fn write_finite_elements_metrics<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
+    if N != HEX {
+        panic!("Only implemented for hexahedral elements.")
+    }
     let maximum_edge_ratios =
         calculate_maximum_edge_ratios(element_node_connectivity, nodal_coordinates);
     let minimum_scaled_jacobians =
@@ -1358,6 +1361,11 @@ fn calculate_element_volumes<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != HEX {
+        panic!("Only implemented for hexahedral elements.")
+    }
     let mut x1 = Vector::zero();
     let mut x2 = Vector::zero();
     let mut x3 = Vector::zero();
@@ -1374,4 +1382,38 @@ fn calculate_element_volumes<const N: usize>(
         time.elapsed()
     );
     element_volumes
+}
+
+fn calculate_element_areas<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    // Knupp 2006
+    // https://www.osti.gov/servlets/purl/901967
+    // page 19
+
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != TRI {
+        panic!("Only implemented for triangular elements.")
+    }
+    let mut l0 = Vector::zero();
+    let mut l1 = Vector::zero();
+    let element_areas = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
+            l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
+            // Calculate the area using the cross product
+            0.5 * (l0.cross(&l1)).norm()
+        })
+        .collect();
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93mElement volumes\x1b[0m {:?}",
+        time.elapsed()
+    );
+    element_areas
 }
