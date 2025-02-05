@@ -1099,6 +1099,34 @@ fn calculate_maximum_edge_ratios<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    match N {
+        HEX => {
+            calculate_maximum_edge_ratios_hex(
+                element_node_connectivity,
+                nodal_coordinates
+            )
+        },
+        TRI => {
+            calculate_maximum_edge_ratios_tri(
+                element_node_connectivity,
+                nodal_coordinates
+            )
+        }
+        _ => {
+            panic!()
+        }
+    }
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Maximum edge ratios\x1b[0m {:?}",
+        time.elapsed()
+    );
+}
+
+fn calculate_maximum_edge_ratios_hex<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
     let mut l1 = 0.0;
     let mut l2 = 0.0;
     let mut l3 = 0.0;
@@ -1138,11 +1166,55 @@ fn calculate_maximum_edge_ratios<const N: usize>(
                 .unwrap()
         })
         .collect();
-    #[cfg(feature = "profile")]
-    println!(
-        "           \x1b[1;93m⤷ Maximum edge ratios\x1b[0m {:?}",
-        time.elapsed()
-    );
+    maximum_edge_ratios
+}
+
+fn calculate_maximum_edge_ratios_tri<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    // Knupp 2006
+    // https://www.osti.gov/servlets/purl/901967
+    // page 19 and 26
+    let mut l0 = 0.0;
+    let mut l1 = 0.0;
+    let mut l2 = 0.0;
+    let maximum_edge_ratios = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            l0 = (
+                &nodal_coordinates[
+                    connectivity[2] - NODE_NUMBERING_OFFSET
+                    ]
+                - &nodal_coordinates[
+                    connectivity[1] - NODE_NUMBERING_OFFSET
+                    ]
+                )
+                .norm();
+            l1 = (
+                &nodal_coordinates[
+                    connectivity[0] - NODE_NUMBERING_OFFSET
+                    ]
+                - &nodal_coordinates[
+                    connectivity[2] - NODE_NUMBERING_OFFSET
+                    ]
+                )
+                .norm();
+            l2 = (
+                &nodal_coordinates[
+                    connectivity[1] - NODE_NUMBERING_OFFSET
+                    ]
+                - &nodal_coordinates[
+                    connectivity[0] - NODE_NUMBERING_OFFSET
+                    ]
+                )
+                .norm();
+            [l0 / l1, l1 / l0, l0 / l2, l2 / l0, l1 / l2, l2 / l1]
+                .into_iter()
+                .reduce(f64::max)
+                .unwrap()
+        })
+        .collect();
     maximum_edge_ratios
 }
 
