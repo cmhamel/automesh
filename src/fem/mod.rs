@@ -1100,18 +1100,8 @@ fn calculate_maximum_edge_ratios<const N: usize>(
     #[cfg(feature = "profile")]
     let time = Instant::now();
     match N {
-        HEX => {
-            calculate_maximum_edge_ratios_hex(
-                element_node_connectivity,
-                nodal_coordinates
-            )
-        },
-        TRI => {
-            calculate_maximum_edge_ratios_tri(
-                element_node_connectivity,
-                nodal_coordinates
-            )
-        }
+        HEX => calculate_maximum_edge_ratios_hex(element_node_connectivity, nodal_coordinates),
+        TRI => calculate_maximum_edge_ratios_tri(element_node_connectivity, nodal_coordinates),
         _ => {
             panic!()
         }
@@ -1182,32 +1172,14 @@ fn calculate_maximum_edge_ratios_tri<const N: usize>(
     let maximum_edge_ratios = element_node_connectivity
         .iter()
         .map(|connectivity| {
-            l0 = (
-                &nodal_coordinates[
-                    connectivity[2] - NODE_NUMBERING_OFFSET
-                    ]
-                - &nodal_coordinates[
-                    connectivity[1] - NODE_NUMBERING_OFFSET
-                    ]
-                )
+            l0 = (&nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET])
                 .norm();
-            l1 = (
-                &nodal_coordinates[
-                    connectivity[0] - NODE_NUMBERING_OFFSET
-                    ]
-                - &nodal_coordinates[
-                    connectivity[2] - NODE_NUMBERING_OFFSET
-                    ]
-                )
+            l1 = (&nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET])
                 .norm();
-            l2 = (
-                &nodal_coordinates[
-                    connectivity[1] - NODE_NUMBERING_OFFSET
-                    ]
-                - &nodal_coordinates[
-                    connectivity[0] - NODE_NUMBERING_OFFSET
-                    ]
-                )
+            l2 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET])
                 .norm();
             [l0 / l1, l1 / l0, l0 / l2, l2 / l0, l1 / l2, l2 / l1]
                 .into_iter()
