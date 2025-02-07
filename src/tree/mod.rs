@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use super::{
     fem::{Blocks, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    tessellation::Tessellation,
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };
@@ -79,6 +80,7 @@ pub trait Tree {
         scale: Scale,
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
+    fn into_tesselation(self, remove: Option<Blocks>) -> Tessellation;
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
@@ -121,13 +123,22 @@ impl Cell {
     pub fn get_min_z(&self) -> &u16 {
         &self.min_z
     }
+    pub fn get_max_x(&self) -> u16 {
+        self.min_x + self.lngth
+    }
+    pub fn get_max_y(&self) -> u16 {
+        self.min_y + self.lngth
+    }
+    pub fn get_max_z(&self) -> u16 {
+        self.min_z + self.lngth
+    }
     pub fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
         let x_min = *self.get_min_x() as usize;
         let y_min = *self.get_min_y() as usize;
         let z_min = *self.get_min_z() as usize;
-        let x_max = x_min + *self.get_lngth() as usize;
-        let y_max = y_min + *self.get_lngth() as usize;
-        let z_max = z_min + *self.get_lngth() as usize;
+        let x_max = self.get_max_x() as usize;
+        let y_max = self.get_max_y() as usize;
+        let z_max = self.get_max_z() as usize;
         let contained = data.slice(s![x_min..x_max, y_min..y_max, z_min..z_max]);
         let mut materials: Blocks = contained.iter().cloned().collect();
         materials.dedup();
@@ -1378,6 +1389,50 @@ impl Tree for Octree {
             element_node_connectivity,
             nodal_coordinates,
         ))
+    }
+    fn into_tesselation(self, remove: Option<Blocks>) -> Tessellation {
+        let (clusters, cell_from_subcell_map) = self.clusters(remove);
+        let blocks: Blocks = clusters
+            .iter()
+            .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
+            .collect();
+        let manifolds = blocks
+            .iter()
+            .zip(clusters.iter())
+            .map(|(&block, cluster)| {
+                cluster
+                    .iter()
+                    .flat_map(|cell| {
+                        self[*cell].get_faces().iter().enumerate().filter_map(
+                            |(face_index, &face)| {
+                                if let Some(face_cell) = face {
+                                    if self[face_cell].get_block() == block {
+                                        Some([*cell, face_index])
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                            },
+                        )
+                    })
+                    .collect::<Vec<[usize; 2]>>()
+            })
+            .collect::<Vec<Vec<[usize; 2]>>>();
+        // cells in clusters are all leaves. find:
+        // - cells with same-size face neighbors with different block
+        // - cells with neighbor children with some having different block [use children faces, are smaller]
+        // - cells with larger neighbor (use parent map) with different block [use own face, is smaller]
+        // collect these faces into a sort of quadtree
+        // plot them as quads in 3D for now for visual checks
+        // how to do connectivity? would help templates later to have beforehand, can also check manifold
+        //
+        //
+        // just make every "quad" into 2 tri FEs and then convert to STL for now (for the visual checking)
+        //
+        //
+        todo!()
     }
     fn pair(&mut self) {
         #[cfg(feature = "profile")]

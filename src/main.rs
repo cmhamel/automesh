@@ -204,7 +204,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Octree output file (exo | inp | mesh | vtk)
+        /// Octree output file (exo | inp | mesh | stl | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -849,22 +849,27 @@ fn octree(
     if pair {
         tree.pair();
     }
-    tree.prune();
-    let output_type = tree.octree_into_finite_elements(
-        remove,
-        [xscale, yscale, zscale].into(),
-        [xtranslate, ytranslate, ztranslate].into(),
-    )?;
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => invalid_output(&output, output_extension)?,
+    if output_extension == Some("stl") {
+        let output_type = tree.into_tesselation(remove);
+        write_output(output, OutputTypes::<0>::Stl(output_type), quiet)?;
+    } else {
+        tree.prune();
+        let output_type = tree.octree_into_finite_elements(
+            remove,
+            [xscale, yscale, zscale].into(),
+            [xtranslate, ytranslate, ztranslate].into(),
+        )?;
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
+        match output_extension {
+            Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+            Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+            Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+            Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+            _ => invalid_output(&output, output_extension)?,
+        }
     }
     Ok(())
 }
