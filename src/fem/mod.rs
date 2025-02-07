@@ -947,9 +947,6 @@ fn write_finite_elements_to_mesh<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Result<(), ErrorIO> {
-    if N != HEX {
-        panic!("Only implemented writing to .mesh for hexes.")
-    }
     let mesh_file = File::create(file_path)?;
     let mut file = BufWriter::new(mesh_file);
     file.write_all(b"MeshVersionFormatted 1\nDimension 3\nVertices\n")?;
@@ -962,6 +959,7 @@ fn write_finite_elements_to_mesh<const N: usize>(
     })?;
     match N {
         HEX => file.write_all(b"Hexahedra\n")?,
+        TRI => file.write_all(b"Triangles\n")?,
         _ => panic!(),
     };
     file.write_all(format!("{}\n", element_blocks.len()).as_bytes())?;
