@@ -1,7 +1,7 @@
 use super::{
     calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
-    calculate_minimum_scaled_jacobians, Blocks, Connectivity, Coordinates,
-    HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX,
+    calculate_minimum_scaled_jacobians, metrics_headers, Blocks, Connectivity, Coordinates,
+    HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX, TRI,
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -3050,3 +3050,39 @@ fn valence_3_and_4_noised() {
             );
         });
 }
+
+#[test]
+fn metrics_headers_test() {
+    // The headers for metrics files are unique depending on if the
+    // element type is hexahedral versus triangular.
+    // This test assures both types are created correctly.
+
+    // Test HEX headers
+    let hex_header_gold = "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n".to_string();
+    let hex_header_result = metrics_headers::<HEX>();
+    assert_eq!(hex_header_gold, hex_header_result);
+
+    // Test TRI headers
+    let tri_header_gold =
+        "maximum edge ratio,    minimum scaled jacobian,               area\n".to_string();
+    let tri_header_result = metrics_headers::<TRI>();
+    assert_eq!(tri_header_gold, tri_header_result);
+}
+
+// #[test]
+// fn metrics_format_test() {
+//     // The metrics have a specific spacing in the output file,
+//     // depending on if the element type is hexahedral or triangular.
+//     // This test assures both types are formatted correctly.
+// 
+//     // Test HEX format
+//     let hex_format_gold = "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n".to_string();
+//     let hex_format_result = metrics_format::<HEX>();
+//     assert_eq!(hex_format_gold, hex_format_result);
+// 
+//     // Test TRI format
+//     let tri_format_gold =
+//         "{:>20.6e}, {:>26.6e}, {:>26.6e}\n".to_string();
+//     let tri_format_result = metrics_format::<TRI>();
+//     assert_eq!(tri_format_gold, tri_format_result);
+// }

@@ -1029,6 +1029,32 @@ fn write_finite_elements_to_vtk<const N: usize>(
     .export_be(&file)
 }
 
+fn metrics_headers<const N: usize>() -> String {
+    match N {
+        HEX => "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n".to_string(),
+        TRI => "maximum edge ratio,    minimum scaled jacobian,               area\n".to_string(),
+        _ => panic!()
+    }
+}
+
+// fn metrics_format<const N: usize>() -> String {
+//     match N {
+//         HEX => "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n".to_string(),
+//         TRI => "{:>20.6e}, {:>26.6e}, {:>26.6e}\n".to_string(),
+//         _ => panic!(),
+//     }
+// }
+
+// enum ElementType {
+//     Tri(Triangle),
+//     Hex(Hexahedron),
+// }
+
+// #[derive(Clone)]
+// struct Triangle {
+//     
+// }
+
 fn write_finite_elements_metrics<const N: usize>(
     file_path: &str,
     element_node_connectivity: &Connectivity<N>,
@@ -1051,10 +1077,8 @@ fn write_finite_elements_metrics<const N: usize>(
         .and_then(|ext| ext.to_str());
     match input_extension {
         Some("csv") => {
-            file.write_all(
-                "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n"
-                    .as_bytes(),
-            )?;
+            let header_string = metrics_headers::<N>();
+            file.write_all(header_string.as_bytes())?;
             maximum_edge_ratios
                 .iter()
                 .zip(
