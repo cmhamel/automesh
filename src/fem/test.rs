@@ -2910,7 +2910,9 @@ fn sparse() {
 
 #[test]
 fn valence_3_and_4_noised() {
-    // Reference: https://autotwin.github.io/automesh/cli/metrics.html#unit-tests
+    // Reference: https://autotwin.github.io/automesh/cli/metrics.html#hexahedral-unit-tests
+    // We test both of the noised elements, valence_03' (noised)
+    // valence_04' (noised)
 
     // Gold values
     let maximum_edge_ratios_gold = [1.2922598186116965, 1.167883631481492];
@@ -3044,11 +3046,70 @@ fn valence_3_and_4_noised() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < epsilon,
-                "Calcualted element volume {} is not approximately equal to gold value {}",
+                "Calculated element volume {} is not approximately equal to gold value {}",
                 calculated,
                 gold
             );
         });
+}
+
+#[test]
+fn triangular_unit_tests() {
+    // Reference: https://autotwin.github.io/automesh/cli/metrics.html#triangular-unit-tests
+    // The first twelve triangles come from
+    // tests/input/single_valence_04_noise2.inp.
+    // We use
+    // tests/tesselation.rs::from_stl::file_single_valence_04_noise2()
+    // test to generate the coordinates and connectivity
+    // from the stl file.
+    // The last triangle comes from
+    // tests/input/one_facet.stl.
+
+    // Gold values
+    let maximum_edge_ratios_gold = [
+        1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
+    ];
+    let minimum_scaled_jacobians_gold = [
+        8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
+        7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
+    ];
+    let element_areas_gold = [
+        4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
+        6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
+    ];
+
+    // Small tolerance for comparison of two floats
+    let epsilon = 1e-10;
+
+    let element_node_connectivity = vec![
+        vec![1, 2, 3],
+        vec![4, 2, 5],
+        vec![1, 6, 2],
+        vec![4, 3, 2],
+        vec![4, 1, 3],
+        vec![4, 7, 1],
+        vec![2, 8, 5],
+        vec![6, 8, 2],
+        vec![7, 8, 6],
+        vec![1, 7, 6],
+        vec![4, 5, 8],
+        vec![7, 4, 8], // end of single_valence_04_noise2.inp
+        vec![9, 10, 11],
+    ];
+
+    let nodal_coordinates = [Coordinates::new(&[
+        [-0.2, 1.2, -0.1],
+        [1.180501, 0.39199, 0.3254445],
+        [0.1, 0.2, 0.3],
+        [-0.001, -0.021, 1.002],
+        [1.2, -0.1, 1.1],
+        [1.03, 1.102, -0.25],
+        [0.0, 1.0, 1.0],
+        [1.01, 1.02, 1.03], // end single_valence_04_noise2.inp
+        [0.0, 0.0, 1.0], // from one_facet.stl
+        [0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0], // End one_facet.stl
+    ])];
 }
 
 #[test]
@@ -3074,12 +3135,12 @@ fn metrics_headers_test() {
 //     // The metrics have a specific spacing in the output file,
 //     // depending on if the element type is hexahedral or triangular.
 //     // This test assures both types are formatted correctly.
-// 
+//
 //     // Test HEX format
 //     let hex_format_gold = "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n".to_string();
 //     let hex_format_result = metrics_format::<HEX>();
 //     assert_eq!(hex_format_gold, hex_format_result);
-// 
+//
 //     // Test TRI format
 //     let tri_format_gold =
 //         "{:>20.6e}, {:>26.6e}, {:>26.6e}\n".to_string();

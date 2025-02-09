@@ -55,7 +55,7 @@ mod from_stl {
     #[cfg(not(target_os = "windows"))]
     fn file_one_facet() {
         let tess = Tessellation::from_stl("tests/input/one_facet.stl").unwrap();
-        // println!("{:?}", tess);
+        println!("{:?}", tess);
         assert_eq!(tess, tessellation_one_facet());
     }
     #[test]
@@ -69,13 +69,20 @@ mod from_stl {
     #[cfg(not(target_os = "windows"))]
     fn file_single() {
         let _tess = Tessellation::from_stl("tests/input/single.stl");
-        // println!("{:?}", tess);
+        // println!("{:?}", _tess);
     }
     #[test]
     #[cfg(not(target_os = "windows"))]
     fn file_double() {
         let _tess = Tessellation::from_stl("tests/input/double.stl");
-        // println!("{:?}", tess);
+        // println!("{:?}", _tess);
+    }
+    #[test]
+    #[cfg(not(target_os = "windows"))]
+    fn file_single_valence_04_noise2() {
+        let _tess = Tessellation::from_stl("tests/input/single_valence_04_noise2.stl");
+        // println!("{:?}", _tess);
+        println!("{:#?}", _tess); // pretty-print
     }
 }
 

@@ -1050,7 +1050,7 @@ fn metrics_headers<const N: usize>() -> String {
 
 // #[derive(Clone)]
 // struct Triangle {
-//     
+//
 // }
 
 fn write_finite_elements_metrics<const N: usize>(
