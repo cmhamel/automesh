@@ -26,12 +26,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: clippy
       run: cargo clippy --features python -- -D warnings
-    - name: maturin
-      run: pip install maturin
-    - name: build
-      run: maturin build --release --features python
-    - name: install
-      run: pip install --find-links=target/wheels/ automesh[dev]
+    - name: automesh
+      run: pip install .[dev]
     - name: pycodestyle
       run: pycodestyle --verbose .
     - name: pytest
