@@ -52,5 +52,7 @@ requires = [
 
 [tool.maturin]
 features = [
-  'pyo3/extension-module'
+  'pyo3/extension-module',
+  'python',
 ]
+profile = 'release'
