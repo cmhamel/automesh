@@ -1048,6 +1048,7 @@ fn write_finite_elements_metrics<const N: usize>(
         calculate_maximum_edge_ratios(element_node_connectivity, nodal_coordinates);
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
+    // TODO: change "maximum_skews" to "skews"
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
     let element_measures = calculate_element_measures(element_node_connectivity, nodal_coordinates);
     #[cfg(feature = "profile")]
@@ -1219,6 +1220,79 @@ fn calculate_maximum_edge_ratios_tri<const N: usize>(
     maximum_edge_ratios
 }
 
+// fn calculate_skews_tri<const N: usize>(
+//     element_node_connectivity: &Connectivity<N>,
+//     nodal_coordinates: &Coordinates,
+// ) -> Metrics {
+//     // #TODO: consider rearchitect, as these types of if-type-checks
+//     // indicate rearchitecture may help code logic.
+//     if N != TRI {
+//         panic!("Only implemented for triangular elements.")
+//     }
+//     // edge vectors of the triangle l0, l1, l2
+//     let mut l0 = Vector::zero();
+//     let mut l1 = Vector::zero();
+//     let mut l2 = Vector::zero();
+//     let minimum_angles: Vec<f64> = element_node_connectivity
+//         .iter()
+//         .map(|connectivity| {
+//             l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+//                 - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
+//             l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+//                 - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
+//             l2 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+//                 - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET];
+//             l0.normalize();
+//             l1.normalize();
+//             l2.normalize();
+//             [(&l0 * &l1).acos(), (&l1 * &l2).acos(), (&l2 * &l0).acos()]
+//                 .into_iter()
+//                 .reduce(f64::min)
+//                 .unwrap()
+//         })
+//         .collect();
+//     let iso_angle = 60.0 * std::f64::consts::PI / 180.0;
+//     let skews = minimum_angles
+//         .iter()
+//         .map(|angle| (iso_angle - angle) / (iso_angle))
+//         .collect();
+//     skews
+// }
+
+fn calculate_minimum_angles_tri<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != TRI {
+        panic!("Only implemented for triangular elements.")
+    }
+    // edge vectors of the triangle l0, l1, l2
+    let mut l0 = Vector::zero();
+    let mut l1 = Vector::zero();
+    let mut l2 = Vector::zero();
+    let minimum_angles = element_node_connectivity
+        .iter()
+        .map(|connectivity| {
+            l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
+            l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
+            l2 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET];
+            l0.normalize();
+            l1.normalize();
+            l2.normalize();
+            [(&l0 * &l1).acos(), (&l1 * &l2).acos(), (&l2 * &l0).acos()]
+                .into_iter()
+                .reduce(f64::min)
+                .unwrap()
+        })
+        .collect();
+    minimum_angles
+}
+
 // TODO: to be relabeled as calculate_minimum_scaled_jacobians_hex
 fn calculate_minimum_scaled_jacobians<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
@@ -1362,6 +1436,7 @@ fn calculate_element_principal_axes<const N: usize>(
     (x1, x2, x3)
 }
 
+// TODO: change "calculate_maximum_skews" to "calculate_skews"
 fn calculate_maximum_skews<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,

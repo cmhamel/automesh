@@ -2963,9 +2963,10 @@ fn valence_3_and_4_noised() {
         .flat_map(|x| calculate_maximum_skews(&element_node_connectivity, x).to_vec())
         .collect();
 
+    // measures in 3D are volumes
     let element_volumes: Vec<f64> = nodal_coordinates
         .iter()
-        .flat_map(|x| calculate_element_volumes(&element_node_connectivity, x).to_vec())
+        .flat_map(|x| calculate_element_measures(&element_node_connectivity, x).to_vec())
         .collect();
 
     // Assert that the calculated values are approximately equal to the gold values
@@ -3065,7 +3066,7 @@ fn triangular_unit_tests() {
     // The last triangle comes from
     // tests/input/one_facet.stl.
 
-    // Gold values
+    // Gold values are from Cubit
     let maximum_edge_ratios_gold = [
         1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
     ];
@@ -3077,6 +3078,31 @@ fn triangular_unit_tests() {
         4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
         6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
     ];
+
+    let minimum_angles_gold = [
+        5.104e+01, 4.606e+01, 2.166e+01, 3.733e+01, 4.965e+01, 4.412e+01, 3.851e+01, 4.427e+01,
+        4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
+    ]; // degrees
+
+    let deg_to_rad = std::f64::consts::PI / 180.0;
+
+    let minimum_angles_gold_rad = minimum_angles_gold
+        .iter()
+        .map(|angle| angle * deg_to_rad)
+        .collect();
+
+    minimum_angles_gold_rad
+        .iter()
+        .zip(element_volumes_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < epsilon,
+                "Calculated element volume {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
+
 
     // Small tolerance for comparison of two floats
     let epsilon = 1e-10;
