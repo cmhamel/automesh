@@ -1,5 +1,5 @@
 use super::{
-    calculate_element_volumes, calculate_maximum_edge_ratios, calculate_maximum_skews,
+    calculate_element_measures, calculate_maximum_edge_ratios, calculate_maximum_skews,
     calculate_minimum_scaled_jacobians, metrics_headers, Blocks, Connectivity, Coordinates,
     HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX, TRI,
 };
@@ -3106,7 +3106,7 @@ fn triangular_unit_tests() {
         [1.03, 1.102, -0.25],
         [0.0, 1.0, 1.0],
         [1.01, 1.02, 1.03], // end single_valence_04_noise2.inp
-        [0.0, 0.0, 1.0], // from one_facet.stl
+        [0.0, 0.0, 1.0],    // from one_facet.stl
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0], // End one_facet.stl
     ])];

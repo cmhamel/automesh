@@ -11,7 +11,7 @@ automesh metrics --help
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
-* Maximum skew
+* Skew
 * Element volume
 
 A brief description of each metric follows.
@@ -31,9 +31,9 @@ A brief description of each metric follows.
 
 Figure. Illustrate of minimum scaled Jacobian[^Hovey_2023] with acceptable range for quality occurring in `[0.3, 1.0]`.
 
-### Maximum Skew
+### Skew
 
-* Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A maximum skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
+* Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
 * Knupp *et al.*[^Knupp_2006] (page 97) indicate an acceptable range of `[0.0, 0.5]`.
 
 ### Element Volume
@@ -48,7 +48,7 @@ Inspired by Figure 2 of Livesu *et al.*[^Livesu_2021] reproduced here below
 
 we examine several unit test singleton elements and their metrics.
 
-valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}_{\max}$ | volume
+valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$ | volume
 :---: | :---: | :---: | :---: | :---: | :---:
 3           | ![](img/single_valence_03.png)        | 1.000000e0 (1.000)    | 8.660253e-1 (0.866)   | 5.000002e-1 (0.500)   | 8.660250e-1 (0.866)
 3' (noised) | ![](img/single_valence_03_noise1.png) | 1.292260e0 (2.325) ** *Cubit (aspect ratio): 1.292* | 1.917367e-1 (0.192)   | 6.797483e-1 (0.680)   | 1.247800e0  (1.248)
@@ -59,7 +59,7 @@ valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}_{\max}
 ...         | ...                                   | ...                   | ...                   | ...                   | ...
 10          | ![](img/single_valence_10.png)        | 1.000000e0 (1.000)    | 5.877851e-1 (0.588)   | 8.090171e-1 (0.809)   |  5.877850e-1 (0.588)
 
-Figure: Maximum edge ratio, minimum scaled Jacobian, maximum skew, and volume.
+Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and volume.
 Leading values are from `automesh`.
 Values in parenthesis are results from [HexaLab](https://www.hexalab.net).[^Hexalab_2023]
 Items with ** indicate where `automesh` and Cubit agree, but HexaLab disagrees.
@@ -155,6 +155,7 @@ The element coordinates follow:
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
+* Skew
 * Element area
 
 A brief description of each metric follows.
@@ -169,6 +170,19 @@ A brief description of each metric follows.
 
 * ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
 * Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
+
+### Skew
+
+* Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
+* Knupp *et al.*[^Knupp_2006] does not give a definition of skew for triangles, so we provide our definition below.
+For a triangle where $\theta_{\min}$ is the smallest angle of the triangle,
+
+$$
+{\rm skew} = \frac{60^{\circ} - \theta_{\min}}{60^{\circ}}
+$$
+
+* For an equilateral triangle, $\theta_{\min} = 60^{\circ}$ and ${\rm skew} = 0$.
+* In the limit as $\theta_{\min} \rightarrow 0^{\circ}$ ${\rm skew} \rightarrow 1$.
 
 ### Element Area
 
@@ -211,25 +225,25 @@ export stl ascii "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_
 
 We collect these element qualities as follows:
 
-file | element ID | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | area
-:---: | :---: | :---: | :---: | :---:
-`one_facet.stl` | 1 | xxx (1.207e+00) | xxx (8.165e-01) | xxx (5.000e-01)
-`single_valence_04_noise2.inp` | 1 | xxx (1.048e+00) | xxx (8.978e-01) | xxx (4.244e-01)
-*id.* |  2 | xxx (1.150e+00) | xxx (8.314e-01) | xxx (4.429e-01)
-*id.* |  3 | xxx (2.588e+00) | xxx (4.262e-01) | xxx (3.419e-01)
-*id.* |  4 | xxx (1.407e+00) | xxx (7.003e-01) | xxx (5.706e-01)
-*id.* |  5 | xxx (1.061e+00) | xxx (8.800e-01) | xxx (6.679e-01)
-*id.* |  6 | xxx (1.225e+00) | xxx (8.039e-01) | xxx (5.158e-01)
-*id.* |  7 | xxx (1.226e+00) | xxx (7.190e-01) | xxx (6.482e-01)
-*id.* |  8 | xxx (1.156e+00) | xxx (8.061e-01) | xxx (7.041e-01)
-*id.* |  9 | xxx (1.323e+00) | xxx (7.606e-01) | xxx (6.095e-01)
-*id.* | 10 | xxx (1.157e+00) | xxx (7.391e-01) | xxx (5.498e-01)
-*id.* | 11 | xxx (1.405e+00) | xxx (6.392e-01) | xxx (5.695e-01)
-*id.* | 12 | xxx (1.463e+00) | xxx (5.947e-01) | xxx (4.022e-01)
+file | `e` | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$  | area
+:---: | :---: | :---: | :---: | :---: | :---:
+`A` | 1 | xxx (1.207e+00) | xxx (8.165e-01) | xxx | xxx (5.000e-01)
+`B` | 1 | xxx (1.048e+00) | xxx (8.978e-01) | xxx | xxx (4.244e-01)
+`B` |  2 | xxx (1.150e+00) | xxx (8.314e-01) | xxx | xxx (4.429e-01)
+`B` |  3 | xxx (2.588e+00) | xxx (4.262e-01) | xxx | xxx (3.419e-01)
+`B` |  4 | xxx (1.407e+00) | xxx (7.003e-01) | xxx | xxx (5.706e-01)
+`B` |  5 | xxx (1.061e+00) | xxx (8.800e-01) | xxx | xxx (6.679e-01)
+`B` |  6 | xxx (1.225e+00) | xxx (8.039e-01) | xxx | xxx (5.158e-01)
+`B` |  7 | xxx (1.226e+00) | xxx (7.190e-01) | xxx | xxx (6.482e-01)
+`B` |  8 | xxx (1.156e+00) | xxx (8.061e-01) | xxx | xxx (7.041e-01)
+`B` |  9 | xxx (1.323e+00) | xxx (7.606e-01) | xxx | xxx (6.095e-01)
+`B` | 10 | xxx (1.157e+00) | xxx (7.391e-01) | xxx | xxx (5.498e-01)
+`B` | 11 | xxx (1.405e+00) | xxx (6.392e-01) | xxx | xxx (5.695e-01)
+`B` | 12 | xxx (1.463e+00) | xxx (5.947e-01) | xxx | xxx (4.022e-01)
 
-Figure: Maximum edge ratio, minimum scaled Jacobian, and area.
+Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
 Leading values are from `automesh`.
-Values in parenthesis are results from Cubit.  Cubit uses the term *Aspect Ratio* for Edge Ratio.
+Values in parenthesis are results from Cubit.  Cubit uses the term *Aspect Ratio* for Edge Ratio.  File `A` is `one_facet.stl`.  File `B` is `single_valence_04_noise2.inp`.  `e` is the element number in the mesh.
 
 ## References
 

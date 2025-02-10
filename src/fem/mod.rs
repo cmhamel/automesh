@@ -1028,30 +1028,13 @@ fn write_finite_elements_to_vtk<const N: usize>(
 }
 
 fn metrics_headers<const N: usize>() -> String {
+    // TODO: Update all instances of "maximum skew" to "skew".
     match N {
         HEX => "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n".to_string(),
         TRI => "maximum edge ratio,    minimum scaled jacobian,               area\n".to_string(),
         _ => panic!()
     }
 }
-
-// fn metrics_format<const N: usize>() -> String {
-//     match N {
-//         HEX => "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n".to_string(),
-//         TRI => "{:>20.6e}, {:>26.6e}, {:>26.6e}\n".to_string(),
-//         _ => panic!(),
-//     }
-// }
-
-// enum ElementType {
-//     Tri(Triangle),
-//     Hex(Hexahedron),
-// }
-
-// #[derive(Clone)]
-// struct Triangle {
-//
-// }
 
 fn write_finite_elements_metrics<const N: usize>(
     file_path: &str,
@@ -1066,7 +1049,7 @@ fn write_finite_elements_metrics<const N: usize>(
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
-    let element_volumes = calculate_element_volumes(element_node_connectivity, nodal_coordinates);
+    let element_measures = calculate_element_measures(element_node_connectivity, nodal_coordinates);
     #[cfg(feature = "profile")]
     let time = Instant::now();
     let mut file = BufWriter::new(File::create(file_path)?);
@@ -1077,19 +1060,21 @@ fn write_finite_elements_metrics<const N: usize>(
         Some("csv") => {
             let header_string = metrics_headers::<N>();
             file.write_all(header_string.as_bytes())?;
+            // #TODO: volume and iteration on measures no longer works for triangles,
+            // need to reconsider what trianular metrics are available.
             maximum_edge_ratios
                 .iter()
                 .zip(
                     minimum_scaled_jacobians
                         .iter()
-                        .zip(maximum_skews.iter().zip(element_volumes.iter())),
+                        .zip(maximum_skews.iter().zip(element_measures.iter())),
                 )
                 .try_for_each(
-                    |(maximum_edge_ratio, (minimum_scaled_jacobian, (maximum_skew, volume)))| {
+                    |(maximum_edge_ratio, (minimum_scaled_jacobian, (maximum_skew, measure)))| {
                         file.write_all(
                             format!(
                                 "{:>20.6e}, {:>26.6e}, {:>26.6e}, {:>26.6e}\n",
-                                maximum_edge_ratio, minimum_scaled_jacobian, maximum_skew, volume,
+                                maximum_edge_ratio, minimum_scaled_jacobian, maximum_skew, measure,
                             )
                             .as_bytes(),
                         )
@@ -1107,7 +1092,7 @@ fn write_finite_elements_metrics<const N: usize>(
                 .slice_mut(s![.., 1])
                 .assign(&minimum_scaled_jacobians);
             metrics_set.slice_mut(s![.., 2]).assign(&maximum_skews);
-            metrics_set.slice_mut(s![.., 3]).assign(&element_volumes);
+            metrics_set.slice_mut(s![.., 3]).assign(&element_measures);
             metrics_set.write_npy(file).unwrap();
         }
         _ => panic!("print error message with input and extension"),
@@ -1129,13 +1114,30 @@ fn calculate_maximum_edge_ratios<const N: usize>(
     match N {
         HEX => calculate_maximum_edge_ratios_hex(element_node_connectivity, nodal_coordinates),
         TRI => calculate_maximum_edge_ratios_tri(element_node_connectivity, nodal_coordinates),
-        _ => {
-            panic!()
-        }
+        _ => panic!(),
     }
     #[cfg(feature = "profile")]
     println!(
         "           \x1b[1;93m⤷ Maximum edge ratios\x1b[0m {:?}",
+        time.elapsed()
+    );
+}
+
+// Calculates element areas for 2D elements, element volumes for 3D elements.
+fn calculate_element_measures<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    match N {
+        HEX => calculate_element_volumes_hex(element_node_connectivity, nodal_coordinates),
+        TRI => calculate_element_areas_tri(element_node_connectivity, nodal_coordinates),
+        _ => panic!(),
+    }
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Element measures (area for 2D elements, volume for 3D elements)\x1b[0m {:?}",
         time.elapsed()
     );
 }
@@ -1217,12 +1219,18 @@ fn calculate_maximum_edge_ratios_tri<const N: usize>(
     maximum_edge_ratios
 }
 
+// TODO: to be relabeled as calculate_minimum_scaled_jacobians_hex
 fn calculate_minimum_scaled_jacobians<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != HEX {
+        panic!("Only implemented for hexahedral elements.")
+    }
     let mut u = Vector::zero();
     let mut v = Vector::zero();
     let mut w = Vector::zero();
@@ -1322,6 +1330,11 @@ fn calculate_element_principal_axes<const N: usize>(
     connectivity: &[usize; N],
     nodal_coordinates: &Coordinates,
 ) -> (Vector, Vector, Vector) {
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != HEX {
+        panic!("Only implemented for hexahedral elements.")
+    }
     let x1 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
         - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
         + &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
@@ -1355,6 +1368,11 @@ fn calculate_maximum_skews<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != HEX {
+        panic!("Only implemented for hexahedral elements.")
+    }
     let mut x1 = Vector::zero();
     let mut x2 = Vector::zero();
     let mut x3 = Vector::zero();
@@ -1379,7 +1397,7 @@ fn calculate_maximum_skews<const N: usize>(
     maximum_skews
 }
 
-fn calculate_element_volumes<const N: usize>(
+fn calculate_element_volumes_hex<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
@@ -1408,14 +1426,15 @@ fn calculate_element_volumes<const N: usize>(
     element_volumes
 }
 
-fn calculate_element_areas<const N: usize>(
+fn calculate_element_areas_tri<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     // Knupp 2006
     // https://www.osti.gov/servlets/purl/901967
     // page 19
-
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
     // #TODO: consider rearchitect, as these types of if-type-checks
     // indicate rearchitecture may help code logic.
     if N != TRI {
@@ -1436,7 +1455,7 @@ fn calculate_element_areas<const N: usize>(
         .collect();
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93mElement volumes\x1b[0m {:?}",
+        "             \x1b[1;93mElement areas\x1b[0m {:?}",
         time.elapsed()
     );
     element_areas
