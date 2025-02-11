@@ -1048,7 +1048,6 @@ fn write_finite_elements_metrics<const N: usize>(
         calculate_maximum_edge_ratios(element_node_connectivity, nodal_coordinates);
     let minimum_scaled_jacobians =
         calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
-    // TODO: change "maximum_skews" to "skews"
     let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
     let element_measures = calculate_element_measures(element_node_connectivity, nodal_coordinates);
     #[cfg(feature = "profile")]
@@ -1124,6 +1123,43 @@ fn calculate_maximum_edge_ratios<const N: usize>(
     );
 }
 
+// TODO
+fn calculate_minimum_scaled_jacobians<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    match N {
+        HEX => calculate_minimum_scaled_jacobians_hex(element_node_connectivity, nodal_coordinates),
+        // TRI => calculate_minimum_scaled_jacobians_tri(element_node_connectivity, nodal_coordinates),
+        _ => panic!(),
+    }
+    #[cfg(feature = "profile")]
+    println!(
+        "             \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
+        time.elapsed()
+    );
+}
+
+fn calculate_maximum_skews<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
+    #[cfg(feature = "profile")]
+    let time = Instant::now();
+    match N {
+        HEX => calculate_maximum_skews_hex(element_node_connectivity, nodal_coordinates),
+        TRI => calculate_maximum_skews_tri(element_node_connectivity, nodal_coordinates),
+        _ => panic!(),
+    }
+    #[cfg(feature = "profile")]
+    println!(
+        "           \x1b[1;93m⤷ Maximum edge skews\x1b[0m {:?}",
+        time.elapsed()
+    );
+}
+
 // Calculates element areas for 2D elements, element volumes for 3D elements.
 fn calculate_element_measures<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
@@ -1180,6 +1216,9 @@ fn calculate_maximum_edge_ratios_hex<const N: usize>(
                 + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
                 - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET])
                 .norm();
+            // TODO: Ask MRB if we could do this instead and is it faster?
+            // [l1, l2, l3].into_iter().reduce(f64::max).unwrap() /
+            //     [l1, l2, l3].into_iter().reduce(f64::min).unwrap();
             [l1 / l2, l2 / l1, l1 / l3, l3 / l1, l2 / l3, l3 / l2]
                 .into_iter()
                 .reduce(f64::max)
@@ -1294,12 +1333,10 @@ fn calculate_minimum_angles_tri<const N: usize>(
 }
 
 // TODO: to be relabeled as calculate_minimum_scaled_jacobians_hex
-fn calculate_minimum_scaled_jacobians<const N: usize>(
+fn calculate_minimum_scaled_jacobians_hex<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
-    #[cfg(feature = "profile")]
-    let time = Instant::now();
     // #TODO: consider rearchitect, as these types of if-type-checks
     // indicate rearchitecture may help code logic.
     if N != HEX {
@@ -1392,13 +1429,35 @@ fn calculate_minimum_scaled_jacobians<const N: usize>(
                 .unwrap()
         })
         .collect();
-    #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mMinimum scaled Jacobians\x1b[0m {:?}",
-        time.elapsed()
-    );
     minimum_scaled_jacobians
 }
+
+// fn calculate_minimum_scaled_jacobians_tri<const N: usize>(
+//     element_node_connectivity: &Connectivity<N>,
+//     nodal_coordinates: &Coordinates,
+// ) -> Metrics {
+//     // #TODO: consider rearchitect, as these types of if-type-checks
+//     // indicate rearchitecture may help code logic.
+//     if N != TRI {
+//         panic!("Only implemented for triangular elements.")
+//     }
+//     let mut l0 = Vector::zero();
+//     let mut l1 = Vector::zero();
+//     let mut l2 = Vector::zero();
+//     let mut n = Vector::zero();
+//     let minimum_scaled_jacobians = element_node_connectivity
+//         .iter()
+//         .map(|connectivity| {
+//             l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
+//             - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
+//             l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
+//             - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
+//             l2 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
+//             - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET];
+//         })
+//         .collect();
+//     minimum_scaled_jacobians
+// }
 
 fn calculate_element_principal_axes<const N: usize>(
     connectivity: &[usize; N],
@@ -1436,13 +1495,10 @@ fn calculate_element_principal_axes<const N: usize>(
     (x1, x2, x3)
 }
 
-// TODO: change "calculate_maximum_skews" to "calculate_skews"
-fn calculate_maximum_skews<const N: usize>(
+fn calculate_maximum_skews_hex<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
-    #[cfg(feature = "profile")]
-    let time = Instant::now();
     // #TODO: consider rearchitect, as these types of if-type-checks
     // indicate rearchitecture may help code logic.
     if N != HEX {
@@ -1472,12 +1528,31 @@ fn calculate_maximum_skews<const N: usize>(
     maximum_skews
 }
 
-fn calculate_element_volumes_hex<const N: usize>(
+fn calculate_maximum_skews_tri<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
+    // #TODO: consider rearchitect, as these types of if-type-checks
+    // indicate rearchitecture may help code logic.
+    if N != TRI {
+        panic!("Only implemented for triangular elements.")
+    }
+    let deg_to_rad = std::f64::consts::PI / 180.0;
+    let equilateral_rad = 60.0 * deg_to_rad;
+    let minimum_angles = calculate_minimum_angles_tri(element_node_connectivity, nodal_coordinates);
+    let maximum_skews = minimum_angles
+        .iter()
+        .map(|angle| (equilateral_rad - angle) / (equilateral_rad))
+        .collect();
+    maximum_skews
+}
+
+fn calculate_element_volumes_hex<const N: usize>(
+    element_node_connectivity: &Connectivity<N>,
+    nodal_coordinates: &Coordinates,
+) -> Metrics {
     // #TODO: consider rearchitect, as these types of if-type-checks
     // indicate rearchitecture may help code logic.
     if N != HEX {
@@ -1493,11 +1568,6 @@ fn calculate_element_volumes_hex<const N: usize>(
             &x2.cross(&x3) * &x1 / 64.0
         })
         .collect();
-    #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mElement volumes\x1b[0m {:?}",
-        time.elapsed()
-    );
     element_volumes
 }
 
@@ -1508,8 +1578,6 @@ fn calculate_element_areas_tri<const N: usize>(
     // Knupp 2006
     // https://www.osti.gov/servlets/purl/901967
     // page 19
-    #[cfg(feature = "profile")]
-    let time = Instant::now();
     // #TODO: consider rearchitect, as these types of if-type-checks
     // indicate rearchitecture may help code logic.
     if N != TRI {
@@ -1528,10 +1596,5 @@ fn calculate_element_areas_tri<const N: usize>(
             0.5 * (l0.cross(&l1)).norm()
         })
         .collect();
-    #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mElement areas\x1b[0m {:?}",
-        time.elapsed()
-    );
     element_areas
 }

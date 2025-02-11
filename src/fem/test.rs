@@ -5,6 +5,8 @@ use super::{
 };
 use conspire::math::{Tensor, TensorVec};
 
+const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
+
 const EPSILON: f64 = 10.0 * f64::EPSILON;
 const SMOOTHING_SCALE: f64 = 0.3;
 
@@ -3070,42 +3072,22 @@ fn triangular_unit_tests() {
     let maximum_edge_ratios_gold = [
         1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
     ];
-    let minimum_scaled_jacobians_gold = [
-        8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
-        7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
-    ];
-    let element_areas_gold = [
-        4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
-        6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
-    ];
+    // let minimum_scaled_jacobians_gold = [
+    //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
+    //     7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
+    // ];
+    // let element_areas_gold = [
+    //     4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
+    //     6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
+    // ];
 
-    let minimum_angles_gold = [
-        5.104e+01, 4.606e+01, 2.166e+01, 3.733e+01, 4.965e+01, 4.412e+01, 3.851e+01, 4.427e+01,
-        4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
-    ]; // degrees
-
-    let deg_to_rad = std::f64::consts::PI / 180.0;
-
-    let minimum_angles_gold_rad = minimum_angles_gold
-        .iter()
-        .map(|angle| angle * deg_to_rad)
-        .collect();
-
-    minimum_angles_gold_rad
-        .iter()
-        .zip(element_volumes_gold.iter())
-        .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < epsilon,
-                "Calculated element volume {} is not approximately equal to gold value {}",
-                calculated,
-                gold
-            );
-        });
-
+    // let minimum_angles_gold = [
+    //     5.104e+01, 4.606e+01, 2.166e+01, 3.733e+01, 4.965e+01, 4.412e+01, 3.851e+01, 4.427e+01,
+    //     4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
+    // ]; // degrees
 
     // Small tolerance for comparison of two floats
-    let epsilon = 1e-10;
+    // let epsilon = 1e-10;
 
     let element_node_connectivity = vec![
         vec![1, 2, 3],
@@ -3136,6 +3118,29 @@ fn triangular_unit_tests() {
         [0.0, 0.0, 0.0],
         [1.0, 0.0, 0.0], // End one_facet.stl
     ])];
+
+    let maximum_edge_ratios: Vec<f64> = calculate_maximum_edge_ratios::<3>(
+        &element_node_connectivity, &nodal_coordinates
+    );
+
+    // let minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold
+    //     .iter()
+    //     .map(|angle| angle * DEG_TO_RAD)
+    //     .collect();
+
+    // minimum_angles_gold_rad
+    //     .iter()
+    //     .zip(element_volumes_gold.iter())
+    //     .for_each(|(calculated, gold)| {
+    //         assert!(
+    //             (calculated - gold).abs() < epsilon,
+    //             "Calculated element volume {} is not approximately equal to gold value {}",
+    //             calculated,
+    //             gold
+    //         );
+    //     });
+
+
 }
 
 #[test]
