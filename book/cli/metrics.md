@@ -11,7 +11,7 @@ automesh metrics --help
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
-* Skew
+* Maximum Skew
 * Element volume
 
 A brief description of each metric follows.
@@ -31,7 +31,7 @@ A brief description of each metric follows.
 
 Figure. Illustrate of minimum scaled Jacobian[^Hovey_2023] with acceptable range for quality occurring in `[0.3, 1.0]`.
 
-### Skew
+### Maximum Skew
 
 * Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
 * Knupp *et al.*[^Knupp_2006] (page 97) indicate an acceptable range of `[0.0, 0.5]`.
@@ -48,7 +48,7 @@ Inspired by Figure 2 of Livesu *et al.*[^Livesu_2021] reproduced here below
 
 we examine several unit test singleton elements and their metrics.
 
-valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$ | volume
+valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$ | volume
 :---: | :---: | :---: | :---: | :---: | :---:
 3           | ![](img/single_valence_03.png)        | 1.000000e0 (1.000)    | 8.660253e-1 (0.866)   | 5.000002e-1 (0.500)   | 8.660250e-1 (0.866)
 3' (noised) | ![](img/single_valence_03_noise1.png) | 1.292260e0 (2.325) ** *Cubit (aspect ratio): 1.292* | 1.917367e-1 (0.192)   | 6.797483e-1 (0.680)   | 1.247800e0  (1.248)
@@ -59,7 +59,7 @@ valence | singleton | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$ | vol
 ...         | ...                                   | ...                   | ...                   | ...                   | ...
 10          | ![](img/single_valence_10.png)        | 1.000000e0 (1.000)    | 5.877851e-1 (0.588)   | 8.090171e-1 (0.809)   |  5.877850e-1 (0.588)
 
-Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and volume.
+Figure: Maximum edge ratio, minimum scaled Jacobian, maximum skew, and volume.
 Leading values are from `automesh`.
 Values in parenthesis are results from [HexaLab](https://www.hexalab.net).[^Hexalab_2023]
 Items with ** indicate where `automesh` and Cubit agree, but HexaLab disagrees.
@@ -170,6 +170,7 @@ A brief description of each metric follows.
 
 * ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
 * Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
+* An equilateral triangle has a minimum scaled Jacobian of `1.0`.
 
 ### Skew
 
