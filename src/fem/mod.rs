@@ -73,37 +73,87 @@ pub type HexahedralFiniteElements = FiniteElements<HEX>;
 /// The triangular finite elements type.
 pub type TriangularFiniteElements = FiniteElements<TRI>;
 
-impl<const N: usize> FiniteElements<N>
+/// Methods common to all finite element types.
+pub trait FiniteElementMethods<const N: usize>
 where
-    Self: Sized,
+    Self: FiniteElementSpecifics + Sized,
 {
-    /// Returns the nodes connected to the given node within an element.
-    pub fn connected_nodes(node: &usize) -> Vec<usize> {
-        match N {
-            HEX => match node {
-                0 => vec![1, 3, 4],
-                1 => vec![0, 2, 5],
-                2 => vec![1, 3, 6],
-                3 => vec![0, 2, 7],
-                4 => vec![0, 5, 7],
-                5 => vec![1, 4, 6],
-                6 => vec![2, 5, 7],
-                7 => vec![3, 4, 6],
-                _ => panic!(),
-            },
-            TRI => match node {
-                0 => vec![1, 2],
-                1 => vec![0, 2],
-                2 => vec![0, 1],
-                _ => panic!(),
-            },
-            _ => {
-                panic!()
-            }
-        }
-    }
     /// Constructs and returns a new finite elements type from data.
-    pub fn from_data(
+    fn from_data(
+        element_blocks: Blocks,
+        element_node_connectivity: Connectivity<N>,
+        nodal_coordinates: Coordinates,
+    ) -> Self;
+    /// Constructs and returns a new finite elements type from an Abaqus input file.
+    fn from_inp(file_path: &str) -> Result<Self, ErrorIO>;
+    /// Converts the finite elements into a tessellation, consuming the finite elements.
+    fn into_tesselation(self) -> Tessellation;
+    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates;
+    /// Calculates and sets the nodal influencers.
+    fn nodal_influencers(&mut self);
+    /// Calculates and sets the nodal hierarchy.
+    fn nodal_hierarchy(&mut self) -> Result<(), &str>;
+    /// Calculates and sets the node-to-element connectivity.
+    fn node_element_connectivity(&mut self) -> Result<(), &str>;
+    /// Calculates and sets the node-to-node connectivity.
+    fn node_node_connectivity(&mut self) -> Result<(), &str>;
+    /// Smooths the nodal coordinates according to the provided smoothing method.
+    fn smooth(&mut self, method: Smoothing) -> Result<(), &str>;
+    /// Writes the finite elements data to a new Exodus file.
+    fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF>;
+    /// Writes the finite elements data to a new Abaqus file.
+    fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO>;
+    /// Writes the finite elements data to a new Mesh file.
+    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO>;
+    /// Writes the finite elements quality metrics to a new file.
+    fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO>;
+    /// Writes the finite elements data to a new VTK file.
+    fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk>;
+    /// Returns a reference to the boundary nodes.
+    fn get_boundary_nodes(&self) -> &Nodes;
+    /// Returns a reference to the element blocks.
+    fn get_element_blocks(&self) -> &Blocks;
+    /// Returns a reference to element-to-node connectivity.
+    fn get_element_node_connectivity(&self) -> &Connectivity<N>;
+    /// Returns a reference to the exterior nodes.
+    fn get_exterior_nodes(&self) -> &Nodes;
+    /// Returns a reference to the interface nodes.
+    fn get_interface_nodes(&self) -> &Nodes;
+    /// Returns a reference to the interior nodes.
+    fn get_interior_nodes(&self) -> &Nodes;
+    /// Returns a reference to the nodal coordinates.
+    fn get_nodal_coordinates(&self) -> &Coordinates;
+    /// Returns a mutable reference to the nodal coordinates.
+    fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates;
+    /// Returns a reference to the nodal influencers.
+    fn get_nodal_influencers(&self) -> &VecConnectivity;
+    /// Returns a reference to the node-to-element connectivity.
+    fn get_node_element_connectivity(&self) -> &VecConnectivity;
+    /// Returns a reference to the node-to-node connectivity.
+    fn get_node_node_connectivity(&self) -> &VecConnectivity;
+    /// Returns a reference to the prescribed nodes.
+    fn get_prescribed_nodes(&self) -> &Nodes;
+    /// Returns a reference to the homogeneously-prescribed nodes.
+    fn get_prescribed_nodes_homogeneous(&self) -> &Nodes;
+    /// Returns a reference to the inhomogeneously-prescribed nodes.
+    fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes;
+    /// Returns a reference to the coordinates of the inhomogeneously-prescribed nodes.
+    fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates;
+    /// Sets the prescribed nodes if opted to do so.
+    fn set_prescribed_nodes(
+        &mut self,
+        homogeneous: Option<Nodes>,
+        inhomogeneous: Option<(Coordinates, Nodes)>,
+    ) -> Result<(), &str>;
+}
+
+impl<const N: usize> FiniteElementMethods<N> for FiniteElements<N>
+where
+    Self: FiniteElementSpecifics + Sized,
+{
+    /// Constructs and returns a new finite elements type from data.
+    fn from_data(
         element_blocks: Blocks,
         element_node_connectivity: Connectivity<N>,
         nodal_coordinates: Coordinates,
@@ -126,7 +176,7 @@ where
         }
     }
     /// Constructs and returns a new finite elements type from an Abaqus input file.
-    pub fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
+    fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_inp(file_path)?;
         Ok(Self::from_data(
@@ -136,7 +186,7 @@ where
         ))
     }
     /// Converts the finite elements into a tessellation, consuming the finite elements.
-    pub fn into_tesselation(self) -> Tessellation {
+    fn into_tesselation(self) -> Tessellation {
         if N != TRI {
             panic!("Only implemented into_tesselation method for hexes.")
         }
@@ -182,7 +232,7 @@ where
         Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
-    pub fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
         let nodal_coordinates = self.get_nodal_coordinates();
         node_node_connectivity
             .iter()
@@ -202,7 +252,7 @@ where
             .collect()
     }
     /// Calculates and sets the nodal influencers.
-    pub fn nodal_influencers(&mut self) {
+    fn nodal_influencers(&mut self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut nodal_influencers: VecConnectivity = self.get_node_node_connectivity().clone();
@@ -229,7 +279,7 @@ where
         );
     }
     /// Calculates and sets the nodal hierarchy.
-    pub fn nodal_hierarchy(&mut self) -> Result<(), &str> {
+    fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         if N != HEX {
             return Err("Only implemented nodal_hierarchy method for hexes.");
         }
@@ -295,7 +345,7 @@ where
         }
     }
     /// Calculates and sets the node-to-element connectivity.
-    pub fn node_element_connectivity(&mut self) -> Result<(), &str> {
+    fn node_element_connectivity(&mut self) -> Result<(), &str> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let number_of_nodes = self.get_nodal_coordinates().len();
@@ -318,7 +368,7 @@ where
         Ok(())
     }
     /// Calculates and sets the node-to-node connectivity.
-    pub fn node_node_connectivity(&mut self) -> Result<(), &str> {
+    fn node_node_connectivity(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if !node_element_connectivity.is_empty() {
             #[cfg(feature = "profile")]
@@ -366,7 +416,7 @@ where
         }
     }
     /// Smooths the nodal coordinates according to the provided smoothing method.
-    pub fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
+    fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
         if !self.get_node_node_connectivity().is_empty() {
             let smoothing_iterations;
             let smoothing_scale_deflate;
@@ -438,7 +488,7 @@ where
         }
     }
     /// Writes the finite elements data to a new Exodus file.
-    pub fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
+    fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
         write_finite_elements_to_exodus(
             file_path,
             self.get_element_blocks(),
@@ -447,7 +497,7 @@ where
         )
     }
     /// Writes the finite elements data to a new Abaqus file.
-    pub fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
+    fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_abaqus(
             file_path,
             self.get_element_blocks(),
@@ -456,7 +506,7 @@ where
         )
     }
     /// Writes the finite elements data to a new Mesh file.
-    pub fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
+    fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_mesh(
             file_path,
             self.get_element_blocks(),
@@ -465,7 +515,7 @@ where
         )
     }
     /// Writes the finite elements quality metrics to a new file.
-    pub fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
+    fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_metrics(
             file_path,
             self.get_element_node_connectivity(),
@@ -473,7 +523,7 @@ where
         )
     }
     /// Writes the finite elements data to a new VTK file.
-    pub fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
+    fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
         write_finite_elements_to_vtk(
             file_path,
             self.get_element_blocks(),
@@ -482,67 +532,67 @@ where
         )
     }
     /// Returns a reference to the boundary nodes.
-    pub fn get_boundary_nodes(&self) -> &Nodes {
+    fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
     }
     /// Returns a reference to the element blocks.
-    pub fn get_element_blocks(&self) -> &Blocks {
+    fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
     }
     /// Returns a reference to element-to-node connectivity.
-    pub fn get_element_node_connectivity(&self) -> &Connectivity<N> {
+    fn get_element_node_connectivity(&self) -> &Connectivity<N> {
         &self.element_node_connectivity
     }
     /// Returns a reference to the exterior nodes.
-    pub fn get_exterior_nodes(&self) -> &Nodes {
+    fn get_exterior_nodes(&self) -> &Nodes {
         &self.exterior_nodes
     }
     /// Returns a reference to the interface nodes.
-    pub fn get_interface_nodes(&self) -> &Nodes {
+    fn get_interface_nodes(&self) -> &Nodes {
         &self.interface_nodes
     }
     /// Returns a reference to the interior nodes.
-    pub fn get_interior_nodes(&self) -> &Nodes {
+    fn get_interior_nodes(&self) -> &Nodes {
         &self.interior_nodes
     }
     /// Returns a reference to the nodal coordinates.
-    pub fn get_nodal_coordinates(&self) -> &Coordinates {
+    fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
     }
     /// Returns a mutable reference to the nodal coordinates.
-    pub fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
+    fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
         &mut self.nodal_coordinates
     }
     /// Returns a reference to the nodal influencers.
-    pub fn get_nodal_influencers(&self) -> &VecConnectivity {
+    fn get_nodal_influencers(&self) -> &VecConnectivity {
         &self.nodal_influencers
     }
     /// Returns a reference to the node-to-element connectivity.
-    pub fn get_node_element_connectivity(&self) -> &VecConnectivity {
+    fn get_node_element_connectivity(&self) -> &VecConnectivity {
         &self.node_element_connectivity
     }
     /// Returns a reference to the node-to-node connectivity.
-    pub fn get_node_node_connectivity(&self) -> &VecConnectivity {
+    fn get_node_node_connectivity(&self) -> &VecConnectivity {
         &self.node_node_connectivity
     }
     /// Returns a reference to the prescribed nodes.
-    pub fn get_prescribed_nodes(&self) -> &Nodes {
+    fn get_prescribed_nodes(&self) -> &Nodes {
         &self.prescribed_nodes
     }
     /// Returns a reference to the homogeneously-prescribed nodes.
-    pub fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
+    fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
         &self.prescribed_nodes_homogeneous
     }
     /// Returns a reference to the inhomogeneously-prescribed nodes.
-    pub fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
+    fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
         &self.prescribed_nodes_inhomogeneous
     }
     /// Returns a reference to the coordinates of the inhomogeneously-prescribed nodes.
-    pub fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
+    fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
         &self.prescribed_nodes_inhomogeneous_coordinates
     }
     /// Sets the prescribed nodes if opted to do so.
-    pub fn set_prescribed_nodes(
+    fn set_prescribed_nodes(
         &mut self,
         homogeneous: Option<Nodes>,
         inhomogeneous: Option<(Coordinates, Nodes)>,
@@ -569,6 +619,39 @@ where
             .chain(self.prescribed_nodes_inhomogeneous.clone())
             .collect();
         Ok(())
+    }
+}
+
+/// Methods specific to each finite element type.
+pub trait FiniteElementSpecifics {
+    /// Returns the nodes connected to the given node within an element.
+    fn connected_nodes(node: &usize) -> Vec<usize>;
+}
+
+impl FiniteElementSpecifics for HexahedralFiniteElements {
+    fn connected_nodes(node: &usize) -> Vec<usize> {
+        match node {
+            0 => vec![1, 3, 4],
+            1 => vec![0, 2, 5],
+            2 => vec![1, 3, 6],
+            3 => vec![0, 2, 7],
+            4 => vec![0, 5, 7],
+            5 => vec![1, 4, 6],
+            6 => vec![2, 5, 7],
+            7 => vec![3, 4, 6],
+            _ => panic!(),
+        }
+    }
+}
+
+impl FiniteElementSpecifics for TriangularFiniteElements {
+    fn connected_nodes(node: &usize) -> Vec<usize> {
+        match node {
+            0 => vec![1, 2],
+            1 => vec![0, 2],
+            2 => vec![0, 1],
+            _ => panic!(),
+        }
     }
 }
 
