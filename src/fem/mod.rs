@@ -86,8 +86,6 @@ where
     ) -> Self;
     /// Constructs and returns a new finite elements type from an Abaqus input file.
     fn from_inp(file_path: &str) -> Result<Self, ErrorIO>;
-    /// Converts the finite elements into a tessellation, consuming the finite elements.
-    fn into_tesselation(self) -> Tessellation;
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates;
     /// Calculates and sets the nodal influencers.
@@ -184,52 +182,6 @@ where
             element_node_connectivity,
             nodal_coordinates,
         ))
-    }
-    /// Converts the finite elements into a tessellation, consuming the finite elements.
-    fn into_tesselation(self) -> Tessellation {
-        if N != TRI {
-            panic!("Only implemented into_tesselation method for hexes.")
-        }
-        let mut normal = Vector::zero();
-        let mut vertices_tri = [0; TRI];
-        let nodal_coordinates = self.get_nodal_coordinates();
-        let vertices = nodal_coordinates
-            .iter()
-            .map(|coordinate| {
-                stl_io::Vertex::new([
-                    coordinate[0] as f32,
-                    coordinate[1] as f32,
-                    coordinate[2] as f32,
-                ])
-            })
-            .collect();
-        let faces = self
-            .get_element_node_connectivity()
-            .iter()
-            .map(|&connectivity| {
-                vertices_tri = [
-                    connectivity[0] - NODE_NUMBERING_OFFSET,
-                    connectivity[1] - NODE_NUMBERING_OFFSET,
-                    connectivity[2] - NODE_NUMBERING_OFFSET,
-                ];
-                normal = (&nodal_coordinates[vertices_tri[1]]
-                    - &nodal_coordinates[vertices_tri[0]])
-                    .cross(
-                        &(&nodal_coordinates[vertices_tri[2]]
-                            - &nodal_coordinates[vertices_tri[0]]),
-                    )
-                    .normalized();
-                stl_io::IndexedTriangle {
-                    normal: stl_io::Normal::new([
-                        normal[0] as f32,
-                        normal[1] as f32,
-                        normal[2] as f32,
-                    ]),
-                    vertices: vertices_tri,
-                }
-            })
-            .collect();
-        Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
     /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
@@ -626,6 +578,8 @@ where
 pub trait FiniteElementSpecifics {
     /// Returns the nodes connected to the given node within an element.
     fn connected_nodes(node: &usize) -> Vec<usize>;
+    /// Converts the finite elements into a tessellation, consuming the finite elements.
+    fn into_tesselation(self) -> Tessellation;
 }
 
 impl FiniteElementSpecifics for HexahedralFiniteElements {
@@ -642,6 +596,9 @@ impl FiniteElementSpecifics for HexahedralFiniteElements {
             _ => panic!(),
         }
     }
+    fn into_tesselation(self) -> Tessellation {
+        unimplemented!()
+    }
 }
 
 impl FiniteElementSpecifics for TriangularFiniteElements {
@@ -652,6 +609,48 @@ impl FiniteElementSpecifics for TriangularFiniteElements {
             2 => vec![0, 1],
             _ => panic!(),
         }
+    }
+    fn into_tesselation(self) -> Tessellation {
+        let mut normal = Vector::zero();
+        let mut vertices_tri = [0; TRI];
+        let nodal_coordinates = self.get_nodal_coordinates();
+        let vertices = nodal_coordinates
+            .iter()
+            .map(|coordinate| {
+                stl_io::Vertex::new([
+                    coordinate[0] as f32,
+                    coordinate[1] as f32,
+                    coordinate[2] as f32,
+                ])
+            })
+            .collect();
+        let faces = self
+            .get_element_node_connectivity()
+            .iter()
+            .map(|&connectivity| {
+                vertices_tri = [
+                    connectivity[0] - NODE_NUMBERING_OFFSET,
+                    connectivity[1] - NODE_NUMBERING_OFFSET,
+                    connectivity[2] - NODE_NUMBERING_OFFSET,
+                ];
+                normal = (&nodal_coordinates[vertices_tri[1]]
+                    - &nodal_coordinates[vertices_tri[0]])
+                    .cross(
+                        &(&nodal_coordinates[vertices_tri[2]]
+                            - &nodal_coordinates[vertices_tri[0]]),
+                    )
+                    .normalized();
+                stl_io::IndexedTriangle {
+                    normal: stl_io::Normal::new([
+                        normal[0] as f32,
+                        normal[1] as f32,
+                        normal[2] as f32,
+                    ]),
+                    vertices: vertices_tri,
+                }
+            })
+            .collect();
+        Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
 }
 

@@ -1,6 +1,6 @@
 use automesh::{
-    FiniteElementMethods, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation,
-    Translate, Tree, TriangularFiniteElements, Voxels,
+    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Nel, Octree, Scale,
+    Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
