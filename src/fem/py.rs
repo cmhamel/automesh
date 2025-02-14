@@ -2,7 +2,7 @@ use super::{
     super::py::{IntoFoo, PyCoordinates, PyIntermediateError},
     finite_element_data_from_inp, write_finite_elements_metrics, write_finite_elements_to_abaqus,
     write_finite_elements_to_exodus, write_finite_elements_to_mesh, write_finite_elements_to_vtk,
-    Blocks, Connectivity, Smoothing, HEX, TRI,
+    Blocks, Connectivity, FiniteElementMethods, Smoothing, HEX, TRI,
 };
 use pyo3::prelude::*;
 

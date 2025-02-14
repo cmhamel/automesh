@@ -1,5 +1,5 @@
 use super::{
-    fem::{TriangularFiniteElements, NODE_NUMBERING_OFFSET},
+    fem::{FiniteElementMethods, TriangularFiniteElements, NODE_NUMBERING_OFFSET},
     Coordinate,
 };
 use conspire::math::TensorArray;

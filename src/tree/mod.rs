@@ -2,7 +2,7 @@
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    fem::{Blocks, FiniteElementMethods, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };

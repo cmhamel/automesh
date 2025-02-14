@@ -1,6 +1,6 @@
 use automesh::{
-    FiniteElements, HexahedralFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation,
-    Translate, Tree, Voxels,
+    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Nel, Octree, Scale,
+    Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -418,15 +418,28 @@ enum InputTypes {
     Stl(Tessellation),
 }
 
-#[allow(clippy::large_enum_variant)]
-enum OutputTypes<const N: usize> {
-    Abaqus(FiniteElements<N>),
-    Exodus(FiniteElements<N>),
-    Mesh(FiniteElements<N>),
+// #[allow(clippy::large_enum_variant)]
+// enum OutputTypes<const N: usize> {
+//     Abaqus(FiniteElements<N>),
+//     Exodus(FiniteElements<N>),
+//     Mesh(FiniteElements<N>),
+//     Npy(Voxels),
+//     Spn(Voxels),
+//     Stl(Tessellation),
+//     Vtk(FiniteElements<N>),
+// }
+
+enum OutputTypes<const N: usize, T>
+where
+    T: FiniteElementMethods<N>,
+{
+    Abaqus(T),
+    Exodus(T),
+    Mesh(T),
     Npy(Voxels),
     Spn(Voxels),
     Stl(Tessellation),
-    Vtk(FiniteElements<N>),
+    Vtk(T),
 }
 
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
@@ -570,15 +583,23 @@ fn convert(
             Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
             Some("stl") => write_output(
                 output,
-                OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                OutputTypes::<3, TriangularFiniteElements>::Stl(finite_elements.into_tesselation()),
                 quiet,
             ),
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
         },
         InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
-            Some("spn") => write_output(output, OutputTypes::<0>::Spn(voxels), quiet),
-            Some("npy") => write_output(output, OutputTypes::<0>::Npy(voxels), quiet),
+            Some("spn") => write_output(
+                output,
+                OutputTypes::<8, HexahedralFiniteElements>::Spn(voxels),
+                quiet,
+            ),
+            Some("npy") => write_output(
+                output,
+                OutputTypes::<8, HexahedralFiniteElements>::Npy(voxels),
+                quiet,
+            ),
             _ => invalid_output(&output, output_extension),
         },
         InputTypes::Stl(tessellation) => {
@@ -589,7 +610,9 @@ fn convert(
                 Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
                 Some("stl") => write_output(
                     output,
-                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    OutputTypes::<3, TriangularFiniteElements>::Stl(
+                        finite_elements.into_tesselation(),
+                    ),
                     quiet,
                 ),
                 Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
@@ -620,7 +643,11 @@ fn defeature(
                 if !quiet {
                     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
-                write_output(output, OutputTypes::<0>::Npy(voxels), quiet)
+                write_output(
+                    output,
+                    OutputTypes::<8, HexahedralFiniteElements>::Npy(voxels),
+                    quiet,
+                )
             }
             Some("spn") => {
                 let time = Instant::now();
@@ -631,7 +658,11 @@ fn defeature(
                 if !quiet {
                     println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
                 }
-                write_output(output, OutputTypes::<0>::Spn(voxels), quiet)
+                write_output(
+                    output,
+                    OutputTypes::<8, HexahedralFiniteElements>::Spn(voxels),
+                    quiet,
+                )
             }
             _ => invalid_output(&output, output_extension),
         },
@@ -903,7 +934,9 @@ fn smooth(
                 Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
                 Some("stl") => write_output(
                     output,
-                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    OutputTypes::<3, TriangularFiniteElements>::Stl(
+                        finite_elements.into_tesselation(),
+                    ),
                     quiet,
                 ),
                 Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
@@ -928,7 +961,9 @@ fn smooth(
                 Some("mesh") => write_output(output, OutputTypes::Mesh(finite_elements), quiet),
                 Some("stl") => write_output(
                     output,
-                    OutputTypes::<0>::Stl(finite_elements.into_tesselation()),
+                    OutputTypes::<3, TriangularFiniteElements>::Stl(
+                        finite_elements.into_tesselation(),
+                    ),
                     quiet,
                 ),
                 Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
@@ -942,8 +977,8 @@ fn smooth(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn apply_smoothing_method<const N: usize>(
-    output_type: &mut FiniteElements<N>,
+fn apply_smoothing_method<const N: usize, T>(
+    output_type: &mut T,
     output: &str,
     iterations: usize,
     method: Option<String>,
@@ -951,7 +986,10 @@ fn apply_smoothing_method<const N: usize>(
     pass_band: f64,
     scale: f64,
     quiet: bool,
-) -> Result<(), ErrorWrapper> {
+) -> Result<(), ErrorWrapper>
+where
+    T: FiniteElementMethods<N>,
+{
     let time_smooth = Instant::now();
     let smoothing_method = method.unwrap_or("Taubin".to_string());
     if matches!(
@@ -1066,11 +1104,14 @@ fn read_input(
     Ok(result)
 }
 
-fn write_output<const N: usize>(
+fn write_output<const N: usize, T>(
     output: String,
-    output_type: OutputTypes<N>,
+    output_type: OutputTypes<N, T>,
     quiet: bool,
-) -> Result<(), ErrorWrapper> {
+) -> Result<(), ErrorWrapper>
+where
+    T: FiniteElementMethods<N>,
+{
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mWriting\x1b[0m {}", output);
