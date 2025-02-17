@@ -11,7 +11,7 @@ automesh metrics --help
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
-* Maximum Skew
+* Maximum skew
 * Element volume
 
 A brief description of each metric follows.
@@ -226,25 +226,30 @@ export stl ascii "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_
 
 We collect these element qualities as follows:
 
-file | `e` | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$  | area
-:---: | :---: | :---: | :---: | :---: | :---:
-`A` | 1 | xxx (1.207e+00) | xxx (8.165e-01) | xxx | xxx (5.000e-01)
-`B` | 1 | xxx (1.048e+00) | xxx (8.978e-01) | xxx | xxx (4.244e-01)
-`B` |  2 | xxx (1.150e+00) | xxx (8.314e-01) | xxx | xxx (4.429e-01)
-`B` |  3 | xxx (2.588e+00) | xxx (4.262e-01) | xxx | xxx (3.419e-01)
-`B` |  4 | xxx (1.407e+00) | xxx (7.003e-01) | xxx | xxx (5.706e-01)
-`B` |  5 | xxx (1.061e+00) | xxx (8.800e-01) | xxx | xxx (6.679e-01)
-`B` |  6 | xxx (1.225e+00) | xxx (8.039e-01) | xxx | xxx (5.158e-01)
-`B` |  7 | xxx (1.226e+00) | xxx (7.190e-01) | xxx | xxx (6.482e-01)
-`B` |  8 | xxx (1.156e+00) | xxx (8.061e-01) | xxx | xxx (7.041e-01)
-`B` |  9 | xxx (1.323e+00) | xxx (7.606e-01) | xxx | xxx (6.095e-01)
-`B` | 10 | xxx (1.157e+00) | xxx (7.391e-01) | xxx | xxx (5.498e-01)
-`B` | 11 | xxx (1.405e+00) | xxx (6.392e-01) | xxx | xxx (5.695e-01)
-`B` | 12 | xxx (1.463e+00) | xxx (5.947e-01) | xxx | xxx (4.022e-01)
+file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$  | area | $\theta_{\min}$ (deg)
+:---: | :---: | :---: | :---: | :---: | :---: | :---:
+`A`   |   1   | 1.507 [1.507] | xxx (8.165e-01) | xxx | xxx (5.000e-01) | yyy (45.0)
+`B`   |   1   | 1.550 [1.550] | xxx (8.978e-01) | xxx | xxx (4.244e-01) |
+`B`   |   2   | 1.787 [1.787] | xxx (8.314e-01) | xxx | xxx (4.429e-01) |
+`B`   |   3   | 1.915 [1.915] | xxx (4.262e-01) | xxx | xxx (3.419e-01) |
+`B`   |   4   | 2.230 [2.230] | xxx (7.003e-01) | xxx | xxx (5.706e-01) |
+`B`   |   5   | 1.623 [1.623] | xxx (8.800e-01) | xxx | xxx (6.679e-01) |
+`B`   |   6   | 1.240 [1.240] | xxx (8.039e-01) | xxx | xxx (5.158e-01) |
+`B`   |   7   | 1.385 [1.385] | xxx (7.190e-01) | xxx | xxx (6.482e-01) |
+`B`   |   8   | 1.606 [1.606] | xxx (8.061e-01) | xxx | xxx (7.041e-01) |
+`B`   |   9   | 1.429 [1.429] | xxx (7.606e-01) | xxx | xxx (6.095e-01) |
+`B`   |  10   | 1.275 [1.275] | xxx (7.391e-01) | xxx | xxx (5.498e-01) |
+`B`   |  11   | 1.436 [1.436] | xxx (6.392e-01) | xxx | xxx (5.695e-01) |
+`B`   |  12   | 1.414 [1.141] | xxx (5.947e-01) | xxx | xxx (4.022e-01) |
 
 Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
 Leading values are from `automesh`.
-Values in parenthesis are results from Cubit.  Cubit uses the term *Aspect Ratio* for Edge Ratio.  File `A` is `one_facet.stl`.  File `B` is `single_valence_04_noise2.inp`.  `e` is the element number in the mesh.
+Values in (parenthesis) are results from Cubit.
+Valies in [brackets] are from an independent Python calcuation.
+Cubit uses the term *Aspect Ratio* but it is **not the same** as Edge Ratio.
+File `A` is `one_facet.stl`.
+File `B` is `single_valence_04_noise2.inp`.
+`e` is the element number in the mesh.
 
 ## References
 

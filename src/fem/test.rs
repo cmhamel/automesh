@@ -1,7 +1,8 @@
 use super::{
     calculate_element_measures, calculate_maximum_edge_ratios, calculate_maximum_skews,
-    calculate_minimum_scaled_jacobians, metrics_headers, Blocks, Connectivity, Coordinates,
-    HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX, TRI,
+    calculate_minimum_angles_tri, calculate_minimum_scaled_jacobians, metrics_headers, Blocks,
+    Connectivity, Coordinates, HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX,
+    TRI,
 };
 use conspire::math::{Tensor, TensorVec};
 
@@ -2922,9 +2923,6 @@ fn valence_3_and_4_noised() {
     let maximum_skews_gold = [0.6797482929789989, 0.4864935739781938];
     let element_volumes_gold = [1.24779970625, 0.9844007500000004];
 
-    // Small tolerance for comparison of two floats
-    let epsilon = 1e-10;
-
     let element_node_connectivity = vec![[1, 2, 4, 3, 5, 6, 8, 7]];
 
     let nodal_coordinates = [
@@ -2999,7 +2997,7 @@ fn valence_3_and_4_noised() {
     //     .zip(maximum_edge_ratios_gold.iter())
     // {
     //     assert!(
-    //         (calculated - gold).abs() < epsilon,
+    //         (calculated - gold).abs() < EPSILON,
     //         "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
     //         calculated,
     //         gold
@@ -3012,7 +3010,7 @@ fn valence_3_and_4_noised() {
         .zip(maximum_edge_ratios_gold.iter())
         .for_each(|(calculated, gold)| {
             assert!(
-                (calculated - gold).abs() < epsilon,
+                (calculated - gold).abs() < EPSILON,
                 "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
                 calculated,
                 gold
@@ -3024,7 +3022,7 @@ fn valence_3_and_4_noised() {
         .zip(mininum_scaled_jacobians_gold.iter())
         .for_each(|(calculated, gold)| {
             assert!(
-                (calculated - gold).abs() < epsilon,
+                (calculated - gold).abs() < EPSILON,
                 "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
                 calculated,
                 gold
@@ -3036,7 +3034,7 @@ fn valence_3_and_4_noised() {
         .zip(maximum_skews_gold.iter())
         .for_each(|(calculated, gold)| {
             assert!(
-                (calculated - gold).abs() < epsilon,
+                (calculated - gold).abs() < EPSILON,
                 "Calculated maximum skew {} is not approximately equal to gold value {}",
                 calculated,
                 gold
@@ -3048,7 +3046,7 @@ fn valence_3_and_4_noised() {
         .zip(element_volumes_gold.iter())
         .for_each(|(calculated, gold)| {
             assert!(
-                (calculated - gold).abs() < epsilon,
+                (calculated - gold).abs() < EPSILON,
                 "Calculated element volume {} is not approximately equal to gold value {}",
                 calculated,
                 gold
@@ -3068,9 +3066,27 @@ fn triangular_unit_tests() {
     // The last triangle comes from
     // tests/input/one_facet.stl.
 
-    // Gold values are from Cubit
+    // Gold values are from Cubit, which uses "Aspect Ratio" instead of Edge Ratio
+    // Turns out these are not the same thing!
+    // let maximum_edge_ratios_gold = [
+    //     1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
+    // ];
+
+    // Gold values from ~/autotwin/automesh/sandbox/metrics.py
     let maximum_edge_ratios_gold = [
-        1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
+        1.5078464057882237,
+        1.5501674700560748,
+        1.7870232669806838,
+        1.915231466534568,
+        2.230231996264181,
+        1.6226774766497245,
+        1.240081839656528,
+        1.3849480786032335,
+        1.6058086747499203,
+        1.4288836646598568,
+        1.2752274437112696,
+        1.4361231071914424,
+        std::f64::consts::SQRT_2, // 1.4142135623730951,
     ];
     // let minimum_scaled_jacobians_gold = [
     //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
@@ -3086,61 +3102,86 @@ fn triangular_unit_tests() {
     //     4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
     // ]; // degrees
 
-    // Small tolerance for comparison of two floats
-    // let epsilon = 1e-10;
-
-    let element_node_connectivity = vec![
-        vec![1, 2, 3],
-        vec![4, 2, 5],
-        vec![1, 6, 2],
-        vec![4, 3, 2],
-        vec![4, 1, 3],
-        vec![4, 7, 1],
-        vec![2, 8, 5],
-        vec![6, 8, 2],
-        vec![7, 8, 6],
-        vec![1, 7, 6],
-        vec![4, 5, 8],
-        vec![7, 4, 8], // end of single_valence_04_noise2.inp
-        vec![9, 10, 11],
+    let minimum_angles_gold = [
+        41.20248899996186,
+        39.796107567803936,
+        33.61245209189104,
+        31.00176761760843,
+        21.661723789672273,
+        37.33286786833477,
+        51.035084503042114,
+        46.05826353883047,
+        38.51272170273134,
+        44.27219859255808,
+        49.65307785734987,
+        44.12050798480872,
+        45.00000000000001,
     ];
 
-    let nodal_coordinates = [Coordinates::new(&[
-        [-0.2, 1.2, -0.1],
+    let _minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold
+        .iter()
+        .map(|angle| angle * DEG_TO_RAD)
+        .collect();
+
+    let element_node_connectivity = vec![
+        [1, 2, 3], // single_valence_04_noise2.inp begin
+        [4, 2, 5],
+        [1, 6, 2],
+        [4, 3, 2],
+        [4, 1, 3],
+        [4, 7, 1],
+        [2, 8, 5],
+        [6, 8, 2],
+        [7, 8, 6],
+        [1, 7, 6],
+        [4, 5, 8],
+        [7, 4, 8],   // single_valence_04_noise2.inp end
+        [9, 10, 11], // one_facet.stl
+    ];
+
+    let nodal_coordinates = Coordinates::new(&[
+        [-0.2, 1.2, -0.1], // single_valence_04_noise2.inp begin
         [1.180501, 0.39199, 0.3254445],
         [0.1, 0.2, 0.3],
         [-0.001, -0.021, 1.002],
         [1.2, -0.1, 1.1],
         [1.03, 1.102, -0.25],
         [0.0, 1.0, 1.0],
-        [1.01, 1.02, 1.03], // end single_valence_04_noise2.inp
-        [0.0, 0.0, 1.0],    // from one_facet.stl
+        [1.01, 1.02, 1.03], // single_valence_04_noise2.inp end
+        [0.0, 0.0, 1.0],    // one_facet.stl begin
         [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0], // End one_facet.stl
-    ])];
+        [1.0, 0.0, 0.0], // one_facet.stl end
+    ]);
 
-    let maximum_edge_ratios: Vec<f64> = calculate_maximum_edge_ratios::<3>(
-        &element_node_connectivity, &nodal_coordinates
-    );
+    let maximum_edge_ratios =
+        calculate_maximum_edge_ratios(&element_node_connectivity, &nodal_coordinates);
 
-    // let minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold
-    //     .iter()
-    //     .map(|angle| angle * DEG_TO_RAD)
-    //     .collect();
+    maximum_edge_ratios
+        .iter()
+        .zip(maximum_edge_ratios_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < EPSILON,
+                "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
 
-    // minimum_angles_gold_rad
-    //     .iter()
-    //     .zip(element_volumes_gold.iter())
-    //     .for_each(|(calculated, gold)| {
-    //         assert!(
-    //             (calculated - gold).abs() < epsilon,
-    //             "Calculated element volume {} is not approximately equal to gold value {}",
-    //             calculated,
-    //             gold
-    //         );
-    //     });
+    let _minimum_angles =
+        calculate_minimum_angles_tri(&element_node_connectivity, &nodal_coordinates);
 
-
+    //minimum_angles
+    //    .iter()
+    //    .zip(minimum_angles_gold_rad.iter())
+    //    .for_each(|(calculated, gold)| {
+    //        assert!(
+    //            (calculated - gold).abs() < EPSILON,
+    //            "Calculated minimum angle {} is not approximately equal to gold value {}",
+    //            calculated,
+    //            gold
+    //        );
+    //    });
 }
 
 #[test]

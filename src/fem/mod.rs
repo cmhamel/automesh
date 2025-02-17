@@ -1256,6 +1256,10 @@ fn calculate_maximum_edge_ratios_tri<const N: usize>(
                 .unwrap()
         })
         .collect();
+
+    // Print the maximum_edge_ratios
+    println!("Maximum Edge Ratios: {:?}", maximum_edge_ratios);
+
     maximum_edge_ratios
 }
 
