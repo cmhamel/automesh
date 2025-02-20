@@ -102,7 +102,7 @@ impl Cell {
         if let Some(block) = self.block {
             block
         } else {
-            panic!()
+            panic!("Called get_block() on a non-leaf cell.")
         }
     }
     pub fn get_cells(&self) -> &Option<Indices> {
@@ -1391,35 +1391,137 @@ impl Tree for Octree {
         ))
     }
     fn into_tesselation(self, remove: Option<Blocks>) -> Tessellation {
+        let mut removed_data = remove.clone().unwrap_or_default();
         let (clusters, cell_from_subcell_map) = self.clusters(remove);
         let blocks: Blocks = clusters
             .iter()
             .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
             .collect();
-        let manifolds = blocks
+        //
+        // can you just collect cells in the cluster that touch at least one other material?
+        // and then afterward, construct the manifold from those cells
+        //
+        let foo = blocks
             .iter()
             .zip(clusters.iter())
-            .map(|(&block, cluster)| {
-                cluster
-                    .iter()
-                    .flat_map(|cell| {
-                        self[*cell].get_faces().iter().enumerate().filter_map(
-                            |(face_index, &face)| {
-                                if let Some(face_cell) = face {
-                                    if self[face_cell].get_block() == block {
-                                        Some([*cell, face_index])
+            .map(|(&block, cluster)|
+                cluster.iter().flat_map(|cell|
+                    if self[*cell].get_faces().iter().enumerate().any(|(face_index, &face)|
+                        if let Some(face_cell) = face {
+                            if let Some(face_cell_subcells) = self[face_cell].get_cells() {
+                                subcells_on_neighbor_face(face_index).iter().any(|&face_subcell_index|
+                                    self[face_cell_subcells[face_subcell_index]].get_block() != block
+                                )
+                                // false
+                            } else {
+                                self[face_cell].get_block() != block
+                                // false
+                            }
+                        } else {
+                            if let Some((parent_index, _)) = cell_from_subcell_map[*cell] {
+                                if let Some(face_cell) = self[parent_index].get_faces()[face_index] {
+                                    if let Some(face_cell_subcells) = self[face_cell].get_cells() {
+                                        subcells_on_neighbor_face(face_index).iter().any(|&face_subcell_index|
+                                            self[face_cell_subcells[face_subcell_index]].get_block() != block
+                                        ) // do we need this case?
                                     } else {
-                                        None
+                                        false
                                     }
                                 } else {
-                                    None
+                                    false
                                 }
-                            },
-                        )
-                    })
-                    .collect::<Vec<[usize; 2]>>()
-            })
-            .collect::<Vec<Vec<[usize; 2]>>>();
+                            } else {
+                                false
+                            }
+                        }
+                    ) {
+                        Some(*cell) // consider returning face indices eventually too, if need for manifolding
+                    } else {
+                        None
+                    }
+                ).collect()
+            ).collect::<Vec<Vec<usize>>>();
+
+        let mut x_min = 0.0;
+        let mut y_min = 0.0;
+        let mut z_min = 0.0;
+        let mut x_val = 0.0;
+        let mut y_val = 0.0;
+        let mut z_val = 0.0;
+        // let mut removed_data = remove.unwrap_or_default(); put above instead for now
+        removed_data.sort();
+        removed_data.dedup();
+        let num_elements = foo
+            .iter()
+            .flatten()
+            .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
+            .count();
+        let mut element_blocks = vec![0; num_elements];
+        let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
+        let mut nodal_coordinates: Coordinates = (0..num_elements * HEX)
+            .map(|_| Coordinate::zero())
+            .collect();
+        let mut index = 0;
+        foo.iter().flatten()
+                .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
+                .zip(
+                    element_blocks
+                        .iter_mut()
+                        .zip(element_node_connectivity.iter_mut()),
+                )
+                .for_each(|(&cell, (block, connectivity))| {
+                    *block = self[cell].get_block() + 4;
+                    *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
+                    x_min = *self[cell].get_min_x() as f64;
+                    y_min = *self[cell].get_min_y() as f64;
+                    z_min = *self[cell].get_min_z() as f64;
+                    x_val = (self[cell].get_min_x() + self[cell].get_lngth()) as f64;
+                    y_val = (self[cell].get_min_y() + self[cell].get_lngth()) as f64;
+                    z_val = (self[cell].get_min_z() + self[cell].get_lngth()) as f64;
+                    nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
+                    nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
+                    nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
+                    nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
+                    nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
+                    nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
+                    nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
+                    nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
+                    index += HEX;
+                });
+        HexahedralFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ).write_exo("foo.exo").unwrap();
+
+        //
+        // old way:
+        //
+        // let manifolds = blocks
+        //     .iter()
+        //     .zip(clusters.iter())
+        //     .map(|(&block, cluster)| {
+        //         cluster
+        //             .iter()
+        //             .flat_map(|cell| {
+        //                 self[*cell].get_faces().iter().enumerate().filter_map(
+        //                     |(face_index, &face)| {
+        //                         if let Some(face_cell) = face {
+        //                             if self[face_cell].get_block() == block {
+        //                                 Some([*cell, face_index])
+        //                             } else {
+        //                                 None
+        //                             }
+        //                         } else {
+        //                             None
+        //                         }
+        //                     },
+        //                 )
+        //             })
+        //             .collect::<Vec<[usize; 2]>>()
+        //     })
+        //     .collect::<Vec<Vec<[usize; 2]>>>();
+        //
         // cells in clusters are all leaves. find:
         // - cells with same-size face neighbors with different block
         // - cells with neighbor children with some having different block [use children faces, are smaller]
@@ -1428,11 +1530,7 @@ impl Tree for Octree {
         // plot them as quads in 3D for now for visual checks
         // how to do connectivity? would help templates later to have beforehand, can also check manifold
         //
-        //
-        // just make every "quad" into 2 tri FEs and then convert to STL for now (for the visual checking)
-        //
-        //
-        todo!()
+        todo!("END OF into_tesselation()")
     }
     fn pair(&mut self) {
         #[cfg(feature = "profile")]
