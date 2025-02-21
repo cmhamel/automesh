@@ -874,6 +874,11 @@ fn octree(
     }
     let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
+
+    let (clusters, _) = tree.clusters(remove);
+    println!("octree and {} clusters in {:?}", clusters.len(), time.elapsed());
+    panic!("TEMP");
+
     if boundaries {
         tree.boundaries();
     }

@@ -172,7 +172,7 @@ pub struct Voxels {
 }
 
 impl Voxels {
-    fn clusters(&self, remove: Option<Blocks>) -> Clusters {
+    fn clusters(&self, remove: Option<Blocks>) -> Vec<VoxelIDs> {
         // hash (flat) map for voxel search (give each an id)?
         // pick a voxel from list of available, find neighbors, add to cluster list, remove from available voxels
         // removed "remove" from list of available voxels at the start
@@ -184,8 +184,8 @@ impl Voxels {
         removed_data.sort();
         removed_data.dedup();
         let shape = self.data.shape();
-        let nelxplus1 = shape[0] + 1;
-        let nelyplus1 = shape[1] + 1;
+        let nelx = shape[0];
+        let nely = shape[1];
         let voxel_map = self.voxel_map();
 
         let mut free_voxels = data
@@ -200,7 +200,7 @@ impl Voxels {
                             .iter()
                             .enumerate()
                             .filter(|(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
-                            .map(|(i, _)| Self::voxel_id(&i, &j, &k, &nelxplus1, &nelyplus1))
+                            .map(|(i, _)| Self::voxel_id(&i, &j, &k, &nelx, &nely))
                             .collect::<VoxelIDs>()
                             .into_iter()
                     })
@@ -212,36 +212,52 @@ impl Voxels {
         let mut block;
         let mut complete;
         let mut cluster;
-        let clusters = vec![];
+        let mut clusters = vec![];
+        let mut cluster_index = 0;
         let mut index;
         let mut i;
         let mut j;
         let mut k;
+        // let mut voxel;
+
+        // verify true that free_voxels is sorted and unique
 
         while let Some(starting_voxel) = free_voxels.pop() {
-            [i, j, k] = voxel_map[starting_voxel];
-            block = data[[i, j, k]];
+            block = data[voxel_map[starting_voxel]];
             cluster = vec![starting_voxel];
-            complete = true;
             loop {
                 index = 0;
+                complete = true;
                 while index < cluster.len() {
-                    Self::voxel_neighbors(&i, &j, &k, &nelxplus1, &nelyplus1)
+                    [i, j, k] = voxel_map[cluster[index]];
+                    // println!("cluster_index {}, cluster length {}, index {}, i {}, j {}, k {}", cluster_index, cluster.len(), index, i, j, k);
+                    Self::voxel_neighbors(&i, &j, &k, &nelx, &nely)
                         .into_iter()
                         .for_each(|(neighbor_indices, neighbor_voxel)| {
                             if let Some(neighbor) = data.get(neighbor_indices) {
                                 if neighbor == &block {
-                                    cluster.push(neighbor_voxel);
-                                    complete = false
+                                    //
+                                    // seems like the search over ALL free voxels is very slow
+                                    // over free voxels in a given block wouldn't scale much better
+                                    // is there another way? otherwise octree is much better
+                                    //
+                                    if let Ok(spot) = free_voxels.binary_search(&neighbor_voxel) {
+                                        cluster.push(neighbor_voxel);
+                                        free_voxels.remove(spot);
+                                        complete = false;
+                                        // println!("added voxel id {} to cluster of length {}", neighbor_voxel, cluster.len())
+                                    }
                                 }
                             }
-                            index += 1;
-                        })
+                        });
+                        index += 1;
                 }
                 if complete {
                     break;
                 }
             }
+            clusters.push(cluster);
+            cluster_index += 1;
         }
 
         clusters
@@ -312,16 +328,22 @@ impl Voxels {
         scale: Scale,
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String> {
-        let (element_blocks, element_node_connectivity, nodal_coordinates) =
-            finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
-        Ok(HexahedralFiniteElements::from_data(
-            element_blocks,
-            element_node_connectivity,
-            nodal_coordinates,
-        ))
+
+        let time = std::time::Instant::now();
+        let clusters = self.clusters(remove);
+        println!("{} clusters in {:?}", clusters.len(), time.elapsed());
+        panic!("TEMPORARY STOP")
+
+        // let (element_blocks, element_node_connectivity, nodal_coordinates) =
+        //     finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
+        // Ok(HexahedralFiniteElements::from_data(
+        //     element_blocks,
+        //     element_node_connectivity,
+        //     nodal_coordinates,
+        // ))
     }
-    fn voxel_id(i: &usize, j: &usize, k: &usize, nelxplus1: &usize, nelyplus1: &usize) -> usize {
-        i + j * nelxplus1 + k * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET
+    fn voxel_id(i: &usize, j: &usize, k: &usize, nelx: &usize, nely: &usize) -> usize {
+        i + j * nelx + k * nelx * nely
     }
     fn voxel_map(&self) -> VoxelMap {
         let shape = self.data.shape();
@@ -335,33 +357,33 @@ impl Voxels {
         i: &usize,
         j: &usize,
         k: &usize,
-        nelxplus1: &usize,
-        nelyplus1: &usize,
+        nelx: &usize,
+        nely: &usize,
     ) -> [([usize; NSD], usize); 6] {
         [
             (
                 [i - 1, *j, *k],
-                Self::voxel_id(&(i - 1), j, k, nelxplus1, nelyplus1),
+                Self::voxel_id(&(i - 1), j, k, nelx, nely),
             ),
             (
                 [i + 1, *j, *k],
-                Self::voxel_id(&(i + 1), j, k, nelxplus1, nelyplus1),
+                Self::voxel_id(&(i + 1), j, k, nelx, nely),
             ),
             (
                 [*i, j - 1, *k],
-                Self::voxel_id(i, &(j - 1), k, nelxplus1, nelyplus1),
+                Self::voxel_id(i, &(j - 1), k, nelx, nely),
             ),
             (
                 [*i, j + 1, *k],
-                Self::voxel_id(i, &(j + 1), k, nelxplus1, nelyplus1),
+                Self::voxel_id(i, &(j + 1), k, nelx, nely),
             ),
             (
                 [*i, *j, k - 1],
-                Self::voxel_id(i, j, &(k - 1), nelxplus1, nelyplus1),
+                Self::voxel_id(i, j, &(k - 1), nelx, nely),
             ),
             (
                 [*i, *j, k + 1],
-                Self::voxel_id(i, j, &(k + 1), nelxplus1, nelyplus1),
+                Self::voxel_id(i, j, &(k + 1), nelx, nely),
             ),
         ]
     }
@@ -438,7 +460,6 @@ fn initial_element_node_connectivity(
         .map(|&[i, j, k]| {
             [
                 i + j * nelxplus1 + k * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,
-                // voxel_id(&i, &j, &k, &nelxplus1, &nelyplus1), can try this if you also benchmark the changes
                 i + j * nelxplus1 + k * nelxplus1 * nelyplus1 + 1 + NODE_NUMBERING_OFFSET,
                 i + (j + 1) * nelxplus1 + k * nelxplus1 * nelyplus1 + 1 + NODE_NUMBERING_OFFSET,
                 i + (j + 1) * nelxplus1 + k * nelxplus1 * nelyplus1 + NODE_NUMBERING_OFFSET,

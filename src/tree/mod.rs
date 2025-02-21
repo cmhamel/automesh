@@ -790,6 +790,9 @@ impl Tree for Octree {
                             self[leaf].get_faces().iter().enumerate().for_each(
                                 |(face, face_cell)| {
                                     if let Some(cell) = face_cell {
+                                        //
+                                        // might not want to do the binary search until making sure block is right
+                                        //
                                         if let Ok(spot) = block_leaves.binary_search(cell) {
                                             if self[*cell].get_block() == block {
                                                 block_leaves.remove(spot);
