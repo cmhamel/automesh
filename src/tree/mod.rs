@@ -7,7 +7,7 @@ use super::{
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };
-use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
+use conspire::math::{TensorArray, TensorRank1List, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -22,6 +22,20 @@ const SUBCELLS_ON_OWN_FACE_2: SubcellsOnFace = [2, 3, 6, 7];
 const SUBCELLS_ON_OWN_FACE_3: SubcellsOnFace = [0, 2, 4, 6];
 const SUBCELLS_ON_OWN_FACE_4: SubcellsOnFace = [0, 1, 2, 3];
 const SUBCELLS_ON_OWN_FACE_5: SubcellsOnFace = [4, 5, 6, 7];
+
+const fn mirror_face(face: usize) -> usize {
+    match face {
+        0 => 2,
+        1 => 3,
+        2 => 0,
+        3 => 1,
+        4 => 5,
+        5 => 4,
+        _ => {
+            panic!()
+        }
+    }
+}
 
 const fn subcells_on_own_face(face: usize) -> SubcellsOnFace {
     match face {
@@ -58,7 +72,9 @@ type Indices = [usize; NUM_OCTANTS];
 /// The octree type.
 pub type Octree = Vec<Cell>;
 
-type Clusters = Vec<Vec<usize>>;
+type Cluster = Vec<usize>;
+type Clusters = Vec<Cluster>;
+type FaceCoordinates = TensorRank1List<3, 1, 4>;
 type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 
 /// Methods for trees such as quadtrees or octrees.
@@ -80,7 +96,7 @@ pub trait Tree {
         scale: Scale,
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
-    fn into_tesselation(self, remove: Option<Blocks>) -> Tessellation;
+    fn into_tesselation(self) -> Tessellation;
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
@@ -1391,47 +1407,193 @@ impl Tree for Octree {
             nodal_coordinates,
         ))
     }
-    fn into_tesselation(mut self, remove: Option<Blocks>) -> Tessellation {
+    fn into_tesselation(mut self) -> Tessellation {
         self.boundaries();
-        let mut removed_data = remove.clone().unwrap_or_default();
-        let (clusters, _) = self.clusters(remove);
+        let (clusters, _) = self.clusters(None);
         let blocks = clusters
             .iter()
             .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
             .collect::<Blocks>();
-        let mut face_info = vec![];
-        let boundary_cells = blocks
+        let default_face_info = [None; NUM_FACES];
+        let mut faces_info = default_face_info;
+        let boundaries_cells_faces = blocks
             .iter()
             .zip(clusters.iter())
-            .map(|(&block, cluster)|
+            .map(|(&block, cluster)| {
                 cluster
                     .iter()
                     .filter(|&&cell| self[cell].is_voxel())
                     .filter_map(|&cell| {
-                        face_info = self[cell]
-                            .get_faces()
-                            .iter()
-                            .enumerate()
-                            .filter_map(|(face_index, &face)|
+                        faces_info = default_face_info;
+                        faces_info
+                            .iter_mut()
+                            .zip(self[cell].get_faces().iter())
+                            .for_each(|(face_info, &face)| {
                                 if let Some(face_cell) = face {
                                     if self[face_cell].get_block() != block {
-                                        Some([face_index, face_cell])
-                                    } else {
-                                        None
+                                        *face_info = Some(face_cell)
                                     }
-                                } else {
-                                    None
                                 }
-                            ).collect();
-                        if face_info.is_empty() {
+                            });
+                        if faces_info.iter().all(|face_info| face_info.is_none()) {
                             None
                         } else {
-                            Some((cell, face_info.clone()))
+                            Some((cell, faces_info))
                         }
-                    }).collect()
-            ).collect::<Vec<(Vec<usize>,Vec<Vec<[usize; 2]>>)>>();
+                    })
+                    .collect()
+            })
+            .collect::<Vec<Vec<(usize, Faces)>>>();
 
-        // boundary_cells
+        //
+        // no longer removing any cells during tessellation
+        // so you can assume every boundary face is shared by 2 boundary cells
+        //
+
+        // blocks.iter().zip(clusters.iter()).for_each(|(block, cluster)|
+        //     println!("cluster is from block {} and has length {}", block, cluster.len())
+        // );
+        // why are there extra weird clusters of small (or even zero) length without strong balancing?
+
+        let mut max_cell_id = 0;
+        let mut boundaries_face_from_cell = boundaries_cells_faces
+            .iter()
+            .map(|boundary_cells_faces| {
+                (max_cell_id, _) = *boundary_cells_faces
+                    .iter()
+                    .max_by(|(cell_a, _), (cell_b, _)| cell_a.cmp(cell_b))
+                    .unwrap();
+                vec![[None; NUM_FACES]; max_cell_id + 1]
+            })
+            .collect::<Vec<Vec<[Option<usize>; NUM_FACES]>>>();
+        max_cell_id = 0;
+        boundaries_cells_faces
+            .iter()
+            .for_each(|boundary_cells_faces| {
+                boundary_cells_faces.iter().for_each(|(cell, _)| {
+                    if cell > &max_cell_id {
+                        max_cell_id = *cell
+                    }
+                })
+            });
+        let mut boundary_from_cell = vec![None; max_cell_id + 1];
+        boundaries_cells_faces
+            .iter()
+            .enumerate()
+            .for_each(|(boundary, boundary_cells_faces)| {
+                boundary_cells_faces
+                    .iter()
+                    .for_each(|(cell, _)| boundary_from_cell[*cell] = Some(boundary))
+            });
+        let mut face_coordinates: Vec<FaceCoordinates> = vec![];
+        let mut face_id = 0;
+        (0..boundaries_cells_faces.len()).for_each(|boundary| {
+            boundaries_cells_faces[boundary]
+                .iter()
+                .for_each(|(cell, faces)| {
+                    faces.iter().enumerate().for_each(|(face_index, face)| {
+                        if let Some(face_cell) = face {
+                            if boundaries_face_from_cell[boundary][*cell][face_index].is_none() {
+                                boundaries_face_from_cell[boundary][*cell][face_index] =
+                                    Some(face_id);
+                                if let Some(opposing_boundary) = boundary_from_cell[*face_cell] {
+                                    boundaries_face_from_cell[opposing_boundary][*face_cell]
+                                        [mirror_face(face_index)] = Some(face_id);
+                                }
+                                face_coordinates[face_id] = match face_index {
+                                    0 => FaceCoordinates::new([
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                    ]),
+                                    _ => panic!(),
+                                };
+                                //
+                                // need to set face_coordinates, maybe worry about connecting to neighboring faces later?
+                                //
+                                face_id += 1;
+                            }
+                        }
+                    })
+                })
+        });
+        // can you just "merge" the nodes afterwards?
+        // maybe try writing without merging for now as a check
+
+        // start with one cluster
+        // a face is defined by the cell index and face index
+        // pick a face, create 4 nodes (later, check neighbors in cluster for connectivity)
+        // remove that face from the cluster list
+        // remove that face from at most one other cluster list (later, check neighbors in other cluster for connectivity)
+        //
+
+        // list of faces to make are the set of shared faces that triggered the above
+        // apart from removed material, each face is shared by 2 boundary cells on 2 different boundary cell clusters
+        // if you triangulate one, you triangulate both
+
+        // for a cluster of boundary cells, can you populate the nodes?
+        // every face you find, consider those 4 nodes
+        // how to make sure don't double count?
+        // the nodes on a given face are shared by up to 17 other cells
+        // only need to consider cells which are also boundary cells
+
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // can you creates nodes at each corner of the boundaries,
+        // construct a map from cell corners to nodes (nodes/corners are shared by many cells)
+        // and use that to maintain connectivity within a surface and within surfaces
+        // then you already have "nodal_coordinates"
+        // just need to populate "connectivity"
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // make this function first create triangles
+        // then smooth them (add Smoothing to arguments)
+        // then convert to Tesselation
+
+        // let mut node = 0;
+        // boundaries_cells_faces.iter().take(1).for_each(|boundary_cells_faces|
+        //     boundary_cells_faces.iter().for_each(|(boundary_cell, faces_info)|
+        //         match faces_info {
+        //             [Some(_), None, None, None, None, None] => {
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create tri node {} {} {}", node + 1, node + 2, node + 4);
+        //                 println!("create tri node {} {} {}", node + 2, node + 3, node + 4);
+        //                 node += 4;
+        //             }
+        //             [Some(_), Some(_), None, None, None, None] => {
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_max_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_max_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create tri node {} {} {}", node + 1, node + 2, node + 4);
+        //                 println!("create tri node {} {} {}", node + 2, node + 3, node + 4);
+        //                 println!("create tri node {} {} {}", node + 2, node + 5, node + 3);
+        //                 println!("create tri node {} {} {}", node + 3, node + 5, node + 6);
+        //                 node += 6;
+        //             }
+        //             [Some(_), None, None, Some(_), None, None] => {
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_max_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_min_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_max_y(), self[*boundary_cell].get_min_z());
+        //                 println!("create node location {} {} {}", self[*boundary_cell].get_min_x(), self[*boundary_cell].get_max_y(), self[*boundary_cell].get_max_z());
+        //                 println!("create tri node {} {} {}", node + 1, node + 2, node + 4);
+        //                 println!("create tri node {} {} {}", node + 2, node + 3, node + 4);
+        //                 println!("create tri node {} {} {}", node + 1, node + 4, node + 6);
+        //                 println!("create tri node {} {} {}", node + 1, node + 6, node + 5);
+        //                 node += 6;
+        //             }
+        //             [None, None, None, None, None, None] => panic!(),
+        //             _ => {},
+        //         }
+        //     )
+        // );
 
         // All triangles except those facing removed material will be shared with 1 other cluster!
         // That is why we are saving the neighbor cell each face_index corresponds to.
@@ -1450,7 +1612,12 @@ impl Tree for Octree {
         // start with quads?
         // might want to make a merged quad mesh before doing the triangles anyway
 
-        let foo: Clusters = boundary_cells.iter().map(|bar| bar.0.clone()).collect();
+        let boundaries_cells = boundaries_cells_faces
+            .iter()
+            .map(|boundary_cells_faces| {
+                boundary_cells_faces.iter().map(|(cell, _)| *cell).collect()
+            })
+            .collect::<Clusters>();
 
         let mut x_min = 0.0;
         let mut y_min = 0.0;
@@ -1458,23 +1625,16 @@ impl Tree for Octree {
         let mut x_val = 0.0;
         let mut y_val = 0.0;
         let mut z_val = 0.0;
-        // let mut removed_data = remove.unwrap_or_default(); put above instead for now
-        removed_data.sort();
-        removed_data.dedup();
-        let num_elements = foo
-            .iter()
-            .flatten()
-            .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
-            .count();
+        let num_elements = boundaries_cells.iter().flatten().count();
         let mut element_blocks = vec![0; num_elements];
         let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
         let mut nodal_coordinates: Coordinates = (0..num_elements * HEX)
             .map(|_| Coordinate::zero())
             .collect();
         let mut index = 0;
-        foo.iter()
+        boundaries_cells
+            .iter()
             .flatten()
-            .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
             .zip(
                 element_blocks
                     .iter_mut()

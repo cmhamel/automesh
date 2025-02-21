@@ -862,8 +862,12 @@ fn octree(
     }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     if output_extension == Some("stl") {
-        let output_type = tree.into_tesselation(remove);
-        write_output(output, OutputTypes::<3, TriangularFiniteElements>::Stl(output_type), quiet)?;
+        let output_type = tree.into_tesselation();
+        write_output(
+            output,
+            OutputTypes::<3, TriangularFiniteElements>::Stl(output_type),
+            quiet,
+        )?;
     } else {
         tree.prune();
         let output_type = tree.octree_into_finite_elements(

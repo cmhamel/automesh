@@ -284,6 +284,9 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSize
         .flatten()
         .flatten()
         .collect();
+    //
+    // try using unzip() here instead?
+    //
     let element_blocks = filtered_voxel_data_combo
         .iter()
         .map(|&[_, _, _, data]| data as u8)
