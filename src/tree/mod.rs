@@ -1404,43 +1404,64 @@ impl Tree for Octree {
         let foo = blocks
             .iter()
             .zip(clusters.iter())
-            .map(|(&block, cluster)|
-                cluster.iter().flat_map(|cell|
-                    if self[*cell].get_faces().iter().enumerate().any(|(face_index, &face)|
-                        if let Some(face_cell) = face {
-                            if let Some(face_cell_subcells) = self[face_cell].get_cells() {
-                                subcells_on_neighbor_face(face_index).iter().any(|&face_subcell_index|
-                                    self[face_cell_subcells[face_subcell_index]].get_block() != block
-                                )
-                                // false
-                            } else {
-                                self[face_cell].get_block() != block
-                                // false
-                            }
-                        } else {
-                            if let Some((parent_index, _)) = cell_from_subcell_map[*cell] {
-                                if let Some(face_cell) = self[parent_index].get_faces()[face_index] {
+            .map(|(&block, cluster)| {
+                cluster
+                    .iter()
+                    .flat_map(|cell| {
+                        if self[*cell]
+                            .get_faces()
+                            .iter()
+                            .enumerate()
+                            .any(|(face_index, &face)| {
+                                if let Some(face_cell) = face {
                                     if let Some(face_cell_subcells) = self[face_cell].get_cells() {
-                                        subcells_on_neighbor_face(face_index).iter().any(|&face_subcell_index|
-                                            self[face_cell_subcells[face_subcell_index]].get_block() != block
-                                        ) // do we need this case?
+                                        subcells_on_neighbor_face(face_index).iter().any(
+                                            |&face_subcell_index| {
+                                                self[face_cell_subcells[face_subcell_index]]
+                                                    .get_block()
+                                                    != block
+                                            },
+                                        )
+                                        // false
+                                    } else {
+                                        self[face_cell].get_block() != block
+                                        // false
+                                    }
+                                } else {
+                                    if let Some((parent_index, _)) = cell_from_subcell_map[*cell] {
+                                        if let Some(face_cell) =
+                                            self[parent_index].get_faces()[face_index]
+                                        {
+                                            if let Some(face_cell_subcells) =
+                                                self[face_cell].get_cells()
+                                            {
+                                                subcells_on_neighbor_face(face_index).iter().any(
+                                                    |&face_subcell_index| {
+                                                        self[face_cell_subcells[face_subcell_index]]
+                                                            .get_block()
+                                                            != block
+                                                    },
+                                                ) // do we need this case?
+                                            } else {
+                                                false
+                                            }
+                                        } else {
+                                            false
+                                        }
                                     } else {
                                         false
                                     }
-                                } else {
-                                    false
                                 }
-                            } else {
-                                false
-                            }
+                            })
+                        {
+                            Some(*cell) // consider returning face indices eventually too, if need for manifolding
+                        } else {
+                            None
                         }
-                    ) {
-                        Some(*cell) // consider returning face indices eventually too, if need for manifolding
-                    } else {
-                        None
-                    }
-                ).collect()
-            ).collect::<Vec<Vec<usize>>>();
+                    })
+                    .collect()
+            })
+            .collect::<Vec<Vec<usize>>>();
 
         let mut x_min = 0.0;
         let mut y_min = 0.0;
@@ -1462,37 +1483,40 @@ impl Tree for Octree {
             .map(|_| Coordinate::zero())
             .collect();
         let mut index = 0;
-        foo.iter().flatten()
-                .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
-                .zip(
-                    element_blocks
-                        .iter_mut()
-                        .zip(element_node_connectivity.iter_mut()),
-                )
-                .for_each(|(&cell, (block, connectivity))| {
-                    *block = self[cell].get_block() + 4;
-                    *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
-                    x_min = *self[cell].get_min_x() as f64;
-                    y_min = *self[cell].get_min_y() as f64;
-                    z_min = *self[cell].get_min_z() as f64;
-                    x_val = (self[cell].get_min_x() + self[cell].get_lngth()) as f64;
-                    y_val = (self[cell].get_min_y() + self[cell].get_lngth()) as f64;
-                    z_val = (self[cell].get_min_z() + self[cell].get_lngth()) as f64;
-                    nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
-                    nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
-                    nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
-                    nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
-                    nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
-                    nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
-                    nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
-                    nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
-                    index += HEX;
-                });
+        foo.iter()
+            .flatten()
+            .filter(|&&cell| removed_data.binary_search(&self[cell].get_block()).is_err())
+            .zip(
+                element_blocks
+                    .iter_mut()
+                    .zip(element_node_connectivity.iter_mut()),
+            )
+            .for_each(|(&cell, (block, connectivity))| {
+                *block = self[cell].get_block() + 4;
+                *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
+                x_min = *self[cell].get_min_x() as f64;
+                y_min = *self[cell].get_min_y() as f64;
+                z_min = *self[cell].get_min_z() as f64;
+                x_val = (self[cell].get_min_x() + self[cell].get_lngth()) as f64;
+                y_val = (self[cell].get_min_y() + self[cell].get_lngth()) as f64;
+                z_val = (self[cell].get_min_z() + self[cell].get_lngth()) as f64;
+                nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
+                nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
+                nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
+                nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
+                nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
+                nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
+                nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
+                nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
+                index += HEX;
+            });
         HexahedralFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
             nodal_coordinates,
-        ).write_exo("foo.exo").unwrap();
+        )
+        .write_exo("foo.exo")
+        .unwrap();
 
         //
         // old way:
