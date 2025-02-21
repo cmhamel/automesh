@@ -1485,7 +1485,7 @@ impl Tree for Octree {
                     .iter()
                     .for_each(|(cell, _)| boundary_from_cell[*cell] = Some(boundary))
             });
-        let mut face_coordinates: Vec<FaceCoordinates> = vec![];
+        let mut face_coordinates = vec![];
         let mut face_id = 0;
         (0..boundaries_cells_faces.len()).for_each(|boundary| {
             boundaries_cells_faces[boundary]
@@ -1500,18 +1500,109 @@ impl Tree for Octree {
                                     boundaries_face_from_cell[opposing_boundary][*face_cell]
                                         [mirror_face(face_index)] = Some(face_id);
                                 }
-                                face_coordinates[face_id] = match face_index {
+                                face_coordinates.push(match face_index {
                                     0 => FaceCoordinates::new([
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                    ]),
+                                    1 => FaceCoordinates::new([
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                    ]),
+                                    2 => FaceCoordinates::new([
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                        [
+                                            self[*cell].get_max_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                    ]),
+                                    3 => FaceCoordinates::new([
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            *self[*cell].get_min_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            *self[*cell].get_min_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                        [
+                                            *self[*cell].get_min_x() as f64,
+                                            self[*cell].get_max_y() as f64,
+                                            self[*cell].get_max_z() as f64,
+                                        ],
+                                    ]),
+                                    4 => FaceCoordinates::new([
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                        [0.0, 0.0, 0.0],
+                                    ]),
+                                    5 => FaceCoordinates::new([
                                         [0.0, 0.0, 0.0],
                                         [0.0, 0.0, 0.0],
                                         [0.0, 0.0, 0.0],
                                         [0.0, 0.0, 0.0],
                                     ]),
                                     _ => panic!(),
-                                };
-                                //
-                                // need to set face_coordinates, maybe worry about connecting to neighboring faces later?
-                                //
+                                });
                                 face_id += 1;
                             }
                         }
@@ -1520,6 +1611,23 @@ impl Tree for Octree {
         });
         // can you just "merge" the nodes afterwards?
         // maybe try writing without merging for now as a check
+        let mut node = 0;
+        face_coordinates.iter().for_each(|coordinates| {
+            (0..4).for_each(|asdf| {
+                println!(
+                    "create node location {} {} {}",
+                    coordinates[asdf][0], coordinates[asdf][1], coordinates[asdf][2]
+                )
+            });
+            println!(
+                "create quad node {} {} {} {}",
+                node + 1,
+                node + 2,
+                node + 3,
+                node + 4
+            );
+            node += 4;
+        });
 
         // start with one cluster
         // a face is defined by the cell index and face index
