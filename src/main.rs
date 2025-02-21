@@ -274,10 +274,6 @@ enum Commands {
         /// Pass to apply strong balancing
         #[arg(action, long, short)]
         strong: bool,
-
-        /// Pass to fully refine the boundaries
-        #[arg(action, long, short)]
-        boundaries: bool,
     },
 
     /// Applies smoothing to an existing mesh
@@ -418,17 +414,6 @@ enum InputTypes {
     Stl(Tessellation),
 }
 
-// #[allow(clippy::large_enum_variant)]
-// enum OutputTypes<const N: usize> {
-//     Abaqus(FiniteElements<N>),
-//     Exodus(FiniteElements<N>),
-//     Mesh(FiniteElements<N>),
-//     Npy(Voxels),
-//     Spn(Voxels),
-//     Stl(Tessellation),
-//     Vtk(FiniteElements<N>),
-// }
-
 enum OutputTypes<const N: usize, T>
 where
     T: FiniteElementMethods<N>,
@@ -527,12 +512,11 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
             pair,
             strong,
-            boundaries,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-                ytranslate, ztranslate, quiet, pair, strong, boundaries,
+                ytranslate, ztranslate, quiet, pair, strong,
             )
         }
         Some(Commands::Smooth {
@@ -848,7 +832,6 @@ fn octree(
     quiet: bool,
     pair: bool,
     strong: bool,
-    boundaries: bool,
 ) -> Result<(), ErrorWrapper> {
     let remove = remove.map(|removed_blocks| {
         removed_blocks
@@ -874,25 +857,13 @@ fn octree(
     }
     let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
-
-    let (clusters, _) = tree.clusters(remove);
-    println!("octree and {} clusters in {:?}", clusters.len(), time.elapsed());
-    panic!("TEMP");
-
-    if boundaries {
-        tree.boundaries();
-    }
     if pair {
         tree.pair();
     }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     if output_extension == Some("stl") {
         let output_type = tree.into_tesselation(remove);
-        write_output(
-            output,
-            OutputTypes::<3, TriangularFiniteElements>::Stl(output_type),
-            quiet,
-        )?;
+        write_output(output, OutputTypes::<3, TriangularFiniteElements>::Stl(output_type), quiet)?;
     } else {
         tree.prune();
         let output_type = tree.octree_into_finite_elements(

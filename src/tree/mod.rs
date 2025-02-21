@@ -148,6 +148,9 @@ impl Cell {
             None
         }
     }
+    pub fn is_voxel(&self) -> bool {
+        self.lngth == 1
+    }
     pub fn subdivide(&mut self, indices: Indices) -> Cells {
         self.cells = Some(indices);
         let lngth = self.get_lngth() / 2;
@@ -305,7 +308,7 @@ impl Tree for Octree {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             while index < self.len() {
-                if self[index].get_lngth() > &1 && self[index].cells.is_none() {
+                if !self[index].is_voxel() && self[index].cells.is_none() {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
                         if let Some(neighbor) = face_cell {
                             if let Some(kids) = self[*neighbor].cells {
@@ -657,9 +660,7 @@ impl Tree for Octree {
                         .iter()
                         .filter_map(|&face| face)
                         .filter(|&face| self[face].get_cells().is_none())
-                        .filter(|&face| self[face].get_block() != block)
-                        .count()
-                        > 0
+                        .any(|face| self[face].get_block() != block)
                         || cell
                             .get_faces()
                             .iter()
@@ -690,7 +691,7 @@ impl Tree for Octree {
             }
             #[cfg(feature = "profile")]
             println!(
-                "            \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
+                "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
                 iteration,
                 time.elapsed()
             );
@@ -790,9 +791,6 @@ impl Tree for Octree {
                             self[leaf].get_faces().iter().enumerate().for_each(
                                 |(face, face_cell)| {
                                     if let Some(cell) = face_cell {
-                                        //
-                                        // might not want to do the binary search until making sure block is right
-                                        //
                                         if let Ok(spot) = block_leaves.binary_search(cell) {
                                             if self[*cell].get_block() == block {
                                                 block_leaves.remove(spot);
@@ -807,9 +805,9 @@ impl Tree for Octree {
                                                         if self[subcells[subcell]].get_block()
                                                             == block
                                                         {
-                                                            complete = false;
                                                             block_leaves.remove(spot);
                                                             cluster.push(subcells[subcell]);
+                                                            complete = false;
                                                         }
                                                     }
                                                 },
@@ -833,9 +831,9 @@ impl Tree for Octree {
                                             {
                                                 if let Ok(spot) = block_leaves.binary_search(cell) {
                                                     if self[*cell].get_block() == block {
-                                                        complete = false;
                                                         block_leaves.remove(spot);
                                                         cluster.push(*cell);
+                                                        complete = false;
                                                     }
                                                 }
                                             }
@@ -1393,78 +1391,66 @@ impl Tree for Octree {
             nodal_coordinates,
         ))
     }
-    fn into_tesselation(self, remove: Option<Blocks>) -> Tessellation {
+    fn into_tesselation(mut self, remove: Option<Blocks>) -> Tessellation {
+        self.boundaries();
         let mut removed_data = remove.clone().unwrap_or_default();
-        let (clusters, cell_from_subcell_map) = self.clusters(remove);
-        let blocks: Blocks = clusters
+        let (clusters, _) = self.clusters(remove);
+        let blocks = clusters
             .iter()
             .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
-            .collect();
-        //
-        // can you just collect cells in the cluster that touch at least one other material?
-        // and then afterward, construct the manifold from those cells
-        //
-        let foo = blocks
+            .collect::<Blocks>();
+        let mut face_info = vec![];
+        let boundary_cells = blocks
             .iter()
             .zip(clusters.iter())
-            .map(|(&block, cluster)| {
+            .map(|(&block, cluster)|
                 cluster
                     .iter()
-                    .flat_map(|cell| {
-                        if self[*cell]
+                    .filter(|&&cell| self[cell].is_voxel())
+                    .filter_map(|&cell| {
+                        face_info = self[cell]
                             .get_faces()
                             .iter()
                             .enumerate()
-                            .any(|(face_index, &face)| {
+                            .filter_map(|(face_index, &face)|
                                 if let Some(face_cell) = face {
-                                    if let Some(face_cell_subcells) = self[face_cell].get_cells() {
-                                        subcells_on_neighbor_face(face_index).iter().any(
-                                            |&face_subcell_index| {
-                                                self[face_cell_subcells[face_subcell_index]]
-                                                    .get_block()
-                                                    != block
-                                            },
-                                        )
-                                        // false
+                                    if self[face_cell].get_block() != block {
+                                        Some([face_index, face_cell])
                                     } else {
-                                        self[face_cell].get_block() != block
-                                        // false
+                                        None
                                     }
                                 } else {
-                                    if let Some((parent_index, _)) = cell_from_subcell_map[*cell] {
-                                        if let Some(face_cell) =
-                                            self[parent_index].get_faces()[face_index]
-                                        {
-                                            if let Some(face_cell_subcells) =
-                                                self[face_cell].get_cells()
-                                            {
-                                                subcells_on_neighbor_face(face_index).iter().any(
-                                                    |&face_subcell_index| {
-                                                        self[face_cell_subcells[face_subcell_index]]
-                                                            .get_block()
-                                                            != block
-                                                    },
-                                                ) // do we need this case?
-                                            } else {
-                                                false
-                                            }
-                                        } else {
-                                            false
-                                        }
-                                    } else {
-                                        false
-                                    }
+                                    None
                                 }
-                            })
-                        {
-                            Some(*cell) // consider returning face indices eventually too, if need for manifolding
-                        } else {
+                            ).collect();
+                        if face_info.is_empty() {
                             None
+                        } else {
+                            Some((cell, face_info.clone()))
                         }
-                    })
-                    .collect()
-            })
-            .collect::<Vec<Vec<usize>>>();
+                    }).collect()
+            ).collect::<Vec<(Vec<usize>,Vec<Vec<[usize; 2]>>)>>();
+
+        // boundary_cells
+
+        // All triangles except those facing removed material will be shared with 1 other cluster!
+        // That is why we are saving the neighbor cell each face_index corresponds to.
+
+        // will put an STL between every boundary between boundary cells
+        // so do you need to keep the air one to have that boundary?
+        // or do you just return the info when doing it above? (yes just track the faces)
+        // I guess it's possible to have one set of boundary cells facing more than one material
+        // so you will have to track faces independent of which cell they belong too
+        // and merge them somehow at the end?
+        // meaning some surfaces will share triangles
+        // well you know which faces of which cells have triangles
+        // and which cells those cells share that face with
+        // so if that neighbor is a boundary cell for a different boundary
+        // you know you have to merge them!
+        // start with quads?
+        // might want to make a merged quad mesh before doing the triangles anyway
+
+        let foo: Clusters = boundary_cells.iter().map(|bar| bar.0.clone()).collect();
 
         let mut x_min = 0.0;
         let mut y_min = 0.0;

@@ -26,12 +26,9 @@ use tiff::{
     TiffError,
 };
 
-type Clusters = Vec<[u8; NSD]>;
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
 type VoxelDataFlattened = Blocks;
 type VoxelDataSized<const N: usize> = Vec<[usize; N]>;
-type VoxelIDs = Vec<usize>;
-type VoxelMap = Vec<[usize; 3]>;
 
 /// The segmentation data corresponding to voxels.
 pub type VoxelData = Array3<u8>;
@@ -172,102 +169,8 @@ pub struct Voxels {
 }
 
 impl Voxels {
-    fn clusters(&self, remove: Option<Blocks>) -> Vec<VoxelIDs> {
-        // hash (flat) map for voxel search (give each an id)?
-        // pick a voxel from list of available, find neighbors, add to cluster list, remove from available voxels
-        // removed "remove" from list of available voxels at the start
-        // repeat a given cluster until no added voxels
-        // neighbor search is easy, looks UDLRFB using indices
-        //
-        let data = self.get_data();
-        let mut removed_data = remove.unwrap_or_default();
-        removed_data.sort();
-        removed_data.dedup();
-        let shape = self.data.shape();
-        let nelx = shape[0];
-        let nely = shape[1];
-        let voxel_map = self.voxel_map();
-
-        let mut free_voxels = data
-            .axis_iter(Axis(2))
-            .enumerate()
-            .flat_map(|(k, data_k)| {
-                data_k
-                    .axis_iter(Axis(1))
-                    .enumerate()
-                    .flat_map(|(j, data_kj)| {
-                        data_kj
-                            .iter()
-                            .enumerate()
-                            .filter(|(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
-                            .map(|(i, _)| Self::voxel_id(&i, &j, &k, &nelx, &nely))
-                            .collect::<VoxelIDs>()
-                            .into_iter()
-                    })
-                    .collect::<VoxelIDs>()
-                    .into_iter()
-            })
-            .collect::<VoxelIDs>();
-
-        let mut block;
-        let mut complete;
-        let mut cluster;
-        let mut clusters = vec![];
-        let mut cluster_index = 0;
-        let mut index;
-        let mut i;
-        let mut j;
-        let mut k;
-        // let mut voxel;
-
-        // verify true that free_voxels is sorted and unique
-
-        while let Some(starting_voxel) = free_voxels.pop() {
-            block = data[voxel_map[starting_voxel]];
-            cluster = vec![starting_voxel];
-            loop {
-                index = 0;
-                complete = true;
-                while index < cluster.len() {
-                    [i, j, k] = voxel_map[cluster[index]];
-                    // println!("cluster_index {}, cluster length {}, index {}, i {}, j {}, k {}", cluster_index, cluster.len(), index, i, j, k);
-                    Self::voxel_neighbors(&i, &j, &k, &nelx, &nely)
-                        .into_iter()
-                        .for_each(|(neighbor_indices, neighbor_voxel)| {
-                            if let Some(neighbor) = data.get(neighbor_indices) {
-                                if neighbor == &block {
-                                    //
-                                    // seems like the search over ALL free voxels is very slow
-                                    // over free voxels in a given block wouldn't scale much better
-                                    // is there another way? otherwise octree is much better
-                                    //
-                                    if let Ok(spot) = free_voxels.binary_search(&neighbor_voxel) {
-                                        cluster.push(neighbor_voxel);
-                                        free_voxels.remove(spot);
-                                        complete = false;
-                                        // println!("added voxel id {} to cluster of length {}", neighbor_voxel, cluster.len())
-                                    }
-                                }
-                            }
-                        });
-                        index += 1;
-                }
-                if complete {
-                    break;
-                }
-            }
-            clusters.push(cluster);
-            cluster_index += 1;
-        }
-
-        clusters
-    }
     /// Defeatures clusters with less than a minimum number of voxels.
     pub fn defeature(self, min_num_voxels: usize) -> Self {
-        //
-        // converting to octree for defeaturing here
-        // can test whether it is faster or slower to defeature using the segmentation directly
-        //
         defeature_voxels(min_num_voxels, self)
     }
     /// Constructs and returns a new voxels type from an NPY file.
@@ -328,64 +231,13 @@ impl Voxels {
         scale: Scale,
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String> {
-
-        let time = std::time::Instant::now();
-        let clusters = self.clusters(remove);
-        println!("{} clusters in {:?}", clusters.len(), time.elapsed());
-        panic!("TEMPORARY STOP")
-
-        // let (element_blocks, element_node_connectivity, nodal_coordinates) =
-        //     finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
-        // Ok(HexahedralFiniteElements::from_data(
-        //     element_blocks,
-        //     element_node_connectivity,
-        //     nodal_coordinates,
-        // ))
-    }
-    fn voxel_id(i: &usize, j: &usize, k: &usize, nelx: &usize, nely: &usize) -> usize {
-        i + j * nelx + k * nelx * nely
-    }
-    fn voxel_map(&self) -> VoxelMap {
-        let shape = self.data.shape();
-        (0..shape[0])
-            .flat_map(move |i| {
-                (0..shape[1]).flat_map(move |j| (0..shape[2]).map(move |k| [i, j, k]))
-            })
-            .collect()
-    }
-    fn voxel_neighbors(
-        i: &usize,
-        j: &usize,
-        k: &usize,
-        nelx: &usize,
-        nely: &usize,
-    ) -> [([usize; NSD], usize); 6] {
-        [
-            (
-                [i - 1, *j, *k],
-                Self::voxel_id(&(i - 1), j, k, nelx, nely),
-            ),
-            (
-                [i + 1, *j, *k],
-                Self::voxel_id(&(i + 1), j, k, nelx, nely),
-            ),
-            (
-                [*i, j - 1, *k],
-                Self::voxel_id(i, &(j - 1), k, nelx, nely),
-            ),
-            (
-                [*i, j + 1, *k],
-                Self::voxel_id(i, &(j + 1), k, nelx, nely),
-            ),
-            (
-                [*i, *j, k - 1],
-                Self::voxel_id(i, j, &(k - 1), nelx, nely),
-            ),
-            (
-                [*i, *j, k + 1],
-                Self::voxel_id(i, j, &(k + 1), nelx, nely),
-            ),
-        ]
+        let (element_blocks, element_node_connectivity, nodal_coordinates) =
+            finite_element_data_from_data(self.get_data(), remove, scale, translate)?;
+        Ok(HexahedralFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
     /// Writes the internal voxels data to an NPY file.
     pub fn write_npy(&self, file_path: &str) -> Result<(), WriteNpyError> {
