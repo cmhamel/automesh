@@ -1,6 +1,6 @@
 use automesh::{
-    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Nel, Octree, Scale,
-    Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
+    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, IntoFiniteElements,
+    Nel, Octree, Scale, Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -839,6 +839,8 @@ fn octree(
             .map(|entry| entry as u8)
             .collect()
     });
+    let scale = [xscale, yscale, zscale].into();
+    let translate = [xtranslate, ytranslate, ztranslate].into();
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -862,7 +864,12 @@ fn octree(
     }
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     if output_extension == Some("stl") {
-        let output_type = tree.into_tesselation();
+        let triangles: TriangularFiniteElements =
+            tree.into_finite_elements(remove, scale, translate)?;
+        //
+        // manually smooth between methods if opted
+        //
+        let output_type = triangles.into_tesselation();
         write_output(
             output,
             OutputTypes::<3, TriangularFiniteElements>::Stl(output_type),
@@ -870,11 +877,7 @@ fn octree(
         )?;
     } else {
         tree.prune();
-        let output_type = tree.octree_into_finite_elements(
-            remove,
-            [xscale, yscale, zscale].into(),
-            [xtranslate, ytranslate, ztranslate].into(),
-        )?;
+        let output_type = tree.octree_into_finite_elements(remove, scale, translate)?;
         if !quiet {
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
         }
