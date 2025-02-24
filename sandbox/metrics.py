@@ -38,6 +38,7 @@ NODE_NUMBERING_OFFSET: Final[int] = 1
 
 mesh_element_edge_ratios = []
 mesh_element_minimum_angles = []
+mesh_element_maximum_skews = []
 
 
 def angle(a: np.ndarray, b: np.ndarray) -> float:
@@ -103,6 +104,10 @@ for element in element_node_connectivity:
     # print(f"  min angle {angle_min}")
     mesh_element_minimum_angles.append(angle_min)
 
+    skew_max = (60.0 - angle_min) / 60.0
+    mesh_element_maximum_skews.append(skew_max)
+
 
 print(f"\nmesh element edge ratios: {mesh_element_edge_ratios}")
 print(f"\nmesh element minimum angles: {mesh_element_minimum_angles}")
+print(f"\nmesh element maximum skews: {mesh_element_maximum_skews}")

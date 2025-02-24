@@ -172,18 +172,18 @@ A brief description of each metric follows.
 * Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
 * An equilateral triangle has a minimum scaled Jacobian of `1.0`.
 
-### Skew
+### Maximum Skew
 
 * Skew measures how much an element deviates from being a regular shape (e.g., in 3D a cube; in 2D a square or equilateral triangle). A skew value of 0 indicates a perfectly regular shape, while higher values indicate increasing levels of distortion.
 * Knupp *et al.*[^Knupp_2006] does not give a definition of skew for triangles, so we provide our definition below.
 For a triangle where $\theta_{\min}$ is the smallest angle of the triangle,
 
 $$
-{\rm skew} = \frac{60^{\circ} - \theta_{\min}}{60^{\circ}}
+{\rm skew_{\max}} = \frac{60^{\circ} - \theta_{\min}}{60^{\circ}}
 $$
 
-* For an equilateral triangle, $\theta_{\min} = 60^{\circ}$ and ${\rm skew} = 0$.
-* In the limit as $\theta_{\min} \rightarrow 0^{\circ}$ ${\rm skew} \rightarrow 1$.
+* For an equilateral triangle, $\theta_{\min} = 60^{\circ}$ and ${\rm skew_{\max}} = 0$.
+* In the limit as $\theta_{\min} \rightarrow 0^{\circ}$ ${\rm skew_{\max}} \rightarrow 1$.
 
 ### Element Area
 
@@ -226,21 +226,21 @@ export stl ascii "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_
 
 We collect these element qualities as follows:
 
-file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew}$  | area | $\theta_{\min}$ (deg)
+file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$  | area | $\theta_{\min}$ (deg)
 :---: | :---: | :---: | :---: | :---: | :---: | :---:
-`A`   |   1   | 1.507 [1.507] | xxx (8.165e-01) | xxx | xxx (5.000e-01) | 45.0 [45.0]
-`B`   |   1   | 1.550 [1.550] | xxx (8.978e-01) | xxx | xxx (4.244e-01) | 41.2 [41.2]
-`B`   |   2   | 1.787 [1.787] | xxx (8.314e-01) | xxx | xxx (4.429e-01) | 39.8 [39.8]
-`B`   |   3   | 1.915 [1.915] | xxx (4.262e-01) | xxx | xxx (3.419e-01) | 33.6 [33.6]
-`B`   |   4   | 2.230 [2.230] | xxx (7.003e-01) | xxx | xxx (5.706e-01) | 31.0 [31.0]
-`B`   |   5   | 1.623 [1.623] | xxx (8.800e-01) | xxx | xxx (6.679e-01) | 21.7 [21.7]
-`B`   |   6   | 1.240 [1.240] | xxx (8.039e-01) | xxx | xxx (5.158e-01) | 37.3 [37.1]
-`B`   |   7   | 1.385 [1.385] | xxx (7.190e-01) | xxx | xxx (6.482e-01) | 51.0 [51.0]
-`B`   |   8   | 1.606 [1.606] | xxx (8.061e-01) | xxx | xxx (7.041e-01) | 46.1 [46.1]
-`B`   |   9   | 1.429 [1.429] | xxx (7.606e-01) | xxx | xxx (6.095e-01) | 38.5 [38.5]
-`B`   |  10   | 1.275 [1.275] | xxx (7.391e-01) | xxx | xxx (5.498e-01) | 44.3 [44.3]
-`B`   |  11   | 1.436 [1.436] | xxx (6.392e-01) | xxx | xxx (5.695e-01) | 49.7 [49.7]
-`B`   |  12   | 1.414 [1.141] | xxx (5.947e-01) | xxx | xxx (4.022e-01) | 44.1 [44.1]
+`A`   |   1   | 1.507 [1.507] | xxx (8.165e-01) | 0.250 [0.250] | xxx (5.000e-01) | 45.0 [45.0]
+`B`   |   1   | 1.550 [1.550] | xxx (8.978e-01) | 0.313 [0.331] | xxx (4.244e-01) | 41.2 [41.2]
+`B`   |   2   | 1.787 [1.787] | xxx (8.314e-01) | 0.337 [0.337] | xxx (4.429e-01) | 39.8 [39.8]
+`B`   |   3   | 1.915 [1.915] | xxx (4.262e-01) | 0.440 [0.440] | xxx (3.419e-01) | 33.6 [33.6]
+`B`   |   4   | 2.230 [2.230] | xxx (7.003e-01) | 0.483 [0.483] | xxx (5.706e-01) | 31.0 [31.0]
+`B`   |   5   | 1.623 [1.623] | xxx (8.800e-01) | 0.639 [0.639] | xxx (6.679e-01) | 21.7 [21.7]
+`B`   |   6   | 1.240 [1.240] | xxx (8.039e-01) | 0.378 [0.378] | xxx (5.158e-01) | 37.3 [37.1]
+`B`   |   7   | 1.385 [1.385] | xxx (7.190e-01) | 0.149 [0.149] | xxx (6.482e-01) | 51.0 [51.0]
+`B`   |   8   | 1.606 [1.606] | xxx (8.061e-01) | 0.233 [0.233] | xxx (7.041e-01) | 46.1 [46.1]
+`B`   |   9   | 1.429 [1.429] | xxx (7.606e-01) | 0.358 [0.358] | xxx (6.095e-01) | 38.5 [38.5]
+`B`   |  10   | 1.275 [1.275] | xxx (7.391e-01) | 0.262 [0.262] | xxx (5.498e-01) | 44.3 [44.3]
+`B`   |  11   | 1.436 [1.436] | xxx (6.392e-01) | 0.172 [0.172] | xxx (5.695e-01) | 49.7 [49.7]
+`B`   |  12   | 1.414 [1.141] | xxx (5.947e-01) | 0.264 [0.264] | xxx (4.022e-01) | 44.1 [44.1]
 
 Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
 Leading values are from `automesh`.

@@ -3106,6 +3106,23 @@ fn triangular_unit_tests() {
         44.12050798480872,
         45.00000000000001,
     ];
+    // Gold values from ~/autotwin/automesh/sandbox/metrics.py
+    let maximum_skews_gold = [
+        0.3132918500006357,
+        0.33673154053660104,
+        0.4397924651351493,
+        0.4833038730398595,
+        0.6389712701721287,
+        0.3777855355277538,
+        0.14941525828263144,
+        0.23236227435282555,
+        0.35812130495447764,
+        0.2621300234573654,
+        0.17244870237750215,
+        0.26465820025318804,
+        0.2499999999999999,
+    ];
+
     // let minimum_scaled_jacobians_gold = [
     //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
     //     7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
@@ -3114,11 +3131,6 @@ fn triangular_unit_tests() {
     //     4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
     //     6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
     // ];
-
-    // let minimum_angles_gold = [
-    //     5.104e+01, 4.606e+01, 2.166e+01, 3.733e+01, 4.965e+01, 4.412e+01, 3.851e+01, 4.427e+01,
-    //     4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
-    // ]; // degrees
 
     // let _minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold_deg
     //     .iter()
@@ -3192,6 +3204,22 @@ fn triangular_unit_tests() {
                 gold
             );
         });
+
+    let maximum_skews =
+    calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates);
+
+    maximum_skews
+        .iter()
+        .zip(maximum_skews_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < EPSILON,
+                "Calculated maximum skew {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            );
+        });
+
 }
 
 #[test]

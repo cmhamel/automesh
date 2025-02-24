@@ -1558,6 +1558,10 @@ fn calculate_maximum_skews_tri<const N: usize>(
         .iter()
         .map(|angle| (equilateral_rad - angle) / (equilateral_rad))
         .collect();
+
+    // Print the maximum skews
+    // println!("\nMaximum Skews Triangle: {:?}", maximum_skews);
+
     maximum_skews
 }
 
