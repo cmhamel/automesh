@@ -39,6 +39,7 @@ NODE_NUMBERING_OFFSET: Final[int] = 1
 mesh_element_edge_ratios = []
 mesh_element_minimum_angles = []
 mesh_element_maximum_skews = []
+mesh_element_areas = []
 
 
 def angle(a: np.ndarray, b: np.ndarray) -> float:
@@ -56,17 +57,17 @@ def angle(a: np.ndarray, b: np.ndarray) -> float:
 
 
 for element in element_node_connectivity:
-    # print(f"element with nodes: {element}")
+    print(f"element with nodes: {element}")
     path = element + (element[0],)
     # print(f"  node path {path}")
     pairs = tuple(zip(element, element[1:] + (element[0],)))
-    # print(f"  node pairs {pairs}")
+    print(f"  node pairs {pairs}")
     element_edge_ratios = []
     element_minimum_angles = []
     edge_vectors = ()
     # edge ratios
     for pair in pairs:
-        # print(f"    pair {pair}")
+        print(f"    pair {pair}")
         aa, bb = pair
         edge = np.array(nodal_coordinates[bb - NODE_NUMBERING_OFFSET]) - np.array(
             nodal_coordinates[aa - NODE_NUMBERING_OFFSET]
@@ -76,7 +77,7 @@ for element in element_node_connectivity:
         # print(f"    lens {edge_length}")
         element_edge_ratios.append(edge_length)
 
-    # print(f"  edge vectors {edge_vectors}")
+    print(f"  edge vectors {edge_vectors}")
 
     # print(f"  edge ratios {element_edge_ratios}")
 
@@ -107,7 +108,20 @@ for element in element_node_connectivity:
     skew_max = (60.0 - angle_min) / 60.0
     mesh_element_maximum_skews.append(skew_max)
 
+    # Compute areas only for triangles for now.
+    if len(element) == 3:
+        # area of a triangle
+        aa = np.linalg.norm(edge_vectors[0])
+        bb = np.linalg.norm(edge_vectors[1])
+        cc = np.linalg.norm(edge_vectors[2])
+        # Calculate the semi-perimeter
+        ss = (aa + bb + cc) / 2.0
+        # Use Heron's formula to calcuate the area
+        area = np.sqrt(ss * (ss - aa) * (ss - bb) * (ss - cc))
+        mesh_element_areas.append(area)
+
 
 print(f"\nmesh element edge ratios: {mesh_element_edge_ratios}")
 print(f"\nmesh element minimum angles: {mesh_element_minimum_angles}")
 print(f"\nmesh element maximum skews: {mesh_element_maximum_skews}")
+print(f"\nmesh element areas: {mesh_element_areas}")

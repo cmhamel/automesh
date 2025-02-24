@@ -3122,20 +3122,27 @@ fn triangular_unit_tests() {
         0.26465820025318804,
         0.2499999999999999,
     ];
+    // Gold values from ~/autotwin/automesh/sandbox/metrics.py and verified with Cubit
+    let element_areas_gold = [
+        0.6095033546646715,
+        0.5498378247859254,
+        0.5694533921062239,
+        0.40221065958198676,
+        0.34186812150301454,
+        0.5705779745135626,
+        0.42437710997648254,
+        0.44293952755957805,
+        0.6481635557480845,
+        0.7040835887875813,
+        0.6678959888148756,
+        0.5158240173499096,
+        0.5,
+    ];
 
     // let minimum_scaled_jacobians_gold = [
     //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
     //     7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
     // ];
-    // let element_areas_gold = [
-    //     4.244e-01, 4.429e-01, 3.419e-01, 5.706e-01, 6.679e-01, 5.158e-01, 6.482e-01, 7.041e-01,
-    //     6.095e-01, 5.498e-01, 5.695e-01, 4.022e-01, 5.000e-01,
-    // ];
-
-    // let _minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold_deg
-    //     .iter()
-    //     .map(|angle| angle * DEG_TO_RAD)
-    //     .collect();
 
     let element_node_connectivity = vec![
         [1, 2, 3], // single_valence_04_noise2.inp begin
@@ -3205,8 +3212,7 @@ fn triangular_unit_tests() {
             );
         });
 
-    let maximum_skews =
-    calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates);
+    let maximum_skews = calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates);
 
     maximum_skews
         .iter()
@@ -3220,6 +3226,19 @@ fn triangular_unit_tests() {
             );
         });
 
+    let element_areas = calculate_element_measures(&element_node_connectivity, &nodal_coordinates);
+
+    element_areas
+        .iter()
+        .zip(element_areas_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < EPSILON,
+                "Calculated tri area {} is not approximately equal to tri gold value {}",
+                calculated,
+                gold
+            )
+        })
 }
 
 #[test]

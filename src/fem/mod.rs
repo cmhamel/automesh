@@ -1612,5 +1612,9 @@ fn calculate_element_areas_tri<const N: usize>(
             0.5 * (l0.cross(&l1)).norm()
         })
         .collect();
+
+    // Print the areas
+    // println!("\nTriangle areas: {:?}", element_areas);
+
     element_areas
 }
