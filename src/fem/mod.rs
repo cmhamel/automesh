@@ -1258,7 +1258,7 @@ fn calculate_maximum_edge_ratios_tri<const N: usize>(
         .collect();
 
     // Print the maximum_edge_ratios
-    println!("Maximum Edge Ratios: {:?}", maximum_edge_ratios);
+    // println!("\nMaximum Edge Ratios Triangle: {:?}", maximum_edge_ratios);
 
     maximum_edge_ratios
 }
@@ -1315,6 +1315,7 @@ fn calculate_minimum_angles_tri<const N: usize>(
     let mut l0 = Vector::zero();
     let mut l1 = Vector::zero();
     let mut l2 = Vector::zero();
+    let flip = -1.0; // to reverse the direction of the unit vector below
     let minimum_angles = element_node_connectivity
         .iter()
         .map(|connectivity| {
@@ -1327,12 +1328,19 @@ fn calculate_minimum_angles_tri<const N: usize>(
             l0.normalize();
             l1.normalize();
             l2.normalize();
-            [(&l0 * &l1).acos(), (&l1 * &l2).acos(), (&l2 * &l0).acos()]
-                .into_iter()
-                .reduce(f64::min)
-                .unwrap()
+            [
+                ((&l0 * flip) * &l1).acos(),
+                ((&l1 * flip) * &l2).acos(),
+                ((&l2 * flip) * &l0).acos(),
+            ]
+            .into_iter()
+            .reduce(f64::min)
+            .unwrap()
         })
         .collect();
+
+    // Print the minimum_angles
+    println!("\nMinimum Angles Triangle (rad): {:?}", minimum_angles);
     minimum_angles
 }
 

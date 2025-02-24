@@ -55,54 +55,54 @@ def angle(a: np.ndarray, b: np.ndarray) -> float:
 
 
 for element in element_node_connectivity:
-    print(f"element with nodes: {element}")
+    # print(f"element with nodes: {element}")
     path = element + (element[0],)
-    print(f"  node path {path}")
+    # print(f"  node path {path}")
     pairs = tuple(zip(element, element[1:] + (element[0],)))
-    print(f"  node pairs {pairs}")
+    # print(f"  node pairs {pairs}")
     element_edge_ratios = []
     element_minimum_angles = []
     edge_vectors = ()
     # edge ratios
     for pair in pairs:
-        print(f"    pair {pair}")
+        # print(f"    pair {pair}")
         aa, bb = pair
         edge = np.array(nodal_coordinates[bb - NODE_NUMBERING_OFFSET]) - np.array(
             nodal_coordinates[aa - NODE_NUMBERING_OFFSET]
         )
         edge_vectors = edge_vectors + (edge,)
         edge_length = np.linalg.norm(edge)
-        print(f"    lens {edge_length}")
+        # print(f"    lens {edge_length}")
         element_edge_ratios.append(edge_length)
 
-    print(f"  edge vectors {edge_vectors}")
+    # print(f"  edge vectors {edge_vectors}")
 
-    print(f"  edge ratios {element_edge_ratios}")
+    # print(f"  edge ratios {element_edge_ratios}")
 
     # edge ratios
     len_max = max(element_edge_ratios)
-    print(f"  max edge ratio {len_max}")
+    # print(f"  max edge ratio {len_max}")
     len_min = min(element_edge_ratios)
-    print(f"  min edge ratio {len_min}")
+    # print(f"  min edge ratio {len_min}")
     ratio = len_max / len_min
     mesh_element_edge_ratios.append(ratio)
 
     # edge vectors and then angles
     edge_vectors_pairs = tuple(zip(edge_vectors, edge_vectors[1:] + (edge_vectors[0],)))
-    print(f"  edge vectors pairs {edge_vectors_pairs}")
+    # print(f"  edge vectors pairs {edge_vectors_pairs}")
 
     for item in edge_vectors_pairs:
-        print(f"    edge vectors pair {item}")
+        # print(f"    edge vectors pair {item}")
         # flip the direction of the first vector so that it shares an origin
         # with the secon vector
         angle_degrees = angle(-1.0 * item[0], item[1])
-        print(f"    angle {angle_degrees}")
+        # print(f"    angle {angle_degrees}")
         element_minimum_angles.append(angle_degrees)
-    print(f"  minimum angles {element_minimum_angles}")
+    # print(f"  minimum angles {element_minimum_angles}")
     angle_min = min(element_minimum_angles)
-    print(f"  min angle {angle_min}")
+    # print(f"  min angle {angle_min}")
     mesh_element_minimum_angles.append(angle_min)
 
 
-print(f"mesh element edge ratios: {mesh_element_edge_ratios}")
-print(f"mesh element minimum angles: {mesh_element_minimum_angles}")
+print(f"\nmesh element edge ratios: {mesh_element_edge_ratios}")
+print(f"\nmesh element minimum angles: {mesh_element_minimum_angles}")

@@ -7,6 +7,7 @@ use super::{
 use conspire::math::{Tensor, TensorVec};
 
 const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
+const RAD_TO_DEG: f64 = 1.0 / DEG_TO_RAD;
 
 const EPSILON: f64 = 10.0 * f64::EPSILON;
 const SMOOTHING_SCALE: f64 = 0.3;
@@ -3088,6 +3089,23 @@ fn triangular_unit_tests() {
         1.4361231071914424,
         std::f64::consts::SQRT_2, // 1.4142135623730951,
     ];
+
+    // Gold values from ~/autotwin/automesh/sandbox/metrics.py
+    let minimum_angles_gold_deg = [
+        41.20248899996187,
+        39.796107567803936,
+        33.61245209189106,
+        31.00176761760843,
+        21.661723789672273,
+        37.33286786833477,
+        51.03508450304211,
+        46.05826353883047,
+        38.512721702731355,
+        44.27219859255808,
+        49.65307785734987,
+        44.12050798480872,
+        45.00000000000001,
+    ];
     // let minimum_scaled_jacobians_gold = [
     //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
     //     7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
@@ -3102,26 +3120,10 @@ fn triangular_unit_tests() {
     //     4.120e+01, 3.980e+01, 3.361e+01, 3.100e+01, 45.0,
     // ]; // degrees
 
-    let minimum_angles_gold = [
-        41.20248899996186,
-        39.796107567803936,
-        33.61245209189104,
-        31.00176761760843,
-        21.661723789672273,
-        37.33286786833477,
-        51.035084503042114,
-        46.05826353883047,
-        38.51272170273134,
-        44.27219859255808,
-        49.65307785734987,
-        44.12050798480872,
-        45.00000000000001,
-    ];
-
-    let _minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold
-        .iter()
-        .map(|angle| angle * DEG_TO_RAD)
-        .collect();
+    // let _minimum_angles_gold_rad: Vec<f64> = minimum_angles_gold_deg
+    //     .iter()
+    //     .map(|angle| angle * DEG_TO_RAD)
+    //     .collect();
 
     let element_node_connectivity = vec![
         [1, 2, 3], // single_valence_04_noise2.inp begin
@@ -3168,20 +3170,28 @@ fn triangular_unit_tests() {
             );
         });
 
-    let _minimum_angles =
+    let minimum_angles =
         calculate_minimum_angles_tri(&element_node_connectivity, &nodal_coordinates);
 
-    //minimum_angles
-    //    .iter()
-    //    .zip(minimum_angles_gold_rad.iter())
-    //    .for_each(|(calculated, gold)| {
-    //        assert!(
-    //            (calculated - gold).abs() < EPSILON,
-    //            "Calculated minimum angle {} is not approximately equal to gold value {}",
-    //            calculated,
-    //            gold
-    //        );
-    //    });
+    let minimum_angles_deg: Vec<f64> = minimum_angles
+        .iter()
+        .map(|angle| angle * RAD_TO_DEG)
+        .collect();
+
+    // Print the minimum_angles_deg
+    println!("\nMinimum Angles Triangle (deg): {:?}", minimum_angles_deg);
+
+    minimum_angles_deg
+        .iter()
+        .zip(minimum_angles_gold_deg.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < EPSILON,
+                "Calculated minimum angle (deg) {} is not approximately equal to gold value (deg) {}",
+                calculated,
+                gold
+            );
+        });
 }
 
 #[test]
