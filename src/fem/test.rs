@@ -3064,8 +3064,9 @@ fn triangular_unit_tests() {
     // tests/tesselation.rs::from_stl::file_single_valence_04_noise2()
     // test to generate the coordinates and connectivity
     // from the stl file.
-    // The last triangle comes from
+    // The next triangle comes from
     // tests/input/one_facet.stl.
+    // The next triangle is an equilateral triangle of side length 4.0.
 
     // Gold values are from Cubit, which uses "Aspect Ratio" instead of Edge Ratio
     // Turns out these are not the same thing!
@@ -3088,6 +3089,8 @@ fn triangular_unit_tests() {
         1.2752274437112696,
         1.4361231071914424,
         std::f64::consts::SQRT_2, // 1.4142135623730951,
+        1.0,
+        1.0,
     ];
 
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py
@@ -3105,6 +3108,8 @@ fn triangular_unit_tests() {
         49.65307785734987,
         44.12050798480872,
         45.00000000000001,
+        59.99999999999999,
+        59.99999999999999,
     ];
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py
     let maximum_skews_gold = [
@@ -3121,6 +3126,8 @@ fn triangular_unit_tests() {
         0.17244870237750215,
         0.26465820025318804,
         0.2499999999999999,
+        1.1842378929335003e-16,
+        1.1842378929335003e-16,
     ];
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py and verified with Cubit
     let element_areas_gold = [
@@ -3137,6 +3144,8 @@ fn triangular_unit_tests() {
         0.6678959888148756,
         0.5158240173499096,
         0.5,
+        6.928203230275509,
+        0.43301270189221946,
     ];
 
     // let minimum_scaled_jacobians_gold = [
@@ -3156,8 +3165,9 @@ fn triangular_unit_tests() {
         [7, 8, 6],
         [1, 7, 6],
         [4, 5, 8],
-        [7, 4, 8],   // single_valence_04_noise2.inp end
-        [9, 10, 11], // one_facet.stl
+        [7, 4, 8],    // single_valence_04_noise2.inp end
+        [9, 10, 11],  // one_facet.stl
+        [12, 13, 14], // equilateral triange of side length 4.0
     ];
 
     let nodal_coordinates = Coordinates::new(&[
@@ -3168,10 +3178,16 @@ fn triangular_unit_tests() {
         [1.2, -0.1, 1.1],
         [1.03, 1.102, -0.25],
         [0.0, 1.0, 1.0],
-        [1.01, 1.02, 1.03], // single_valence_04_noise2.inp end
-        [0.0, 0.0, 1.0],    // one_facet.stl begin
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0], // one_facet.stl end
+        [1.01, 1.02, 1.03],               // single_valence_04_noise2.inp end
+        [0.0, 0.0, 1.0],                  // one_facet.stl begin
+        [0.0, 0.0, 0.0],                  // ...
+        [1.0, 0.0, 0.0],                  // one_facet.stl end
+        [-2.0, 0.0, 0.0],                 // equilateral with edge length 4.0 start
+        [2.0, 0.0, 0.0],                  // ...
+        [0.0, 2.0 * 3.0_f64.sqrt(), 0.0], // equilateral with edge length 4.0 end
+        [-0.5, 0.0, 0.0],                 // equilateral with edge length 1.0 start
+        [0.5, 0.0, 0.0],                  // ...
+        [0.0, 3.0_f64.sqrt() / 2.0, 0.0], // equilateral with edge length 1.0 end
     ]);
 
     let maximum_edge_ratios =

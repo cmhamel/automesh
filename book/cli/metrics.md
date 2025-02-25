@@ -170,7 +170,8 @@ A brief description of each metric follows.
 
 * ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
 * Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
-* An equilateral triangle has a minimum scaled Jacobian of `1.0`.
+* A scaled Jacobian of `1` indicates that the triangle is equilateral, which is the ideal shape for numerical methods.
+* A scaled Jacobian close to `0` indicates that the triangle is poorly shaped (e.g., very thin or degenerate), which can lead to numerical instability.
 
 ### Maximum Skew
 
@@ -224,7 +225,7 @@ quality tri all scaled jacobian global draw mesh list detail
 quality tri all element area global draw mesh list detail
 ```
 
-We collect these element qualities as follows:
+We verify the following element qualities:
 
 file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$  | area | $\theta_{\min}$ (deg)
 :---: | :---: | :---: | :---: | :---: | :---: | :---:
@@ -241,6 +242,8 @@ file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$  | a
 `A`   |  11   | 1.436 [1.436] | xxx (6.392e-01) | 0.172 [0.172] | 0.668 [0.668] | 49.7 [49.7]
 `A`   |  12   | 1.414 [1.141] | xxx (5.947e-01) | 0.264 [0.264] | 0.516 [0.516] | 44.1 [44.1]
 `B`   |   1   | 1.507 [1.507] | xxx (8.165e-01) | 0.250 [0.250] | 0.500 [0.500] | 45.0 [45.0]
+`C`   |   1   | 1.000 [1.000] | *bug 2.00 [1.0] | 0.000 [0.000] | 6.928 [6.928] | 60.0 [60.0]
+`D`   |   1   | 1.000 [1.000] | *bug 0.50 [1.0] | 0.000 [0.000] | 0.433 [0.433] | 60.0 [60.0]
 
 Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
 Leading values are from `automesh`.
@@ -248,9 +251,12 @@ Values in (parenthesis) are results from Cubit.
 Values in [brackets] are from an independent Python calcuation, and are the same in double precision with a tolerance of less than `2.22e-15`.
 Cubit uses the term *Aspect Ratio* but it is **not the same** as Edge Ratio.
 Except for edge ratio, all values except were verified with Cubit.
-File `A` is `single_valence_04_noise2.inp`.
-File `B` is `one_facet.stl`.
-`e` is the element number in the mesh.
+
+* File `A` is `single_valence_04_noise2.inp`.
+* File `B` is `one_facet.stl`.
+* File `C` is an equilateral triangle with nodal coordinates at `(-2, 0, 0)`, `(2, 0, 0)`, and `(0, 2*sqrt(3), 0)` and has side length `4.0`, saved to `tests/input/equilateral_4.stl`.
+* File `D` is an equilateral triangle with nodal coordinates at `(-0.5, 0, 0)`, `(0.5, 0, 0)`, and `(0, sqrt(3) / 2, 0)` and has side length `1.0`, saved to `tests/input/equilateral_1.stl`.
+* `e` is the element number in the mesh.
 
 ## References
 

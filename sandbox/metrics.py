@@ -16,6 +16,12 @@ nodal_coordinates = (
     (0.0, 0.0, 1.0),  # one_facet.stl begin
     (0.0, 0.0, 0.0),
     (1.0, 0.0, 0.0),  # one_facet.stl end
+    (-2.0, 0.0, 0.0),  # equilateral with edge length 4.0 start
+    (2.0, 0.0, 0.0),
+    (0.0, 2.0 * np.sqrt(3.0), 0.0),  # equilateral with edge length 4.0 end
+    (-0.5, 0.0, 0.0),  # equilateral with edge length 1.0 start
+    (0.5, 0.0, 0.0),
+    (0.0, np.sqrt(3.0) / 2.0, 0.0),  # equilateral with edge length 1.0 end
 )
 
 element_node_connectivity = (
@@ -32,14 +38,18 @@ element_node_connectivity = (
     (4, 5, 8),
     (7, 4, 8),  # single_valence_04_noise2.inp end
     (9, 10, 11),  # one_facet.stl
+    (12, 13, 14),  # equilateral triangle with side length 4.0
+    (15, 16, 17),  # equilateral triangle with side length 1.0
 )
 
 NODE_NUMBERING_OFFSET: Final[int] = 1
 
+mesh_element_max_edge_lengths = []
 mesh_element_edge_ratios = []
 mesh_element_minimum_angles = []
 mesh_element_maximum_skews = []
 mesh_element_areas = []
+mesh_element_jacobians = []
 
 
 def angle(a: np.ndarray, b: np.ndarray) -> float:
@@ -84,13 +94,17 @@ for element in element_node_connectivity:
     # edge ratios
     len_max = max(element_edge_ratios)
     # print(f"  max edge ratio {len_max}")
+    mesh_element_max_edge_lengths.append(len_max)
+
     len_min = min(element_edge_ratios)
     # print(f"  min edge ratio {len_min}")
     ratio = len_max / len_min
     mesh_element_edge_ratios.append(ratio)
 
     # edge vectors and then angles
-    edge_vectors_pairs = tuple(zip(edge_vectors, edge_vectors[1:] + (edge_vectors[0],)))
+    edge_vectors_pairs = tuple(
+        zip(edge_vectors, edge_vectors[1:] + (edge_vectors[0],))
+    )
     # print(f"  edge vectors pairs {edge_vectors_pairs}")
 
     for item in edge_vectors_pairs:
@@ -120,8 +134,16 @@ for element in element_node_connectivity:
         area = np.sqrt(ss * (ss - aa) * (ss - bb) * (ss - cc))
         mesh_element_areas.append(area)
 
+        # Interpretation:
+        # The absolute value of the determinant of the Jacobian
+        # represents the area of the triangle in the physical space
+        # when integrating over the reference triangle.
+        msj = (2.0 * np.sqrt(3.0) * area) / (3.0 * len_max)
+        mesh_element_jacobians.append(msj)
 
+print(f"\nmesh element max edge lengths: {mesh_element_max_edge_lengths}")
 print(f"\nmesh element edge ratios: {mesh_element_edge_ratios}")
 print(f"\nmesh element minimum angles: {mesh_element_minimum_angles}")
 print(f"\nmesh element maximum skews: {mesh_element_maximum_skews}")
 print(f"\nmesh element areas: {mesh_element_areas}")
+print(f"\nmesh minimum scaled Jacobians: {mesh_element_jacobians}")
