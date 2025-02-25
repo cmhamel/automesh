@@ -9,7 +9,7 @@ use super::{
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };
-use conspire::math::{Tensor, TensorArray, TensorRank1Vec, TensorVec};
+use conspire::math::{TensorArray, TensorRank1Vec, TensorVec};
 use ndarray::{s, Axis};
 use std::array::from_fn;
 
@@ -1353,73 +1353,6 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
     ) -> Result<TriangularFiniteElements, String> {
         self.boundaries();
         let (clusters, _) = self.clusters(&None);
-        //
-        // temporary
-        //
-        for cluster in &clusters {
-            println!("{:?}", cluster.len())
-        }
-        //
-        // maybe output each cluster into a hex element block to visualize for now
-        //
-        let mut index = 0;
-        let mut x_min = 0.0;
-        let mut y_min = 0.0;
-        let mut z_min = 0.0;
-        let mut x_val = 0.0;
-        let mut y_val = 0.0;
-        let mut z_val = 0.0;
-        let mut element_blocks = vec![];
-        let mut element_node_connectivity = vec![];
-        let mut nodal_coordinates = Coordinates::zero(0);
-        let mut num_elements = 0;
-        clusters
-            .iter()
-            .enumerate()
-            .for_each(|(cluster_index, cluster)| {
-                index = 0;
-                num_elements = cluster.len();
-                element_blocks = vec![0; num_elements];
-                element_node_connectivity = vec![from_fn(|_| 0); num_elements];
-                nodal_coordinates = (0..num_elements * HEX)
-                    .map(|_| Coordinate::zero())
-                    .collect();
-                cluster
-                    .iter()
-                    .zip(element_node_connectivity.iter_mut())
-                    .for_each(|(cell_index, connectivity)| {
-                        let cell = self[*cell_index];
-                        *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
-                        x_min = *cell.get_min_x() as f64 * scale.x() + translate.x();
-                        y_min = *cell.get_min_y() as f64 * scale.y() + translate.y();
-                        z_min = *cell.get_min_z() as f64 * scale.z() + translate.z();
-                        x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x()
-                            + translate.x();
-                        y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y()
-                            + translate.y();
-                        z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z()
-                            + translate.z();
-                        nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
-                        nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
-                        nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
-                        nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
-                        nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
-                        nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
-                        nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
-                        nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
-                        index += HEX;
-                    });
-                HexahedralFiniteElements::from_data(
-                    vec![cluster_index as u8 + 1; num_elements],
-                    element_node_connectivity.clone(),
-                    nodal_coordinates.copy(),
-                )
-                .write_exo(&format!("cow_{}.exo", cluster_index + 1))
-                .unwrap();
-            });
-        //
-        // temporary
-        //
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let blocks = clusters
