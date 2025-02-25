@@ -1049,6 +1049,16 @@ where
     ) {
         if !quiet {
             print!("   \x1b[1;96mSmoothing\x1b[0m ");
+            match smoothing_method.as_str() {
+                "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace"
+                | "laplacian" | "laplace" => {
+                    println!("with {} iterations of Laplace", iterations)
+                }
+                "Taubin" | "taubin" => {
+                    println!("with {} iterations of Taubin", iterations)
+                }
+                _ => panic!(),
+            }
         }
         output_type.node_element_connectivity()?;
         output_type.node_node_connectivity()?;
@@ -1059,15 +1069,9 @@ where
         match smoothing_method.as_str() {
             "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
             | "laplace" => {
-                if !quiet {
-                    println!("with {} iterations of Laplace", iterations);
-                }
                 output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
             }
             "Taubin" | "taubin" => {
-                if !quiet {
-                    println!("with {} iterations of Taubin", iterations);
-                }
                 output_type.smooth(Smoothing::Taubin(iterations, pass_band, scale))?;
             }
             _ => panic!(),
