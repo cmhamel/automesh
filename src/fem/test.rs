@@ -3091,6 +3091,7 @@ fn triangular_unit_tests() {
         std::f64::consts::SQRT_2, // 1.4142135623730951,
         1.0,
         1.0,
+        1.2559260603991087,
     ];
 
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py
@@ -3110,6 +3111,7 @@ fn triangular_unit_tests() {
         45.00000000000001,
         59.99999999999999,
         59.99999999999999,
+        48.794845448004004,
     ];
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py
     let maximum_skews_gold = [
@@ -3128,6 +3130,7 @@ fn triangular_unit_tests() {
         0.2499999999999999,
         1.1842378929335003e-16,
         1.1842378929335003e-16,
+        0.18675257586659993,
     ];
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py and verified with Cubit
     let element_areas_gold = [
@@ -3146,6 +3149,26 @@ fn triangular_unit_tests() {
         0.5,
         6.928203230275509,
         0.43301270189221946,
+        3.27324023180972,
+    ];
+
+    let minimum_scaled_jacobians_gold = [
+        0.7606268158630964,
+        0.7390747445600853,
+        0.6392105272305011,
+        0.5947452772930936,
+        0.4262299581513255,
+        0.700261936023385,
+        0.8978156650410265,
+        0.8314372958409268,
+        0.7190186170534589,
+        0.8060594150976131,
+        0.8800416071493331,
+        0.8038676339586197,
+        0.8164965809277261,
+        1.0,
+        1.0,
+        0.8687454713083852,
     ];
 
     // let minimum_scaled_jacobians_gold = [
@@ -3167,7 +3190,9 @@ fn triangular_unit_tests() {
         [4, 5, 8],
         [7, 4, 8],    // single_valence_04_noise2.inp end
         [9, 10, 11],  // one_facet.stl
-        [12, 13, 14], // equilateral triange of side length 4.0
+        [12, 13, 14], // equilateral triangle of side length 4.0
+        [15, 16, 17], // equilateral triangle of side length 1.0
+        [18, 19, 20], // tilt.stl
     ];
 
     let nodal_coordinates = Coordinates::new(&[
@@ -3188,6 +3213,9 @@ fn triangular_unit_tests() {
         [-0.5, 0.0, 0.0],                 // equilateral with edge length 1.0 start
         [0.5, 0.0, 0.0],                  // ...
         [0.0, 3.0_f64.sqrt() / 2.0, 0.0], // equilateral with edge length 1.0 end
+        [0.0, 1.0, 3.0],                  // tilt.stl begin
+        [2.0, 0.0, 2.0],
+        [1.0, 1.0 + 3.0_f64.sqrt(), 1.0], // tile.stl end
     ]);
 
     let maximum_edge_ratios =

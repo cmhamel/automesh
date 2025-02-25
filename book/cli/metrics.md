@@ -257,7 +257,7 @@ file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$  | a
 Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
 Leading values are from `automesh`.
 Values in (parenthesis) are results from Cubit.
-Values in [brackets] are from an independent Python calcuation, and are the same in double precision with a tolerance of less than `2.22e-15`.
+Values in [brackets] are from an independent Python calculation, (see [`metrics_triangle.py`](#metrics_trianglepy)) and are the same in double precision with a tolerance of less than `2.22e-15`.
 Cubit uses the term *Aspect Ratio* but it is **not the same** as Edge Ratio.
 Except for edge ratio, all values except were verified with Cubit.
 
@@ -267,6 +267,14 @@ Except for edge ratio, all values except were verified with Cubit.
 * File `D` is an equilateral triangle with nodal coordinates at `(-0.5, 0, 0)`, `(0.5, 0, 0)`, and `(0, sqrt(3) / 2, 0)` and has side length `1.0`, saved to `tests/input/equilateral_1.stl`.
 * File `E` is an off axis triangle with **approximate** (30, 60, 90) degree inner angles, with coordinates at `(0.0, 1.0, 3.0)`, `(2.0, 0.0, 2.0)`, and `(1.0, sqrt(3.0) + 1.0, 1.0)`, saved to `tests/input/off_axis.stl`.
 * `e` is the element number in the mesh.
+
+## Source
+
+### `metrics_triangle.py`
+
+```python
+<!-- cmdrun cat metrics_triangle.py -->
+```
 
 ## References
 

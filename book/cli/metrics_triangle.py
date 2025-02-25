@@ -1,5 +1,4 @@
-"""This script is a quality control tool for the metrics of a mesh.
-
+"""This script is a quality control tool for the metrics of a tri mesh.
 """
 
 from typing import Final
