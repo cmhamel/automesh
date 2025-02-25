@@ -1351,6 +1351,8 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
     ) -> Result<TriangularFiniteElements, String> {
         self.boundaries();
         let (clusters, _) = self.clusters(&None);
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
         let blocks = clusters
             .iter()
             .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
@@ -1478,6 +1480,11 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
             ];
             triangle += 2;
         });
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mSurface finite elements\x1b[0m {:?} ",
+            time.elapsed()
+        );
         Ok(TriangularFiniteElements::from_data(
             element_blocks,
             element_node_connectivity,
