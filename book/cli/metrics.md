@@ -170,8 +170,16 @@ A brief description of each metric follows.
 
 * ${\rm SJ}_{\min}$ evaluates the determinant of the Jacobian matrix at each of the corners nodes, normalized by the corresponding edge lengths, and returns the minimum value of those evaluations.
 * Knupp *et al.*[^Knupp_2006] (page 29) indicate an acceptable range of `[0.5, 2*sqrt(3)/3]` $\approx$ `[0.5, 1.2]`.
-* A scaled Jacobian of `1` indicates that the triangle is equilateral, which is the ideal shape for numerical methods.
 * A scaled Jacobian close to `0` indicates that the triangle is poorly shaped (e.g., very thin or degenerate), which can lead to numerical instability.
+* A scaled Jacobian of `1` indicates that the triangle is equilateral, which is the ideal shape for numerical methods.  This is achieved through scaling as follows:
+
+$$
+{\rm SJ_{\min} = \frac{\sin(\theta_{\min})}{\sin(60^{\circ})}}
+$$
+
+* In the preceeding equation,
+  * $60^{\circ}$ is the smallest angle of an equilateral triangle, and
+  * $\theta_{\min}$ is the smallest angle of the subject triangle.
 
 ### Maximum Skew
 
@@ -212,7 +220,7 @@ quality tri all element area global draw mesh list detail
 export stl ascii "/Users/chovey/autotwin/automesh/tests/input/single_valence_04_noise2.stl" mesh  overwrite
 ```
 
-We also examine `one_facet.stl`:
+We also examine several `.stl` files and process them, for example,
 
 ```sh
 import stl "/Users/chovey/autotwin/automesh/tests/input/one_facet.stl" feature_angle 135.00 merge make_elements
