@@ -252,7 +252,7 @@ impl Voxels {
 fn defeature_voxels(min_num_voxels: usize, voxels: Voxels) -> Voxels {
     let (nel, mut tree) = Octree::from_voxels(voxels);
     tree.balance(true);
-    tree.defeature(min_num_voxels, None);
+    tree.defeature(min_num_voxels, &None);
     Voxels::from_octree(nel, tree)
 }
 

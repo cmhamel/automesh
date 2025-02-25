@@ -83,8 +83,8 @@ type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 pub trait Tree {
     fn balance(&mut self, strong: bool);
     fn boundaries(&mut self);
-    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap);
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>);
+    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap);
+    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>);
     fn from_voxels(voxels: Voxels) -> (Nel, Self);
     fn octree_into_finite_elements(
         self,
@@ -764,14 +764,14 @@ impl Tree for Octree {
             }
         }
     }
-    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap) {
+    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap) {
         // blocks.iter().zip(clusters.iter()).for_each(|(block, cluster)|
         //     println!("cluster is from block {} and has length {}", block, cluster.len())
         // );
         // why are there extra weird clusters of small (or even zero) length without strong balancing?
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        let mut removed_data = remove.unwrap_or_default();
+        let mut removed_data = remove.clone().unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
         let mut blocks: Blocks = self
@@ -929,7 +929,7 @@ impl Tree for Octree {
             });
         (clusters, cell_from_subcell_map)
     }
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>) {
+    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>) {
         //
         // does Sculpt consider voxels sharing an edge or corner part of the same volume?
         // based on the protrusions thing, seems like it does not
@@ -1346,11 +1346,11 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
     fn into_finite_elements(
         mut self,
         _remove: Option<Blocks>,
-        _scale: Scale,
-        _translate: Translate,
+        scale: Scale,
+        translate: Translate,
     ) -> Result<TriangularFiniteElements, String> {
         self.boundaries();
-        let (clusters, _) = self.clusters(None);
+        let (clusters, _) = self.clusters(&None);
         let blocks = clusters
             .iter()
             .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
@@ -1445,9 +1445,9 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
                                             *face_node = node
                                         } else {
                                             nodal_coordinates.push(Coordinate::new([
-                                                nodal_indices[0].into(),
-                                                nodal_indices[1].into(),
-                                                nodal_indices[2].into(),
+                                                nodal_indices[0] as f64 * scale.x() + translate.x(),
+                                                nodal_indices[1] as f64 * scale.y() + translate.y(),
+                                                nodal_indices[2] as f64 * scale.z() + translate.z(),
                                             ]));
                                             *face_node = node_new;
                                             nodes[nodal_indices[0] as usize]
