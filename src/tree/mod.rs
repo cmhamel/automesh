@@ -1,10 +1,11 @@
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
-use crate::TriangularFiniteElements;
-
 use super::{
-    fem::{Blocks, FiniteElementMethods, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    fem::{
+        Blocks, FiniteElementMethods, HexahedralFiniteElements, TriangularFiniteElements, HEX,
+        NODE_NUMBERING_OFFSET,
+    },
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };
@@ -1416,8 +1417,8 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
             });
         let mut face_connectivity = [0; NUM_NODES_FACE];
         let mut faces_connectivity = vec![];
-        let mut nodal_coordinates = vec![];
-        let mut node_new = 0;
+        let mut nodal_coordinates = Coordinates::zero(0);
+        let mut node_new = 1;
         let nodes_len = (self[0].get_lngth() + 1) as usize;
         let mut nodes = vec![vec![vec![None::<usize>; nodes_len]; nodes_len]; nodes_len];
         (0..boundaries_cells_faces.len()).for_each(|boundary| {
@@ -1461,30 +1462,27 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
                     })
                 })
         });
-        //
-        // now cut them into triangles!
-        // (populate element_node_connectivity)
-        // and return the results
-        //
-        // what should blocks be?
-        //
-
-        nodal_coordinates.iter().for_each(|coord| {
-            println!(
-                "create node location {} {} {}",
-                coord[0], coord[1], coord[2]
-            )
+        let element_blocks = vec![1; 2 * faces_connectivity.len()];
+        let mut element_node_connectivity = vec![[0; 3]; 2 * faces_connectivity.len()];
+        let mut triangle = 0;
+        faces_connectivity.iter().for_each(|face_connectivity| {
+            element_node_connectivity[triangle] = [
+                face_connectivity[0],
+                face_connectivity[1],
+                face_connectivity[3],
+            ];
+            element_node_connectivity[triangle + 1] = [
+                face_connectivity[1],
+                face_connectivity[2],
+                face_connectivity[3],
+            ];
+            triangle += 2;
         });
-        faces_connectivity.iter().for_each(|conn| {
-            println!(
-                "create face node {} {} {} {}",
-                conn[0] + 1,
-                conn[1] + 1,
-                conn[2] + 1,
-                conn[3] + 1
-            )
-        });
-        todo!("END OF into_tesselationsdfsfsdf()")
+        Ok(TriangularFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
     }
 }
 

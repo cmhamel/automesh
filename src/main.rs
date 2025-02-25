@@ -870,6 +870,9 @@ fn octree(
         // manually smooth between methods if opted
         //
         let output_type = triangles.into_tesselation();
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
         write_output(
             output,
             OutputTypes::<3, TriangularFiniteElements>::Stl(output_type),
