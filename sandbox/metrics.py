@@ -1,8 +1,26 @@
-"""This script is a quality control tool for the metrics of a mesh."""
+"""This script is a quality control tool for the metrics of a mesh.
+
+In finite element analysis for a triangular finite element with three nodes,
+the determinant of the Jacobian matrix is related to the area of the triangle
+as follows:
+
+det(J) = 2 * Area
+
+"""
 
 from typing import Final
 
 import numpy as np
+
+DEG_TO_RAD: Final[float] = np.pi / 180.0
+J_EQUILATERAL = np.sqrt(3.0) / 2.0  # sin(60 deg)
+
+
+def nf(x):
+    """Does a list comprehension, casting each item from a np.float64
+    to a float."""
+    return [float(y) for y in x]
+
 
 nodal_coordinates = (
     (-0.2, 1.2, -0.1),  # single_valence_04_noise2.inp begin
@@ -22,6 +40,9 @@ nodal_coordinates = (
     (-0.5, 0.0, 0.0),  # equilateral with edge length 1.0 start
     (0.5, 0.0, 0.0),
     (0.0, np.sqrt(3.0) / 2.0, 0.0),  # equilateral with edge length 1.0 end
+    (0.0, 1.0, 3.0),  # off_axis.stl begin
+    (2.0, 0.0, 2.0),
+    (1.0, np.sqrt(3.0) + 1.0, 1.0),  # off_axis.stl end
 )
 
 element_node_connectivity = (
@@ -40,6 +61,7 @@ element_node_connectivity = (
     (9, 10, 11),  # one_facet.stl
     (12, 13, 14),  # equilateral triangle with side length 4.0
     (15, 16, 17),  # equilateral triangle with side length 1.0
+    (18, 19, 20),  # off_axis.stl
 )
 
 NODE_NUMBERING_OFFSET: Final[int] = 1
@@ -50,6 +72,7 @@ mesh_element_minimum_angles = []
 mesh_element_maximum_skews = []
 mesh_element_areas = []
 mesh_element_jacobians = []
+mesh_element_jacobians_scaled = []
 
 
 def angle(a: np.ndarray, b: np.ndarray) -> float:
@@ -74,6 +97,7 @@ for element in element_node_connectivity:
     print(f"  node pairs {pairs}")
     element_edge_ratios = []
     element_minimum_angles = []
+    element_minimum_jacobians = []
     edge_vectors = ()
     # edge ratios
     for pair in pairs:
@@ -86,8 +110,6 @@ for element in element_node_connectivity:
         edge_length = np.linalg.norm(edge)
         # print(f"    lens {edge_length}")
         element_edge_ratios.append(edge_length)
-
-    print(f"  edge vectors {edge_vectors}")
 
     # print(f"  edge ratios {element_edge_ratios}")
 
@@ -114,10 +136,18 @@ for element in element_node_connectivity:
         angle_degrees = angle(-1.0 * item[0], item[1])
         # print(f"    angle {angle_degrees}")
         element_minimum_angles.append(angle_degrees)
-    # print(f"  minimum angles {element_minimum_angles}")
+
+    print(f"  element angles (deg) {nf(element_minimum_angles)}")
     angle_min = min(element_minimum_angles)
-    # print(f"  min angle {angle_min}")
+    print(f"  min angle (deg) {angle_min}")
     mesh_element_minimum_angles.append(angle_min)
+
+    jacobian_e = np.sin(angle_min * DEG_TO_RAD)
+    jacobian_scaled_e = jacobian_e / J_EQUILATERAL
+    print(f"  min Jacobian (sin(angle_min)) {jacobian_e}")
+    print(f"  min scaled Jacobian  {jacobian_scaled_e}")
+    mesh_element_jacobians.append(jacobian_e)
+    mesh_element_jacobians_scaled.append(jacobian_scaled_e)
 
     skew_max = (60.0 - angle_min) / 60.0
     mesh_element_maximum_skews.append(skew_max)
@@ -134,16 +164,9 @@ for element in element_node_connectivity:
         area = np.sqrt(ss * (ss - aa) * (ss - bb) * (ss - cc))
         mesh_element_areas.append(area)
 
-        # Interpretation:
-        # The absolute value of the determinant of the Jacobian
-        # represents the area of the triangle in the physical space
-        # when integrating over the reference triangle.
-        msj = (2.0 * np.sqrt(3.0) * area) / (3.0 * len_max)
-        mesh_element_jacobians.append(msj)
-
-print(f"\nmesh element max edge lengths: {mesh_element_max_edge_lengths}")
-print(f"\nmesh element edge ratios: {mesh_element_edge_ratios}")
-print(f"\nmesh element minimum angles: {mesh_element_minimum_angles}")
-print(f"\nmesh element maximum skews: {mesh_element_maximum_skews}")
-print(f"\nmesh element areas: {mesh_element_areas}")
-print(f"\nmesh minimum scaled Jacobians: {mesh_element_jacobians}")
+print(f"\nmesh element max edge lengths: {nf(mesh_element_max_edge_lengths)}")
+print(f"\nmesh element edge ratios: {nf(mesh_element_edge_ratios)}")
+print(f"\nmesh element minimum angles: {nf(mesh_element_minimum_angles)}")
+print(f"\nmesh element maximum skews: {nf(mesh_element_maximum_skews)}")
+print(f"\nmesh element areas: {nf(mesh_element_areas)}")
+print(f"\nmesh minimum scaled Jacobians: {nf(mesh_element_jacobians_scaled)}")
