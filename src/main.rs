@@ -694,6 +694,7 @@ fn mesh(
             .map(|entry| entry as u8)
             .collect()
     });
+    let nel = Nel::from_input([nelx, nely, nelz])?;
     let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -760,7 +761,7 @@ fn mesh(
             println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
         }
         let mut output_type: TriangularFiniteElements =
-            tree.into_finite_elements(remove, scale, translate)?;
+            tree.into_finite_elements(nel, remove, scale, translate)?;
         if !quiet {
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
         }
@@ -820,7 +821,7 @@ fn mesh(
             let (_, mut tree) = Octree::from_voxels(input_type);
             tree.balance(true);
             tree.pair();
-            tree.into_finite_elements(remove, scale, translate)?
+            tree.into_finite_elements(nel, remove, scale, translate)?
         } else {
             input_type.into_finite_elements(remove, scale, translate)?
         };
@@ -1127,24 +1128,16 @@ fn read_input(
             InputTypes::Npy(Voxels::from_npy(input)?)
         }
         Some("spn") => {
-            if nelx.is_none() {
-                Err("Argument nelx was required but was not provided")?
-            } else if nely.is_none() {
-                Err("Argument nely was required but was not provided")?
-            } else if nelz.is_none() {
-                Err("Argument nelz was required but was not provided")?
-            } else {
-                let nel = Nel::from([nelx.unwrap(), nely.unwrap(), nelz.unwrap()]);
-                if !quiet {
-                    println!(
-                        " \x1b[2m[nelx: {}, nely: {}, nelz: {}]\x1b[0m",
-                        nel.x(),
-                        nel.y(),
-                        nel.z(),
-                    );
-                }
-                InputTypes::Spn(Voxels::from_spn(input, nel)?)
+            let nel = Nel::from_input([nelx, nely, nelz])?;
+            if !quiet {
+                println!(
+                    " \x1b[2m[nelx: {}, nely: {}, nelz: {}]\x1b[0m",
+                    nel.x(),
+                    nel.y(),
+                    nel.z(),
+                );
             }
+            InputTypes::Spn(Voxels::from_spn(input, nel)?)
         }
         Some("stl") => {
             if !quiet {

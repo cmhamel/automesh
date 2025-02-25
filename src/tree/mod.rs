@@ -101,6 +101,7 @@ pub trait Tree {
 pub trait IntoFiniteElements<F> {
     fn into_finite_elements(
         self,
+        nel: Nel,
         remove: Option<Blocks>,
         scale: Scale,
         translate: Translate,
@@ -1343,6 +1344,7 @@ impl Tree for Octree {
 impl IntoFiniteElements<TriangularFiniteElements> for Octree {
     fn into_finite_elements(
         mut self,
+        nel: Nel,
         _remove: Option<Blocks>,
         scale: Scale,
         translate: Translate,
@@ -1432,7 +1434,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
         let mut faces_info = default_face_info;
         //
         // can you also count faces that are shared with the octree boundary?
-        // (can check if relevant corners of cell are on octree boundary using nel if make that an argument)
+        // (can check if relevant corners of cell are on octree boundary using nel
         // and maybe you can extend that to include shared with removed blocks
         // so then you can make a way to remove boundaries only touched by removed materials and octree boundary
         //
@@ -1454,6 +1456,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
                                         *face_info = Some(face_cell)
                                     }
                                 }
+                                make method for Cell that takes in face_index and nel and returns whether on the octree boundary
                             });
                         if faces_info.iter().all(|face_info| face_info.is_none()) {
                             None
@@ -1579,6 +1582,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
 impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
     fn into_finite_elements(
         self,
+        _nel: Nel,
         _remove: Option<Blocks>,
         scale: Scale,
         translate: Translate,
