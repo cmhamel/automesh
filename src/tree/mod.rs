@@ -1432,6 +1432,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
         let mut faces_info = default_face_info;
         //
         // can you also count faces that are shared with the octree boundary?
+        // (can check if relevant corners of cell are on octree boundary using nel if make that an argument)
         // and maybe you can extend that to include shared with removed blocks
         // so then you can make a way to remove boundaries only touched by removed materials and octree boundary
         //
