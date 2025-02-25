@@ -1133,7 +1133,12 @@ fn read_input(
             } else {
                 let nel = Nel::from([nelx.unwrap(), nely.unwrap(), nelz.unwrap()]);
                 if !quiet {
-                    println!(" [nelx: {}, nely: {}, nelz: {}]", nel.x(), nel.y(), nel.z(),);
+                    println!(
+                        " \x1b[2m[nelx: {}, nely: {}, nelz: {}]\x1b[0m",
+                        nel.x(),
+                        nel.y(),
+                        nel.z(),
+                    );
                 }
                 InputTypes::Spn(Voxels::from_spn(input, nel)?)
             }
