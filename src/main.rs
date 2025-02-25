@@ -1,6 +1,6 @@
 use automesh::{
-    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Nel, Octree, Scale,
-    Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
+    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, IntoFiniteElements,
+    Nel, Octree, Scale, Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
 use ndarray_npy::{ReadNpyError, WriteNpyError};
@@ -180,6 +180,10 @@ enum Commands {
         /// Pass to mesh using dualization
         #[arg(action, hide = true, long)]
         dual: bool,
+
+        /// Pass to mesh internal surfaces
+        #[arg(action, long)]
+        surface: bool,
     },
 
     /// Quality metrics for an existing finite element mesh
@@ -204,7 +208,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Octree output file (exo | inp | mesh | vtk)
+        /// Octree output file (exo | inp | mesh | stl | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -274,10 +278,6 @@ enum Commands {
         /// Pass to apply strong balancing
         #[arg(action, long, short)]
         strong: bool,
-
-        /// Pass to fully refine the boundaries
-        #[arg(action, long, short)]
-        boundaries: bool,
     },
 
     /// Applies smoothing to an existing mesh
@@ -418,17 +418,6 @@ enum InputTypes {
     Stl(Tessellation),
 }
 
-// #[allow(clippy::large_enum_variant)]
-// enum OutputTypes<const N: usize> {
-//     Abaqus(FiniteElements<N>),
-//     Exodus(FiniteElements<N>),
-//     Mesh(FiniteElements<N>),
-//     Npy(Voxels),
-//     Spn(Voxels),
-//     Stl(Tessellation),
-//     Vtk(FiniteElements<N>),
-// }
-
 enum OutputTypes<const N: usize, T>
 where
     T: FiniteElementMethods<N>,
@@ -496,11 +485,12 @@ fn main() -> Result<(), ErrorWrapper> {
             metrics,
             quiet,
             dual,
+            surface,
         }) => {
             is_quiet = quiet;
             mesh(
                 meshing, input, output, defeature, nelx, nely, nelz, remove, xscale, yscale,
-                zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual,
+                zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual, surface,
             )
         }
         Some(Commands::Metrics {
@@ -527,12 +517,11 @@ fn main() -> Result<(), ErrorWrapper> {
             quiet,
             pair,
             strong,
-            boundaries,
         }) => {
             is_quiet = quiet;
             octree(
                 input, output, nelx, nely, nelz, remove, xscale, yscale, zscale, xtranslate,
-                ytranslate, ztranslate, quiet, pair, strong, boundaries,
+                ytranslate, ztranslate, quiet, pair, strong,
             )
         }
         Some(Commands::Smooth {
@@ -696,7 +685,9 @@ fn mesh(
     metrics: Option<String>,
     quiet: bool,
     dual: bool,
+    surface: bool,
 ) -> Result<(), ErrorWrapper> {
+    let mut time = Instant::now();
     let remove = remove.map(|removed_blocks| {
         removed_blocks
             .into_iter()
@@ -715,91 +706,151 @@ fn mesh(
             ))?
         }
     };
-    if let Some(min_num_voxels) = defeature {
-        let time = Instant::now();
+    let scale = Scale::from([xscale, yscale, zscale]);
+    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
+    // if !quiet {
+    //     let entirely_default = scale == Default::default() && translate == Default::default();
+    //     if !entirely_default {
+    //         print!(" [");
+    //     }
+    //     if xscale != 1.0 {
+    //         print!("xscale: {}, ", scale.x());
+    //     }
+    //     if yscale != 1.0 {
+    //         print!("yscale: {}, ", scale.y());
+    //     }
+    //     if zscale != 1.0 {
+    //         print!("zscale: {}, ", scale.z());
+    //     }
+    //     if xtranslate != 0.0 {
+    //         print!("xtranslate: {}, ", xtranslate);
+    //     }
+    //     if ytranslate != 0.0 {
+    //         print!("ytranslate: {}, ", ytranslate);
+    //     }
+    //     if ztranslate != 0.0 {
+    //         print!("ztranslate: {}, ", ztranslate);
+    //     }
+    //     if !entirely_default {
+    //         print!("\x1b[2D]");
+    //     }
+    //     println!();
+    // }
+    if surface {
         if !quiet {
-            println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+            time = Instant::now();
+            if let Some(min_num_voxels) = defeature {
+                println!(
+                    " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                    min_num_voxels
+                );
+            } else {
+                println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+            }
         }
-        input_type = input_type.defeature(min_num_voxels);
+        let (_, mut tree) = Octree::from_voxels(input_type);
+        tree.balance(true);
+        if let Some(min_num_voxels) = defeature {
+            tree.defeature(min_num_voxels, &remove);
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+            time = Instant::now();
+            println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+        }
+        let mut output_type: TriangularFiniteElements =
+            tree.into_finite_elements(remove, scale, translate)?;
         if !quiet {
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
         }
-    }
-    let time = Instant::now();
-    let scale = Scale::from([xscale, yscale, zscale]);
-    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
-    if !quiet {
-        let entirely_default = scale == Default::default() && translate == Default::default();
-        print!("     \x1b[1;96mMeshing\x1b[0m {}", output);
-        if !entirely_default {
-            print!(" [");
-        }
-        if xscale != 1.0 {
-            print!("xscale: {}, ", scale.x());
-        }
-        if yscale != 1.0 {
-            print!("yscale: {}, ", scale.y());
-        }
-        if zscale != 1.0 {
-            print!("zscale: {}, ", scale.z());
-        }
-        if xtranslate != 0.0 {
-            print!("xtranslate: {}, ", xtranslate);
-        }
-        if ytranslate != 0.0 {
-            print!("ytranslate: {}, ", ytranslate);
-        }
-        if ztranslate != 0.0 {
-            print!("ztranslate: {}, ", ztranslate);
-        }
-        if !entirely_default {
-            print!("\x1b[2D]");
-        }
-        println!();
-    }
-    let mut output_type = if dual {
-        let (_, mut tree) = Octree::from_voxels(input_type);
-        tree.balance(true);
-        tree.pair();
-        tree.into_finite_elements(remove, scale, translate)?
-    } else {
-        input_type.into_finite_elements(remove, scale, translate)?
-    };
-    if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-    }
-    if let Some(options) = meshing {
-        match options {
-            MeshingCommands::Smooth {
-                iterations,
-                method,
-                hierarchical,
-                pass_band,
-                scale,
-            } => {
-                apply_smoothing_method(
-                    &mut output_type,
-                    &output,
+        if let Some(options) = meshing {
+            match options {
+                MeshingCommands::Smooth {
                     iterations,
                     method,
                     hierarchical,
                     pass_band,
                     scale,
-                    quiet,
-                )?;
+                } => {
+                    apply_smoothing_method(
+                        &mut output_type,
+                        iterations,
+                        method,
+                        hierarchical,
+                        pass_band,
+                        scale,
+                        quiet,
+                    )?;
+                }
             }
         }
-    }
-    if let Some(file) = metrics {
-        metrics_inner(&output_type, file, quiet)?
-    }
-    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match output_extension {
-        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-        _ => invalid_output(&output, output_extension)?,
+        let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+        match output_extension {
+            Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+            Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+            Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+            Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+            _ => invalid_output(&output, output_extension)?,
+        }
+    } else {
+        if let Some(min_num_voxels) = defeature {
+            if !quiet {
+                time = Instant::now();
+                println!(
+                    " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                    min_num_voxels
+                );
+            }
+            input_type = input_type.defeature(min_num_voxels);
+            if !quiet {
+                println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+            }
+        }
+        if !quiet {
+            time = Instant::now();
+            println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
+        }
+        let mut output_type = if dual {
+            let (_, mut tree) = Octree::from_voxels(input_type);
+            tree.balance(true);
+            tree.pair();
+            tree.into_finite_elements(remove, scale, translate)?
+        } else {
+            input_type.into_finite_elements(remove, scale, translate)?
+        };
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
+        if let Some(options) = meshing {
+            match options {
+                MeshingCommands::Smooth {
+                    iterations,
+                    method,
+                    hierarchical,
+                    pass_band,
+                    scale,
+                } => {
+                    apply_smoothing_method(
+                        &mut output_type,
+                        iterations,
+                        method,
+                        hierarchical,
+                        pass_band,
+                        scale,
+                        quiet,
+                    )?;
+                }
+            }
+        }
+        if let Some(file) = metrics {
+            metrics_inner(&output_type, file, quiet)?
+        }
+        let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+        match output_extension {
+            Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+            Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+            Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+            Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+            _ => invalid_output(&output, output_extension)?,
+        }
     }
     Ok(())
 }
@@ -848,7 +899,6 @@ fn octree(
     quiet: bool,
     pair: bool,
     strong: bool,
-    boundaries: bool,
 ) -> Result<(), ErrorWrapper> {
     let remove = remove.map(|removed_blocks| {
         removed_blocks
@@ -856,6 +906,8 @@ fn octree(
             .map(|entry| entry as u8)
             .collect()
     });
+    let scale = [xscale, yscale, zscale].into();
+    let translate = [xtranslate, ytranslate, ztranslate].into();
     let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -874,22 +926,15 @@ fn octree(
     }
     let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
-    if boundaries {
-        tree.boundaries();
-    }
     if pair {
         tree.pair();
     }
     tree.prune();
-    let output_type = tree.octree_into_finite_elements(
-        remove,
-        [xscale, yscale, zscale].into(),
-        [xtranslate, ytranslate, ztranslate].into(),
-    )?;
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    let output_type = tree.octree_into_finite_elements(remove, scale, translate)?;
     if !quiet {
         println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
     }
-    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
         Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
@@ -917,7 +962,6 @@ fn smooth(
         InputTypes::Abaqus(mut finite_elements) => {
             apply_smoothing_method(
                 &mut finite_elements,
-                &output,
                 iterations,
                 method,
                 hierarchical,
@@ -947,7 +991,6 @@ fn smooth(
             let mut finite_elements = tesselation.into_finite_elements();
             apply_smoothing_method(
                 &mut finite_elements,
-                &output,
                 iterations,
                 method,
                 hierarchical,
@@ -979,7 +1022,6 @@ fn smooth(
 #[allow(clippy::too_many_arguments)]
 fn apply_smoothing_method<const N: usize, T>(
     output_type: &mut T,
-    output: &str,
     iterations: usize,
     method: Option<String>,
     hierarchical: bool,
@@ -1006,7 +1048,17 @@ where
             | "taubin"
     ) {
         if !quiet {
-            println!("   \x1b[1;96mSmoothing\x1b[0m {}", output);
+            print!("   \x1b[1;96mSmoothing\x1b[0m ");
+            match smoothing_method.as_str() {
+                "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace"
+                | "laplacian" | "laplace" => {
+                    println!("with {} iterations of Laplace", iterations)
+                }
+                "Taubin" | "taubin" => {
+                    println!("with {} iterations of Taubin", iterations)
+                }
+                _ => panic!(),
+            }
         }
         output_type.node_element_connectivity()?;
         output_type.node_node_connectivity()?;

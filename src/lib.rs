@@ -22,7 +22,7 @@ pub use fem::{
     HexahedralFiniteElements, Smoothing, TriangularFiniteElements,
 };
 pub use tessellation::Tessellation;
-pub use tree::{Octree, Tree};
+pub use tree::{IntoFiniteElements, Octree, Tree};
 pub use voxel::{Nel, Scale, Translate, VoxelData, Voxels};
 
 use conspire::math::{TensorRank1, TensorRank1Vec};

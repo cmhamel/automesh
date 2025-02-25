@@ -2,7 +2,10 @@
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, FiniteElementMethods, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    fem::{
+        Blocks, FiniteElementMethods, HexahedralFiniteElements, TriangularFiniteElements, HEX,
+        NODE_NUMBERING_OFFSET,
+    },
     voxel::{Nel, Scale, Translate, VoxelData, Voxels},
     Coordinate, Coordinates, NSD,
 };
@@ -12,6 +15,7 @@ use std::array::from_fn;
 
 const NUM_FACES: usize = 6;
 const NUM_OCTANTS: usize = 8;
+const NUM_NODES_FACE: usize = 4;
 const NUM_SUBCELLS_FACE: usize = 4;
 
 type SubcellsOnFace = [usize; NUM_SUBCELLS_FACE];
@@ -21,6 +25,20 @@ const SUBCELLS_ON_OWN_FACE_2: SubcellsOnFace = [2, 3, 6, 7];
 const SUBCELLS_ON_OWN_FACE_3: SubcellsOnFace = [0, 2, 4, 6];
 const SUBCELLS_ON_OWN_FACE_4: SubcellsOnFace = [0, 1, 2, 3];
 const SUBCELLS_ON_OWN_FACE_5: SubcellsOnFace = [4, 5, 6, 7];
+
+const fn mirror_face(face: usize) -> usize {
+    match face {
+        0 => 2,
+        1 => 3,
+        2 => 0,
+        3 => 1,
+        4 => 5,
+        5 => 4,
+        _ => {
+            panic!()
+        }
+    }
+}
 
 const fn subcells_on_own_face(face: usize) -> SubcellsOnFace {
     match face {
@@ -57,22 +75,17 @@ type Indices = [usize; NUM_OCTANTS];
 /// The octree type.
 pub type Octree = Vec<Cell>;
 
-type Clusters = Vec<Vec<usize>>;
+type Cluster = Vec<usize>;
+type Clusters = Vec<Cluster>;
 type SubcellToCellMap = Vec<Option<(usize, usize)>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
     fn boundaries(&mut self);
-    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap);
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>);
+    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap);
+    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>);
     fn from_voxels(voxels: Voxels) -> (Nel, Self);
-    fn into_finite_elements(
-        self,
-        remove: Option<Blocks>,
-        scale: Scale,
-        translate: Translate,
-    ) -> Result<HexahedralFiniteElements, String>;
     fn octree_into_finite_elements(
         self,
         remove: Option<Blocks>,
@@ -82,6 +95,16 @@ pub trait Tree {
     fn pair(&mut self);
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
+}
+
+/// Methods for converting trees into finite elements.
+pub trait IntoFiniteElements<F> {
+    fn into_finite_elements(
+        self,
+        remove: Option<Blocks>,
+        scale: Scale,
+        translate: Translate,
+    ) -> Result<F, String>;
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -100,7 +123,7 @@ impl Cell {
         if let Some(block) = self.block {
             block
         } else {
-            panic!()
+            panic!("Called get_block() on a non-leaf cell.")
         }
     }
     pub fn get_cells(&self) -> &Option<Indices> {
@@ -121,13 +144,65 @@ impl Cell {
     pub fn get_min_z(&self) -> &u16 {
         &self.min_z
     }
+    pub fn get_max_x(&self) -> u16 {
+        self.min_x + self.lngth
+    }
+    pub fn get_max_y(&self) -> u16 {
+        self.min_y + self.lngth
+    }
+    pub fn get_max_z(&self) -> u16 {
+        self.min_z + self.lngth
+    }
+    pub fn get_nodal_indices_face(&self, face_index: &usize) -> [[u16; NSD]; NUM_NODES_FACE] {
+        match face_index {
+            0 => [
+                [*self.get_min_x(), *self.get_min_y(), *self.get_min_z()],
+                [self.get_max_x(), *self.get_min_y(), *self.get_min_z()],
+                [self.get_max_x(), *self.get_min_y(), self.get_max_z()],
+                [*self.get_min_x(), *self.get_min_y(), self.get_max_z()],
+            ],
+            1 => [
+                [self.get_max_x(), *self.get_min_y(), *self.get_min_z()],
+                [self.get_max_x(), self.get_max_y(), *self.get_min_z()],
+                [self.get_max_x(), self.get_max_y(), self.get_max_z()],
+                [self.get_max_x(), *self.get_min_y(), self.get_max_z()],
+            ],
+            2 => [
+                [self.get_max_x(), self.get_max_y(), *self.get_min_z()],
+                [*self.get_min_x(), self.get_max_y(), *self.get_min_z()],
+                [*self.get_min_x(), self.get_max_y(), self.get_max_z()],
+                [self.get_max_x(), self.get_max_y(), self.get_max_z()],
+            ],
+            3 => [
+                [*self.get_min_x(), self.get_max_y(), *self.get_min_z()],
+                [*self.get_min_x(), *self.get_min_y(), *self.get_min_z()],
+                [*self.get_min_x(), *self.get_min_y(), self.get_max_z()],
+                [*self.get_min_x(), self.get_max_y(), self.get_max_z()],
+            ],
+            4 => [
+                [*self.get_min_x(), *self.get_min_y(), *self.get_min_z()],
+                [*self.get_min_x(), self.get_max_y(), *self.get_min_z()],
+                [self.get_max_x(), self.get_max_y(), *self.get_min_z()],
+                [self.get_max_x(), *self.get_min_y(), *self.get_min_z()],
+            ],
+            5 => [
+                [*self.get_min_x(), *self.get_min_y(), self.get_max_z()],
+                [self.get_max_x(), *self.get_min_y(), self.get_max_z()],
+                [self.get_max_x(), self.get_max_y(), self.get_max_z()],
+                [*self.get_min_x(), self.get_max_y(), self.get_max_z()],
+            ],
+            _ => {
+                panic!()
+            }
+        }
+    }
     pub fn homogeneous(&self, data: &VoxelData) -> Option<u8> {
         let x_min = *self.get_min_x() as usize;
         let y_min = *self.get_min_y() as usize;
         let z_min = *self.get_min_z() as usize;
-        let x_max = x_min + *self.get_lngth() as usize;
-        let y_max = y_min + *self.get_lngth() as usize;
-        let z_max = z_min + *self.get_lngth() as usize;
+        let x_max = self.get_max_x() as usize;
+        let y_max = self.get_max_y() as usize;
+        let z_max = self.get_max_z() as usize;
         let contained = data.slice(s![x_min..x_max, y_min..y_max, z_min..z_max]);
         let mut materials: Blocks = contained.iter().cloned().collect();
         materials.dedup();
@@ -136,6 +211,9 @@ impl Cell {
         } else {
             None
         }
+    }
+    pub fn is_voxel(&self) -> bool {
+        self.lngth == 1
     }
     pub fn subdivide(&mut self, indices: Indices) -> Cells {
         self.cells = Some(indices);
@@ -294,7 +372,7 @@ impl Tree for Octree {
             #[cfg(feature = "profile")]
             let time = Instant::now();
             while index < self.len() {
-                if self[index].get_lngth() > &1 && self[index].cells.is_none() {
+                if !self[index].is_voxel() && self[index].cells.is_none() {
                     'faces: for (face, face_cell) in self[index].get_faces().iter().enumerate() {
                         if let Some(neighbor) = face_cell {
                             if let Some(kids) = self[*neighbor].cells {
@@ -646,9 +724,7 @@ impl Tree for Octree {
                         .iter()
                         .filter_map(|&face| face)
                         .filter(|&face| self[face].get_cells().is_none())
-                        .filter(|&face| self[face].get_block() != block)
-                        .count()
-                        > 0
+                        .any(|face| self[face].get_block() != block)
                         || cell
                             .get_faces()
                             .iter()
@@ -679,7 +755,7 @@ impl Tree for Octree {
             }
             #[cfg(feature = "profile")]
             println!(
-                "            \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
+                "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
                 iteration,
                 time.elapsed()
             );
@@ -688,10 +764,14 @@ impl Tree for Octree {
             }
         }
     }
-    fn clusters(&self, remove: Option<Blocks>) -> (Clusters, SubcellToCellMap) {
+    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap) {
+        // blocks.iter().zip(clusters.iter()).for_each(|(block, cluster)|
+        //     println!("cluster is from block {} and has length {}", block, cluster.len())
+        // );
+        // why are there extra weird clusters of small (or even zero) length without strong balancing?
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        let mut removed_data = remove.unwrap_or_default();
+        let mut removed_data = remove.clone().unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
         let mut blocks: Blocks = self
@@ -793,9 +873,9 @@ impl Tree for Octree {
                                                         if self[subcells[subcell]].get_block()
                                                             == block
                                                         {
-                                                            complete = false;
                                                             block_leaves.remove(spot);
                                                             cluster.push(subcells[subcell]);
+                                                            complete = false;
                                                         }
                                                     }
                                                 },
@@ -819,9 +899,9 @@ impl Tree for Octree {
                                             {
                                                 if let Ok(spot) = block_leaves.binary_search(cell) {
                                                     if self[*cell].get_block() == block {
-                                                        complete = false;
                                                         block_leaves.remove(spot);
                                                         cluster.push(*cell);
+                                                        complete = false;
                                                     }
                                                 }
                                             }
@@ -849,7 +929,7 @@ impl Tree for Octree {
             });
         (clusters, cell_from_subcell_map)
     }
-    fn defeature(&mut self, min_num_voxels: usize, remove: Option<Blocks>) {
+    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>) {
         //
         // does Sculpt consider voxels sharing an edge or corner part of the same volume?
         // based on the protrusions thing, seems like it does not
@@ -1075,6 +1155,345 @@ impl Tree for Octree {
         );
         (nel, tree)
     }
+    fn octree_into_finite_elements(
+        self,
+        remove: Option<Blocks>,
+        scale: Scale,
+        translate: Translate,
+    ) -> Result<HexahedralFiniteElements, String> {
+        let mut x_min = 0.0;
+        let mut y_min = 0.0;
+        let mut z_min = 0.0;
+        let mut x_val = 0.0;
+        let mut y_val = 0.0;
+        let mut z_val = 0.0;
+        let mut removed_data = remove.unwrap_or_default();
+        removed_data.sort();
+        removed_data.dedup();
+        let num_elements = self
+            .iter()
+            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
+            .count();
+        let mut element_blocks = vec![0; num_elements];
+        let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
+        let mut nodal_coordinates: Coordinates = (0..num_elements * HEX)
+            .map(|_| Coordinate::zero())
+            .collect();
+        let mut index = 0;
+        self.iter()
+            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
+            .zip(
+                element_blocks
+                    .iter_mut()
+                    .zip(element_node_connectivity.iter_mut()),
+            )
+            .for_each(|(cell, (block, connectivity))| {
+                *block = cell.get_block();
+                *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
+                x_min = *cell.get_min_x() as f64 * scale.x() + translate.x();
+                y_min = *cell.get_min_y() as f64 * scale.y() + translate.y();
+                z_min = *cell.get_min_z() as f64 * scale.z() + translate.z();
+                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + translate.x();
+                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + translate.y();
+                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + translate.z();
+                nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
+                nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
+                nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
+                nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
+                nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
+                nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
+                nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
+                nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
+                index += HEX;
+            });
+        Ok(HexahedralFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
+    }
+    fn pair(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let mut block = 0;
+        let mut index = 0;
+        let mut subsubcells: Vec<bool>;
+        while index < self.len() {
+            if let Some(subcells) = self[index].cells {
+                subsubcells = subcells
+                    .into_iter()
+                    .map(|subcell| self[subcell].cells.is_some())
+                    .collect();
+                if subsubcells.iter().any(|&subsubcell| subsubcell)
+                    && !subsubcells.iter().all(|&subsubcell| subsubcell)
+                {
+                    subcells
+                        .into_iter()
+                        .filter(|&subcell| self[subcell].cells.is_none())
+                        .collect::<Vec<usize>>()
+                        .into_iter()
+                        .for_each(|subcell| {
+                            block = self[subcell].get_block();
+                            self.subdivide(subcell);
+                            self.iter_mut()
+                                .rev()
+                                .take(NUM_OCTANTS)
+                                .for_each(|cell| cell.block = Some(block))
+                        })
+                }
+            }
+            index += 1;
+        }
+        #[cfg(feature = "profile")]
+        println!(
+            "           \x1b[1;93m  Pairing hanging nodes\x1b[0m {:?} ",
+            time.elapsed()
+        );
+    }
+    fn prune(&mut self) {
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        self.retain(|cell| cell.get_cells().is_none());
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mPruning octree\x1b[0m {:?} ",
+            time.elapsed()
+        );
+    }
+    fn subdivide(&mut self, index: usize) {
+        assert!(self[index].get_cells().is_none());
+        let new_indices = from_fn(|n| self.len() + n);
+        let mut new_cells = self[index].subdivide(new_indices);
+        self[index]
+            .get_faces()
+            .clone()
+            .iter()
+            .enumerate()
+            .for_each(|(face, face_cell)| {
+                if let Some(neighbor) = face_cell {
+                    if let Some(kids) = self[*neighbor].cells {
+                        match face {
+                            0 => {
+                                new_cells[0].faces[0] = Some(kids[2]);
+                                new_cells[1].faces[0] = Some(kids[3]);
+                                new_cells[4].faces[0] = Some(kids[6]);
+                                new_cells[5].faces[0] = Some(kids[7]);
+                                self[kids[2]].faces[2] = Some(new_indices[0]);
+                                self[kids[3]].faces[2] = Some(new_indices[1]);
+                                self[kids[6]].faces[2] = Some(new_indices[4]);
+                                self[kids[7]].faces[2] = Some(new_indices[5]);
+                            }
+                            1 => {
+                                new_cells[1].faces[1] = Some(kids[0]);
+                                new_cells[3].faces[1] = Some(kids[2]);
+                                new_cells[5].faces[1] = Some(kids[4]);
+                                new_cells[7].faces[1] = Some(kids[6]);
+                                self[kids[0]].faces[3] = Some(new_indices[1]);
+                                self[kids[2]].faces[3] = Some(new_indices[3]);
+                                self[kids[4]].faces[3] = Some(new_indices[5]);
+                                self[kids[6]].faces[3] = Some(new_indices[7]);
+                            }
+                            2 => {
+                                new_cells[2].faces[2] = Some(kids[0]);
+                                new_cells[3].faces[2] = Some(kids[1]);
+                                new_cells[6].faces[2] = Some(kids[4]);
+                                new_cells[7].faces[2] = Some(kids[5]);
+                                self[kids[0]].faces[0] = Some(new_indices[2]);
+                                self[kids[1]].faces[0] = Some(new_indices[3]);
+                                self[kids[4]].faces[0] = Some(new_indices[6]);
+                                self[kids[5]].faces[0] = Some(new_indices[7]);
+                            }
+                            3 => {
+                                new_cells[0].faces[3] = Some(kids[1]);
+                                new_cells[2].faces[3] = Some(kids[3]);
+                                new_cells[4].faces[3] = Some(kids[5]);
+                                new_cells[6].faces[3] = Some(kids[7]);
+                                self[kids[1]].faces[1] = Some(new_indices[0]);
+                                self[kids[3]].faces[1] = Some(new_indices[2]);
+                                self[kids[5]].faces[1] = Some(new_indices[4]);
+                                self[kids[7]].faces[1] = Some(new_indices[6]);
+                            }
+                            4 => {
+                                new_cells[0].faces[4] = Some(kids[4]);
+                                new_cells[1].faces[4] = Some(kids[5]);
+                                new_cells[2].faces[4] = Some(kids[6]);
+                                new_cells[3].faces[4] = Some(kids[7]);
+                                self[kids[4]].faces[5] = Some(new_indices[0]);
+                                self[kids[5]].faces[5] = Some(new_indices[1]);
+                                self[kids[6]].faces[5] = Some(new_indices[2]);
+                                self[kids[7]].faces[5] = Some(new_indices[3]);
+                            }
+                            5 => {
+                                new_cells[4].faces[5] = Some(kids[0]);
+                                new_cells[5].faces[5] = Some(kids[1]);
+                                new_cells[6].faces[5] = Some(kids[2]);
+                                new_cells[7].faces[5] = Some(kids[3]);
+                                self[kids[0]].faces[4] = Some(new_indices[4]);
+                                self[kids[1]].faces[4] = Some(new_indices[5]);
+                                self[kids[2]].faces[4] = Some(new_indices[6]);
+                                self[kids[3]].faces[4] = Some(new_indices[7]);
+                            }
+                            _ => panic!(),
+                        }
+                    }
+                }
+            });
+        self.extend(new_cells);
+    }
+}
+
+impl IntoFiniteElements<TriangularFiniteElements> for Octree {
+    fn into_finite_elements(
+        mut self,
+        _remove: Option<Blocks>,
+        scale: Scale,
+        translate: Translate,
+    ) -> Result<TriangularFiniteElements, String> {
+        self.boundaries();
+        let (clusters, _) = self.clusters(&None);
+        #[cfg(feature = "profile")]
+        let time = Instant::now();
+        let blocks = clusters
+            .iter()
+            .map(|cluster: &Vec<usize>| self[cluster[0]].get_block())
+            .collect::<Blocks>();
+        let default_face_info = [None; NUM_FACES];
+        let mut faces_info = default_face_info;
+        let boundaries_cells_faces = blocks
+            .iter()
+            .zip(clusters.iter())
+            .map(|(&block, cluster)| {
+                cluster
+                    .iter()
+                    .filter(|&&cell| self[cell].is_voxel())
+                    .filter_map(|&cell| {
+                        faces_info = default_face_info;
+                        faces_info
+                            .iter_mut()
+                            .zip(self[cell].get_faces().iter())
+                            .for_each(|(face_info, &face)| {
+                                if let Some(face_cell) = face {
+                                    if self[face_cell].get_block() != block {
+                                        *face_info = Some(face_cell)
+                                    }
+                                }
+                            });
+                        if faces_info.iter().all(|face_info| face_info.is_none()) {
+                            None
+                        } else {
+                            Some((cell, faces_info))
+                        }
+                    })
+                    .collect()
+            })
+            .collect::<Vec<Vec<(usize, Faces)>>>();
+        let mut max_cell_id = 0;
+        let mut boundaries_face_from_cell = boundaries_cells_faces
+            .iter()
+            .map(|boundary_cells_faces| {
+                (max_cell_id, _) = *boundary_cells_faces
+                    .iter()
+                    .max_by(|(cell_a, _), (cell_b, _)| cell_a.cmp(cell_b))
+                    .unwrap();
+                vec![[false; NUM_FACES]; max_cell_id + 1]
+            })
+            .collect::<Vec<Vec<[bool; NUM_FACES]>>>();
+        max_cell_id = 0;
+        boundaries_cells_faces
+            .iter()
+            .for_each(|boundary_cells_faces| {
+                boundary_cells_faces.iter().for_each(|(cell, _)| {
+                    if cell > &max_cell_id {
+                        max_cell_id = *cell
+                    }
+                })
+            });
+        let mut boundary_from_cell = vec![None; max_cell_id + 1];
+        boundaries_cells_faces
+            .iter()
+            .enumerate()
+            .for_each(|(boundary, boundary_cells_faces)| {
+                boundary_cells_faces
+                    .iter()
+                    .for_each(|(cell, _)| boundary_from_cell[*cell] = Some(boundary))
+            });
+        let mut face_connectivity = [0; NUM_NODES_FACE];
+        let mut faces_connectivity = vec![];
+        let mut nodal_coordinates = Coordinates::zero(0);
+        let mut node_new = 1;
+        let nodes_len = (self[0].get_lngth() + 1) as usize;
+        let mut nodes = vec![vec![vec![None::<usize>; nodes_len]; nodes_len]; nodes_len];
+        (0..boundaries_cells_faces.len()).for_each(|boundary| {
+            boundaries_cells_faces[boundary]
+                .iter()
+                .for_each(|(cell, faces)| {
+                    faces.iter().enumerate().for_each(|(face_index, face)| {
+                        if let Some(face_cell) = face {
+                            if !boundaries_face_from_cell[boundary][*cell][face_index] {
+                                boundaries_face_from_cell[boundary][*cell][face_index] = true;
+                                if let Some(opposing_boundary) = boundary_from_cell[*face_cell] {
+                                    boundaries_face_from_cell[opposing_boundary][*face_cell]
+                                        [mirror_face(face_index)] = true;
+                                }
+                                self[*cell]
+                                    .get_nodal_indices_face(&face_index)
+                                    .iter()
+                                    .zip(face_connectivity.iter_mut())
+                                    .for_each(|(nodal_indices, face_node)| {
+                                        if let Some(node) = nodes[nodal_indices[0] as usize]
+                                            [nodal_indices[1] as usize]
+                                            [nodal_indices[2] as usize]
+                                        {
+                                            *face_node = node
+                                        } else {
+                                            nodal_coordinates.push(Coordinate::new([
+                                                nodal_indices[0] as f64 * scale.x() + translate.x(),
+                                                nodal_indices[1] as f64 * scale.y() + translate.y(),
+                                                nodal_indices[2] as f64 * scale.z() + translate.z(),
+                                            ]));
+                                            *face_node = node_new;
+                                            nodes[nodal_indices[0] as usize]
+                                                [nodal_indices[1] as usize]
+                                                [nodal_indices[2] as usize] = Some(node_new);
+                                            node_new += 1;
+                                        }
+                                    });
+                                faces_connectivity.push(face_connectivity)
+                            }
+                        }
+                    })
+                })
+        });
+        let element_blocks = vec![1; 2 * faces_connectivity.len()];
+        let mut element_node_connectivity = vec![[0; 3]; 2 * faces_connectivity.len()];
+        let mut triangle = 0;
+        faces_connectivity.iter().for_each(|face_connectivity| {
+            element_node_connectivity[triangle] = [
+                face_connectivity[0],
+                face_connectivity[1],
+                face_connectivity[3],
+            ];
+            element_node_connectivity[triangle + 1] = [
+                face_connectivity[1],
+                face_connectivity[2],
+                face_connectivity[3],
+            ];
+            triangle += 2;
+        });
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mSurface finite elements\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        Ok(TriangularFiniteElements::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates,
+        ))
+    }
+}
+
+impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
     fn into_finite_elements(
         self,
         _remove: Option<Blocks>,
@@ -1321,190 +1740,5 @@ impl Tree for Octree {
             time.elapsed()
         );
         fem
-    }
-    fn octree_into_finite_elements(
-        self,
-        remove: Option<Blocks>,
-        scale: Scale,
-        translate: Translate,
-    ) -> Result<HexahedralFiniteElements, String> {
-        let mut x_min = 0.0;
-        let mut y_min = 0.0;
-        let mut z_min = 0.0;
-        let mut x_val = 0.0;
-        let mut y_val = 0.0;
-        let mut z_val = 0.0;
-        let mut removed_data = remove.unwrap_or_default();
-        removed_data.sort();
-        removed_data.dedup();
-        let num_elements = self
-            .iter()
-            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
-            .count();
-        let mut element_blocks = vec![0; num_elements];
-        let mut element_node_connectivity = vec![from_fn(|_| 0); num_elements];
-        let mut nodal_coordinates: Coordinates = (0..num_elements * HEX)
-            .map(|_| Coordinate::zero())
-            .collect();
-        let mut index = 0;
-        self.iter()
-            .filter(|cell| removed_data.binary_search(&cell.get_block()).is_err())
-            .zip(
-                element_blocks
-                    .iter_mut()
-                    .zip(element_node_connectivity.iter_mut()),
-            )
-            .for_each(|(cell, (block, connectivity))| {
-                *block = cell.get_block();
-                *connectivity = from_fn(|n| n + index + NODE_NUMBERING_OFFSET);
-                x_min = *cell.get_min_x() as f64 * scale.x() + translate.x();
-                y_min = *cell.get_min_y() as f64 * scale.y() + translate.y();
-                z_min = *cell.get_min_z() as f64 * scale.z() + translate.z();
-                x_val = (cell.get_min_x() + cell.get_lngth()) as f64 * scale.x() + translate.x();
-                y_val = (cell.get_min_y() + cell.get_lngth()) as f64 * scale.y() + translate.y();
-                z_val = (cell.get_min_z() + cell.get_lngth()) as f64 * scale.z() + translate.z();
-                nodal_coordinates[index] = Coordinate::new([x_min, y_min, z_min]);
-                nodal_coordinates[index + 1] = Coordinate::new([x_val, y_min, z_min]);
-                nodal_coordinates[index + 2] = Coordinate::new([x_val, y_val, z_min]);
-                nodal_coordinates[index + 3] = Coordinate::new([x_min, y_val, z_min]);
-                nodal_coordinates[index + 4] = Coordinate::new([x_min, y_min, z_val]);
-                nodal_coordinates[index + 5] = Coordinate::new([x_val, y_min, z_val]);
-                nodal_coordinates[index + 6] = Coordinate::new([x_val, y_val, z_val]);
-                nodal_coordinates[index + 7] = Coordinate::new([x_min, y_val, z_val]);
-                index += HEX;
-            });
-        Ok(HexahedralFiniteElements::from_data(
-            element_blocks,
-            element_node_connectivity,
-            nodal_coordinates,
-        ))
-    }
-    fn pair(&mut self) {
-        #[cfg(feature = "profile")]
-        let time = Instant::now();
-        let mut block = 0;
-        let mut index = 0;
-        let mut subsubcells: Vec<bool>;
-        while index < self.len() {
-            if let Some(subcells) = self[index].cells {
-                subsubcells = subcells
-                    .into_iter()
-                    .map(|subcell| self[subcell].cells.is_some())
-                    .collect();
-                if subsubcells.iter().any(|&subsubcell| subsubcell)
-                    && !subsubcells.iter().all(|&subsubcell| subsubcell)
-                {
-                    subcells
-                        .into_iter()
-                        .filter(|&subcell| self[subcell].cells.is_none())
-                        .collect::<Vec<usize>>()
-                        .into_iter()
-                        .for_each(|subcell| {
-                            block = self[subcell].get_block();
-                            self.subdivide(subcell);
-                            self.iter_mut()
-                                .rev()
-                                .take(NUM_OCTANTS)
-                                .for_each(|cell| cell.block = Some(block))
-                        })
-                }
-            }
-            index += 1;
-        }
-        #[cfg(feature = "profile")]
-        println!(
-            "           \x1b[1;93m  Pairing hanging nodes\x1b[0m {:?} ",
-            time.elapsed()
-        );
-    }
-    fn prune(&mut self) {
-        #[cfg(feature = "profile")]
-        let time = Instant::now();
-        self.retain(|cell| cell.get_cells().is_none());
-        #[cfg(feature = "profile")]
-        println!(
-            "             \x1b[1;93mPruning octree\x1b[0m {:?} ",
-            time.elapsed()
-        );
-    }
-    fn subdivide(&mut self, index: usize) {
-        assert!(self[index].get_cells().is_none());
-        let new_indices = from_fn(|n| self.len() + n);
-        let mut new_cells = self[index].subdivide(new_indices);
-        self[index]
-            .get_faces()
-            .clone()
-            .iter()
-            .enumerate()
-            .for_each(|(face, face_cell)| {
-                if let Some(neighbor) = face_cell {
-                    if let Some(kids) = self[*neighbor].cells {
-                        match face {
-                            0 => {
-                                new_cells[0].faces[0] = Some(kids[2]);
-                                new_cells[1].faces[0] = Some(kids[3]);
-                                new_cells[4].faces[0] = Some(kids[6]);
-                                new_cells[5].faces[0] = Some(kids[7]);
-                                self[kids[2]].faces[2] = Some(new_indices[0]);
-                                self[kids[3]].faces[2] = Some(new_indices[1]);
-                                self[kids[6]].faces[2] = Some(new_indices[4]);
-                                self[kids[7]].faces[2] = Some(new_indices[5]);
-                            }
-                            1 => {
-                                new_cells[1].faces[1] = Some(kids[0]);
-                                new_cells[3].faces[1] = Some(kids[2]);
-                                new_cells[5].faces[1] = Some(kids[4]);
-                                new_cells[7].faces[1] = Some(kids[6]);
-                                self[kids[0]].faces[3] = Some(new_indices[1]);
-                                self[kids[2]].faces[3] = Some(new_indices[3]);
-                                self[kids[4]].faces[3] = Some(new_indices[5]);
-                                self[kids[6]].faces[3] = Some(new_indices[7]);
-                            }
-                            2 => {
-                                new_cells[2].faces[2] = Some(kids[0]);
-                                new_cells[3].faces[2] = Some(kids[1]);
-                                new_cells[6].faces[2] = Some(kids[4]);
-                                new_cells[7].faces[2] = Some(kids[5]);
-                                self[kids[0]].faces[0] = Some(new_indices[2]);
-                                self[kids[1]].faces[0] = Some(new_indices[3]);
-                                self[kids[4]].faces[0] = Some(new_indices[6]);
-                                self[kids[5]].faces[0] = Some(new_indices[7]);
-                            }
-                            3 => {
-                                new_cells[0].faces[3] = Some(kids[1]);
-                                new_cells[2].faces[3] = Some(kids[3]);
-                                new_cells[4].faces[3] = Some(kids[5]);
-                                new_cells[6].faces[3] = Some(kids[7]);
-                                self[kids[1]].faces[1] = Some(new_indices[0]);
-                                self[kids[3]].faces[1] = Some(new_indices[2]);
-                                self[kids[5]].faces[1] = Some(new_indices[4]);
-                                self[kids[7]].faces[1] = Some(new_indices[6]);
-                            }
-                            4 => {
-                                new_cells[0].faces[4] = Some(kids[4]);
-                                new_cells[1].faces[4] = Some(kids[5]);
-                                new_cells[2].faces[4] = Some(kids[6]);
-                                new_cells[3].faces[4] = Some(kids[7]);
-                                self[kids[4]].faces[5] = Some(new_indices[0]);
-                                self[kids[5]].faces[5] = Some(new_indices[1]);
-                                self[kids[6]].faces[5] = Some(new_indices[2]);
-                                self[kids[7]].faces[5] = Some(new_indices[3]);
-                            }
-                            5 => {
-                                new_cells[4].faces[5] = Some(kids[0]);
-                                new_cells[5].faces[5] = Some(kids[1]);
-                                new_cells[6].faces[5] = Some(kids[2]);
-                                new_cells[7].faces[5] = Some(kids[3]);
-                                self[kids[0]].faces[4] = Some(new_indices[4]);
-                                self[kids[1]].faces[4] = Some(new_indices[5]);
-                                self[kids[2]].faces[4] = Some(new_indices[6]);
-                                self[kids[3]].faces[4] = Some(new_indices[7]);
-                            }
-                            _ => panic!(),
-                        }
-                    }
-                }
-            });
-        self.extend(new_cells);
     }
 }
