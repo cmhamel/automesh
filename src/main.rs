@@ -736,6 +736,9 @@ fn mesh(
     //     }
     //     println!();
     // }
+    //
+    // when put back, make faint like nels below
+    //
     if surface {
         if !quiet {
             time = Instant::now();
