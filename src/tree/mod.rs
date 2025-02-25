@@ -1430,6 +1430,11 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
             .collect::<Blocks>();
         let default_face_info = [None; NUM_FACES];
         let mut faces_info = default_face_info;
+        //
+        // can you also count faces that are shared with the octree boundary?
+        // and maybe you can extend that to include shared with removed blocks
+        // so then you can make a way to remove boundaries only touched by removed materials and octree boundary
+        //
         let boundaries_cells_faces = blocks
             .iter()
             .zip(clusters.iter())
@@ -1530,7 +1535,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
                                             node_new += 1;
                                         }
                                     });
-                                face_blocks.push(boundary as u8);
+                                face_blocks.push(boundary as u8 + 1);
                                 faces_connectivity.push(face_connectivity)
                             }
                         }
