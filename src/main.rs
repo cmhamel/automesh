@@ -295,7 +295,7 @@ enum Commands {
         output: String,
 
         /// Number of smoothing iterations
-        #[arg(default_value_t = 10, long, short = 'n', value_name = "NUM")]
+        #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
         /// Name of the smoothing method [default: Taubin]
@@ -329,7 +329,7 @@ enum MeshingCommands {
         hierarchical: bool,
 
         /// Number of smoothing iterations
-        #[arg(default_value_t = 10, long, short = 'n', value_name = "NUM")]
+        #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
         /// Name of the smoothing method [default: Taubin]
@@ -787,6 +787,11 @@ fn mesh(
             Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
             Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
             Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+            Some("stl") => write_output(
+                output,
+                OutputTypes::<3, TriangularFiniteElements>::Stl(output_type.into_tesselation()),
+                quiet,
+            )?,
             Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
             _ => invalid_output(&output, output_extension)?,
         }
