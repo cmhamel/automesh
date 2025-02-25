@@ -1,11 +1,5 @@
 """This script is a quality control tool for the metrics of a mesh.
 
-In finite element analysis for a triangular finite element with three nodes,
-the determinant of the Jacobian matrix is related to the area of the triangle
-as follows:
-
-det(J) = 2 * Area
-
 """
 
 from typing import Final
