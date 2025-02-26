@@ -626,7 +626,10 @@ fn defeature(
             Some("npy") => {
                 let time = Instant::now();
                 if !quiet {
-                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                    println!(
+                        " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                        min
+                    );
                 }
                 voxels = voxels.defeature(min);
                 if !quiet {
@@ -641,7 +644,10 @@ fn defeature(
             Some("spn") => {
                 let time = Instant::now();
                 if !quiet {
-                    println!(" \x1b[1;96mDefeaturing\x1b[0m {}", output);
+                    println!(
+                        " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                        min
+                    );
                 }
                 voxels = voxels.defeature(min);
                 if !quiet {
@@ -694,7 +700,6 @@ fn mesh(
             .map(|entry| entry as u8)
             .collect()
     });
-    let nel = Nel::from_input([nelx, nely, nelz])?;
     let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -752,7 +757,7 @@ fn mesh(
                 println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
             }
         }
-        let (_, mut tree) = Octree::from_voxels(input_type);
+        let (nel_padded, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
         if let Some(min_num_voxels) = defeature {
             tree.defeature(min_num_voxels, &remove);
@@ -761,7 +766,7 @@ fn mesh(
             println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
         }
         let mut output_type: TriangularFiniteElements =
-            tree.into_finite_elements(nel, remove, scale, translate)?;
+            tree.into_finite_elements(nel_padded, remove, scale, translate)?;
         if !quiet {
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
         }
@@ -818,10 +823,10 @@ fn mesh(
             println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
         }
         let mut output_type = if dual {
-            let (_, mut tree) = Octree::from_voxels(input_type);
+            let (nel_padded, mut tree) = Octree::from_voxels(input_type);
             tree.balance(true);
             tree.pair();
-            tree.into_finite_elements(nel, remove, scale, translate)?
+            tree.into_finite_elements(nel_padded, remove, scale, translate)?
         } else {
             input_type.into_finite_elements(remove, scale, translate)?
         };
