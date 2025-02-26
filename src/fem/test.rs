@@ -3300,13 +3300,16 @@ fn metrics_headers_test() {
     // This test assures both types are created correctly.
 
     // Test HEX headers
-    let hex_header_gold = "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n".to_string();
+    let hex_header_gold = 
+        "maximum edge ratio,minimum scaled jacobian,maximum skew,element volume\n"
+        .to_string();
     let hex_header_result = metrics_headers::<HEX>();
     assert_eq!(hex_header_gold, hex_header_result);
 
     // Test TRI headers
     let tri_header_gold =
-        "maximum edge ratio,    minimum scaled jacobian,               area\n".to_string();
+        "maximum edge ratio,minimum scaled jacobian,maximum skew,element area,minimum angle\n"
+        .to_string();
     let tri_header_result = metrics_headers::<TRI>();
     assert_eq!(tri_header_gold, tri_header_result);
 }

@@ -1034,8 +1034,12 @@ fn write_finite_elements_to_vtk<const N: usize>(
 fn metrics_headers<const N: usize>() -> String {
     // TODO: Update all instances of "maximum skew" to "skew".
     match N {
-        HEX => "maximum edge ratio,    minimum scaled jacobian,               maximum skew,                     volume\n".to_string(),
-        TRI => "maximum edge ratio,    minimum scaled jacobian,               area\n".to_string(),
+        HEX => 
+            "maximum edge ratio,minimum scaled jacobian,maximum skew,element volume\n"
+            .to_string(),
+        TRI => 
+            "maximum edge ratio,minimum scaled jacobian,maximum skew,element area,minimum angle\n"
+            .to_string(),
         _ => panic!()
     }
 }
