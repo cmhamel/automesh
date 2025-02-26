@@ -84,7 +84,7 @@ pub trait Tree {
     fn balance(&mut self, strong: bool);
     fn boundaries(&mut self, nel_padded: &Nel);
     fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap);
-    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>);
+    fn defeature(&mut self, min_num_voxels: usize);
     fn from_voxels(voxels: Voxels) -> (Nel, Self);
     fn octree_into_finite_elements(
         self,
@@ -959,15 +959,15 @@ impl Tree for Octree {
             });
         (clusters, cell_from_subcell_map)
     }
-    fn defeature(&mut self, min_num_voxels: usize, remove: &Option<Blocks>) {
+    fn defeature(&mut self, min_num_voxels: usize) {
         //
         // Does not yet reassign individual cells surrounded by other materials on 4 (or 5?) sides.
         //
-        // Should cells of a removed cluster be reassigned one at a time instead?
+        // Should cells of a reassigned cluster be reassigned one at a time instead?
         // Have to figure that out anyway if do protrusions.
         //
         // Do the clusters need to be updated each time another changes?
-        // In case a cluster inherits the removed cluster and becomes large enough?
+        // In case a cluster inherits the reassigned cluster and becomes large enough?
         //
         // Still may not understand why `blocks` could be empty below.
         //
@@ -975,7 +975,7 @@ impl Tree for Octree {
         for iteration in 1.. {
             let mut block = 0;
             let mut blocks = vec![];
-            let (clusters, cell_from_subcell_map) = self.clusters(remove);
+            let (clusters, cell_from_subcell_map) = self.clusters(&None);
             let mut counts = vec![];
             let mut face_block = 0;
             let mut neighbor_block = 0;

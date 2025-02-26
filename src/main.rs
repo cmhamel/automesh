@@ -760,7 +760,7 @@ fn mesh(
         let (nel_padded, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
         if let Some(min_num_voxels) = defeature {
-            tree.defeature(min_num_voxels, &remove);
+            tree.defeature(min_num_voxels);
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
             time = Instant::now();
             println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
