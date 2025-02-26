@@ -3171,11 +3171,6 @@ fn triangular_unit_tests() {
         0.8687454713083852,
     ];
 
-    // let minimum_scaled_jacobians_gold = [
-    //     8.978e-01, 8.314e-01, 4.262e-01, 7.003e-01, 8.800e-01, 8.039e-01, 7.190e-01, 8.061e-01,
-    //     7.606e-01, 7.391e-01, 6.392e-01, 5.947e-01, 8.165e-01,
-    // ];
-
     let element_node_connectivity = vec![
         [1, 2, 3], // single_valence_04_noise2.inp begin
         [4, 2, 5],
@@ -3241,9 +3236,6 @@ fn triangular_unit_tests() {
         .map(|angle| angle * RAD_TO_DEG)
         .collect();
 
-    // Print the minimum_angles_deg
-    println!("\nMinimum Angles Triangle (deg): {:?}", minimum_angles_deg);
-
     minimum_angles_deg
         .iter()
         .zip(minimum_angles_gold_deg.iter())
@@ -3282,7 +3274,23 @@ fn triangular_unit_tests() {
                 calculated,
                 gold
             )
-        })
+        });
+
+    // let element_areas = calculate_element_measures(&element_node_connectivity, &nodal_coordinates);
+    let minimum_scaled_jacobians =
+        calculate_minimum_scaled_jacobians(&element_node_connectivity, &nodal_coordinates);
+
+    minimum_scaled_jacobians
+        .iter()
+        .zip(minimum_scaled_jacobians_gold.iter())
+        .for_each(|(calculated, gold)| {
+            assert!(
+                (calculated - gold).abs() < EPSILON,
+                "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
+                calculated,
+                gold
+            )
+        });
 }
 
 #[test]

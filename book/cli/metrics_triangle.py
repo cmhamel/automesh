@@ -6,7 +6,7 @@ from typing import Final
 import numpy as np
 
 DEG_TO_RAD: Final[float] = np.pi / 180.0
-J_EQUILATERAL = np.sqrt(3.0) / 2.0  # sin(60 deg)
+J_EQUILATERAL: Final[float] = np.sqrt(3.0) / 2.0  # sin(60 deg)
 
 
 def nf(x):
