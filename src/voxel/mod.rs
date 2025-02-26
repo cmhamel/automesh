@@ -42,6 +42,21 @@ pub struct Nel {
 }
 
 impl Nel {
+    pub fn from_input<'a>([nelx, nely, nelz]: [Option<usize>; NSD]) -> Result<Self, &'a str> {
+        if let Some(x) = nelx {
+            if let Some(y) = nely {
+                if let Some(z) = nelz {
+                    Ok(Self { x, y, z })
+                } else {
+                    Err("Argument nelz was required but was not provided")
+                }
+            } else {
+                Err("Argument nely was required but was not provided")
+            }
+        } else {
+            Err("Argument nelx was required but was not provided")
+        }
+    }
     pub fn iter(&self) -> impl Iterator<Item = &usize> {
         [self.x(), self.y(), self.z()].into_iter()
     }
