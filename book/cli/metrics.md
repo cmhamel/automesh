@@ -151,12 +151,13 @@ The element coordinates follow:
 
 ## Triangular Metrics
 
-`automesh` implements the following triangular element quality metrics defined in the Verdict report.[^Knupp_2006]
+`automesh` implements the following triangular element quality metrics:
 
 * Maximum edge ratio ${\rm ER}_{\max}$
 * Minium scaled Jacobian ${\rm SJ}_{\min}$
-* Skew
+* Maximum skew
 * Element area
+* Minimum angle
 
 A brief description of each metric follows.
 
@@ -197,6 +198,10 @@ $$
 ### Element Area
 
 * Measures the area of the element.
+
+### Minimum Angle
+
+* The smallest the three angles of a triangle.
 
 ## Triangular Unit Tests
 
@@ -254,12 +259,11 @@ file  |  `e`  | ${\rm ER}_{\max}$ | ${\rm SJ}_{\min}$ | ${\rm skew_{\max}}$  | a
 `D`   |   1   | 1.000 [1.000] | 1.000 [1.000] | 0.000 [0.000] | 0.433 [0.433] | 60.0 [60.0]
 `E`   |   1   | 1.256 [1.256] | 0.869 [0.869] | 0.187 [0.187] | 3.273 [3.273] | 48.8 [48.8]
 
-Figure: Maximum edge ratio, minimum scaled Jacobian, skew, and area.
+Figure: Triangle metrics.
 Leading values are from `automesh`.
-Values in (parenthesis) are results from Cubit.
-Values in [brackets] are from an independent Python calculation, (see [`metrics_triangle.py`](#metrics_trianglepy)) and are the same in double precision with a tolerance of less than `2.22e-15`.
-Cubit uses the term *Aspect Ratio* but it is **not the same** as Edge Ratio.
-Except for edge ratio, all values except were verified with Cubit.
+Values in [brackets] are from an independent Python calculation, (see [`metrics_triangle.py`](#metrics_trianglepy)) and agree with `automesh` in double precision with a tolerance of less than `2.22e-15`.
+Except for edge ratio, all values were also verified with Cubit.
+Cubit uses the term *Aspect Ratio*; it is **not the same** as Edge Ratio.
 
 * File `A` is `single_valence_04_noise2.inp`.
 * File `B` is `one_facet.stl`.

@@ -3068,11 +3068,8 @@ fn triangular_unit_tests() {
     // tests/input/one_facet.stl.
     // The next triangle is an equilateral triangle of side length 4.0.
 
-    // Gold values are from Cubit, which uses "Aspect Ratio" instead of Edge Ratio
-    // Turns out these are not the same thing!
-    // let maximum_edge_ratios_gold = [
-    //     1.048, 1.150, 2.588, 1.407, 1.061, 1.225, 1.226, 1.156, 1.323, 1.157, 1.405, 1.463, 1.207,
-    // ];
+    // Gold values are not from Cubit, which uses "Aspect Ratio" instead of Edge Ratio
+    // Turns out these are NOT the same thing!
 
     // Gold values from ~/autotwin/automesh/sandbox/metrics.py
     let maximum_edge_ratios_gold = [
