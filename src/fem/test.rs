@@ -1,5 +1,7 @@
+use crate::fem::calculate_element_volumes_hex;
+
 use super::{
-    automesh_header, calculate_element_measures, calculate_maximum_edge_ratios,
+    automesh_header, calculate_element_areas_tri, calculate_maximum_edge_ratios,
     calculate_maximum_skews, calculate_minimum_angles_tri, calculate_minimum_scaled_jacobians,
     metrics_headers, Blocks, Connectivity, Coordinates, HexahedralFiniteElements, Nodes, Smoothing,
     VecConnectivity, HEX, TRI,
@@ -2967,7 +2969,7 @@ fn valence_3_and_4_noised() {
     // measures in 3D are volumes
     let element_volumes: Vec<f64> = nodal_coordinates
         .iter()
-        .flat_map(|x| calculate_element_measures(&element_node_connectivity, x).to_vec())
+        .flat_map(|x| calculate_element_volumes_hex(&element_node_connectivity, x).to_vec())
         .collect();
 
     // Assert that the calculated values are approximately equal to the gold values
@@ -3259,7 +3261,7 @@ fn triangular_unit_tests() {
             );
         });
 
-    let element_areas = calculate_element_measures(&element_node_connectivity, &nodal_coordinates);
+    let element_areas = calculate_element_areas_tri(&element_node_connectivity, &nodal_coordinates);
 
     element_areas
         .iter()
