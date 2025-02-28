@@ -8,7 +8,10 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
-    fem::{Blocks, Connectivity, HexahedralFiniteElements, HEX, NODE_NUMBERING_OFFSET},
+    fem::{
+        Blocks, Connectivity, FiniteElementMethods, HexahedralFiniteElements, HEX,
+        NODE_NUMBERING_OFFSET,
+    },
     Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
@@ -39,6 +42,21 @@ pub struct Nel {
 }
 
 impl Nel {
+    pub fn from_input<'a>([nelx, nely, nelz]: [Option<usize>; NSD]) -> Result<Self, &'a str> {
+        if let Some(x) = nelx {
+            if let Some(y) = nely {
+                if let Some(z) = nelz {
+                    Ok(Self { x, y, z })
+                } else {
+                    Err("Argument nelz was required but was not provided")
+                }
+            } else {
+                Err("Argument nely was required but was not provided")
+            }
+        } else {
+            Err("Argument nelx was required but was not provided")
+        }
+    }
     pub fn iter(&self) -> impl Iterator<Item = &usize> {
         [self.x(), self.y(), self.z()].into_iter()
     }
@@ -249,7 +267,7 @@ impl Voxels {
 fn defeature_voxels(min_num_voxels: usize, voxels: Voxels) -> Voxels {
     let (nel, mut tree) = Octree::from_voxels(voxels);
     tree.balance(true);
-    tree.defeature(min_num_voxels, None);
+    tree.defeature(min_num_voxels);
     Voxels::from_octree(nel, tree)
 }
 
@@ -259,36 +277,24 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSize
     let mut removed_data = remove.unwrap_or_default();
     removed_data.sort();
     removed_data.dedup();
-    let filtered_voxel_data_combo: VoxelDataSized<4> = data
+    let (filtered_voxel_data, element_blocks) = data
         .axis_iter(Axis(2))
         .enumerate()
-        .map(|(k, data_k)| {
+        .flat_map(|(k, data_k)| {
             data_k
                 .axis_iter(Axis(1))
                 .enumerate()
-                .map(|(j, data_kj)| {
+                .flat_map(|(j, data_kj)| {
                     data_kj
                         .iter()
                         .enumerate()
                         .filter(|(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
-                        .map(|(i, data_kji)| [i, j, k, *data_kji as usize])
-                        .collect()
+                        .map(|(i, data_kji)| ([i, j, k], *data_kji))
+                        .collect::<Vec<([usize; NSD], u8)>>()
                 })
-                .collect()
+                .collect::<Vec<([usize; NSD], u8)>>()
         })
-        .collect::<Vec<Vec<Vec<[usize; 4]>>>>()
-        .into_iter()
-        .flatten()
-        .flatten()
-        .collect();
-    let element_blocks = filtered_voxel_data_combo
-        .iter()
-        .map(|&[_, _, _, data]| data as u8)
-        .collect();
-    let filtered_voxel_data = filtered_voxel_data_combo
-        .into_iter()
-        .map(|[i, j, k, _]| [i, j, k])
-        .collect();
+        .unzip();
     #[cfg(feature = "profile")]
     println!(
         "           \x1b[1;93m⤷ Removed voxels\x1b[0m {:?}",
