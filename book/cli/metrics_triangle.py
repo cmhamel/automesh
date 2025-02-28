@@ -1,5 +1,4 @@
-"""This script is a quality control tool for the metrics of a tri mesh.
-"""
+"""This script is a quality control tool for the metrics of a tri mesh."""
 
 from typing import Final
 
@@ -96,9 +95,9 @@ for element in element_node_connectivity:
     for pair in pairs:
         print(f"    pair {pair}")
         aa, bb = pair
-        edge = np.array(nodal_coordinates[bb - NODE_NUMBERING_OFFSET]) - np.array(
-            nodal_coordinates[aa - NODE_NUMBERING_OFFSET]
-        )
+        edge = np.array(
+            nodal_coordinates[bb - NODE_NUMBERING_OFFSET]
+        ) - np.array(nodal_coordinates[aa - NODE_NUMBERING_OFFSET])
         edge_vectors = edge_vectors + (edge,)
         edge_length = np.linalg.norm(edge)
         # print(f"    lens {edge_length}")
