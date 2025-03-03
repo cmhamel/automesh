@@ -188,7 +188,7 @@ enum Commands {
 
     /// Quality metrics for an existing finite element mesh
     Metrics {
-        /// Mesh (inp) input file
+        /// Mesh (inp | stl) input file
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
