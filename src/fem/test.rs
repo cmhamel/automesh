@@ -11,7 +11,7 @@ use conspire::math::{Tensor, TensorVec};
 const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
 const RAD_TO_DEG: f64 = 1.0 / DEG_TO_RAD;
 
-const EPSILON: f64 = 10.0 * f64::EPSILON;
+const EPSILON: f64 = 1.0e-14;
 const SMOOTHING_SCALE: f64 = 0.3;
 
 const ZERO: f64 = 0.0;
