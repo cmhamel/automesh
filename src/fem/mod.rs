@@ -559,16 +559,16 @@ impl FiniteElementSpecifics for HexahedralFiniteElements {
         node_node_connectivity
             .iter()
             .enumerate()
-            .map(|(node, connectivity)| {
+            .map(|(node_index_i, connectivity)| {
                 if connectivity.is_empty() {
                     Coordinate::zero()
                 } else {
                     connectivity
                         .iter()
-                        .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].copy())
                         .sum::<Coordinate>()
                         / (connectivity.len() as f64)
-                        - nodal_coordinates[node].copy()
+                        - &nodal_coordinates[node_index_i]
                 }
             })
             .collect()
