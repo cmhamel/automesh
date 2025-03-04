@@ -4,8 +4,8 @@ use super::{
     automesh_header, calculate_maximum_edge_ratios, calculate_maximum_skews,
     calculate_minimum_scaled_jacobians, metrics_headers,
     tri::{calculate_element_areas_tri, calculate_minimum_angles_tri},
-    Blocks, Connectivity, Coordinates, FiniteElementMethods, FiniteElementSpecifics,
-    HexahedralFiniteElements, Nodes, Smoothing, VecConnectivity, HEX, TRI,
+    Blocks, Connectivity, Coordinates, FiniteElementMethods, HexahedralFiniteElements, Nodes,
+    Smoothing, VecConnectivity, HEX, TRI,
 };
 use conspire::math::{Tensor, TensorVec};
 

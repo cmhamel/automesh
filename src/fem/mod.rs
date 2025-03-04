@@ -89,6 +89,8 @@ where
     ) -> Self;
     /// Constructs and returns a new finite elements type from an Abaqus input file.
     fn from_inp(file_path: &str) -> Result<Self, ErrorIO>;
+    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates;
     /// Calculates and sets the nodal influencers.
     fn nodal_influencers(&mut self);
     /// Calculates and sets the nodal hierarchy.
@@ -181,6 +183,25 @@ where
             element_node_connectivity,
             nodal_coordinates,
         ))
+    }
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
+        let nodal_coordinates = self.get_nodal_coordinates();
+        node_node_connectivity
+            .iter()
+            .enumerate()
+            .map(|(node_index_i, connectivity)| {
+                if connectivity.is_empty() {
+                    Coordinate::zero()
+                } else {
+                    connectivity
+                        .iter()
+                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].copy())
+                        .sum::<Coordinate>()
+                        / (connectivity.len() as f64)
+                        - &nodal_coordinates[node_index_i]
+                }
+            })
+            .collect()
     }
     fn nodal_influencers(&mut self) {
         #[cfg(feature = "profile")]
@@ -533,8 +554,6 @@ pub trait FiniteElementSpecifics {
     fn connected_nodes(node: &usize) -> Vec<usize>;
     /// Converts the finite elements into a tessellation, consuming the finite elements.
     fn into_tesselation(self) -> Tessellation;
-    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
-    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates;
 }
 
 impl FiniteElementSpecifics for HexahedralFiniteElements {
@@ -553,25 +572,6 @@ impl FiniteElementSpecifics for HexahedralFiniteElements {
     }
     fn into_tesselation(self) -> Tessellation {
         unimplemented!()
-    }
-    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
-        let nodal_coordinates = self.get_nodal_coordinates();
-        node_node_connectivity
-            .iter()
-            .enumerate()
-            .map(|(node_index_i, connectivity)| {
-                if connectivity.is_empty() {
-                    Coordinate::zero()
-                } else {
-                    connectivity
-                        .iter()
-                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].copy())
-                        .sum::<Coordinate>()
-                        / (connectivity.len() as f64)
-                        - &nodal_coordinates[node_index_i]
-                }
-            })
-            .collect()
     }
 }
 
