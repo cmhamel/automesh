@@ -1,3 +1,6 @@
+#[cfg(feature = "profile")]
+use std::time::Instant;
+
 use super::{
     calculate_maximum_edge_ratios, calculate_maximum_skews, calculate_minimum_scaled_jacobians,
     metrics_headers, Connectivity, Coordinate, Coordinates, FiniteElementMethods,
@@ -72,89 +75,112 @@ impl FiniteElementSpecifics for TriangularFiniteElements {
         Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
     fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
-        let element_node_connectivity = self.get_element_node_connectivity();
-        let nodal_coordinates = self.get_nodal_coordinates();
-        let node_element_connectivity = self.get_node_element_connectivity();
-        let mut uncommon_node = 0;
-        node_node_connectivity
-            .iter()
-            .enumerate()
-            .map(|(node_index_i, connectivity)| {
-                if connectivity.is_empty() {
-                    Coordinate::zero()
-                } else {
+        let order = 2;
+        let mut laplacian = self.get_nodal_coordinates().copy();
+        for _ in 0..order {
+            laplacian = node_node_connectivity
+                .iter()
+                .enumerate()
+                .map(|(node_index_i, connectivity)| {
+                    if connectivity.is_empty() {
+                        Coordinate::zero()
+                    } else {
+                        connectivity
+                            .iter()
+                            .map(|node_j| laplacian[node_j - NODE_NUMBERING_OFFSET].copy())
+                            .sum::<Coordinate>()
+                            / (connectivity.len() as f64)
+                            - &laplacian[node_index_i]
+                    }
+                })
+                .collect();
+            }
+        laplacian
+        //
+        //
+        // let element_node_connectivity = self.get_element_node_connectivity();
+        // let nodal_coordinates = self.get_nodal_coordinates();
+        // let node_element_connectivity = self.get_node_element_connectivity();
+        // let mut uncommon_node = 0;
+        // node_node_connectivity
+        //     .iter()
+        //     .enumerate()
+        //     .map(|(node_index_i, connectivity)| {
+        //         if connectivity.is_empty() {
+        //             Coordinate::zero()
+        //         } else {
+        //             connectivity
+        //                 .iter()
+        //                 .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+        //                 .sum::<Coordinate>()
+        //                 / (connectivity.len() as f64)
+        //                 - &nodal_coordinates[node_index_i]
                     // connectivity
                     //     .iter()
-                    //     .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+                    //     .map(|node_j| {
+                    //         (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
+                    //             - &nodal_coordinates[node_index_i])
+                    //             * node_element_connectivity[node_index_i]
+                    //                 .iter()
+                    //                 .flat_map(|triangle_a| {
+                    //                     node_element_connectivity[node_j - NODE_NUMBERING_OFFSET]
+                    //                         .iter()
+                    //                         .find(|&triangle_b| triangle_b == triangle_a)
+                    //                 })
+                    //                 .map(|triangle| {
+                    //                     uncommon_node = element_node_connectivity
+                    //                         [triangle - ELEMENT_NUMBERING_OFFSET]
+                    //                         .iter()
+                    //                         .find(|&node| {
+                    //                             node - NODE_NUMBERING_OFFSET != node_index_i
+                    //                                 && node != node_j
+                    //                         })
+                    //                         .unwrap()
+                    //                         - NODE_NUMBERING_OFFSET;
+                    //                     cotangent(
+                    //                         (&nodal_coordinates[node_index_i]
+                    //                             - &nodal_coordinates[uncommon_node])
+                    //                             .norm(),
+                    //                         (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
+                    //                             - &nodal_coordinates[uncommon_node])
+                    //                             .norm(),
+                    //                         (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
+                    //                             - &nodal_coordinates[node_index_i])
+                    //                             .norm_squared(),
+                    //                     )
+                    //                 })
+                    //                 .sum::<f64>()
+                    //     })
                     //     .sum::<Coordinate>()
-                    //     / (connectivity.len() as f64)
-                    //     - &nodal_coordinates[node_index_i]
-                    connectivity
-                        .iter()
-                        .map(|node_j| {
-                            (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
-                                - &nodal_coordinates[node_index_i])
-                                * node_element_connectivity[node_index_i]
-                                    .iter()
-                                    .flat_map(|triangle_a| {
-                                        node_element_connectivity[node_j - NODE_NUMBERING_OFFSET]
-                                            .iter()
-                                            .find(|&triangle_b| triangle_b == triangle_a)
-                                    })
-                                    .map(|triangle| {
-                                        uncommon_node = element_node_connectivity
-                                            [triangle - ELEMENT_NUMBERING_OFFSET]
-                                            .iter()
-                                            .find(|&node| {
-                                                node - NODE_NUMBERING_OFFSET != node_index_i
-                                                    && node != node_j
-                                            })
-                                            .unwrap()
-                                            - NODE_NUMBERING_OFFSET;
-                                        cotangent(
-                                            (&nodal_coordinates[node_index_i]
-                                                - &nodal_coordinates[uncommon_node])
-                                                .norm(),
-                                            (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
-                                                - &nodal_coordinates[uncommon_node])
-                                                .norm(),
-                                            (&nodal_coordinates[node_j - NODE_NUMBERING_OFFSET]
-                                                - &nodal_coordinates[node_index_i])
-                                                .norm_squared(),
-                                        )
-                                    })
-                                    .sum::<f64>()
-                        })
-                        .sum::<Coordinate>()
-                        / (node_element_connectivity[node_index_i]
-                            .iter()
-                            .map(|&triangle| {
-                                (&nodal_coordinates[element_node_connectivity
-                                    [triangle - ELEMENT_NUMBERING_OFFSET][2]
-                                    - NODE_NUMBERING_OFFSET]
-                                    - &nodal_coordinates[element_node_connectivity
-                                        [triangle - ELEMENT_NUMBERING_OFFSET][1]
-                                        - NODE_NUMBERING_OFFSET])
-                                    .cross(
-                                        &(&nodal_coordinates[element_node_connectivity
-                                            [triangle - ELEMENT_NUMBERING_OFFSET][0]
-                                            - NODE_NUMBERING_OFFSET]
-                                            - &nodal_coordinates[element_node_connectivity
-                                                [triangle - ELEMENT_NUMBERING_OFFSET][2]
-                                                - NODE_NUMBERING_OFFSET]),
-                                    )
-                                    .norm()
-                            })
-                            .sum::<f64>()
-                            / 3.0)
+                    //     / (node_element_connectivity[node_index_i]
+                    //         .iter()
+                    //         .map(|&triangle| {
+                    //             (&nodal_coordinates[element_node_connectivity
+                    //                 [triangle - ELEMENT_NUMBERING_OFFSET][2]
+                    //                 - NODE_NUMBERING_OFFSET]
+                    //                 - &nodal_coordinates[element_node_connectivity
+                    //                     [triangle - ELEMENT_NUMBERING_OFFSET][1]
+                    //                     - NODE_NUMBERING_OFFSET])
+                    //                 .cross(
+                    //                     &(&nodal_coordinates[element_node_connectivity
+                    //                         [triangle - ELEMENT_NUMBERING_OFFSET][0]
+                    //                         - NODE_NUMBERING_OFFSET]
+                    //                         - &nodal_coordinates[element_node_connectivity
+                    //                             [triangle - ELEMENT_NUMBERING_OFFSET][2]
+                    //                             - NODE_NUMBERING_OFFSET]),
+                    //                 )
+                    //                 .norm()
+                    //         })
+                    //         .sum::<f64>()
+                    //         / 3.0)
                     //
                     // need to divide by "one third of the summed areas of the triangles incident to i"
                     // or is it the mixed Voronoi cell area?
                     //
                     // and also divide by 2, but factored out removing 0.5 from cross product area
-                }
-            })
-            .collect()
+            //     }
+            // })
+            // .collect()
     }
 }
 
