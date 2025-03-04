@@ -1,7 +1,8 @@
 use super::{
     calculate_maximum_edge_ratios, calculate_maximum_skews, calculate_minimum_scaled_jacobians,
-    metrics_headers, Connectivity, Coordinates, FiniteElementMethods, FiniteElementSpecifics,
-    FiniteElements, Metrics, Tessellation, VecConnectivity, Vector, NODE_NUMBERING_OFFSET,
+    metrics_headers, Connectivity, Coordinate, Coordinates, FiniteElementMethods,
+    FiniteElementSpecifics, FiniteElements, Metrics, Tessellation, VecConnectivity, Vector,
+    ELEMENT_NUMBERING_OFFSET, NODE_NUMBERING_OFFSET,
 };
 use conspire::math::{Tensor, TensorArray};
 use ndarray::{s, Array2};
@@ -70,8 +71,54 @@ impl FiniteElementSpecifics for TriangularFiniteElements {
             .collect();
         Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
-    fn laplacian(&self, _node_node_connectivity: &VecConnectivity) -> Coordinates {
-        todo!()
+    fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
+        let element_node_connectivity = self.get_element_node_connectivity();
+        // let nodal_coordinates = self.get_nodal_coordinates();
+        let node_element_connectivity = self.get_node_element_connectivity();
+        node_node_connectivity
+            .iter()
+            .enumerate()
+            .map(|(node, connectivity)| {
+                if connectivity.is_empty() {
+                    Coordinate::zero()
+                } else {
+                    //
+                    // each node touches a set of triangles
+                    // some of those triangles share another node, and therefore an edge
+                    //
+                    node_element_connectivity[node]
+                        .iter()
+                        .for_each(|&triangle_a| {
+                            node_element_connectivity[node]
+                                .iter()
+                                .for_each(|&triangle_b| {
+                                    if let Some(common_node) = element_node_connectivity
+                                        [triangle_a - ELEMENT_NUMBERING_OFFSET]
+                                        .iter()
+                                        .filter(|&node_a| node_a != &node)
+                                        .find_map(|node_a| {
+                                            element_node_connectivity
+                                                [triangle_b - ELEMENT_NUMBERING_OFFSET]
+                                                .iter()
+                                                .filter(|&node_b| node_b != &node)
+                                                .find(|&node_b| node_b == node_a)
+                                        })
+                                    {
+                                        println!("Triangles {triangle_a} and {triangle_b} share nodes {node} and {common_node}.")
+                                    }
+                                    // element_node_connectivity[triangle_a].iter().filter(|foo| foo != node).find
+                                })
+                        });
+                    Coordinate::zero()
+                    // connectivity
+                    //     .iter()
+                    //     .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+                    //     .sum::<Coordinate>()
+                    //     / (connectivity.len() as f64)
+                    //     - nodal_coordinates[node].copy()
+                }
+            })
+            .collect()
     }
 }
 
