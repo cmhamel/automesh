@@ -961,7 +961,7 @@ impl Tree for Octree {
     }
     fn defeature(&mut self, min_num_voxels: usize) {
         //
-        // Does not yet reassign individual cells surrounded by other materials on 4 (or 5?) sides.
+        // Does not yet reassign individual cells surrounded by other materials on 4 sides.
         //
         // Should cells of a reassigned cluster be reassigned one at a time instead?
         // Have to figure that out anyway if do protrusions.
@@ -971,17 +971,71 @@ impl Tree for Octree {
         //
         // Still may not understand why `blocks` could be empty below.
         //
+        let mut block = 0;
+        let mut blocks = vec![];
+        let mut cell_from_subcell_map;
+        let mut clusters;
+        let mut counts: Vec<usize> = vec![];
+        let mut face_block = 0;
+        let mut neighbor_block = 0;
+        let mut new_block = 0;
+        let mut unique_blocks = vec![];
+        let mut volumes: Vec<usize>;
         #[allow(unused_variables)]
         for iteration in 1.. {
-            let mut block = 0;
-            let mut blocks = vec![];
-            let (clusters, cell_from_subcell_map) = self.clusters(&None);
-            let mut counts = vec![];
-            let mut face_block = 0;
-            let mut neighbor_block = 0;
-            let mut new_block = 0;
-            let mut unique_blocks = vec![];
-            let volumes: Vec<usize> = clusters
+            (_, cell_from_subcell_map) = self.clusters(&None);
+            let bar = self
+                .iter()
+                .enumerate()
+                .filter(|(cell_index, cell)| cell.is_voxel())
+                .flat_map(|(voxel_cell_index, voxel_cell)| {
+                    blocks = voxel_cell
+                        .get_faces()
+                        .iter()
+                        .enumerate()
+                        .flat_map(|(face_index, &face)| {
+                            if let Some(face_cell_index) = face {
+                                Some(self[face_cell_index].get_block())
+                            } else if let Some((parent, subcell)) =
+                                cell_from_subcell_map[voxel_cell_index]
+                            {
+                                self[parent].get_faces()[face_index]
+                                    .map(|neighbor| self[neighbor].get_block())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+                    if blocks
+                        .iter()
+                        .filter(|&&face_block| voxel_cell.get_block() != face_block)
+                        .count()
+                        >= 5
+                    {
+                        Some((voxel_cell_index, blocks.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<(usize, Blocks)>>();
+            bar.iter().for_each(|(voxel_cell_index, blocks)| {
+                unique_blocks = blocks.to_vec();
+                unique_blocks.sort();
+                unique_blocks.dedup();
+                counts = unique_blocks
+                    .iter()
+                    .map(|unique_block| {
+                        blocks.iter().filter(|&block| block == unique_block).count()
+                    })
+                    .collect();
+                new_block = unique_blocks[counts
+                    .iter()
+                    .position(|count| count == counts.iter().max().expect("maximum not found"))
+                    .expect("position of maximum not found")];
+                self[*voxel_cell_index].block = Some(new_block)
+            });
+            (clusters, cell_from_subcell_map) = self.clusters(&None);
+            volumes = clusters
                 .iter()
                 .map(|cluster| {
                     cluster
@@ -991,7 +1045,9 @@ impl Tree for Octree {
                 })
                 .collect();
             if volumes.iter().all(|volume| volume >= &min_num_voxels) {
-                break;
+                if bar.is_empty() {
+                    break;
+                }
             } else {
                 clusters
                     .iter()

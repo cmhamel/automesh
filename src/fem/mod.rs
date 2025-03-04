@@ -4,6 +4,13 @@ pub mod py;
 #[cfg(test)]
 pub mod test;
 
+pub mod tri;
+use tri::{
+    calculate_maximum_edge_ratios_tri, calculate_maximum_skews_tri,
+    calculate_minimum_scaled_jacobians_tri, write_finite_elements_metrics_tri,
+};
+pub use tri::{TriangularFiniteElements, TRI};
+
 #[cfg(feature = "profile")]
 use std::time::Instant;
 
@@ -28,10 +35,6 @@ use vtkio::{
 
 const ELEMENT_NUMBERING_OFFSET: usize = 1;
 pub const NODE_NUMBERING_OFFSET: usize = 1;
-
-// TODO: Ask Buche:
-// const J_EQUILATERAL: f64 = 3.0_f64.sqrt() / 2.0;  // sin(60 deg)
-const J_EQUILATERAL: f64 = 0.8660254037844387; // sin(60 deg)
 
 /// A vector of finite element block IDs.
 pub type Blocks = Vec<u8>;
@@ -69,13 +72,9 @@ pub struct FiniteElements<const N: usize> {
 }
 
 pub const HEX: usize = 8;
-pub const TRI: usize = 3;
 
 /// The hexahedral finite elements type.
 pub type HexahedralFiniteElements = FiniteElements<HEX>;
-
-/// The triangular finite elements type.
-pub type TriangularFiniteElements = FiniteElements<TRI>;
 
 /// Methods common to all finite element types.
 pub trait FiniteElementMethods<const N: usize>
@@ -154,7 +153,6 @@ impl<const N: usize> FiniteElementMethods<N> for FiniteElements<N>
 where
     Self: FiniteElementSpecifics + Sized,
 {
-    /// Constructs and returns a new finite elements type from data.
     fn from_data(
         element_blocks: Blocks,
         element_node_connectivity: Connectivity<N>,
@@ -177,7 +175,6 @@ where
             prescribed_nodes_inhomogeneous_coordinates: Coordinates::zero(0),
         }
     }
-    /// Constructs and returns a new finite elements type from an Abaqus input file.
     fn from_inp(file_path: &str) -> Result<Self, ErrorIO> {
         let (element_blocks, element_node_connectivity, nodal_coordinates) =
             finite_element_data_from_inp(file_path)?;
@@ -187,27 +184,25 @@ where
             nodal_coordinates,
         ))
     }
-    /// Calculates and returns the discrete Laplacian for the given node-to-node connectivity.
     fn laplacian(&self, node_node_connectivity: &VecConnectivity) -> Coordinates {
         let nodal_coordinates = self.get_nodal_coordinates();
         node_node_connectivity
             .iter()
             .enumerate()
-            .map(|(node, connectivity)| {
+            .map(|(node_index_i, connectivity)| {
                 if connectivity.is_empty() {
                     Coordinate::zero()
                 } else {
                     connectivity
                         .iter()
-                        .map(|neighbor| nodal_coordinates[neighbor - NODE_NUMBERING_OFFSET].copy())
+                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].copy())
                         .sum::<Coordinate>()
                         / (connectivity.len() as f64)
-                        - nodal_coordinates[node].copy()
+                        - &nodal_coordinates[node_index_i]
                 }
             })
             .collect()
     }
-    /// Calculates and sets the nodal influencers.
     fn nodal_influencers(&mut self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
@@ -234,7 +229,6 @@ where
             time.elapsed()
         );
     }
-    /// Calculates and sets the nodal hierarchy.
     fn nodal_hierarchy(&mut self) -> Result<(), &str> {
         if N != HEX {
             return Err("Only implemented nodal_hierarchy method for hexes.");
@@ -300,7 +294,6 @@ where
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
-    /// Calculates and sets the node-to-element connectivity.
     fn node_element_connectivity(&mut self) -> Result<(), &str> {
         #[cfg(feature = "profile")]
         let time = Instant::now();
@@ -323,7 +316,6 @@ where
         );
         Ok(())
     }
-    /// Calculates and sets the node-to-node connectivity.
     fn node_node_connectivity(&mut self) -> Result<(), &str> {
         let node_element_connectivity = self.get_node_element_connectivity();
         if !node_element_connectivity.is_empty() {
@@ -371,7 +363,6 @@ where
             Err("Need to calculate the node-to-element connectivity first")
         }
     }
-    /// Smooths the nodal coordinates according to the provided smoothing method.
     fn smooth(&mut self, method: Smoothing) -> Result<(), &str> {
         if !self.get_node_node_connectivity().is_empty() {
             let smoothing_iterations;
@@ -443,7 +434,6 @@ where
             Err("Need to calculate the node-to-node connectivity first")
         }
     }
-    /// Writes the finite elements data to a new Exodus file.
     fn write_exo(&self, file_path: &str) -> Result<(), ErrorNetCDF> {
         write_finite_elements_to_exodus(
             file_path,
@@ -452,7 +442,6 @@ where
             self.get_nodal_coordinates(),
         )
     }
-    /// Writes the finite elements data to a new Abaqus file.
     fn write_inp(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_abaqus(
             file_path,
@@ -461,7 +450,6 @@ where
             self.get_nodal_coordinates(),
         )
     }
-    /// Writes the finite elements data to a new Mesh file.
     fn write_mesh(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_to_mesh(
             file_path,
@@ -470,7 +458,6 @@ where
             self.get_nodal_coordinates(),
         )
     }
-    /// Writes the finite elements quality metrics to a new file.
     fn write_metrics(&self, file_path: &str) -> Result<(), ErrorIO> {
         write_finite_elements_metrics(
             file_path,
@@ -478,7 +465,6 @@ where
             self.get_nodal_coordinates(),
         )
     }
-    /// Writes the finite elements data to a new VTK file.
     fn write_vtk(&self, file_path: &str) -> Result<(), ErrorVtk> {
         write_finite_elements_to_vtk(
             file_path,
@@ -487,67 +473,51 @@ where
             self.get_nodal_coordinates(),
         )
     }
-    /// Returns a reference to the boundary nodes.
     fn get_boundary_nodes(&self) -> &Nodes {
         &self.boundary_nodes
     }
-    /// Returns a reference to the element blocks.
     fn get_element_blocks(&self) -> &Blocks {
         &self.element_blocks
     }
-    /// Returns a reference to element-to-node connectivity.
     fn get_element_node_connectivity(&self) -> &Connectivity<N> {
         &self.element_node_connectivity
     }
-    /// Returns a reference to the exterior nodes.
     fn get_exterior_nodes(&self) -> &Nodes {
         &self.exterior_nodes
     }
-    /// Returns a reference to the interface nodes.
     fn get_interface_nodes(&self) -> &Nodes {
         &self.interface_nodes
     }
-    /// Returns a reference to the interior nodes.
     fn get_interior_nodes(&self) -> &Nodes {
         &self.interior_nodes
     }
-    /// Returns a reference to the nodal coordinates.
     fn get_nodal_coordinates(&self) -> &Coordinates {
         &self.nodal_coordinates
     }
-    /// Returns a mutable reference to the nodal coordinates.
     fn get_nodal_coordinates_mut(&mut self) -> &mut Coordinates {
         &mut self.nodal_coordinates
     }
-    /// Returns a reference to the nodal influencers.
     fn get_nodal_influencers(&self) -> &VecConnectivity {
         &self.nodal_influencers
     }
-    /// Returns a reference to the node-to-element connectivity.
     fn get_node_element_connectivity(&self) -> &VecConnectivity {
         &self.node_element_connectivity
     }
-    /// Returns a reference to the node-to-node connectivity.
     fn get_node_node_connectivity(&self) -> &VecConnectivity {
         &self.node_node_connectivity
     }
-    /// Returns a reference to the prescribed nodes.
     fn get_prescribed_nodes(&self) -> &Nodes {
         &self.prescribed_nodes
     }
-    /// Returns a reference to the homogeneously-prescribed nodes.
     fn get_prescribed_nodes_homogeneous(&self) -> &Nodes {
         &self.prescribed_nodes_homogeneous
     }
-    /// Returns a reference to the inhomogeneously-prescribed nodes.
     fn get_prescribed_nodes_inhomogeneous(&self) -> &Nodes {
         &self.prescribed_nodes_inhomogeneous
     }
-    /// Returns a reference to the coordinates of the inhomogeneously-prescribed nodes.
     fn get_prescribed_nodes_inhomogeneous_coordinates(&self) -> &Coordinates {
         &self.prescribed_nodes_inhomogeneous_coordinates
     }
-    /// Sets the prescribed nodes if opted to do so.
     fn set_prescribed_nodes(
         &mut self,
         homogeneous: Option<Nodes>,
@@ -602,59 +572,6 @@ impl FiniteElementSpecifics for HexahedralFiniteElements {
     }
     fn into_tesselation(self) -> Tessellation {
         unimplemented!()
-    }
-}
-
-impl FiniteElementSpecifics for TriangularFiniteElements {
-    fn connected_nodes(node: &usize) -> Vec<usize> {
-        match node {
-            0 => vec![1, 2],
-            1 => vec![0, 2],
-            2 => vec![0, 1],
-            _ => panic!(),
-        }
-    }
-    fn into_tesselation(self) -> Tessellation {
-        let mut normal = Vector::zero();
-        let mut vertices_tri = [0; TRI];
-        let nodal_coordinates = self.get_nodal_coordinates();
-        let vertices = nodal_coordinates
-            .iter()
-            .map(|coordinate| {
-                stl_io::Vertex::new([
-                    coordinate[0] as f32,
-                    coordinate[1] as f32,
-                    coordinate[2] as f32,
-                ])
-            })
-            .collect();
-        let faces = self
-            .get_element_node_connectivity()
-            .iter()
-            .map(|&connectivity| {
-                vertices_tri = [
-                    connectivity[0] - NODE_NUMBERING_OFFSET,
-                    connectivity[1] - NODE_NUMBERING_OFFSET,
-                    connectivity[2] - NODE_NUMBERING_OFFSET,
-                ];
-                normal = (&nodal_coordinates[vertices_tri[1]]
-                    - &nodal_coordinates[vertices_tri[0]])
-                    .cross(
-                        &(&nodal_coordinates[vertices_tri[2]]
-                            - &nodal_coordinates[vertices_tri[0]]),
-                    )
-                    .normalized();
-                stl_io::IndexedTriangle {
-                    normal: stl_io::Normal::new([
-                        normal[0] as f32,
-                        normal[1] as f32,
-                        normal[2] as f32,
-                    ]),
-                    vertices: vertices_tri,
-                }
-            })
-            .collect();
-        Tessellation::new(stl_io::IndexedMesh { vertices, faces })
     }
 }
 
@@ -788,15 +705,7 @@ fn write_finite_elements_to_exodus<const N: usize>(
     file.add_attribute::<f32>("api_version", 8.25)?;
     file.add_attribute::<i32>("file_size", 1)?;
     file.add_attribute::<i32>("floating_point_word_size", 8)?;
-    file.add_attribute::<String>(
-        "title",
-        automesh_header(),
-        // format!(
-        //     "autotwin.automesh, version {}, autogenerated on {}",
-        //     env!("CARGO_PKG_VERSION"),
-        //     Utc::now()
-        // ),
-    )?;
+    file.add_attribute::<String>("title", automesh_header())?;
     file.add_attribute::<f32>("version", 8.25)?;
     let mut element_blocks_unique = element_blocks.clone();
     element_blocks_unique.sort();
@@ -1097,11 +1006,6 @@ fn write_finite_elements_to_vtk<const N: usize>(
     let file = PathBuf::from(file_path);
     Vtk {
         version: Version { major: 4, minor: 2 },
-        // title: format!(
-        //     "autotwin.automesh, version {}, autogenerated on {}",
-        //     env!("CARGO_PKG_VERSION"),
-        //     Utc::now()
-        // ),
         title: automesh_header(),
         byte_order: ByteOrder::BigEndian,
         file_path: None,
@@ -1231,96 +1135,6 @@ fn write_finite_elements_metrics_hex<const N: usize>(
     Ok(())
 }
 
-fn write_finite_elements_metrics_tri<const N: usize>(
-    file_path: &str,
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Result<(), ErrorIO> {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    let maximum_edge_ratios =
-        calculate_maximum_edge_ratios(element_node_connectivity, nodal_coordinates);
-    let minimum_scaled_jacobians =
-        calculate_minimum_scaled_jacobians(element_node_connectivity, nodal_coordinates);
-    let maximum_skews = calculate_maximum_skews(element_node_connectivity, nodal_coordinates);
-    let areas = calculate_element_areas_tri(element_node_connectivity, nodal_coordinates);
-    let minimum_angles = calculate_minimum_angles_tri(element_node_connectivity, nodal_coordinates);
-    #[cfg(feature = "profile")]
-    let time = Instant::now();
-    let mut file = BufWriter::new(File::create(file_path)?);
-    let input_extension = Path::new(&file_path)
-        .extension()
-        .and_then(|ext| ext.to_str());
-    match input_extension {
-        Some("csv") => {
-            let header_string = metrics_headers::<N>();
-            file.write_all(header_string.as_bytes())?;
-            maximum_edge_ratios
-                .iter()
-                .zip(
-                    minimum_scaled_jacobians.iter().zip(
-                        maximum_skews
-                            .iter()
-                            .zip(areas.iter().zip(minimum_angles.iter())),
-                    ),
-                )
-                .try_for_each(
-                    |(
-                        maximum_edge_ratio,
-                        (minimum_scaled_jacobian, (maximum_skew, (area, minimum_angle))),
-                    )| {
-                        file.write_all(
-                            format!(
-                                "{:>10.6e},{:>10.6e},{:>10.6e},{:>10.6e},{:>10.6e}\n",
-                                maximum_edge_ratio,
-                                minimum_scaled_jacobian,
-                                maximum_skew,
-                                area,
-                                minimum_angle
-                            )
-                            .as_bytes(),
-                        )
-                    },
-                )?;
-            file.flush()?
-        }
-        Some("npy") => {
-            let n_columns = 5; // total number of triangle metrics
-            let idx_ratios = 0; // maximum edge ratios
-            let idx_jacobians = 1; // minimum scaled jacobians
-            let idx_skews = 2; // maximum skews
-            let idx_areas = 3; // areas
-            let idx_angles = 4; // minimum angles
-            let mut metrics_set =
-                Array2::<f64>::from_elem((minimum_scaled_jacobians.len(), n_columns), 0.0);
-            metrics_set
-                .slice_mut(s![.., idx_ratios])
-                .assign(&maximum_edge_ratios);
-            metrics_set
-                .slice_mut(s![.., idx_jacobians])
-                .assign(&minimum_scaled_jacobians);
-            metrics_set
-                .slice_mut(s![.., idx_skews])
-                .assign(&maximum_skews);
-            metrics_set.slice_mut(s![.., idx_areas]).assign(&areas);
-            metrics_set
-                .slice_mut(s![.., idx_angles])
-                .assign(&minimum_angles);
-            metrics_set.write_npy(file).unwrap();
-        }
-        _ => panic!("print error message with input and extension"),
-    }
-    #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mWriting triangle metrics to file\x1b[0m {:?}",
-        time.elapsed()
-    );
-    Ok(())
-}
-
 fn calculate_maximum_edge_ratios<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
@@ -1429,84 +1243,6 @@ fn calculate_maximum_edge_ratios_hex<const N: usize>(
     maximum_edge_ratios
 }
 
-fn calculate_maximum_edge_ratios_tri<const N: usize>(
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Metrics {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    // Knupp 2006
-    // https://www.osti.gov/servlets/purl/901967
-    // page 19 and 26
-    let mut l0 = 0.0;
-    let mut l1 = 0.0;
-    let mut l2 = 0.0;
-    let maximum_edge_ratios = element_node_connectivity
-        .iter()
-        .map(|connectivity| {
-            l0 = (&nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET])
-                .norm();
-            l1 = (&nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET])
-                .norm();
-            l2 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET])
-                .norm();
-            [l0 / l1, l1 / l0, l0 / l2, l2 / l0, l1 / l2, l2 / l1]
-                .into_iter()
-                .reduce(f64::max)
-                .unwrap()
-        })
-        .collect();
-    maximum_edge_ratios
-}
-
-fn calculate_minimum_angles_tri<const N: usize>(
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Metrics {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    // edge vectors of the triangle l0, l1, l2
-    let mut l0 = Vector::zero();
-    let mut l1 = Vector::zero();
-    let mut l2 = Vector::zero();
-    let flip = -1.0; // to reverse the direction of the unit vector below
-    let minimum_angles = element_node_connectivity
-        .iter()
-        .map(|connectivity| {
-            l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
-            l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
-            l2 = &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET];
-            l0.normalize();
-            l1.normalize();
-            l2.normalize();
-            [
-                ((&l0 * flip) * &l1).acos(),
-                ((&l1 * flip) * &l2).acos(),
-                ((&l2 * flip) * &l0).acos(),
-            ]
-            .into_iter()
-            .reduce(f64::min)
-            .unwrap()
-        })
-        .collect();
-
-    // Print the minimum_angles
-    // println!("\nMinimum Angles Triangle (rad): {:?}", minimum_angles);
-    minimum_angles
-}
-
 fn calculate_minimum_scaled_jacobians_hex<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
@@ -1606,23 +1342,6 @@ fn calculate_minimum_scaled_jacobians_hex<const N: usize>(
     minimum_scaled_jacobians
 }
 
-fn calculate_minimum_scaled_jacobians_tri<const N: usize>(
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Metrics {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    let minimum_angles = calculate_minimum_angles_tri(element_node_connectivity, nodal_coordinates);
-    let minimum_scaled_jacobians = minimum_angles
-        .iter()
-        .map(|angle| (angle.sin() / J_EQUILATERAL))
-        .collect();
-    minimum_scaled_jacobians
-}
-
 fn calculate_element_principal_axes<const N: usize>(
     connectivity: &[usize; N],
     nodal_coordinates: &Coordinates,
@@ -1687,25 +1406,6 @@ fn calculate_maximum_skews_hex<const N: usize>(
     maximum_skews
 }
 
-fn calculate_maximum_skews_tri<const N: usize>(
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Metrics {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    let deg_to_rad = std::f64::consts::PI / 180.0;
-    let equilateral_rad = 60.0 * deg_to_rad;
-    let minimum_angles = calculate_minimum_angles_tri(element_node_connectivity, nodal_coordinates);
-    let maximum_skews = minimum_angles
-        .iter()
-        .map(|angle| (equilateral_rad - angle) / (equilateral_rad))
-        .collect();
-    maximum_skews
-}
-
 fn calculate_element_volumes_hex<const N: usize>(
     element_node_connectivity: &Connectivity<N>,
     nodal_coordinates: &Coordinates,
@@ -1733,39 +1433,4 @@ fn calculate_element_volumes_hex<const N: usize>(
         time.elapsed()
     );
     element_volumes
-}
-
-fn calculate_element_areas_tri<const N: usize>(
-    element_node_connectivity: &Connectivity<N>,
-    nodal_coordinates: &Coordinates,
-) -> Metrics {
-    // #TODO: consider rearchitect, as these types of if-type-checks
-    // indicate rearchitecture may help code logic.
-    if N != TRI {
-        panic!("Only implemented for triangular elements.")
-    }
-    // Knupp 2006
-    // https://www.osti.gov/servlets/purl/901967
-    // page 19
-    #[cfg(feature = "profile")]
-    let time = Instant::now();
-    let mut l0 = Vector::zero();
-    let mut l1 = Vector::zero();
-    let element_areas = element_node_connectivity
-        .iter()
-        .map(|connectivity| {
-            l0 = &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET];
-            l1 = &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET]
-                - &nodal_coordinates[connectivity[2] - NODE_NUMBERING_OFFSET];
-            // Calculate the area using the cross product
-            0.5 * (l0.cross(&l1)).norm()
-        })
-        .collect();
-    #[cfg(feature = "profile")]
-    println!(
-        "             \x1b[1;93mTriangle element areas\x1b[0m {:?}",
-        time.elapsed()
-    );
-    element_areas
 }
