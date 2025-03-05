@@ -26,7 +26,7 @@ trait FooClone {
 
 impl FooClone for Coordinates {
     fn clone_foo(&self) -> Self {
-        self.iter().map(|entry| entry.copy()).collect()
+        self.iter().cloned().collect()
     }
 }
 

@@ -195,7 +195,7 @@ where
                 } else {
                     connectivity
                         .iter()
-                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].copy())
+                        .map(|node_j| nodal_coordinates[node_j - NODE_NUMBERING_OFFSET].clone())
                         .sum::<Coordinate>()
                         / (connectivity.len() as f64)
                         - &nodal_coordinates[node_index_i]
@@ -396,14 +396,14 @@ where
             let prescribed_nodes_inhomogeneous_coordinates: Coordinates = self
                 .get_prescribed_nodes_inhomogeneous_coordinates()
                 .iter()
-                .map(|entry| entry.copy())
+                .cloned()
                 .collect();
             let nodal_coordinates_mut = self.get_nodal_coordinates_mut();
             prescribed_nodes_inhomogeneous
                 .iter()
                 .zip(prescribed_nodes_inhomogeneous_coordinates.iter())
                 .for_each(|(node, coordinates)| {
-                    nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] = coordinates.copy()
+                    nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] = coordinates.clone()
                 });
             let mut iteration = 0;
             let mut laplacian;
