@@ -738,9 +738,8 @@ fn mesh(
             print!("ztranslate: {}, ", ztranslate);
         }
         if !entirely_default {
-            print!("\x1b[2D]\x1b[0m");
+            println!("\x1b[2D]\x1b[0m");
         }
-        println!();
     }
     if surface {
         if !quiet {
