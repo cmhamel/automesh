@@ -1415,7 +1415,7 @@ impl Tree for Octree {
             .iter()
             .enumerate()
             .filter(|(_, cell)| cell.is_leaf())
-            .last()
+            .next_back()
             .unwrap();
         let mut supercells = vec![None; max_leaf_id + 1];
         self.iter()
