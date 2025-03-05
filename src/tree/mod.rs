@@ -77,13 +77,13 @@ pub type Octree = Vec<Cell>;
 
 type Cluster = Vec<usize>;
 type Clusters = Vec<Cluster>;
-type SubcellToCellMap = Vec<Option<(usize, usize)>>;
+type Supercells = Vec<Option<[usize; 2]>>;
 
 /// Methods for trees such as quadtrees or octrees.
 pub trait Tree {
     fn balance(&mut self, strong: bool);
     fn boundaries(&mut self, nel_padded: &Nel);
-    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap);
+    fn clusters(&self, remove: &Option<Blocks>, supercells: Option<&Supercells>) -> Clusters;
     fn defeature(&mut self, min_num_voxels: usize);
     fn from_voxels(voxels: Voxels) -> (Nel, Self);
     fn octree_into_finite_elements(
@@ -93,8 +93,10 @@ pub trait Tree {
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
+    fn protrusions(&mut self, supercells: &Supercells) -> bool;
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
+    fn supercells(&self) -> Supercells;
 }
 
 /// Methods for converting trees into finite elements.
@@ -223,6 +225,9 @@ impl Cell {
             5 => self.get_max_z() == *nel.z() as u16,
             _ => panic!(),
         }
+    }
+    pub fn is_leaf(&self) -> bool {
+        self.get_cells().is_none()
     }
     pub fn is_voxel(&self) -> bool {
         self.lngth == 1
@@ -733,13 +738,13 @@ impl Tree for Octree {
             let time = Instant::now();
             while index < self.len() {
                 cell = self[index];
-                if cell.get_lngth() > &1 && cell.get_cells().is_none() {
+                if cell.get_lngth() > &1 && cell.is_leaf() {
                     block = cell.get_block();
                     if cell
                         .get_faces()
                         .iter()
                         .flatten()
-                        .filter(|&face| self[*face].get_cells().is_none())
+                        .filter(|&face| self[*face].is_leaf())
                         .any(|face| self[*face].get_block() != block)
                         || cell
                             .get_faces()
@@ -786,28 +791,39 @@ impl Tree for Octree {
                 index += 1;
             }
             #[cfg(feature = "profile")]
-            println!(
-                "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
-                iteration,
-                time.elapsed()
-            );
+            if iteration == 1 {
+                println!(
+                    "           \x1b[1;93m⤷ Boundaries iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            } else {
+                println!(
+                    "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            }
             if boundaries {
                 break;
             }
         }
         self.balance(true);
     }
-    fn clusters(&self, remove: &Option<Blocks>) -> (Clusters, SubcellToCellMap) {
+    fn clusters(&self, remove: &Option<Blocks>, supercells_opt: Option<&Supercells>) -> Clusters {
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let mut removed_data = remove.clone().unwrap_or_default();
         removed_data.sort();
         removed_data.dedup();
+        let supercells = if let Some(supercells) = supercells_opt {
+            supercells
+        } else {
+            &self.supercells()
+        };
         let mut blocks: Blocks = self
             .iter()
-            .filter(|cell| {
-                cell.get_cells().is_none() && removed_data.binary_search(&cell.get_block()).is_err()
-            })
+            .filter(|cell| cell.is_leaf() && removed_data.binary_search(&cell.get_block()).is_err())
             .map(|cell| cell.get_block())
             .collect();
         blocks.sort();
@@ -822,7 +838,7 @@ impl Tree for Octree {
                 self.iter()
                     .enumerate()
                     .filter_map(|(index, cell)| {
-                        if cell.get_cells().is_none() && cell.get_block() == block {
+                        if cell.is_leaf() && cell.get_block() == block {
                             Some(index)
                         } else {
                             None
@@ -834,53 +850,14 @@ impl Tree for Octree {
         leaves
             .iter_mut()
             .for_each(|block_leaves| block_leaves.sort());
-        let mut cell_from_subcell_map = vec![None; leaves.iter().flatten().max().unwrap() + 1];
-        self.iter()
-            .enumerate()
-            .filter_map(|(parent_index, cell)| {
-                cell.get_cells()
-                    .as_ref()
-                    .map(|subcells| (parent_index, subcells))
-            })
-            .for_each(|(parent_index, subcells)| {
-                if subcells
-                    .iter()
-                    .filter(|&&subcell| self[subcell].get_cells().is_some())
-                    .count()
-                    == 0
-                {
-                    subcells
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, &subcell)| {
-                            removed_data
-                                .binary_search(&self[subcell].get_block())
-                                .is_err()
-                        })
-                        .for_each(|(subcell_index, &subcell)| {
-                            cell_from_subcell_map[subcell] = Some((parent_index, subcell_index))
-                        })
-                }
-            });
-        #[cfg(feature = "profile")]
-        println!(
-            "             \x1b[1;93mClusters creation instigation\x1b[0m {:?} ",
-            time.elapsed()
-        );
-        #[allow(unused_variables)]
-        let mut cluster_index = 1;
         blocks
             .into_iter()
             .enumerate()
             .for_each(|(block_index, block)| {
-                cluster_index = 1;
                 let block_leaves = &mut leaves[block_index];
                 while let Some(starting_leaf) = block_leaves.pop() {
                     let mut cluster = vec![starting_leaf];
-                    #[allow(unused_variables)]
-                    for iteration in 1.. {
-                        #[cfg(feature = "profile")]
-                        let time = Instant::now();
+                    loop {
                         complete = true;
                         index = 0;
                         while index < cluster.len() {
@@ -919,7 +896,7 @@ impl Tree for Octree {
                         index = 0;
                         while index < cluster.len() {
                             leaf = cluster[index];
-                            if let Some((parent, subcell)) = cell_from_subcell_map[leaf] {
+                            if let Some([parent, subcell]) = supercells[leaf] {
                                 self[parent].get_faces().iter().enumerate().for_each(
                                     |(face, face_cell)| {
                                         if let Some(cell) = face_cell {
@@ -941,30 +918,23 @@ impl Tree for Octree {
                             }
                             index += 1;
                         }
-                        #[cfg(feature = "profile")]
-                        println!(
-                            "             \x1b[1;93mBlock {} cluster {} iteration {}\x1b[0m {:?} ",
-                            block,
-                            cluster_index,
-                            iteration,
-                            time.elapsed()
-                        );
                         if complete {
                             break;
                         }
                     }
                     clusters.push(cluster);
-                    cluster_index += 1;
                 }
             });
-        (clusters, cell_from_subcell_map)
+        #[cfg(feature = "profile")]
+        println!(
+            "             \x1b[1;93mClusters creation\x1b[0m {:?} ",
+            time.elapsed()
+        );
+        clusters
     }
     fn defeature(&mut self, min_num_voxels: usize) {
         //
-        // Does not yet reassign individual cells surrounded by other materials on 4 sides.
-        //
         // Should cells of a reassigned cluster be reassigned one at a time instead?
-        // Have to figure that out anyway if do protrusions.
         //
         // Do the clusters need to be updated each time another changes?
         // In case a cluster inherits the reassigned cluster and becomes large enough?
@@ -973,68 +943,21 @@ impl Tree for Octree {
         //
         let mut block = 0;
         let mut blocks = vec![];
-        let mut cell_from_subcell_map;
         let mut clusters;
         let mut counts: Vec<usize> = vec![];
+        let mut defeatured;
         let mut face_block = 0;
         let mut neighbor_block = 0;
         let mut new_block = 0;
+        let mut protruded;
         let mut unique_blocks = vec![];
         let mut volumes: Vec<usize>;
+        let supercells = self.supercells();
         #[allow(unused_variables)]
         for iteration in 1.. {
-            (_, cell_from_subcell_map) = self.clusters(&None);
-            let bar = self
-                .iter()
-                .enumerate()
-                .filter(|(cell_index, cell)| cell.is_voxel())
-                .flat_map(|(voxel_cell_index, voxel_cell)| {
-                    blocks = voxel_cell
-                        .get_faces()
-                        .iter()
-                        .enumerate()
-                        .flat_map(|(face_index, &face)| {
-                            if let Some(face_cell_index) = face {
-                                Some(self[face_cell_index].get_block())
-                            } else if let Some((parent, subcell)) =
-                                cell_from_subcell_map[voxel_cell_index]
-                            {
-                                self[parent].get_faces()[face_index]
-                                    .map(|neighbor| self[neighbor].get_block())
-                            } else {
-                                None
-                            }
-                        })
-                        .collect();
-                    if blocks
-                        .iter()
-                        .filter(|&&face_block| voxel_cell.get_block() != face_block)
-                        .count()
-                        >= 5
-                    {
-                        Some((voxel_cell_index, blocks.clone()))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<(usize, Blocks)>>();
-            bar.iter().for_each(|(voxel_cell_index, blocks)| {
-                unique_blocks = blocks.to_vec();
-                unique_blocks.sort();
-                unique_blocks.dedup();
-                counts = unique_blocks
-                    .iter()
-                    .map(|unique_block| {
-                        blocks.iter().filter(|&block| block == unique_block).count()
-                    })
-                    .collect();
-                new_block = unique_blocks[counts
-                    .iter()
-                    .position(|count| count == counts.iter().max().expect("maximum not found"))
-                    .expect("position of maximum not found")];
-                self[*voxel_cell_index].block = Some(new_block)
-            });
-            (clusters, cell_from_subcell_map) = self.clusters(&None);
+            clusters = self.clusters(&None, Some(&supercells));
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
             volumes = clusters
                 .iter()
                 .map(|cluster| {
@@ -1044,11 +967,8 @@ impl Tree for Octree {
                         .sum()
                 })
                 .collect();
-            if volumes.iter().all(|volume| volume >= &min_num_voxels) {
-                if bar.is_empty() {
-                    break;
-                }
-            } else {
+            defeatured = volumes.iter().all(|volume| volume >= &min_num_voxels);
+            if !defeatured {
                 clusters
                     .iter()
                     .zip(volumes)
@@ -1094,7 +1014,7 @@ impl Tree for Octree {
                                     .collect::<Vec<Blocks>>()
                             })
                             .chain(cluster.iter().filter_map(|&cell| {
-                                if let Some((parent, subcell)) = cell_from_subcell_map[cell] {
+                                if let Some([parent, subcell]) = supercells[cell] {
                                     Some(
                                         self[parent]
                                             .get_faces()
@@ -1102,7 +1022,7 @@ impl Tree for Octree {
                                             .enumerate()
                                             .filter_map(|(face, face_cell)| {
                                                 if let Some(neighbor_cell) = face_cell {
-                                                    if self[*neighbor_cell].get_cells().is_none()
+                                                    if self[*neighbor_cell].is_leaf()
                                                         && subcells_on_own_face(face)
                                                             .iter()
                                                             .any(|&entry| subcell == entry)
@@ -1152,6 +1072,16 @@ impl Tree for Octree {
                                 .for_each(|&cell| self[cell].block = Some(new_block));
                         }
                     });
+            }
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mDefeaturing iteration {}\x1b[0m {:?} ",
+                iteration,
+                time.elapsed()
+            );
+            protruded = self.protrusions(&supercells);
+            if defeatured && protruded {
+                return;
             }
         }
     }
@@ -1316,10 +1246,84 @@ impl Tree for Octree {
             time.elapsed()
         );
     }
+    fn protrusions(&mut self, supercells: &Supercells) -> bool {
+        let mut blocks = vec![];
+        let mut complete = true;
+        let mut counts: Vec<usize> = vec![];
+        let mut new_block = 0;
+        let mut protrusions: Vec<(usize, Blocks)>;
+        let mut unique_blocks = vec![];
+        #[allow(unused_variables)]
+        for iteration in 1.. {
+            #[cfg(feature = "profile")]
+            let time = Instant::now();
+            protrusions = self
+                .iter()
+                .enumerate()
+                .filter(|(_, cell)| cell.is_voxel())
+                .flat_map(|(voxel_cell_index, voxel_cell)| {
+                    blocks = voxel_cell
+                        .get_faces()
+                        .iter()
+                        .enumerate()
+                        .flat_map(|(face_index, &face)| {
+                            if let Some(face_cell_index) = face {
+                                Some(self[face_cell_index].get_block())
+                            } else if let Some([parent, _]) = supercells[voxel_cell_index] {
+                                self[parent].get_faces()[face_index]
+                                    .map(|neighbor| self[neighbor].get_block())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+                    if blocks
+                        .iter()
+                        .filter(|&&face_block| voxel_cell.get_block() != face_block)
+                        .count()
+                        >= 5
+                    {
+                        Some((voxel_cell_index, blocks.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            if !protrusions.is_empty() {
+                complete = false;
+                protrusions.iter().for_each(|(voxel_cell_index, blocks)| {
+                    unique_blocks = blocks.to_vec();
+                    unique_blocks.sort();
+                    unique_blocks.dedup();
+                    counts = unique_blocks
+                        .iter()
+                        .map(|unique_block| {
+                            blocks.iter().filter(|&block| block == unique_block).count()
+                        })
+                        .collect();
+                    new_block = unique_blocks[counts
+                        .iter()
+                        .position(|count| count == counts.iter().max().expect("maximum not found"))
+                        .expect("position of maximum not found")];
+                    self[*voxel_cell_index].block = Some(new_block)
+                })
+            }
+            #[cfg(feature = "profile")]
+            println!(
+                "             \x1b[1;93mProtrusions iteration {}\x1b[0m {:?} ",
+                iteration,
+                time.elapsed()
+            );
+            if protrusions.is_empty() {
+                break;
+            }
+        }
+        complete
+    }
     fn prune(&mut self) {
         #[cfg(feature = "profile")]
         let time = Instant::now();
-        self.retain(|cell| cell.get_cells().is_none());
+        self.retain(|cell| cell.is_leaf());
         #[cfg(feature = "profile")]
         println!(
             "             \x1b[1;93mPruning octree\x1b[0m {:?} ",
@@ -1327,7 +1331,7 @@ impl Tree for Octree {
         );
     }
     fn subdivide(&mut self, index: usize) {
-        assert!(self[index].get_cells().is_none());
+        assert!(self[index].is_leaf());
         let new_indices = from_fn(|n| self.len() + n);
         let mut new_cells = self[index].subdivide(new_indices);
         self[index]
@@ -1406,6 +1410,38 @@ impl Tree for Octree {
             });
         self.extend(new_cells);
     }
+    fn supercells(&self) -> Supercells {
+        let (max_leaf_id, _) = self
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| cell.is_leaf())
+            .next_back()
+            .unwrap();
+        let mut supercells = vec![None; max_leaf_id + 1];
+        self.iter()
+            .enumerate()
+            .filter_map(|(parent_index, cell)| {
+                cell.get_cells()
+                    .as_ref()
+                    .map(|subcells| (parent_index, subcells))
+            })
+            .for_each(|(parent_index, subcells)| {
+                if subcells
+                    .iter()
+                    .filter(|&&subcell| self[subcell].get_cells().is_some())
+                    .count()
+                    == 0
+                {
+                    subcells
+                        .iter()
+                        .enumerate()
+                        .for_each(|(subcell_index, &subcell)| {
+                            supercells[subcell] = Some([parent_index, subcell_index])
+                        })
+                }
+            });
+        supercells
+    }
 }
 
 impl IntoFiniteElements<TriangularFiniteElements> for Octree {
@@ -1420,7 +1456,7 @@ impl IntoFiniteElements<TriangularFiniteElements> for Octree {
         removed_data.sort();
         removed_data.dedup();
         self.boundaries(&nel_padded);
-        let (clusters, _) = self.clusters(&remove);
+        let clusters = self.clusters(&remove, None);
         #[cfg(feature = "profile")]
         let time = Instant::now();
         let blocks = clusters
@@ -1599,7 +1635,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
         let mut cells_nodes = vec![0; self.len()];
         let mut node_index = 1;
         self.iter().enumerate().for_each(|(cell_index, cell)| {
-            if cell.get_cells().is_none() {
+            if cell.is_leaf() {
                 cells_nodes[cell_index] = node_index;
                 nodal_coordinates.append(&mut TensorRank1Vec::new(&[[
                     0.5 * (2 * cell.get_min_x() + cell.get_lngth()) as f64 * scale.x()
@@ -1625,7 +1661,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
             if let Some(cell_subcells) = cell.get_cells() {
                 if cell_subcells
                     .iter()
-                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                    .filter(|&&subcell| self[subcell].is_leaf())
                     .count()
                     == NUM_OCTANTS
                 {
@@ -1652,7 +1688,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
                                 if let Some(face_subcells) = self[*face_cell_index].get_cells() {
                                     if face_subcells
                                         .iter()
-                                        .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                        .filter(|&&subcell| self[subcell].is_leaf())
                                         .count()
                                         == NUM_OCTANTS
                                     {
@@ -1714,7 +1750,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
                             {
                                 if diag_subcells
                                     .iter()
-                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .filter(|&&subcell| self[subcell].is_leaf())
                                     .count()
                                     == NUM_OCTANTS
                                 {
@@ -1731,7 +1767,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
                             {
                                 if diag_subcells
                                     .iter()
-                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .filter(|&&subcell| self[subcell].is_leaf())
                                     .count()
                                     == NUM_OCTANTS
                                 {
@@ -1744,7 +1780,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
                             {
                                 if diag_subcells
                                     .iter()
-                                    .filter(|&&subcell| self[subcell].get_cells().is_none())
+                                    .filter(|&&subcell| self[subcell].is_leaf())
                                     .count()
                                     == NUM_OCTANTS
                                 {
@@ -1756,9 +1792,7 @@ impl IntoFiniteElements<HexahedralFiniteElements> for Octree {
                                         {
                                             if diag_subcells
                                                 .iter()
-                                                .filter(|&&subcell| {
-                                                    self[subcell].get_cells().is_none()
-                                                })
+                                                .filter(|&&subcell| self[subcell].is_leaf())
                                                 .count()
                                                 == NUM_OCTANTS
                                             {

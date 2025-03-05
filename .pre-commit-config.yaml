@@ -17,6 +17,9 @@ repos:
     -   id: clippy
         name: cargo clippy --features python
         args: ['--features', 'python', '--', '-D',  'warnings']
+    -   id: clippy
+        name: cargo clippy --features profile
+        args: ['--features', 'profile', '--', '-D',  'warnings']
     -   id: fmt
 # -   repo: https://github.com/psf/black
 #     rev: 24.8.0  # Use the latest version
