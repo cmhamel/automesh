@@ -405,29 +405,67 @@ where
                 .for_each(|(node, coordinates)| {
                     nodal_coordinates_mut[node - NODE_NUMBERING_OFFSET] = coordinates.clone()
                 });
-            let mut iteration = 0;
+            let mut iteration = 1;
             let mut laplacian;
             let mut scale;
-            while iteration < smoothing_iterations {
+            #[cfg(feature = "profile")]
+            let mut frequency = 1;
+            #[cfg(feature = "profile")]
+            while (smoothing_iterations / frequency) > 10 {
+                frequency *= 10;
+            }
+            #[cfg(feature = "profile")]
+            let remainder = (smoothing_iterations as f64 / frequency as f64 == 10.0) as usize;
+            #[cfg(feature = "profile")]
+            let width = smoothing_iterations.to_string().len();
+            #[cfg(feature = "profile")]
+            let mut time = Instant::now();
+            while iteration <= smoothing_iterations {
                 scale = if smoothing_scale_inflate < 0.0 && iteration % 2 == 1 {
                     smoothing_scale_inflate
                 } else {
                     smoothing_scale_deflate
                 };
-                #[cfg(feature = "profile")]
-                let time = Instant::now();
                 laplacian = self.laplacian(self.get_nodal_influencers());
                 self.get_nodal_coordinates_mut()
                     .iter_mut()
                     .zip(laplacian.iter())
                     .for_each(|(coordinate, entry)| *coordinate += entry * scale);
                 #[cfg(feature = "profile")]
+                if frequency == 1 {
+                    println!(
+                        "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
+                        format_args!("{:width$}", iteration, width = width),
+                        time.elapsed()
+                    );
+                    time = Instant::now();
+                } else if iteration % frequency == 0 {
+                    println!(
+                        "             \x1b[1;93mSmoothing iterations {}..{}\x1b[0m {:?} ",
+                        format_args!(
+                            "{:width$}",
+                            iteration - frequency + 1,
+                            width = width - remainder
+                        ),
+                        format_args!("{:.>width$}", iteration, width = width),
+                        time.elapsed()
+                    );
+                    time = Instant::now();
+                }
+                iteration += 1;
+            }
+            #[cfg(feature = "profile")]
+            if smoothing_iterations % frequency != 0 {
                 println!(
-                    "             \x1b[1;93mSmoothing iteration {}\x1b[0m {:?} ",
-                    iteration + 1,
+                    "             \x1b[1;93mSmoothing iterations {}..{}\x1b[0m {:?} ",
+                    format_args!(
+                        "{:width$}",
+                        iteration - 1 - (smoothing_iterations % frequency),
+                        width = width - remainder
+                    ),
+                    format_args!("{:.>width$}", smoothing_iterations, width = width),
                     time.elapsed()
                 );
-                iteration += 1;
             }
             Ok(())
         } else {
@@ -1141,16 +1179,17 @@ fn calculate_maximum_edge_ratios<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    match N {
+    let maximum_edge_ratios = match N {
         HEX => calculate_maximum_edge_ratios_hex(element_node_connectivity, nodal_coordinates),
         TRI => calculate_maximum_edge_ratios_tri(element_node_connectivity, nodal_coordinates),
         _ => panic!(),
-    }
+    };
     #[cfg(feature = "profile")]
     println!(
         "           \x1b[1;93m⤷ Maximum edge ratios\x1b[0m {:?}",
         time.elapsed()
     );
+    maximum_edge_ratios
 }
 
 fn calculate_minimum_scaled_jacobians<const N: usize>(
@@ -1159,16 +1198,17 @@ fn calculate_minimum_scaled_jacobians<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    match N {
+    let minimum_scaled_jacobians = match N {
         HEX => calculate_minimum_scaled_jacobians_hex(element_node_connectivity, nodal_coordinates),
         TRI => calculate_minimum_scaled_jacobians_tri(element_node_connectivity, nodal_coordinates),
         _ => panic!(),
-    }
+    };
     #[cfg(feature = "profile")]
     println!(
         "             \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
         time.elapsed()
     );
+    minimum_scaled_jacobians
 }
 
 fn calculate_maximum_skews<const N: usize>(
@@ -1177,16 +1217,17 @@ fn calculate_maximum_skews<const N: usize>(
 ) -> Metrics {
     #[cfg(feature = "profile")]
     let time = Instant::now();
-    match N {
+    let maximum_skews = match N {
         HEX => calculate_maximum_skews_hex(element_node_connectivity, nodal_coordinates),
         TRI => calculate_maximum_skews_tri(element_node_connectivity, nodal_coordinates),
         _ => panic!(),
-    }
+    };
     #[cfg(feature = "profile")]
     println!(
         "           \x1b[1;93m⤷ Maximum edge skews\x1b[0m {:?}",
         time.elapsed()
     );
+    maximum_skews
 }
 
 fn calculate_maximum_edge_ratios_hex<const N: usize>(
