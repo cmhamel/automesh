@@ -102,10 +102,8 @@ pub fn calculate_maximum_edge_ratios_tri<const N: usize>(
             l2 = (&nodal_coordinates[connectivity[1] - NODE_NUMBERING_OFFSET]
                 - &nodal_coordinates[connectivity[0] - NODE_NUMBERING_OFFSET])
                 .norm();
-            [l0 / l1, l1 / l0, l0 / l2, l2 / l0, l1 / l2, l2 / l1]
-                .into_iter()
-                .reduce(f64::max)
-                .unwrap()
+            [l0, l1, l2].into_iter().reduce(f64::max).unwrap()
+                / [l0, l1, l2].into_iter().reduce(f64::min).unwrap()
         })
         .collect();
     maximum_edge_ratios

@@ -700,6 +700,8 @@ fn mesh(
             .map(|entry| entry as u8)
             .collect()
     });
+    let scale = Scale::from([xscale, yscale, zscale]);
+    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
     let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
         InputTypes::Npy(voxels) => voxels,
         InputTypes::Spn(voxels) => voxels,
@@ -712,39 +714,34 @@ fn mesh(
             ))?
         }
     };
-    let scale = Scale::from([xscale, yscale, zscale]);
-    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
-    // if !quiet {
-    //     let entirely_default = scale == Default::default() && translate == Default::default();
-    //     if !entirely_default {
-    //         print!(" [");
-    //     }
-    //     if xscale != 1.0 {
-    //         print!("xscale: {}, ", scale.x());
-    //     }
-    //     if yscale != 1.0 {
-    //         print!("yscale: {}, ", scale.y());
-    //     }
-    //     if zscale != 1.0 {
-    //         print!("zscale: {}, ", scale.z());
-    //     }
-    //     if xtranslate != 0.0 {
-    //         print!("xtranslate: {}, ", xtranslate);
-    //     }
-    //     if ytranslate != 0.0 {
-    //         print!("ytranslate: {}, ", ytranslate);
-    //     }
-    //     if ztranslate != 0.0 {
-    //         print!("ztranslate: {}, ", ztranslate);
-    //     }
-    //     if !entirely_default {
-    //         print!("\x1b[2D]");
-    //     }
-    //     println!();
-    // }
-    //
-    // when put back, make faint like nels below
-    //
+    if !quiet {
+        let entirely_default = scale == Default::default() && translate == Default::default();
+        if !entirely_default {
+            print!("\x1b[u \x1b[A\x1b[2m[");
+        }
+        if xscale != 1.0 {
+            print!("xscale: {}, ", scale.x());
+        }
+        if yscale != 1.0 {
+            print!("yscale: {}, ", scale.y());
+        }
+        if zscale != 1.0 {
+            print!("zscale: {}, ", scale.z());
+        }
+        if xtranslate != 0.0 {
+            print!("xtranslate: {}, ", xtranslate);
+        }
+        if ytranslate != 0.0 {
+            print!("ytranslate: {}, ", ytranslate);
+        }
+        if ztranslate != 0.0 {
+            print!("ztranslate: {}, ", ztranslate);
+        }
+        if !entirely_default {
+            print!("\x1b[2D]\x1b[0m");
+        }
+        println!();
+    }
     if surface {
         if !quiet {
             time = Instant::now();
@@ -1162,7 +1159,7 @@ fn read_input(
         }
     };
     if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        println!("        \x1b[1;92mDone\x1b[0m {:?}\x1b[s", time.elapsed());
     }
     Ok(result)
 }

@@ -93,7 +93,7 @@ pub trait Tree {
         translate: Translate,
     ) -> Result<HexahedralFiniteElements, String>;
     fn pair(&mut self);
-    fn protrusions(&mut self, supercells: &Supercells);
+    fn protrusions(&mut self, supercells: &Supercells) -> bool;
     fn prune(&mut self);
     fn subdivide(&mut self, index: usize);
     fn supercells(&self) -> Supercells;
@@ -791,11 +791,19 @@ impl Tree for Octree {
                 index += 1;
             }
             #[cfg(feature = "profile")]
-            println!(
-                "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
-                iteration,
-                time.elapsed()
-            );
+            if iteration == 1 {
+                println!(
+                    "           \x1b[1;93m⤷ Boundaries iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            } else {
+                println!(
+                    "             \x1b[1;93mBoundaries iteration {}\x1b[0m {:?} ",
+                    iteration,
+                    time.elapsed()
+                );
+            }
             if boundaries {
                 break;
             }
@@ -926,8 +934,6 @@ impl Tree for Octree {
     }
     fn defeature(&mut self, min_num_voxels: usize) {
         //
-        // Does not yet reassign individual cells surrounded by other materials on 4 sides.
-        //
         // Should cells of a reassigned cluster be reassigned one at a time instead?
         //
         // Do the clusters need to be updated each time another changes?
@@ -943,12 +949,12 @@ impl Tree for Octree {
         let mut face_block = 0;
         let mut neighbor_block = 0;
         let mut new_block = 0;
+        let mut protruded;
         let mut unique_blocks = vec![];
         let mut volumes: Vec<usize>;
         let supercells = self.supercells();
         #[allow(unused_variables)]
         for iteration in 1.. {
-            self.protrusions(&supercells);
             clusters = self.clusters(&None, Some(&supercells));
             #[cfg(feature = "profile")]
             let time = Instant::now();
@@ -1073,7 +1079,8 @@ impl Tree for Octree {
                 iteration,
                 time.elapsed()
             );
-            if defeatured {
+            protruded = self.protrusions(&supercells);
+            if defeatured && protruded {
                 return;
             }
         }
@@ -1239,8 +1246,9 @@ impl Tree for Octree {
             time.elapsed()
         );
     }
-    fn protrusions(&mut self, supercells: &Supercells) {
+    fn protrusions(&mut self, supercells: &Supercells) -> bool {
         let mut blocks = vec![];
+        let mut complete = true;
         let mut counts: Vec<usize> = vec![];
         let mut new_block = 0;
         let mut protrusions: Vec<(usize, Blocks)>;
@@ -1282,6 +1290,7 @@ impl Tree for Octree {
                 })
                 .collect();
             if !protrusions.is_empty() {
+                complete = false;
                 protrusions.iter().for_each(|(voxel_cell_index, blocks)| {
                     unique_blocks = blocks.to_vec();
                     unique_blocks.sort();
@@ -1306,9 +1315,10 @@ impl Tree for Octree {
                 time.elapsed()
             );
             if protrusions.is_empty() {
-                return;
+                break;
             }
         }
+        complete
     }
     fn prune(&mut self) {
         #[cfg(feature = "profile")]
@@ -1425,11 +1435,6 @@ impl Tree for Octree {
                     subcells
                         .iter()
                         .enumerate()
-                        // .filter(|(_, &subcell)| {
-                        //     removed_data
-                        //         .binary_search(&self[subcell].get_block())
-                        //         .is_err()
-                        // })
                         .for_each(|(subcell_index, &subcell)| {
                             supercells[subcell] = Some([parent_index, subcell_index])
                         })

@@ -1205,7 +1205,7 @@ fn calculate_minimum_scaled_jacobians<const N: usize>(
     };
     #[cfg(feature = "profile")]
     println!(
-        "             \x1b[1;93m⤷ Minimum scaled Jacobians\x1b[0m {:?}",
+        "             \x1b[1;93mMinimum scaled Jacobians\x1b[0m {:?}",
         time.elapsed()
     );
     minimum_scaled_jacobians
@@ -1224,7 +1224,7 @@ fn calculate_maximum_skews<const N: usize>(
     };
     #[cfg(feature = "profile")]
     println!(
-        "           \x1b[1;93m⤷ Maximum edge skews\x1b[0m {:?}",
+        "             \x1b[1;93mMaximum edge skews\x1b[0m {:?}",
         time.elapsed()
     );
     maximum_skews
@@ -1272,13 +1272,8 @@ fn calculate_maximum_edge_ratios_hex<const N: usize>(
                 + &nodal_coordinates[connectivity[7] - NODE_NUMBERING_OFFSET]
                 - &nodal_coordinates[connectivity[3] - NODE_NUMBERING_OFFSET])
                 .norm();
-            // TODO: Ask MRB if we could do this instead and is it faster?
-            // [l1, l2, l3].into_iter().reduce(f64::max).unwrap() /
-            //     [l1, l2, l3].into_iter().reduce(f64::min).unwrap();
-            [l1 / l2, l2 / l1, l1 / l3, l3 / l1, l2 / l3, l3 / l2]
-                .into_iter()
-                .reduce(f64::max)
-                .unwrap()
+            [l1, l2, l3].into_iter().reduce(f64::max).unwrap()
+                / [l1, l2, l3].into_iter().reduce(f64::min).unwrap()
         })
         .collect();
     maximum_edge_ratios
