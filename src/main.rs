@@ -744,7 +744,11 @@ fn mesh(
         let mut output_type: TriangularFiniteElements =
             tree.into_finite_elements(nel_padded, remove, scale, translate)?;
         if !quiet {
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+            let mut blocks = output_type.get_element_blocks().clone();
+            let elements = blocks.len();
+            blocks.sort();
+            blocks.dedup();
+            println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
         }
         if let Some(options) = meshing {
             match options {
@@ -852,10 +856,10 @@ fn mesh(
 fn mesh_print_info(basis: MeshBasis, scale: &Scale, translate: &Translate) {
     match basis {
         MeshBasis::Leaves => {
-            println!("     \x1b[1;96mMeshing\x1b[0m leaves into hexes")
+            print!("     \x1b[1;96mMeshing\x1b[0m leaves into hexes")
         }
         MeshBasis::Surfaces => {
-            println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+            print!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
         }
         MeshBasis::Voxels => {
             print!("     \x1b[1;96mMeshing\x1b[0m voxels into hexes");
@@ -882,6 +886,8 @@ fn mesh_print_info(basis: MeshBasis, scale: &Scale, translate: &Translate) {
             print!("ztranslate: {}, ", translate.z())
         }
         println!("\x1b[2D]\x1b[0m")
+    } else {
+        println!()
     }
 }
 
