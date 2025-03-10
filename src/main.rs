@@ -1,6 +1,7 @@
 use automesh::{
-    Blocks, FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, IntoFiniteElements,
-    Nel, Octree, Scale, Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
+    Blocks, FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements,
+    IntoFiniteElements, Nel, Octree, Scale, Smoothing, Tessellation, Translate, Tree,
+    TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
 use conspire::math::TensorVec;
@@ -973,7 +974,13 @@ fn octree(
         let elements = blocks.len();
         blocks.sort();
         blocks.dedup();
-        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+        println!(
+            "        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m",
+            time.elapsed(),
+            blocks.len(),
+            elements,
+            output_type.get_nodal_coordinates().len()
+        );
     }
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
@@ -1146,12 +1153,8 @@ fn read_input(
     }
     let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let result = match input_extension {
-        Some("inp") => {
-            InputTypes::Abaqus(HexahedralFiniteElements::from_inp(input)?)
-        }
-        Some("npy") => {
-            InputTypes::Npy(Voxels::from_npy(input)?)
-        }
+        Some("inp") => InputTypes::Abaqus(HexahedralFiniteElements::from_inp(input)?),
+        Some("npy") => InputTypes::Npy(Voxels::from_npy(input)?),
         Some("spn") => {
             let nel = Nel::from_input([nelx, nely, nelz])?;
             if !quiet {
@@ -1164,26 +1167,29 @@ fn read_input(
             }
             InputTypes::Spn(Voxels::from_spn(input, nel)?)
         }
-        Some("stl") => {
-            InputTypes::Stl(Tessellation::from_stl(input)?)
-        }
-        _ => {
-            Err(format!(
-                "Invalid extension .{} from input file {}",
-                input_extension.unwrap_or("UNDEFINED"),
-                input
-            ))?
-        }
+        Some("stl") => InputTypes::Stl(Tessellation::from_stl(input)?),
+        _ => Err(format!(
+            "Invalid extension .{} from input file {}",
+            input_extension.unwrap_or("UNDEFINED"),
+            input
+        ))?,
     };
     if !quiet {
-        print!("\x1b[0m\n        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        print!(
+            "\x1b[0m\n        \x1b[1;92mDone\x1b[0m {:?}",
+            time.elapsed()
+        );
         match &result {
             InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => {
                 let mut materials: Blocks = voxels.get_data().iter().copied().collect();
                 let voxels = materials.len();
                 materials.sort();
                 materials.dedup();
-                println!(" \x1b[2m[{} materials, {} voxels]\x1b[0m", materials.len(), voxels);
+                println!(
+                    " \x1b[2m[{} materials, {} voxels]\x1b[0m",
+                    materials.len(),
+                    voxels
+                );
             }
             _ => {
                 println!();
