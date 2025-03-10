@@ -1,8 +1,9 @@
 use automesh::{
-    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, IntoFiniteElements,
+    Blocks, FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, IntoFiniteElements,
     Nel, Octree, Scale, Smoothing, Tessellation, Translate, Tree, TriangularFiniteElements, Voxels,
 };
 use clap::{Parser, Subcommand};
+use conspire::math::TensorVec;
 use ndarray_npy::{ReadNpyError, WriteNpyError};
 use netcdf::Error as ErrorNetCDF;
 use std::{io::Error as ErrorIO, path::Path, time::Instant};
@@ -672,6 +673,12 @@ fn defeature(
     }
 }
 
+enum MeshBasis {
+    Leaves,
+    Surfaces,
+    Voxels,
+}
+
 #[allow(clippy::too_many_arguments)]
 fn mesh(
     meshing: Option<MeshingCommands>,
@@ -714,33 +721,6 @@ fn mesh(
             ))?
         }
     };
-    if !quiet {
-        let entirely_default = scale == Default::default() && translate == Default::default();
-        if !entirely_default {
-            print!("\x1b[u \x1b[A\x1b[2m[");
-        }
-        if xscale != 1.0 {
-            print!("xscale: {}, ", scale.x());
-        }
-        if yscale != 1.0 {
-            print!("yscale: {}, ", scale.y());
-        }
-        if zscale != 1.0 {
-            print!("zscale: {}, ", scale.z());
-        }
-        if xtranslate != 0.0 {
-            print!("xtranslate: {}, ", xtranslate);
-        }
-        if ytranslate != 0.0 {
-            print!("ytranslate: {}, ", ytranslate);
-        }
-        if ztranslate != 0.0 {
-            print!("ztranslate: {}, ", ztranslate);
-        }
-        if !entirely_default {
-            println!("\x1b[2D]\x1b[0m");
-        }
-    }
     if surface {
         if !quiet {
             time = Instant::now();
@@ -750,7 +730,7 @@ fn mesh(
                     min_num_voxels
                 );
             } else {
-                println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+                mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
             }
         }
         let (nel_padded, mut tree) = Octree::from_voxels(input_type);
@@ -759,7 +739,7 @@ fn mesh(
             tree.defeature(min_num_voxels);
             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
             time = Instant::now();
-            println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+            mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
         }
         let mut output_type: TriangularFiniteElements =
             tree.into_finite_elements(nel_padded, remove, scale, translate)?;
@@ -816,7 +796,7 @@ fn mesh(
         }
         if !quiet {
             time = Instant::now();
-            println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
+            mesh_print_info(MeshBasis::Voxels, &scale, &translate)
         }
         let mut output_type = if dual {
             let (nel_padded, mut tree) = Octree::from_voxels(input_type);
@@ -827,7 +807,11 @@ fn mesh(
             input_type.into_finite_elements(remove, scale, translate)?
         };
         if !quiet {
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+            let mut blocks = output_type.get_element_blocks().clone();
+            let elements = blocks.len();
+            blocks.sort();
+            blocks.dedup();
+            println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
         }
         if let Some(options) = meshing {
             match options {
@@ -863,6 +847,42 @@ fn mesh(
         }
     }
     Ok(())
+}
+
+fn mesh_print_info(basis: MeshBasis, scale: &Scale, translate: &Translate) {
+    match basis {
+        MeshBasis::Leaves => {
+            println!("     \x1b[1;96mMeshing\x1b[0m leaves into hexes")
+        }
+        MeshBasis::Surfaces => {
+            println!("     \x1b[1;96mMeshing\x1b[0m internal surfaces")
+        }
+        MeshBasis::Voxels => {
+            print!("     \x1b[1;96mMeshing\x1b[0m voxels into hexes");
+        }
+    }
+    if scale != &Default::default() || translate != &Default::default() {
+        print!(" \x1b[2m[");
+        if scale.x() != &1.0 {
+            print!("xscale: {}, ", scale.x())
+        }
+        if scale.y() != &1.0 {
+            print!("yscale: {}, ", scale.y())
+        }
+        if scale.z() != &1.0 {
+            print!("zscale: {}, ", scale.z())
+        }
+        if translate.x() != &0.0 {
+            print!("xtranslate: {}, ", translate.x())
+        }
+        if translate.y() != &0.0 {
+            print!("ytranslate: {}, ", translate.y())
+        }
+        if translate.z() != &0.0 {
+            print!("ztranslate: {}, ", translate.z())
+        }
+        println!("\x1b[2D]\x1b[0m")
+    }
 }
 
 fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
@@ -932,7 +952,7 @@ fn octree(
     };
     let time = Instant::now();
     if !quiet {
-        println!("     \x1b[1;96mMeshing\x1b[0m {}", output);
+        mesh_print_info(MeshBasis::Leaves, &scale, &translate)
     }
     let (_, mut tree) = Octree::from_voxels(input_type);
     tree.balance(strong);
@@ -1117,22 +1137,16 @@ fn read_input(
     let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let result = match input_extension {
         Some("inp") => {
-            if !quiet {
-                println!();
-            }
             InputTypes::Abaqus(HexahedralFiniteElements::from_inp(input)?)
         }
         Some("npy") => {
-            if !quiet {
-                println!();
-            }
             InputTypes::Npy(Voxels::from_npy(input)?)
         }
         Some("spn") => {
             let nel = Nel::from_input([nelx, nely, nelz])?;
             if !quiet {
-                println!(
-                    " \x1b[2m[nelx: {}, nely: {}, nelz: {}]\x1b[0m",
+                print!(
+                    " \x1b[2m[nelx: {}, nely: {}, nelz: {}]",
                     nel.x(),
                     nel.y(),
                     nel.z(),
@@ -1141,15 +1155,9 @@ fn read_input(
             InputTypes::Spn(Voxels::from_spn(input, nel)?)
         }
         Some("stl") => {
-            if !quiet {
-                println!();
-            }
             InputTypes::Stl(Tessellation::from_stl(input)?)
         }
         _ => {
-            if !quiet {
-                println!();
-            }
             Err(format!(
                 "Invalid extension .{} from input file {}",
                 input_extension.unwrap_or("UNDEFINED"),
@@ -1158,7 +1166,19 @@ fn read_input(
         }
     };
     if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}\x1b[s", time.elapsed());
+        print!("\x1b[0m\n        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        match &result {
+            InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => {
+                let mut materials: Blocks = voxels.get_data().iter().copied().collect();
+                let voxels = materials.len();
+                materials.sort();
+                materials.dedup();
+                println!(" \x1b[2m[{} materials, {} voxels]\x1b[0m", materials.len(), voxels);
+            }
+            _ => {
+                println!();
+            }
+        }
     }
     Ok(result)
 }
