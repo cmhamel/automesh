@@ -963,7 +963,11 @@ fn octree(
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     let output_type = tree.octree_into_finite_elements(remove, scale, translate)?;
     if !quiet {
-        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        let mut blocks = output_type.get_element_blocks().clone();
+        let elements = blocks.len();
+        blocks.sort();
+        blocks.dedup();
+        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
     }
     match output_extension {
         Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
