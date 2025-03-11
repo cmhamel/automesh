@@ -1,6 +1,6 @@
 name: Python
 on:
-  push:
+  pull_request:
     branches: main
   release:
     types: published
@@ -99,4 +99,5 @@ jobs:
     - name: wheels
       run: mv ./*-dist*/*.whl dist/
     - name: upload
+      if: github.event_name == 'release'
       run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} dist/*
