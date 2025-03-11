@@ -80,7 +80,7 @@ jobs:
     - name: wheel 1
       run: maturin build --release --features python
     - name: wheel 2
-      run: python -m build -o target/wheels/
+      run: python -m build --outdir target/wheels/
     - name: check
       run: twine check target/wheels/*
     - uses: actions/upload-artifact@v4
