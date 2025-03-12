@@ -387,7 +387,7 @@ where
                         smoothing_scale_deflate = scale;
                         smoothing_scale_inflate = scale / (pass_band * scale - 1.0);
                         if smoothing_scale_deflate >= -smoothing_scale_inflate {
-                            return Err("Inflation scale must be larger than deflation scale.");
+                            return Err("Inflation scale must be larger than deflation scale");
                         }
                     }
                 }
