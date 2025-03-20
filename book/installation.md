@@ -35,7 +35,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 2. Follow the on-screen instructions to complete the installation.
-3. Add Cargo's bin directory to your `PATH`: 
+3. Add Cargo's bin directory to your `PATH`:
 
 ```sh
 source $HOME/.cargo/env
@@ -84,7 +84,7 @@ sudo apt update
 sudo apt install python3 python3-pip
 ```
 
-3. **Verify** Python and pip are installed: 
+3. **Verify** Python and pip are installed:
 
 ```sh
 python3 --version
