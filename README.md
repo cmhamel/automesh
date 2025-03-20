@@ -9,3 +9,9 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.13845433-blue)](https://doi.org/10.5281/zenodo.13845433)
 
 Automatic mesh generation.
+
+* [Introduction](https://autotwin.github.io/automesh/introduction.html)
+* [Installation](https://autotwin.github.io/automesh/installation.html)
+* [Getting Started](https://autotwin.github.io/automesh/getting_started.html)
+* [Citation](https://github.com/autotwin/automesh/blob/main/CITATION.cff)
+* [License](https://github.com/autotwin/automesh/blob/main/LICENSE)

@@ -5,6 +5,7 @@
 # User Guide
 
 - [Installation](installation.md)
+- [Getting Started](getting_started.md)
 - [Examples](examples/README.md)
   - [Unit Tests](examples/unit_tests/README.md)
   - [Spheres](examples/spheres/README.md)
