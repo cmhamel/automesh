@@ -7,7 +7,7 @@ two concentric shells.  The segmentation encodes
 
 * `0` for void (or background), shown in gray,
 * `1` for the inner sphere, shown in green,
-* `2` for the intermediate shell, shown in yellow, and 
+* `2` for the intermediate shell, shown in yellow, and
 * `3` for the outer shell, shown in magenta.
 
 A very coarse (`7 x 7 x 7`) segmentation, taken as a midline cut plane

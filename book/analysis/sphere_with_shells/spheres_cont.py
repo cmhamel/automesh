@@ -304,10 +304,15 @@ def main():
                 alpha=CUT_ALPHA,
             )
 
+            ax2.set_xticks(ticks=tt[index])
+            ax2.set_yticks(ticks=tt[index])
+
+            ax2.set_xlim(lims[index])
+            ax2.set_ylim(lims[index])
+
         plt.show()
 
         if SAVE:
-            breakpoint()
             # overwrite
             cc = aa.with_stem(aa.stem + "_cut").with_suffix(".png")
             fig2.savefig(cc, dpi=DPI)
