@@ -307,10 +307,11 @@ def main():
         plt.show()
 
         if SAVE:
-            cc = aa.with_stem("spheres_" + key + "_cut")  # overwrite
-            dd = cc.with_suffix(".png")
-            fig2.savefig(dd, dpi=DPI)
-            print(f"Saved: {dd}")
+            breakpoint()
+            # overwrite
+            cc = aa.with_stem(aa.stem + "_cut").with_suffix(".png")
+            fig2.savefig(cc, dpi=DPI)
+            print(f"Saved: {cc}")
 
 
 if __name__ == "__main__":

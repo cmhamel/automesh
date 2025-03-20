@@ -48,6 +48,10 @@ Figure: Sphere segmentations at selected resolutions, shown in the voxel domain.
 Because plotting large domains with [*Matplotlib*](https://matplotlib.org)
 is slow, only the first two resolutions are shown.
 
+![spheres_cont_cut](img/spheres_cont_cut.png)
+
+Figure: Sphere segmentations with cutting plane.
+
 ## Source
 
 ### `spheres_cont.py`
