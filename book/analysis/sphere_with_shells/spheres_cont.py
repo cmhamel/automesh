@@ -25,7 +25,9 @@ import numpy as np
 
 
 # Visualize on a cutting plane
-def plot_cutting_plane(ax, key, data, plane="z", index=None, cmap=None, alpha=None):
+def plot_cutting_plane(
+    ax, key, data, plane="z", index=None, cmap=None, alpha=None
+):
     """Plots a 2D cutting plane slice of a 3D dataset on the specified axis.
 
     This function visualizes a slice of the 3D data array along a specified plane
@@ -191,7 +193,9 @@ def main():
     tt = tuple(map(lambda x: [0, 12 * x, 24 * x], rr))  # ticks
 
     # User input begin
-    spheres = {f"resolution_{i+1}": sphere(resolution=res) for i, res in enumerate(rr)}
+    spheres = {
+        f"resolution_{i+1}": sphere(resolution=res) for i, res in enumerate(rr)
+    }
 
     aa = Path(__file__)
 
@@ -230,7 +234,9 @@ def main():
             print(f"index: {index}")
             print(f"key: {key}")
             # print(f"value: {value}")
-            ax = fig.add_subplot(1, N_SUBPLOTS, index + 1, projection=Axes3D.name)
+            ax = fig.add_subplot(
+                1, N_SUBPLOTS, index + 1, projection=Axes3D.name
+            )
             # Create an array for face colors based on the values in the `value` array
             facecolors = np.empty(
                 value.shape + (4,), dtype=float
