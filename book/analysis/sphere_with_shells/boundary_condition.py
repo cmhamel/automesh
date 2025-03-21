@@ -18,7 +18,7 @@ alpha_max = 8000  # rad/s^2, peak angular acceleration
 def alpha(t):
     """Generates the angular acceleration pulse."""
     if 0.0 <= t <= pulse:
-        return alpha_max * np.exp(1 - 1 / (1 - (2 * t / pulse - 1)**2))
+        return alpha_max * np.exp(1 - 1 / (1 - (2 * t / pulse - 1) ** 2))
     return 0.0
 
 
@@ -27,7 +27,7 @@ ys = np.vectorize(alpha)(ts)
 # compute the integral of alpha(t) using cumulative trapezoidal integration
 ys_int = np.zeros_like(ys)
 for i in range(1, len(ts)):
-    ys_int[i] = np.trapz(ys[:i+1], ts[:i+1])  # cumulative
+    ys_int[i] = np.trapz(ys[: i + 1], ts[: i + 1])  # cumulative
 
 # create the plot
 width = 4  # inches
