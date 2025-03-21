@@ -30,10 +30,10 @@ def plot_cutting_plane(
 ):
     """Plots a 2D cutting plane slice of a 3D dataset on the specified axis.
 
-    This function visualizes a slice of the 3D data array along a specified plane
-    (x, y, or z) and displays it using a 2D image representation. The slice can be
-    specified by an index, and the appearance of the plot can be customized with
-    a colormap and transparency level.
+    This function visualizes a slice of the 3D data array along a specified
+    plane (x, y, or z) and displays it using a 2D image representation. The
+    slice can be specified by an index, and the appearance of the plot can be
+    customized with a colormap and transparency level.
 
     Parameters
     ----------
@@ -44,23 +44,26 @@ def plot_cutting_plane(
         A descriptive label for the dataset, used in the plot title.
 
     data : numpy.ndarray
-        A 3D numpy array representing the voxelized data. The shape of the array
-        should be (depth, height, width) corresponding to the z, y, and x dimensions.
+        A 3D numpy array representing the voxelized data. The shape of the
+        array should be (depth, height, width) corresponding to the
+        z, y, and x dimensions.
 
     plane : str, optional
         The plane along which to slice the data. Can be 'x', 'y', or 'z'.
         Default is 'z'.
 
     index : int, optional
-        The index of the slice to visualize along the specified plane. If not provided,
-        the function will default to the middle slice of the data along the specified plane.
+        The index of the slice to visualize along the specified plane. If not
+        provided, the function will default to the middle slice of the data
+        along the specified plane.
 
     cmap : str or matplotlib.colors.Colormap, optional
-        The colormap to use for visualizing the slice. If not provided, defaults to 'gray'.
+        The colormap to use for visualizing the slice. If not provided,
+        defaults to 'gray'.
 
     alpha : float, optional
-        The transparency level of the plotted slice, where 0 is fully transparent and
-        1 is fully opaque. If not provided, defaults to 0.8.
+        The transparency level of the plotted slice, where 0 is fully
+        transparent and 1 is fully opaque. If not provided, defaults to 0.8.
 
     Returns
     -------
@@ -160,9 +163,9 @@ def sphere(resolution: int, dtype=np.uint8) -> np.ndarray:
     # nvps = 2 * r12 * resolution + 1
     nvps = 2 * r12 * resolution
     vox_z, vox_y, vox_x = np.mgrid[
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
-        -r12 : r12 : nvps * 1j,
+        -r12:r12:nvps * 1j,
+        -r12:r12:nvps * 1j,
+        -r12:r12:nvps * 1j,
     ]
     domain = vox_x**2 + vox_y**2 + vox_z**2
 
@@ -237,7 +240,8 @@ def main():
             ax = fig.add_subplot(
                 1, N_SUBPLOTS, index + 1, projection=Axes3D.name
             )
-            # Create an array for face colors based on the values in the `value` array
+            # Create an array for face colors based on the values in the
+            # `value` array
             facecolors = np.empty(
                 value.shape + (4,), dtype=float
             )  # Shape (x, y, z, 4) for RGBA
