@@ -14,11 +14,20 @@ A very coarse (`7 x 7 x 7`) segmentation, taken as a midline cut plane
 may appear as
 
 <style>
+    .container {
+        display: flex; /* Use flexbox layout */
+    }
     .grid {
         display: grid;
         grid-template-columns: repeat(7, 50px);
         grid-template-rows: repeat(7, 50px);
-        gap: 5px;
+        gap: 1px;
+    }
+    .gridito {
+        display: grid;
+        grid-template-columns: repeat(7, 20px);
+        grid-template-rows: repeat(7, 20px);
+        gap: 1px;
     }
     .cell {
         display: flex;
@@ -101,6 +110,445 @@ may appear as
     <div class="cell zero">0</div>
     <div class="cell zero">0</div>
     <div class="cell zero">0</div>
+</div>
+
+Consider each slice, `1` to `7`, in succession:
+
+<div class="container">
+    <!--slice 1-->
+    1&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+    <!--slice 2-->
+    2&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+    <!--slice 3-->
+    3&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell one"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+    <!--slice 4-->
+    4&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell one"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell one"></div>
+        <div class="cell one"></div>
+        <div class="cell one"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell one"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+</div>
+&nbsp;
+<div class="container">
+    <!--slice 5-->
+    5&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell one"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+    <!--slice 6-->
+    6&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell two"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
+    <!--slice 7-->
+    7&nbsp;<div class="gridito">
+        <!--row 1-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 2-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 3-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 4-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell three"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 5-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 6-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <!--row 7-->
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+        <div class="cell zero"></div>
+    </div>
+    &nbsp;
+    &nbsp;
+    &nbsp;
 </div>
 
 This very coarse image, at two higher resolutions of (`24 x 24 x 24`) and
