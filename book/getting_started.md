@@ -2,16 +2,16 @@
 
 *Work in progress*
 
-We start with a segmentation, created in Python, that describes a sphere with
-two concentric shells.  The segmentation encodes
+We start with a segmentation, created in Python, that describes an inner
+domain with two outer layers.  The segmentation encodes
 
 * `0` for void (or background), shown in gray,
-* `1` for the inner sphere, shown in green,
-* `2` for the intermediate shell, shown in yellow, and
-* `3` for the outer shell, shown in magenta.
+* `1` for the inner domain, shown in green,
+* `2` for the intermediate layer, shown in yellow, and
+* `3` for the outer layer, shown in magenta.
 
-A very coarse (`7 x 7 x 7`) segmentation, taken as a midline cut plane
-may appear as
+A very coarse (`7 x 7 x 7`) segmentation, taken as a midline cut plane,
+appears as follows:
 
 <style>
     .container {
@@ -37,7 +37,8 @@ may appear as
         color: white;
     }
     .zero {
-        background-color: gray;
+        /* background-color: gray; */
+        background-color: rgb(128, 128, 128);
     }
     .one {
         /* background-color: green; */
@@ -45,11 +46,13 @@ may appear as
         color: black;  /* text color */
     }
     .two {
-        background-color: yellow;
+        /* background-color: yellow; */
+        background-color: rgb(255, 255, 0);
         color: black;  /* text color */
     }
     .three {
-        background-color: magenta;
+        /* background-color: magenta; */
+        background-color: rgb(255, 0, 255);
     }
 </style>
 
@@ -551,7 +554,14 @@ Consider each slice, `1` to `7`, in succession:
     &nbsp;
 </div>
 
-This very coarse image, at two higher resolutions of (`24 x 24 x 24`) and
-(`48 x 48 x 48`) is shown below:
+> Remark: The (`7 x 7 x 7`) segmentation can be thought of as a conceptual start point
+for a process called
+[Loop subdivision](https://en.wikipedia.org/wiki/Loop_subdivision_surface),
+used to produce spherical shapes at higher resolutions.  
+See [Octa Loop](https://github.com/autotwin/mesh/blob/main/doc/octa_loop.md) for additional information.
+A sphere in resolutions of (`24 x 24 x 24`) and (`48 x 48 x 48`), used an example
+in the [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section,
+is shown below:
 
 ![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont_cut.png)
+
