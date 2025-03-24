@@ -661,15 +661,33 @@ automesh convert --input octahedron.npy --output octahedron2.spn
 To convert from `octahedron2.spn` to `octahedron3.npy`:
 
 ```sh
-automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy
-<!-- cmdrun automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy -->
+automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
+<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npyy -->
 ```
 
-> Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified.
+> Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified using `--nelx`, `--nely`, `--nelz` (or, equivalently `-x`, `-y`, `-z`) flags.
 
 We can verify the two `.npy` files encode the same segmentation:
 
+```python
+<!-- cmdrun cat octahedron_roundtrip.py -->
+```
+
 ## Mesh Generation
 
+`automesh` creates several finite element mesh types from
+a segmentation.  
 
+Use the `automesh` help to discover the command syntax:
 
+```sh
+automesh mesh --help
+<!-- cmdrun automesh mesh --help -->
+```
+
+To convert the `octahedron.npy` into an Exodus finite element mesh:
+
+```sh
+automesh mesh -i octahedron.npy -o octahedron.exo
+<!-- cmdrun -i octahedron.npy -o octahedron.exo -->
+```
