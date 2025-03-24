@@ -559,7 +559,7 @@ Consider each slice, `1` to `7`, in succession:
 > Remark: The (`7 x 7 x 7`) segmentation can be thought of as a conceptual start point
 for a process called
 [Loop subdivision](https://en.wikipedia.org/wiki/Loop_subdivision_surface),
-used to produce spherical shapes at higher resolutions.  
+used to produce spherical shapes at higher resolutions.
 See [Octa Loop](https://github.com/autotwin/mesh/blob/main/doc/octa_loop.md) for additional information.
 A sphere in resolutions of (`24 x 24 x 24`) and (`48 x 48 x 48`), used
 in the [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section,
@@ -655,21 +655,63 @@ For example, to convert the `octahedron.npy` to `octahedron2.spn`:
 
 ```sh
 automesh convert --input octahedron.npy --output octahedron2.spn
-<!-- cmdrun automesh convert --input octahedron.npy --output octahedron2.spn -->
+<!-- cmdrun automesh convert -i octahedron.npy -o octahedron2.spn -->
 ```
 
 To convert from `octahedron2.spn` to `octahedron3.npy`:
 
 ```sh
-automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy
-<!-- cmdrun automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy -->
+automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
+<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
 ```
 
-> Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified.
+> Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified using `--nelx`, `--nely`, `--nelz` (or, equivalently `-x`, `-y`, `-z`) flags.
 
 We can verify the two `.npy` files encode the same segmentation:
 
+```python
+<!-- cmdrun cat octahedron_roundtrip.py -->
+```
+
 ## Mesh Generation
 
+`automesh` creates several finite element mesh types from
+a segmentation.
 
+Use the `automesh` help to discover the command syntax:
 
+```sh
+automesh mesh --help
+<!-- cmdrun automesh mesh --help -->
+```
+
+To convert the `octahedron.npy` into an ABAQUS finite element mesh, while removing
+segmentation `0` from the mesh:
+
+```sh
+automesh mesh -r 0 -i octahedron.npy -o octahedron.inp
+<!-- cmdrun -r 0 -i octahedron.npy -o octahedron.inp -->
+```
+
+## Smoothing
+
+Use the `automesh` help to discover the command syntax:
+
+```sh
+automesh smooth --help
+<!-- cmdrun automesh smooth --help -->
+```
+
+To smooth the `octahedron.inp` mesh with Taubin smoothing parameters for five
+iterations:
+
+```sh
+automesh smooth -n 5 -i octahedron.inp -o octahedron_s05.inp
+<!-- cmdrun automesh smooth -n 5 -i octahedron.inp -o octahedron_s05.inp -->
+```
+
+The original voxel mesh and the smoothed voxel mesh are shown below
+
+`octahedron.inp` | `octahedron_s05.inp`
+:---: | :---:
+![octahedron_voxels](fig/octahedron_voxels.png) | ![octahedron_voxels_s05](fig/octahedron_voxels_s05.png)
