@@ -662,7 +662,7 @@ To convert from `octahedron2.spn` to `octahedron3.npy`:
 
 ```sh
 automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
-<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npyy -->
+<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
 ```
 
 > Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified using `--nelx`, `--nely`, `--nelz` (or, equivalently `-x`, `-y`, `-z`) flags.
