@@ -655,7 +655,7 @@ For example, to convert the `octahedron.npy` to `octahedron2.spn`:
 
 ```sh
 automesh convert --input octahedron.npy --output octahedron2.spn
-<!-- cmdrun automesh convert --input octahedron.npy --output octahedron2.spn -->
+<!-- cmdrun automesh convert -i octahedron.npy -o octahedron2.spn -->
 ```
 
 To convert from `octahedron2.spn` to `octahedron3.npy`:
