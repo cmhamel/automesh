@@ -2,15 +2,17 @@
 
 *Work in progress*
 
-We start with a segmentation, created in Python, that describes an inner
-domain with two outer layers.  The segmentation encodes
+## Segmentation Input
+
+We start with a segmentation of a regular octahedron composed of three materials.
+The segmentation encodes
 
 * `0` for void (or background), shown in gray,
 * `1` for the inner domain, shown in green,
 * `2` for the intermediate layer, shown in yellow, and
 * `3` for the outer layer, shown in magenta.
 
-A very coarse (`7 x 7 x 7`) segmentation, taken as a midline cut plane,
+The (`7 x 7 x 7`) segmentation, at the midline cut plane,
 appears as follows:
 
 <style>
@@ -559,9 +561,115 @@ for a process called
 [Loop subdivision](https://en.wikipedia.org/wiki/Loop_subdivision_surface),
 used to produce spherical shapes at higher resolutions.  
 See [Octa Loop](https://github.com/autotwin/mesh/blob/main/doc/octa_loop.md) for additional information.
-A sphere in resolutions of (`24 x 24 x 24`) and (`48 x 48 x 48`), used an example
+A sphere in resolutions of (`24 x 24 x 24`) and (`48 x 48 x 48`), used
 in the [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section,
-is shown below:
+is shown below: ![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont_cut.png)
 
-![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont_cut.png)
+## Segmentation Types
+
+The `.spn` file can be thought of as the most elementary segmentation type because it is
+saved as an ASCII text file and is therefore readily human-readable.
+Below is an abbreviated and commented `.spn` segmentation of the (`7 x 7 x 7`) octahedron
+discussed previously.
+
+```sh
+0 # slice 1, row 1
+0
+0
+0
+0
+0
+0
+0 # slice 1, row 2
+0
+0
+0
+0
+0
+0
+0 # slice 1, row 3
+0
+0
+0
+0
+0
+0
+0 # slice 1, row 4
+0
+0
+3
+0
+0
+0
+0 # slice 1, row 5
+0
+0
+0
+0
+0
+0
+0 # slice 1, row 6
+0
+0
+0
+0
+0
+0
+0 # slice 1, row 7
+0
+0
+0
+0
+0
+0
+# ... and so on for the remaining six slices
+```
+
+A disadvantage of `.spn` is that it can become difficult to keep track of data
+slice-by-slice.  Because it is not a compressed binary file, the `.spn` often has a
+large file size.
+
+The `.npy` segmentation format is an alternative to the `.spn`
+format.  The `.npy` format can be advantageous because is can be generated easily
+from Python.  The `.npy` approach can be useful because Python can be used to
+algorithmically create a segmentation and serialized the segmentation to a compressed
+binary file (in `.npy` format).
+
+Here we illustrate creating the octahedron segmentation in Python:
+
+```python
+<!-- cmdrun cat octahedron.py -->
+```
+
+## The `convert` Command
+
+`automesh` allows for interoperability between `.spn`. and `.npy` file types.
+Use the `automesh` help to discover the command syntax:
+
+```sh
+automesh convert --help
+<!-- cmdrun automesh convert --help -->
+```
+
+For example, to convert the `octahedron.npy` to `octahedron2.spn`:
+
+```sh
+automesh convert --input octahedron.npy --output octahedron2.spn
+<!-- cmdrun automesh convert --input octahedron.npy --output octahedron2.spn -->
+```
+
+To convert from `octahedron2.spn` to `octahedron3.npy`:
+
+```sh
+automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy
+<!-- cmdrun automesh convert --input octahedron2.spn --nelx 7 --nely 7 --nelz 7 --output octahedron3.npy -->
+```
+
+> Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified.
+
+We can verify the two `.npy` files encode the same segmentation:
+
+## Mesh Generation
+
+
 
