@@ -14,7 +14,7 @@ $$
 {\tt npy} & \xmapsto[]{\tt convert} & {\tt spn}
 \\
 \\
-{\tt spn} & \xmapsto[]{\tt convert} & {\tt npy}
+{\tt spn} & \xmapsto[]{\tt convert \;\;\;-x \;\;\;-y \;\;\;-z} & {\tt npy}
 \end{array}
 $$
 
