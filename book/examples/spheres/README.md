@@ -46,14 +46,18 @@ These segmentations are saved to
 
 ```sh
 automesh mesh -i spheres_radius_1.npy -o spheres_radius_1.inp
+<!-- cmdrun automesh mesh -i spheres_radius_1.npy -o spheres_radius_1.inp -->
+
 ```
 
 ```sh
 automesh mesh -i spheres_radius_3.npy -o spheres_radius_3.inp
+<!-- automesh mesh -i spheres_radius_3.npy -o spheres_radius_3.inp -->
 ```
 
 ```sh
 automesh mesh -i spheres_radius_5.npy -o spheres_radius_5.inp
+<!-- automesh mesh -i spheres_radius_5.npy -o spheres_radius_5.inp -->
 ```
 
 ## Mesh
