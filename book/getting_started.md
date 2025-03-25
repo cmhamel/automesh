@@ -565,9 +565,9 @@ A sphere in resolutions of (`24 x 24 x 24`) and (`48 x 48 x 48`), used
 in the [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section,
 is shown below: ![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont_cut.png)
 
-## Segmentation Types
+## Segmentation File Types
 
-The `.spn` file can be thought of as the most elementary segmentation type because it is
+The `.spn` file can be thought of as the most elementary segmentation file type because it is
 saved as an ASCII text file and is therefore readily human-readable.
 Below is an abbreviated and commented `.spn` segmentation of the (`7 x 7 x 7`) octahedron
 discussed previously.
@@ -629,7 +629,7 @@ A disadvantage of `.spn` is that it can become difficult to keep track of data
 slice-by-slice.  Because it is not a compressed binary file, the `.spn` often has a
 large file size.
 
-The `.npy` segmentation format is an alternative to the `.spn`
+The `.npy` segmentation file format is an alternative to the `.spn`
 format.  The `.npy` format can be advantageous because is can be generated easily
 from Python.  The `.npy` approach can be useful because Python can be used to
 algorithmically create a segmentation and serialized the segmentation to a compressed
@@ -654,7 +654,7 @@ automesh convert --help
 For example, to convert the `octahedron.npy` to `octahedron2.spn`:
 
 ```sh
-automesh convert --input octahedron.npy --output octahedron2.spn
+automesh convert -i octahedron.npy -o octahedron2.spn
 <!-- cmdrun automesh convert -i octahedron.npy -o octahedron2.spn -->
 ```
 
@@ -675,7 +675,7 @@ We can verify the two `.npy` files encode the same segmentation:
 
 ## Mesh Generation
 
-`automesh` creates several finite element mesh types from
+`automesh` creates several finite element mesh file types from
 a segmentation.
 
 Use the `automesh` help to discover the command syntax:
@@ -715,3 +715,22 @@ The original voxel mesh and the smoothed voxel mesh are shown below:
 `octahedron.inp` | `octahedron_s05.inp`
 :---: | :---:
 ![octahedron_voxels](fig/octahedron_voxels.png) | ![octahedron_voxels_s05](fig/octahedron_voxels_s05.png)
+
+See the [Smoothing](smoothing/README.md) section for more information.
+
+## Isosurface
+
+An isosurface can be generated from a segmentation using the `--surface` flag.
+
+To create a mesh of the three isosurfaces contained in the `octahedron` example:
+
+```sh
+automesh mesh -i octahedron.npy -o octahedron.stl --surface
+<!-- cmdrun automesh mesh -i octahedron.npy -o octahedron.stl --surface -->
+```
+
+The surfaces are visualized below:
+
+[to come]
+
+See the [Isosurface](isosurface/README.md) section for more information.
