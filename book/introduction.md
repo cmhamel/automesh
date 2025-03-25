@@ -45,7 +45,7 @@ The range of integer values is limited to `256 = 2^8`, since the `uint8` data ty
 A practical example of a range could be `[0, 1, 2, 3, 4]`.  The integers do not need to be sequential,
 so a range of `[4, 501, 2, 0, 42]` is also valid, but not conventional.
 
-Segmentations are frequently serialized (saved to disc) as either a Numpy (`.npy`) file
+Segmentations are frequently serialized (saved to disc) as either a NumPy (`.npy`) file
 or a SPN (`.spn`) file.
 
 A SPN file is a text (human-readable) file that contains a single a
@@ -69,11 +69,8 @@ Figure: Illustration of the patient coordinate system, left figure from Terpsma 
 
 ## Finite Element Mesh
 
-### ABAQUS
-
-To come.
-
-### EXODUS II
+The main `automesh` file output type is `.exo`, which refers to the EXODUS II file format, or simply "Exodus" format.
+Other mesh output types, such as `.inp`, `.mesh`, and `.vtk`, are also available.
 
 > EXODUS II is a model developed to store and retrieve data for finite element analyses.  It is used for preprocesing (problem definition), postprocessing (results visualization), as well as code to code data transfer.  An EXODUS II data file is a random access, machine independent binary file.[^Schoof_1994]
 
@@ -89,7 +86,8 @@ EXODUS II data objects:
   * Number of nodes
   * Number of elements
   * *optional* informational text
-  * et cetera
+  * *etc.*
+
 * Model - static objects (i.e., objects that do not change over time)
   * Nodal coordinates
   * Element connectivity
