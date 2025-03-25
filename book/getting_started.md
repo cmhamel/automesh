@@ -710,7 +710,7 @@ automesh smooth -n 5 -i octahedron.inp -o octahedron_s05.inp
 <!-- cmdrun automesh smooth -n 5 -i octahedron.inp -o octahedron_s05.inp -->
 ```
 
-The original voxel mesh and the smoothed voxel mesh are shown below
+The original voxel mesh and the smoothed voxel mesh are shown below:
 
 `octahedron.inp` | `octahedron_s05.inp`
 :---: | :---:
