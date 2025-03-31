@@ -52,7 +52,8 @@ with open('benches/compare/automesh_remov.out', 'r') as file:
             sum += float(entry)
         data_p += (sum / count,)
 
-np.savetxt('benches/compare/spheres.csv', np.vstack((numb_p, numb_q, data_p)).T)
+np.savetxt('benches/compare/spheres.csv',
+           np.vstack((numb_p, numb_q, data_p)).T)
 
 plt.loglog(numb_a, data_a, label='automesh')
 plt.loglog(numb_p, data_p, label='automesh (removal)')
