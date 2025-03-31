@@ -19,6 +19,23 @@ do
   echo >> benches/compare/automesh_block.out
 done
 
+rm -f benches/compare/automesh_remov.out
+touch benches/compare/automesh_remov.out
+
+for NUM in `seq 4 19`
+do
+  size=$(python -c 'import numpy as np; print(len(np.load("book/analysis/sphere_with_shells/spheres_resolution_'${NUM}'.npy"))**3)')
+  real=$(python -c 'import numpy as np; print(int(np.sum(np.load("book/analysis/sphere_with_shells/spheres_resolution_'${NUM}'.npy") != 0)))')
+  echo -n "${size}, ${real}:" >> benches/compare/automesh_remov.out
+  for i in `seq 1 10`
+  do
+    start="$(date +'%s.%N')"
+    cargo run -qr -- mesh -i book/analysis/sphere_with_shells/spheres_resolution_${NUM}.npy -o benches/compare/compare.exo --remove 0 --quiet
+    echo -n " $(date +"%s.%N - ${start}" | bc)" >> benches/compare/automesh_remov.out
+  done
+  echo >> benches/compare/automesh_remov.out
+done
+
 rm -f benches/compare/sculpt_block.out
 touch benches/compare/sculpt_block.out
 
