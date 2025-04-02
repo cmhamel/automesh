@@ -900,10 +900,7 @@ impl Tree for Octree {
                                 self[parent].get_faces().iter().enumerate().for_each(
                                     |(face, face_cell)| {
                                         if let Some(cell) = face_cell {
-                                            if subcells_on_own_face(face)
-                                                .iter()
-                                                .any(|&entry| subcell == entry)
-                                            {
+                                            if subcells_on_own_face(face).contains(&subcell) {
                                                 if let Ok(spot) = block_leaves.binary_search(cell) {
                                                     if self[*cell].get_block() == block {
                                                         block_leaves.remove(spot);
@@ -1024,8 +1021,7 @@ impl Tree for Octree {
                                                 if let Some(neighbor_cell) = face_cell {
                                                     if self[*neighbor_cell].is_leaf()
                                                         && subcells_on_own_face(face)
-                                                            .iter()
-                                                            .any(|&entry| subcell == entry)
+                                                            .contains(&subcell)
                                                     {
                                                         neighbor_block =
                                                             self[*neighbor_cell].get_block();
