@@ -106,11 +106,7 @@ impl From<Nel> for VoxelData {
 impl FromIterator<usize> for Nel {
     fn from_iter<Ii: IntoIterator<Item = usize>>(into_iterator: Ii) -> Self {
         let nel: Vec<usize> = into_iterator.into_iter().collect();
-        Self {
-            x: nel[0],
-            y: nel[1],
-            z: nel[2],
-        }
+        Self::from(&nel[..])
     }
 }
 
