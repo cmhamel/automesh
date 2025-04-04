@@ -105,11 +105,6 @@ macro_rules! bench_block {
             bencher.iter(|| Voxels::from_spn(&spn, NEL.into()).unwrap());
         }
         #[bench]
-        fn from_tif(bencher: &mut Bencher) {
-            let tif = format!("benches/block/block_{}.tif", $nel);
-            bencher.iter(|| Voxels::from_tif(&tif).unwrap());
-        }
-        #[bench]
         fn into_finite_elements_from_voxels(bencher: &mut Bencher) {
             let npy = format!("benches/block/block_{}.npy", $nel);
             bencher.iter(|| {
