@@ -68,9 +68,8 @@ fn compare_files(
 
 #[cfg(not(target_os = "windows"))]
 mod read_inp {
-    use automesh::HexahedralFiniteElements;
-
     use super::*;
+    use automesh::HexahedralFiniteElements;
     #[test]
     fn letter_f_3d() {
         let voxels = Voxels::from_spn("tests/input/letter_f_3d.spn", [4, 5, 3].into()).unwrap();

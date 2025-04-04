@@ -85,12 +85,7 @@ fn test_finite_elements(
             .for_each(|(coordinates, gold_coordinates)| {
                 coordinates.iter().zip(gold_coordinates.iter()).for_each(
                     |(coordinate, gold_coordinate)| {
-                        if (coordinate - gold_coordinate).abs() >= EPSILON {
-                            panic!(
-                                "\n{:?}\nis not approximately equal to\n {:?}",
-                                laplacian, gold
-                            )
-                        }
+                        assert!((coordinate - gold_coordinate).abs() < EPSILON)
                     },
                 )
             });
@@ -116,12 +111,7 @@ fn test_finite_elements(
                 |(coordinates, gold_coordinates)| {
                     coordinates.iter().zip(gold_coordinates.iter()).for_each(
                         |(coordinate, gold_coordinate)| {
-                            if (coordinate - gold_coordinate).abs() >= EPSILON {
-                                panic!(
-                            "\n{:?}\nis not approximately equal to\n {:?}\n from {} iterations",
-                            smoothed_nodal_coordinates, gold, iterations
-                        )
-                            }
+                            assert!((coordinate - gold_coordinate).abs() < EPSILON)
                         },
                     )
                 },
@@ -2977,22 +2967,18 @@ fn valence_3_and_4_noised() {
     assert_eq!(
         maximum_edge_ratios.len(),
         maximum_edge_ratios_gold.len(),
-        "Length of calculated maximum edge ratios is not equal to the length of gold values"
     );
     assert_eq!(
         minimum_scaled_jacobians.len(),
         mininum_scaled_jacobians_gold.len(),
-        "Length of calculated minimum scaled Jacobians is not equal to the length of gold values"
     );
     assert_eq!(
         maximum_skews.len(),
         maximum_skews_gold.len(),
-        "Length of calculated maximum skews is not equal to the length of gold values"
     );
     assert_eq!(
         element_volumes.len(),
         element_volumes_gold.len(),
-        "Length of calculated element volumes is not equal to the length of gold values"
     );
 
     // for in alternative
@@ -3015,9 +3001,6 @@ fn valence_3_and_4_noised() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 
@@ -3027,9 +3010,6 @@ fn valence_3_and_4_noised() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 
@@ -3039,9 +3019,6 @@ fn valence_3_and_4_noised() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated maximum skew {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 
@@ -3051,9 +3028,6 @@ fn valence_3_and_4_noised() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated element volume {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 }
@@ -3222,9 +3196,6 @@ fn triangular_unit_tests() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated maximum edge ratio {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 
@@ -3242,9 +3213,6 @@ fn triangular_unit_tests() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated minimum angle (deg) {} is not approximately equal to gold value (deg) {}",
-                calculated,
-                gold
             );
         });
 
@@ -3256,9 +3224,6 @@ fn triangular_unit_tests() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated maximum skew {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             );
         });
 
@@ -3270,9 +3235,6 @@ fn triangular_unit_tests() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated tri area {} is not approximately equal to tri gold value {}",
-                calculated,
-                gold
             )
         });
 
@@ -3286,9 +3248,6 @@ fn triangular_unit_tests() {
         .for_each(|(calculated, gold)| {
             assert!(
                 (calculated - gold).abs() < EPSILON,
-                "Calculated minimum scaled Jacobian {} is not approximately equal to gold value {}",
-                calculated,
-                gold
             )
         });
 }
@@ -3313,15 +3272,13 @@ fn metrics_headers_test() {
     assert_eq!(tri_header_gold, tri_header_result);
 
     // Test the headers used in several files, such as .csv and .exo output
-    let automesh_header_gold = "autotwin.automesh, version 0.3.2".to_string();
+    let automesh_header_gold =
+        format!("autotwin.automesh, version {}", env!("CARGO_PKG_VERSION")).to_string();
     let automesh_header = automesh_header();
 
-    if let Some(index) = automesh_header.find(", autogenerated on") {
-        // Create a new substring that excludes the specific date and time
-        // generated, e.g., ", autogenerated on 2025-02-26 19:51:20.069572 UCT"
-        let substring = &automesh_header[..index];
-        assert_eq!(automesh_header_gold, substring);
-    }
+    let index = automesh_header.find(", autogenerated on").unwrap();
+    let substring = &automesh_header[..index];
+    assert_eq!(automesh_header_gold, substring)
 }
 
 // #[test]
