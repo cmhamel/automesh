@@ -2,7 +2,7 @@
 
 extern crate test;
 use automesh::{
-    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Octree, Smoothing,
+    FiniteElementMethods, HexahedralFiniteElements, Octree, Smoothing,
     Tree, Voxels, NSD,
 };
 use std::{
