@@ -37,7 +37,7 @@ jobs:
           toolchain: stable
       - uses: taiki-e/install-action@cargo-llvm-cov
       - name: llvm-cov
-        run: cargo llvm-cov --profile release
+        run: cargo llvm-cov --profile release --cobertura --output-path coverage.xml
       - name: report
         uses: insightsengineering/coverage-action@v2
         with:
