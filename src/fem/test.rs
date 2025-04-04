@@ -2964,22 +2964,13 @@ fn valence_3_and_4_noised() {
         .collect();
 
     // Assert that the calculated values are approximately equal to the gold values
-    assert_eq!(
-        maximum_edge_ratios.len(),
-        maximum_edge_ratios_gold.len(),
-    );
+    assert_eq!(maximum_edge_ratios.len(), maximum_edge_ratios_gold.len(),);
     assert_eq!(
         minimum_scaled_jacobians.len(),
         mininum_scaled_jacobians_gold.len(),
     );
-    assert_eq!(
-        maximum_skews.len(),
-        maximum_skews_gold.len(),
-    );
-    assert_eq!(
-        element_volumes.len(),
-        element_volumes_gold.len(),
-    );
+    assert_eq!(maximum_skews.len(), maximum_skews_gold.len(),);
+    assert_eq!(element_volumes.len(), element_volumes_gold.len(),);
 
     // for in alternative
     // for (calculated, gold) in maximum_edge_ratios
@@ -2999,36 +2990,28 @@ fn valence_3_and_4_noised() {
         .iter()
         .zip(maximum_edge_ratios_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     minimum_scaled_jacobians
         .iter()
         .zip(mininum_scaled_jacobians_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     maximum_skews
         .iter()
         .zip(maximum_skews_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     element_volumes
         .iter()
         .zip(element_volumes_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 }
 
@@ -3194,9 +3177,7 @@ fn triangular_unit_tests() {
         .iter()
         .zip(maximum_edge_ratios_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     let minimum_angles =
@@ -3211,9 +3192,7 @@ fn triangular_unit_tests() {
         .iter()
         .zip(minimum_angles_gold_deg.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     let maximum_skews = calculate_maximum_skews(&element_node_connectivity, &nodal_coordinates);
@@ -3222,9 +3201,7 @@ fn triangular_unit_tests() {
         .iter()
         .zip(maximum_skews_gold.iter())
         .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            );
+            assert!((calculated - gold).abs() < EPSILON,);
         });
 
     let element_areas = calculate_element_areas_tri(&element_node_connectivity, &nodal_coordinates);
@@ -3232,11 +3209,7 @@ fn triangular_unit_tests() {
     element_areas
         .iter()
         .zip(element_areas_gold.iter())
-        .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            )
-        });
+        .for_each(|(calculated, gold)| assert!((calculated - gold).abs() < EPSILON,));
 
     // let element_areas = calculate_element_measures(&element_node_connectivity, &nodal_coordinates);
     let minimum_scaled_jacobians =
@@ -3245,11 +3218,7 @@ fn triangular_unit_tests() {
     minimum_scaled_jacobians
         .iter()
         .zip(minimum_scaled_jacobians_gold.iter())
-        .for_each(|(calculated, gold)| {
-            assert!(
-                (calculated - gold).abs() < EPSILON,
-            )
-        });
+        .for_each(|(calculated, gold)| assert!((calculated - gold).abs() < EPSILON,));
 }
 
 #[test]
