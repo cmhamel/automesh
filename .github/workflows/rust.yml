@@ -27,6 +27,22 @@ jobs:
         run: ./benches/block.sh
       - name: bench
         run: rustup run nightly cargo bench
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: llvm-cov
+        run: cargo llvm-cov --profile release
+      - name: report
+        uses: insightsengineering/coverage-action@v2
+        with:
+          fail: false
+          publish: true
   package:
     runs-on: ubuntu-latest
     steps:
