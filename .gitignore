@@ -62,3 +62,4 @@ Cargo.lock
 book/build/
 benches/block/
 benches/compare/
+cobertura.xml

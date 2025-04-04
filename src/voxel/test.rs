@@ -1,4 +1,4 @@
-use super::{filter_voxel_data, Voxels};
+use super::{filter_voxel_data, Nel, Voxels};
 
 const NUM_ELEMENTS: usize = 39;
 
@@ -60,4 +60,54 @@ fn filter() {
         .flatten()
         .zip(filtered_voxel_data.iter().flatten())
         .for_each(|(entry, gold)| assert_eq!(entry, gold));
+}
+
+mod nel {
+    use super::*;
+    mod from_input {
+        use super::*;
+        #[test]
+        #[should_panic(expected = "Argument nelx was required but was not provided")]
+        fn missing_x() {
+            let _ = Nel::from_input([None, None, None]).unwrap();
+        }
+        #[test]
+        #[should_panic(expected = "Argument nely was required but was not provided")]
+        fn missing_y() {
+            let _ = Nel::from_input([Some(1), None, None]).unwrap();
+        }
+        #[test]
+        #[should_panic(expected = "Argument nelz was required but was not provided")]
+        fn missing_z() {
+            let _ = Nel::from_input([Some(1), Some(1), None]).unwrap();
+        }
+        #[test]
+        fn success() {
+            let _ = Nel::from_input([Some(1), Some(1), Some(1)]).unwrap();
+        }
+    }
+    mod from_slice {
+        use super::*;
+        #[test]
+        #[should_panic(expected = "Need to specify nel > 0")]
+        fn nonzero() {
+            let _ = Nel::from(&[0, 1, 2][..]);
+        }
+        #[test]
+        fn success() {
+            let _ = Nel::from(&[1, 2, 3][..]);
+        }
+    }
+    mod from_iter {
+        use super::*;
+        #[test]
+        #[should_panic(expected = "Need to specify nel > 0")]
+        fn nonzero() {
+            let _ = [0, 2, 3].into_iter().collect::<Nel>();
+        }
+        #[test]
+        fn success() {
+            let _ = [1, 2, 3].into_iter().collect::<Nel>();
+        }
+    }
 }

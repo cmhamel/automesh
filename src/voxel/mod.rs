@@ -21,10 +21,6 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, Error, Write},
 };
-use tiff::{
-    decoder::{Decoder, DecodingResult},
-    TiffError,
-};
 
 type InitialNodalCoordinates = Vec<Option<Coordinate>>;
 type VoxelDataFlattened = Blocks;
@@ -110,11 +106,7 @@ impl From<Nel> for VoxelData {
 impl FromIterator<usize> for Nel {
     fn from_iter<Ii: IntoIterator<Item = usize>>(into_iterator: Ii) -> Self {
         let nel: Vec<usize> = into_iterator.into_iter().collect();
-        Self {
-            x: nel[0],
-            y: nel[1],
-            z: nel[2],
-        }
+        Self::from(&nel[..])
     }
 }
 
@@ -227,12 +219,6 @@ impl Voxels {
     pub fn from_spn(file_path: &str, nel: Nel) -> Result<Self, String> {
         Ok(Self {
             data: voxel_data_from_spn(file_path, nel)?,
-        })
-    }
-    /// Constructs and returns a new voxels type from a TIF file.
-    pub fn from_tif(file_path: &str) -> Result<Self, String> {
-        Ok(Self {
-            data: voxel_data_from_tif(file_path)?,
         })
     }
     /// Returns a reference to the internal voxels data.
@@ -485,20 +471,6 @@ impl From<IntermediateError> for String {
     }
 }
 
-impl From<String> for IntermediateError {
-    fn from(error: String) -> IntermediateError {
-        IntermediateError { message: error }
-    }
-}
-
-impl From<TiffError> for IntermediateError {
-    fn from(error: TiffError) -> IntermediateError {
-        IntermediateError {
-            message: error.to_string(),
-        }
-    }
-}
-
 fn voxel_data_from_npy(file_path: &str) -> Result<VoxelData, ReadNpyError> {
     VoxelData::read_npy(File::open(file_path)?)
 }
@@ -521,68 +493,6 @@ fn voxel_data_from_spn(file_path: &str, nel: Nel) -> Result<VoxelData, Intermedi
                     })
                 })
         });
-    Ok(data)
-}
-
-fn voxel_data_from_tif(file_path: &str) -> Result<VoxelData, IntermediateError> {
-    let mut file = std::path::PathBuf::from(file_path);
-    let file_stem = file
-        .file_stem()
-        .ok_or("asdf".to_string())?
-        .to_str()
-        .ok_or("asdf".to_string())?
-        .to_string();
-    let file_extension = file
-        .extension()
-        .ok_or("asdf".to_string())?
-        .to_str()
-        .ok_or("asdf".to_string())?
-        .to_string();
-    let basic_file_path = format!(
-        "{}/{}",
-        file.parent()
-            .ok_or("asdf".to_string())?
-            .to_str()
-            .ok_or("asdf".to_string())?,
-        file_stem
-    );
-    file.set_file_name(format!("{}_0.{}", file_stem, file_extension));
-    let mut decoder = Decoder::new(BufReader::new(File::open(
-        file.to_str().ok_or("asdf".to_string())?,
-    )?))?;
-    let (mut nelx, mut nely) = decoder.dimensions()?;
-    let mut index = 0;
-    while file.exists() {
-        index += 1;
-        file.set_file_name(format!("{}_{}.{}", file_stem, index, file_extension));
-    }
-    let nel = Nel::from([nelx as usize, nely as usize, index as usize]);
-    let mut data = VoxelData::from(nel);
-    data.axis_iter_mut(Axis(2))
-        .enumerate()
-        .try_for_each(|(k, mut data_k)| {
-            decoder = Decoder::new(BufReader::new(File::open(format!(
-                "{}_{}.{}",
-                basic_file_path, k, file_extension
-            ))?))?;
-            (nelx, nely) = decoder.dimensions()?;
-            if *nel.x() != nelx as usize || *nel.y() != nely as usize {
-                panic!()
-            }
-            match decoder.read_image()? {
-                DecodingResult::U8(data_flattened) => data_flattened,
-                _ => panic!(),
-            }
-            .chunks(*nel.x())
-            .zip(data_k.axis_iter_mut(Axis(1)).rev())
-            .for_each(|(chunk, mut data_kj)| {
-                chunk
-                    .iter()
-                    .zip(data_kj.iter_mut())
-                    .for_each(|(a, data_kji)| *data_kji = *a)
-            });
-            Ok::<(), IntermediateError>(())
-        })?;
     Ok(data)
 }
 

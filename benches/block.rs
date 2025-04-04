@@ -2,8 +2,7 @@
 
 extern crate test;
 use automesh::{
-    FiniteElementMethods, FiniteElementSpecifics, HexahedralFiniteElements, Octree, Smoothing,
-    Tree, Voxels, NSD,
+    FiniteElementMethods, HexahedralFiniteElements, Octree, Smoothing, Tree, Voxels, NSD,
 };
 use std::{
     fs::{read_dir, remove_file},
@@ -104,11 +103,6 @@ macro_rules! bench_block {
         fn from_spn(bencher: &mut Bencher) {
             let spn = format!("benches/block/block_{}.spn", $nel);
             bencher.iter(|| Voxels::from_spn(&spn, NEL.into()).unwrap());
-        }
-        #[bench]
-        fn from_tif(bencher: &mut Bencher) {
-            let tif = format!("benches/block/block_{}.tif", $nel);
-            bencher.iter(|| Voxels::from_tif(&tif).unwrap());
         }
         #[bench]
         fn into_finite_elements_from_voxels(bencher: &mut Bencher) {
