@@ -104,90 +104,92 @@ enum Commands {
     /// Creates a finite element mesh from a segmentation
     Mesh {
         #[command(subcommand)]
-        meshing: Option<MeshingCommands>,
+        subcommand: MeshSubcommand,
+        // #[command(subcommand)]
+        // meshing: Option<MeshingCommands>,
 
-        /// Segmentation input file (npy | spn)
-        #[arg(long, short, value_name = "FILE")]
-        input: String,
+        // /// Segmentation input file (npy | spn)
+        // #[arg(long, short, value_name = "FILE")]
+        // input: String,
 
-        /// Mesh output file (exo | inp | mesh | vtk)
-        #[arg(long, short, value_name = "FILE")]
-        output: String,
+        // /// Mesh output file (exo | inp | mesh | vtk)
+        // #[arg(long, short, value_name = "FILE")]
+        // output: String,
 
-        /// Defeature clusters with less than NUM voxels
-        #[arg(long, short, value_name = "NUM")]
-        defeature: Option<usize>,
+        // /// Defeature clusters with less than NUM voxels
+        // #[arg(long, short, value_name = "NUM")]
+        // defeature: Option<usize>,
 
-        /// Number of voxels in the x-direction
-        #[arg(long, short = 'x', value_name = "NEL")]
-        nelx: Option<usize>,
+        // /// Number of voxels in the x-direction
+        // #[arg(long, short = 'x', value_name = "NEL")]
+        // nelx: Option<usize>,
 
-        /// Number of voxels in the y-direction
-        #[arg(long, short = 'y', value_name = "NEL")]
-        nely: Option<usize>,
+        // /// Number of voxels in the y-direction
+        // #[arg(long, short = 'y', value_name = "NEL")]
+        // nely: Option<usize>,
 
-        /// Number of voxels in the z-direction
-        #[arg(long, short = 'z', value_name = "NEL")]
-        nelz: Option<usize>,
+        // /// Number of voxels in the z-direction
+        // #[arg(long, short = 'z', value_name = "NEL")]
+        // nelz: Option<usize>,
 
-        /// Voxel IDs to remove from the mesh
-        #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
-        remove: Option<Vec<usize>>,
+        // /// Voxel IDs to remove from the mesh
+        // #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+        // remove: Option<Vec<usize>>,
 
-        /// Scaling (> 0.0) in the x-direction
-        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        xscale: f64,
+        // /// Scaling (> 0.0) in the x-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // xscale: f64,
 
-        /// Scaling (> 0.0) in the y-direction
-        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        yscale: f64,
+        // /// Scaling (> 0.0) in the y-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // yscale: f64,
 
-        /// Scaling (> 0.0) in the z-direction
-        #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
-        zscale: f64,
+        // /// Scaling (> 0.0) in the z-direction
+        // #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+        // zscale: f64,
 
-        /// Translation in the x-direction
-        #[arg(
-            long,
-            default_value_t = 0.0,
-            allow_negative_numbers = true,
-            value_name = "VAL"
-        )]
-        xtranslate: f64,
+        // /// Translation in the x-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // xtranslate: f64,
 
-        /// Translation in the y-direction
-        #[arg(
-            long,
-            default_value_t = 0.0,
-            allow_negative_numbers = true,
-            value_name = "VAL"
-        )]
-        ytranslate: f64,
+        // /// Translation in the y-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // ytranslate: f64,
 
-        /// Translation in the z-direction
-        #[arg(
-            long,
-            default_value_t = 0.0,
-            allow_negative_numbers = true,
-            value_name = "VAL"
-        )]
-        ztranslate: f64,
+        // /// Translation in the z-direction
+        // #[arg(
+        //     long,
+        //     default_value_t = 0.0,
+        //     allow_negative_numbers = true,
+        //     value_name = "VAL"
+        // )]
+        // ztranslate: f64,
 
-        /// Name of the quality metrics file
-        #[arg(long, value_name = "FILE")]
-        metrics: Option<String>,
+        // /// Name of the quality metrics file
+        // #[arg(long, value_name = "FILE")]
+        // metrics: Option<String>,
 
-        /// Pass to quiet the terminal output
-        #[arg(action, long, short)]
-        quiet: bool,
+        // /// Pass to quiet the terminal output
+        // #[arg(action, long, short)]
+        // quiet: bool,
 
-        /// Pass to mesh using dualization
-        #[arg(action, hide = true, long)]
-        dual: bool,
+        // /// Pass to mesh using dualization
+        // #[arg(action, hide = true, long)]
+        // dual: bool,
 
-        /// Pass to mesh internal surfaces
-        #[arg(action, long)]
-        surface: bool,
+        // /// Pass to mesh internal surfaces
+        // #[arg(action, long)]
+        // surface: bool,
     },
 
     /// Quality metrics for an existing finite element mesh
@@ -374,9 +376,184 @@ struct ConvertSegmentationArgs {
     quiet: bool,
 }
 
-
 #[derive(Subcommand)]
-enum MeshingCommands {
+enum MeshSubcommand {
+    /// Creates an all-hexahedral mesh from a segmentation
+    Hex(MeshHexArgs),
+    /// Creates an all-triangular isosurface from a segmentation
+    Tri(MeshTriArgs),
+}
+
+#[derive(clap::Args)]
+struct MeshHexArgs {
+    #[command(subcommand)]
+    smoothing: Option<MeshSmoothCommands>,
+
+    /// Segmentation input file (npy | spn)
+    #[arg(long, short, value_name = "FILE")]
+    input: String,
+
+    /// Mesh output file (exo | inp | mesh | vtk)
+    #[arg(long, short, value_name = "FILE")]
+    output: String,
+
+    /// Defeature clusters with less than NUM voxels
+    #[arg(long, short, value_name = "NUM")]
+    defeature: Option<usize>,
+
+    /// Number of voxels in the x-direction
+    #[arg(long, short = 'x', value_name = "NEL")]
+    nelx: Option<usize>,
+
+    /// Number of voxels in the y-direction
+    #[arg(long, short = 'y', value_name = "NEL")]
+    nely: Option<usize>,
+
+    /// Number of voxels in the z-direction
+    #[arg(long, short = 'z', value_name = "NEL")]
+    nelz: Option<usize>,
+
+    /// Voxel IDs to remove from the mesh
+    #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+    remove: Option<Vec<usize>>,
+
+    /// Scaling (> 0.0) in the x-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    xscale: f64,
+
+    /// Scaling (> 0.0) in the y-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    yscale: f64,
+
+    /// Scaling (> 0.0) in the z-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    zscale: f64,
+
+    /// Translation in the x-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    xtranslate: f64,
+
+    /// Translation in the y-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    ytranslate: f64,
+
+    /// Translation in the z-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    ztranslate: f64,
+
+    /// Quality metrics output file (csv | npy)
+    #[arg(long, value_name = "FILE")]
+    metrics: Option<String>,
+
+    /// Pass to quiet the terminal output
+    #[arg(action, long, short)]
+    quiet: bool,
+
+    /// Pass to mesh using dualization
+    #[arg(action, hide = true, long)]
+    dual: bool,
+}
+
+#[derive(clap::Args)]
+struct MeshTriArgs {
+    #[command(subcommand)]
+    smoothing: Option<MeshSmoothCommands>,
+
+    /// Segmentation input file (npy | spn)
+    #[arg(long, short, value_name = "FILE")]
+    input: String,
+
+    /// Mesh output file (exo | inp | mesh | stl | vtk)
+    #[arg(long, short, value_name = "FILE")]
+    output: String,
+
+    /// Defeature clusters with less than NUM voxels
+    #[arg(long, short, value_name = "NUM")]
+    defeature: Option<usize>,
+
+    /// Number of voxels in the x-direction
+    #[arg(long, short = 'x', value_name = "NEL")]
+    nelx: Option<usize>,
+
+    /// Number of voxels in the y-direction
+    #[arg(long, short = 'y', value_name = "NEL")]
+    nely: Option<usize>,
+
+    /// Number of voxels in the z-direction
+    #[arg(long, short = 'z', value_name = "NEL")]
+    nelz: Option<usize>,
+
+    /// Voxel IDs to remove from the mesh
+    #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
+    remove: Option<Vec<usize>>,
+
+    /// Scaling (> 0.0) in the x-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    xscale: f64,
+
+    /// Scaling (> 0.0) in the y-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    yscale: f64,
+
+    /// Scaling (> 0.0) in the z-direction, applied before translation
+    #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
+    zscale: f64,
+
+    /// Translation in the x-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    xtranslate: f64,
+
+    /// Translation in the y-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    ytranslate: f64,
+
+    /// Translation in the z-direction
+    #[arg(
+        long,
+        default_value_t = 0.0,
+        allow_negative_numbers = true,
+        value_name = "VAL"
+    )]
+    ztranslate: f64,
+
+    /// Quality metrics output file (csv | npy)
+    #[arg(long, value_name = "FILE")]
+    metrics: Option<String>,
+
+    /// Pass to quiet the terminal output
+    #[arg(action, long, short)]
+    quiet: bool,
+
+    // There is no dualization for triangles, only hexahedra.
+}
+
+#[derive(Subcommand, Debug)]
+enum MeshSmoothCommands {
     /// Applies smoothing to the mesh before output
     Smooth {
         /// Pass to enable hierarchical control
@@ -387,19 +564,45 @@ enum MeshingCommands {
         #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
-        /// Name of the smoothing method [default: Taubin]
+        /// Smoothing method (Laplace | Taubin) [default: Taubin]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Pass-band frequency for Taubin smoothing
+        /// Pass-band frequency (for Taubin only)
         #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
         pass_band: f64,
 
-        /// Scaling parameter for smoothing
+        /// Scaling parameter for all smoothing methods
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
     },
 }
+
+// #[derive(Subcommand)]
+// enum MeshingCommands {
+//     /// Applies smoothing to the mesh before output
+//     Smooth {
+//         /// Pass to enable hierarchical control
+//         #[arg(action, long, short = 'c')]
+//         hierarchical: bool,
+// 
+//         /// Number of smoothing iterations
+//         #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
+//         iterations: usize,
+// 
+//         /// Name of the smoothing method [default: Taubin]
+//         #[arg(long, short, value_name = "NAME")]
+//         method: Option<String>,
+// 
+//         /// Pass-band frequency for Taubin smoothing
+//         #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
+//         pass_band: f64,
+// 
+//         /// Scaling parameter for smoothing
+//         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
+//         scale: f64,
+//     },
+// }
 
 struct ErrorWrapper {
     message: String,
@@ -547,32 +750,77 @@ fn main() -> Result<(), ErrorWrapper> {
             is_quiet = quiet;
             defeature(input, output, min, nelx, nely, nelz, quiet)
         }
-        Some(Commands::Mesh {
-            meshing,
-            input,
-            output,
-            defeature,
-            nelx,
-            nely,
-            nelz,
-            remove,
-            xscale,
-            yscale,
-            zscale,
-            xtranslate,
-            ytranslate,
-            ztranslate,
-            metrics,
-            quiet,
-            dual,
-            surface,
-        }) => {
-            is_quiet = quiet;
-            mesh(
-                meshing, input, output, defeature, nelx, nely, nelz, remove, xscale, yscale,
-                zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual, surface,
-            )
+        Some(Commands::Mesh { subcommand }) => match subcommand {
+            MeshSubcommand::Hex(args) => {
+                is_quiet = args.quiet;
+                mesh_hex(
+                    args.smoothing,
+                    args.input,
+                    args.output,
+                    args.defeature,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.remove,
+                    args.xscale,
+                    args.yscale,
+                    args.zscale,
+                    args.xtranslate,
+                    args.ytranslate,
+                    args.ztranslate,
+                    args.metrics,
+                    args.quiet,
+                    args.dual,
+                )
+            }
+            MeshSubcommand::Tri(args) => {
+                is_quiet = args.quiet;
+                mesh_tri(
+                    args.smoothing,
+                    args.input,
+                    args.output,
+                    args.defeature,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.remove,
+                    args.xscale,
+                    args.yscale,
+                    args.zscale,
+                    args.xtranslate,
+                    args.ytranslate,
+                    args.ztranslate,
+                    args.metrics,
+                    args.quiet,
+                )
+            }
         }
+        // Some(Commands::Mesh {
+        //     meshing,
+        //     input,
+        //     output,
+        //     defeature,
+        //     nelx,
+        //     nely,
+        //     nelz,
+        //     remove,
+        //     xscale,
+        //     yscale,
+        //     zscale,
+        //     xtranslate,
+        //     ytranslate,
+        //     ztranslate,
+        //     metrics,
+        //     quiet,
+        //     dual,
+        //     surface,
+        // }) => {
+        //     is_quiet = quiet;
+        //     mesh(
+        //         meshing, input, output, defeature, nelx, nely, nelz, remove, xscale, yscale,
+        //         zscale, xtranslate, ytranslate, ztranslate, metrics, quiet, dual, surface,
+        //     )
+        // }
         Some(Commands::Metrics {
             input,
             output,
@@ -794,8 +1042,8 @@ enum MeshBasis {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn mesh(
-    meshing: Option<MeshingCommands>,
+fn mesh_hex(
+    smoothing: Option<MeshSmoothCommands>,
     input: String,
     output: String,
     defeature: Option<usize>,
@@ -812,7 +1060,7 @@ fn mesh(
     metrics: Option<String>,
     quiet: bool,
     dual: bool,
-    surface: bool,
+    // surface: bool,
 ) -> Result<(), ErrorWrapper> {
     let mut time = Instant::now();
     let remove = remove.map(|removed_blocks| {
@@ -835,137 +1083,356 @@ fn mesh(
             ))?
         }
     };
-    if surface {
+    if let Some(min_num_voxels) = defeature {
         if !quiet {
             time = Instant::now();
-            if let Some(min_num_voxels) = defeature {
-                println!(
-                    " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
-                    min_num_voxels
-                );
-            } else {
-                mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
-            }
+            println!(
+                " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                min_num_voxels
+            );
         }
+        input_type = input_type.defeature(min_num_voxels);
+        if !quiet {
+            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        }
+    }
+    if !quiet {
+        time = Instant::now();
+        mesh_print_info(MeshBasis::Voxels, &scale, &translate)
+    }
+    let mut output_type = if dual {
         let (nel_padded, mut tree) = Octree::from_voxels(input_type);
         tree.balance(true);
-        if let Some(min_num_voxels) = defeature {
-            tree.defeature(min_num_voxels);
-            println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-            time = Instant::now();
-            mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
-        }
-        let mut output_type: TriangularFiniteElements =
-            tree.into_finite_elements(nel_padded, remove, scale, translate)?;
-        if !quiet {
-            let mut blocks = output_type.get_element_blocks().clone();
-            let elements = blocks.len();
-            blocks.sort();
-            blocks.dedup();
-            println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
-        }
-        if let Some(options) = meshing {
-            match options {
-                MeshingCommands::Smooth {
-                    iterations,
-                    method,
-                    hierarchical,
-                    pass_band,
-                    scale,
-                } => {
-                    apply_smoothing_method(
-                        &mut output_type,
-                        iterations,
-                        method,
-                        hierarchical,
-                        pass_band,
-                        scale,
-                        quiet,
-                    )?;
-                }
-            }
-        }
-        let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-        match output_extension {
-            Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-            Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-            Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-            Some("stl") => write_output(
-                output,
-                OutputTypes::<3, TriangularFiniteElements>::Stl(output_type.into_tesselation()),
-                quiet,
-            )?,
-            Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-            _ => invalid_output(&output, output_extension)?,
-        }
+        tree.pair();
+        tree.into_finite_elements(nel_padded, remove, scale, translate)?
     } else {
-        if let Some(min_num_voxels) = defeature {
-            if !quiet {
-                time = Instant::now();
-                println!(
-                    " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
-                    min_num_voxels
-                );
-            }
-            input_type = input_type.defeature(min_num_voxels);
-            if !quiet {
-                println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
-            }
-        }
-        if !quiet {
-            time = Instant::now();
-            mesh_print_info(MeshBasis::Voxels, &scale, &translate)
-        }
-        let mut output_type = if dual {
-            let (nel_padded, mut tree) = Octree::from_voxels(input_type);
-            tree.balance(true);
-            tree.pair();
-            tree.into_finite_elements(nel_padded, remove, scale, translate)?
-        } else {
-            input_type.into_finite_elements(remove, scale, translate)?
-        };
-        if !quiet {
-            let mut blocks = output_type.get_element_blocks().clone();
-            let elements = blocks.len();
-            blocks.sort();
-            blocks.dedup();
-            println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
-        }
-        if let Some(options) = meshing {
-            match options {
-                MeshingCommands::Smooth {
+        input_type.into_finite_elements(remove, scale, translate)?
+    };
+    if !quiet {
+        let mut blocks = output_type.get_element_blocks().clone();
+        let elements = blocks.len();
+        blocks.sort();
+        blocks.dedup();
+        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+    }
+    if let Some(options) = smoothing {
+        match options {
+            MeshSmoothCommands::Smooth {
+                iterations,
+                method,
+                hierarchical,
+                pass_band,
+                scale,
+            } => {
+                apply_smoothing_method(
+                    &mut output_type,
                     iterations,
                     method,
                     hierarchical,
                     pass_band,
                     scale,
-                } => {
-                    apply_smoothing_method(
-                        &mut output_type,
-                        iterations,
-                        method,
-                        hierarchical,
-                        pass_band,
-                        scale,
-                        quiet,
-                    )?;
-                }
+                    quiet,
+                )?;
             }
         }
-        if let Some(file) = metrics {
-            metrics_inner(&output_type, file, quiet)?
-        }
-        let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-        match output_extension {
-            Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
-            Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
-            Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
-            Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
-            _ => invalid_output(&output, output_extension)?,
-        }
+    }
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+        _ => invalid_output(&output, output_extension)?,
     }
     Ok(())
 }
+
+#[allow(clippy::too_many_arguments)]
+fn mesh_tri(
+    smoothing: Option<MeshSmoothCommands>,
+    input: String,
+    output: String,
+    defeature: Option<usize>,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    remove: Option<Vec<usize>>,
+    xscale: f64,
+    yscale: f64,
+    zscale: f64,
+    xtranslate: f64,
+    ytranslate: f64,
+    ztranslate: f64,
+    metrics: Option<String>,
+    quiet: bool,
+    // dual: bool,
+    // surface: bool,
+) -> Result<(), ErrorWrapper> {
+    let mut time = Instant::now();
+    let remove = remove.map(|removed_blocks| {
+        removed_blocks
+            .into_iter()
+            .map(|entry| entry as u8)
+            .collect()
+    });
+    let scale = Scale::from([xscale, yscale, zscale]);
+    let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
+    let input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Npy(voxels) => voxels,
+        InputTypes::Spn(voxels) => voxels,
+        _ => {
+            let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+            Err(format!(
+                "Invalid extension .{} from input file {}",
+                input_extension.unwrap_or("UNDEFINED"),
+                input
+            ))?
+        }
+    };
+    if !quiet {
+        time = Instant::now();
+        if let Some(min_num_voxels) = defeature {
+            println!(
+                " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+                min_num_voxels
+            );
+        } else {
+            mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
+        }
+    }
+    let (nel_padded, mut tree) = Octree::from_voxels(input_type);
+    tree.balance(true);
+    if let Some(min_num_voxels) = defeature {
+        tree.defeature(min_num_voxels);
+        println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+        time = Instant::now();
+        mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
+    }
+    let mut output_type: TriangularFiniteElements =
+        tree.into_finite_elements(nel_padded, remove, scale, translate)?;
+    if !quiet {
+        let mut blocks = output_type.get_element_blocks().clone();
+        let elements = blocks.len();
+        blocks.sort();
+        blocks.dedup();
+        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+    }
+    if let Some(options) = smoothing {
+        match options {
+            MeshSmoothCommands::Smooth {
+                iterations,
+                method,
+                hierarchical,
+                pass_band,
+                scale,
+            } => {
+                apply_smoothing_method(
+                    &mut output_type,
+                    iterations,
+                    method,
+                    hierarchical,
+                    pass_band,
+                    scale,
+                    quiet,
+                )?;
+            }
+        }
+    }
+    if let Some(file) = metrics {
+        metrics_inner(&output_type, file, quiet)?
+    }
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match output_extension {
+        Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+        Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+        Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+        Some("stl") => write_output(
+            output,
+            OutputTypes::<3, TriangularFiniteElements>::Stl(output_type.into_tesselation()),
+            quiet,
+        )?,
+        Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+        _ => invalid_output(&output, output_extension)?,
+        }
+    Ok(())
+}
+
+// #[allow(clippy::too_many_arguments)]
+// fn mesh(
+//     meshing: Option<MeshingCommands>,
+//     input: String,
+//     output: String,
+//     defeature: Option<usize>,
+//     nelx: Option<usize>,
+//     nely: Option<usize>,
+//     nelz: Option<usize>,
+//     remove: Option<Vec<usize>>,
+//     xscale: f64,
+//     yscale: f64,
+//     zscale: f64,
+//     xtranslate: f64,
+//     ytranslate: f64,
+//     ztranslate: f64,
+//     metrics: Option<String>,
+//     quiet: bool,
+//     dual: bool,
+//     surface: bool,
+// ) -> Result<(), ErrorWrapper> {
+//     let mut time = Instant::now();
+//     let remove = remove.map(|removed_blocks| {
+//         removed_blocks
+//             .into_iter()
+//             .map(|entry| entry as u8)
+//             .collect()
+//     });
+//     let scale = Scale::from([xscale, yscale, zscale]);
+//     let translate = Translate::from([xtranslate, ytranslate, ztranslate]);
+//     let mut input_type = match read_input(&input, nelx, nely, nelz, quiet)? {
+//         InputTypes::Npy(voxels) => voxels,
+//         InputTypes::Spn(voxels) => voxels,
+//         _ => {
+//             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+//             Err(format!(
+//                 "Invalid extension .{} from input file {}",
+//                 input_extension.unwrap_or("UNDEFINED"),
+//                 input
+//             ))?
+//         }
+//     };
+//     if surface {
+//         if !quiet {
+//             time = Instant::now();
+//             if let Some(min_num_voxels) = defeature {
+//                 println!(
+//                     " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+//                     min_num_voxels
+//                 );
+//             } else {
+//                 mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
+//             }
+//         }
+//         let (nel_padded, mut tree) = Octree::from_voxels(input_type);
+//         tree.balance(true);
+//         if let Some(min_num_voxels) = defeature {
+//             tree.defeature(min_num_voxels);
+//             println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+//             time = Instant::now();
+//             mesh_print_info(MeshBasis::Surfaces, &scale, &translate)
+//         }
+//         let mut output_type: TriangularFiniteElements =
+//             tree.into_finite_elements(nel_padded, remove, scale, translate)?;
+//         if !quiet {
+//             let mut blocks = output_type.get_element_blocks().clone();
+//             let elements = blocks.len();
+//             blocks.sort();
+//             blocks.dedup();
+//             println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+//         }
+//         if let Some(options) = meshing {
+//             match options {
+//                 MeshingCommands::Smooth {
+//                     iterations,
+//                     method,
+//                     hierarchical,
+//                     pass_band,
+//                     scale,
+//                 } => {
+//                     apply_smoothing_method(
+//                         &mut output_type,
+//                         iterations,
+//                         method,
+//                         hierarchical,
+//                         pass_band,
+//                         scale,
+//                         quiet,
+//                     )?;
+//                 }
+//             }
+//         }
+//         let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+//         match output_extension {
+//             Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+//             Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+//             Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+//             Some("stl") => write_output(
+//                 output,
+//                 OutputTypes::<3, TriangularFiniteElements>::Stl(output_type.into_tesselation()),
+//                 quiet,
+//             )?,
+//             Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+//             _ => invalid_output(&output, output_extension)?,
+//         }
+//     } else {
+//         if let Some(min_num_voxels) = defeature {
+//             if !quiet {
+//                 time = Instant::now();
+//                 println!(
+//                     " \x1b[1;96mDefeaturing\x1b[0m clusters of {} voxels or less",
+//                     min_num_voxels
+//                 );
+//             }
+//             input_type = input_type.defeature(min_num_voxels);
+//             if !quiet {
+//                 println!("        \x1b[1;92mDone\x1b[0m {:?}", time.elapsed());
+//             }
+//         }
+//         if !quiet {
+//             time = Instant::now();
+//             mesh_print_info(MeshBasis::Voxels, &scale, &translate)
+//         }
+//         let mut output_type = if dual {
+//             let (nel_padded, mut tree) = Octree::from_voxels(input_type);
+//             tree.balance(true);
+//             tree.pair();
+//             tree.into_finite_elements(nel_padded, remove, scale, translate)?
+//         } else {
+//             input_type.into_finite_elements(remove, scale, translate)?
+//         };
+//         if !quiet {
+//             let mut blocks = output_type.get_element_blocks().clone();
+//             let elements = blocks.len();
+//             blocks.sort();
+//             blocks.dedup();
+//             println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+//         }
+//         if let Some(options) = meshing {
+//             match options {
+//                 MeshingCommands::Smooth {
+//                     iterations,
+//                     method,
+//                     hierarchical,
+//                     pass_band,
+//                     scale,
+//                 } => {
+//                     apply_smoothing_method(
+//                         &mut output_type,
+//                         iterations,
+//                         method,
+//                         hierarchical,
+//                         pass_band,
+//                         scale,
+//                         quiet,
+//                     )?;
+//                 }
+//             }
+//         }
+//         if let Some(file) = metrics {
+//             metrics_inner(&output_type, file, quiet)?
+//         }
+//         let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+//         match output_extension {
+//             Some("exo") => write_output(output, OutputTypes::Exodus(output_type), quiet)?,
+//             Some("inp") => write_output(output, OutputTypes::Abaqus(output_type), quiet)?,
+//             Some("mesh") => write_output(output, OutputTypes::Mesh(output_type), quiet)?,
+//             Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
+//             _ => invalid_output(&output, output_extension)?,
+//         }
+//     }
+//     Ok(())
+// }
 
 fn mesh_print_info(basis: MeshBasis, scale: &Scale, translate: &Translate) {
     match basis {
@@ -1016,11 +1483,11 @@ fn metrics(input: String, output: String, quiet: bool) -> Result<(), ErrorWrappe
     metrics_inner(&output_type, output, quiet)
 }
 
-fn metrics_inner(
-    fem: &HexahedralFiniteElements,
+fn metrics_inner<const N: usize, T>(
+    fem: &T,
     output: String,
     quiet: bool,
-) -> Result<(), ErrorWrapper> {
+) -> Result<(), ErrorWrapper> where T: FiniteElementMethods<N> {
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
@@ -1196,11 +1663,7 @@ where
     let smoothing_method = method.unwrap_or("Taubin".to_string());
     if matches!(
         smoothing_method.as_str(),
-        "Gauss"
-            | "gauss"
-            | "Gaussian"
-            | "gaussian"
-            | "Laplacian"
+        "Laplacian"
             | "Laplace"
             | "laplacian"
             | "laplace"
@@ -1210,7 +1673,7 @@ where
         if !quiet {
             print!("   \x1b[1;96mSmoothing\x1b[0m ");
             match smoothing_method.as_str() {
-                "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace"
+                "Laplacian" | "Laplace"
                 | "laplacian" | "laplace" => {
                     println!("with {} iterations of Laplace", iterations)
                 }
@@ -1227,7 +1690,7 @@ where
         }
         output_type.nodal_influencers();
         match smoothing_method.as_str() {
-            "Gauss" | "gauss" | "Gaussian" | "gaussian" | "Laplacian" | "Laplace" | "laplacian"
+            "Laplacian" | "Laplace" | "laplacian"
             | "laplace" => {
                 output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
             }
