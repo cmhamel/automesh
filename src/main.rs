@@ -194,7 +194,7 @@ enum Commands {
 
     /// Quality metrics for an existing finite element mesh
     Metrics {
-        /// Mesh (inp | stl) input file
+        /// Mesh input file (inp | stl)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
@@ -214,7 +214,7 @@ enum Commands {
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Octree output file (exo | inp | mesh | stl | vtk)
+        /// Octree output file (exo | inp | mesh | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -234,15 +234,15 @@ enum Commands {
         #[arg(long, num_args = 1.., short, value_delimiter = ' ', value_name = "ID")]
         remove: Option<Vec<usize>>,
 
-        /// Scaling (> 0.0) in the x-direction
+        /// Scaling (> 0.0) in the x-direction, applied before translation
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         xscale: f64,
 
-        /// Scaling (> 0.0) in the y-direction
+        /// Scaling (> 0.0) in the y-direction, applied before translation
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         yscale: f64,
 
-        /// Scaling (> 0.0) in the z-direction
+        /// Scaling (> 0.0) in the z-direction, applied before translation
         #[arg(default_value_t = 1.0, long, value_name = "SCALE")]
         zscale: f64,
 
@@ -292,11 +292,11 @@ enum Commands {
         #[arg(action, long, short = 'c')]
         hierarchical: bool,
 
-        /// Mesh (inp | stl) input file
+        /// Mesh input file (inp | stl)
         #[arg(long, short, value_name = "FILE")]
         input: String,
 
-        /// Smoothed mesh (exo | inp | mesh | stl | vtk) output file
+        /// Smoothed mesh output file (exo | inp | mesh | stl | vtk)
         #[arg(long, short, value_name = "FILE")]
         output: String,
 
@@ -304,19 +304,19 @@ enum Commands {
         #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
         iterations: usize,
 
-        /// Name of the smoothing method [default: Taubin]
+        /// Smoothing method (Laplace | Taubin) [default: Taubin]
         #[arg(long, short, value_name = "NAME")]
         method: Option<String>,
 
-        /// Pass-band frequency for Taubin smoothing
+        /// Pass-band frequency (for Taubin only)
         #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
         pass_band: f64,
 
-        /// Scaling parameter for smoothing
+        /// Scaling parameter for all smoothing methods
         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
         scale: f64,
 
-        /// Name of the quality metrics file (csv | npy)
+        /// Quality metrics output file (csv | npy)
         #[arg(long, value_name = "FILE")]
         metrics: Option<String>,
 
