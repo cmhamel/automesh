@@ -567,10 +567,12 @@ is shown below: ![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont
 
 ## Segmentation File Types
 
+Two types of segmentation files types are supported: `.spn` and `.npy`.
+
 The `.spn` file can be thought of as the most elementary segmentation file type because it is
 saved as an ASCII text file and is therefore readily human-readable.
 Below is an abbreviated and commented `.spn` segmentation of the (`7 x 7 x 7`) octahedron
-discussed previously.
+discussed above.
 
 ```sh
 0 # slice 1, row 1
@@ -626,16 +628,16 @@ discussed previously.
 ```
 
 A disadvantage of `.spn` is that it can become difficult to keep track of data
-slice-by-slice.  Because it is not a compressed binary file, the `.spn` often has a
-large file size.
+slice-by-slice.  Because it is not a compressed binary file, the `.spn` has a
+larger file size than the equivalent `.npy`.
 
 The `.npy` segmentation file format is an alternative to the `.spn`
 format.  The `.npy` format can be advantageous because is can be generated easily
-from Python.  The `.npy` approach can be useful because Python can be used to
+from Python.  This approach can be useful because Python can be used to
 algorithmically create a segmentation and serialized the segmentation to a compressed
-binary file (in `.npy` format).
+binary file in `.npy` format.
 
-Here we illustrate creating the octahedron segmentation in Python:
+We illustrate creating the octahedron segmentation in Python:
 
 ```python
 <!-- cmdrun cat octahedron.py -->

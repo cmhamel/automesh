@@ -328,10 +328,10 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum ConvertSubcommand {
-        /// Converts mesh file types (inp | stl) -> (exo | mesh | stl | vtk)
-        Mesh(ConvertMeshArgs),
-        /// Converts segmentation file types (npy | spn) -> (npy | spn)
-        Segmentation(ConvertSegmentationArgs),
+    /// Converts mesh file types (inp | stl) -> (exo | mesh | stl | vtk)
+    Mesh(ConvertMeshArgs),
+    /// Converts segmentation file types (npy | spn) -> (npy | spn)
+    Segmentation(ConvertSegmentationArgs),
 }
 
 #[derive(clap::Args)]
@@ -548,7 +548,6 @@ struct MeshTriArgs {
     /// Pass to quiet the terminal output
     #[arg(action, long, short)]
     quiet: bool,
-
     // There is no dualization for triangles, only hexahedra.
 }
 
@@ -585,19 +584,19 @@ enum MeshSmoothCommands {
 //         /// Pass to enable hierarchical control
 //         #[arg(action, long, short = 'c')]
 //         hierarchical: bool,
-// 
+//
 //         /// Number of smoothing iterations
 //         #[arg(default_value_t = 20, long, short = 'n', value_name = "NUM")]
 //         iterations: usize,
-// 
+//
 //         /// Name of the smoothing method [default: Taubin]
 //         #[arg(long, short, value_name = "NAME")]
 //         method: Option<String>,
-// 
+//
 //         /// Pass-band frequency for Taubin smoothing
 //         #[arg(default_value_t = 0.1, long, short = 'k', value_name = "FREQ")]
 //         pass_band: f64,
-// 
+//
 //         /// Scaling parameter for smoothing
 //         #[arg(default_value_t = 0.6307, long, short, value_name = "SCALE")]
 //         scale: f64,
@@ -726,7 +725,7 @@ fn main() -> Result<(), ErrorWrapper> {
                     args.quiet,
                 )
             }
-        }
+        },
         // Some(Commands::Convert {
         //     input,
         //     output,
@@ -794,7 +793,7 @@ fn main() -> Result<(), ErrorWrapper> {
                     args.quiet,
                 )
             }
-        }
+        },
         // Some(Commands::Mesh {
         //     meshing,
         //     input,
@@ -884,11 +883,7 @@ fn main() -> Result<(), ErrorWrapper> {
     result
 }
 
-fn convert_mesh(
-    input: String,
-    output: String,
-    quiet: bool,
-) -> Result<(), ErrorWrapper> {
+fn convert_mesh(input: String, output: String, quiet: bool) -> Result<(), ErrorWrapper> {
     let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match read_input(&input, None, None, None, quiet)? {
@@ -903,7 +898,7 @@ fn convert_mesh(
             ),
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
-        }
+        },
         InputTypes::Npy(_voxels) | InputTypes::Spn(_voxels) => {
             invalid_input(&input, input_extension)
         }
@@ -951,9 +946,7 @@ fn convert_segmentation(
     let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
     match read_input(&input, nelx, nely, nelz, quiet)? {
-        InputTypes::Abaqus(_finite_elements) => {
-            invalid_input(&input, input_extension)
-        }
+        InputTypes::Abaqus(_finite_elements) => invalid_input(&input, input_extension),
         InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
             Some("spn") => write_output(
                 output,
@@ -966,11 +959,8 @@ fn convert_segmentation(
                 quiet,
             ),
             _ => invalid_output(&output, output_extension),
-        }
-        InputTypes::Stl(_voxels) => {
-            invalid_input(&input, input_extension)
-        }
-
+        },
+        InputTypes::Stl(_voxels) => invalid_input(&input, input_extension),
     }
 }
 
@@ -1113,7 +1103,13 @@ fn mesh_hex(
         let elements = blocks.len();
         blocks.sort();
         blocks.dedup();
-        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+        println!(
+            "        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m",
+            time.elapsed(),
+            blocks.len(),
+            elements,
+            output_type.get_nodal_coordinates().len()
+        );
     }
     if let Some(options) = smoothing {
         match options {
@@ -1218,7 +1214,13 @@ fn mesh_tri(
         let elements = blocks.len();
         blocks.sort();
         blocks.dedup();
-        println!("        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m", time.elapsed(), blocks.len(), elements, output_type.get_nodal_coordinates().len());
+        println!(
+            "        \x1b[1;92mDone\x1b[0m {:?} \x1b[2m[{} blocks, {} elements, {} nodes]\x1b[0m",
+            time.elapsed(),
+            blocks.len(),
+            elements,
+            output_type.get_nodal_coordinates().len()
+        );
     }
     if let Some(options) = smoothing {
         match options {
@@ -1256,7 +1258,7 @@ fn mesh_tri(
         )?,
         Some("vtk") => write_output(output, OutputTypes::Vtk(output_type), quiet)?,
         _ => invalid_output(&output, output_extension)?,
-        }
+    }
     Ok(())
 }
 
@@ -1487,7 +1489,10 @@ fn metrics_inner<const N: usize, T>(
     fem: &T,
     output: String,
     quiet: bool,
-) -> Result<(), ErrorWrapper> where T: FiniteElementMethods<N> {
+) -> Result<(), ErrorWrapper>
+where
+    T: FiniteElementMethods<N>,
+{
     let time = Instant::now();
     if !quiet {
         println!("     \x1b[1;96mMetrics\x1b[0m {}", output);
@@ -1663,18 +1668,12 @@ where
     let smoothing_method = method.unwrap_or("Taubin".to_string());
     if matches!(
         smoothing_method.as_str(),
-        "Laplacian"
-            | "Laplace"
-            | "laplacian"
-            | "laplace"
-            | "Taubin"
-            | "taubin"
+        "Laplacian" | "Laplace" | "laplacian" | "laplace" | "Taubin" | "taubin"
     ) {
         if !quiet {
             print!("   \x1b[1;96mSmoothing\x1b[0m ");
             match smoothing_method.as_str() {
-                "Laplacian" | "Laplace"
-                | "laplacian" | "laplace" => {
+                "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
                     println!("with {} iterations of Laplace", iterations)
                 }
                 "Taubin" | "taubin" => {
@@ -1690,8 +1689,7 @@ where
         }
         output_type.nodal_influencers();
         match smoothing_method.as_str() {
-            "Laplacian" | "Laplace" | "laplacian"
-            | "laplace" => {
+            "Laplacian" | "Laplace" | "laplacian" | "laplace" => {
                 output_type.smooth(Smoothing::Laplacian(iterations, scale))?;
             }
             "Taubin" | "taubin" => {
