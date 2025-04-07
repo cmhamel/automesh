@@ -22,9 +22,9 @@ macro_rules! about {
       @@    @@    @@      {}
       @@    @@    @@      {}
     @@@@@@@@@@@@  @@@
-    @@@@@@@@@@@  @@@@     \x1b[1;4mNotes:\x1b[0m
-    @@@@@@@@@@ @@@@@ @    - Input/output file types are inferred
-     @@@@@@@@@@@@@@@@     - Scaling is applied before translation",
+    @@@@@@@@@@@  @@@@
+    @@@@@@@@@@ @@@@@ @
+     @@@@@@@@@@@@@@@@",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[0],
             env!("CARGO_PKG_AUTHORS").split(":").collect::<Vec<&str>>()[1]
@@ -43,29 +43,31 @@ struct Args {
 enum Commands {
     /// Converts between mesh or segmentation file types
     Convert {
-        /// Mesh (inp) or segmentation (npy | spn) input file
-        #[arg(long, short, value_name = "FILE")]
-        input: String,
+        #[command(subcommand)]
+        subcommand: ConvertSubcommand,
+        // /// Mesh (inp) or segmentation (npy | spn) input file
+        // #[arg(long, short, value_name = "FILE")]
+        // input: String,
 
-        /// Mesh (exo | mesh | stl | vtk) or segmentation (npy | spn) output
-        #[arg(long, short, value_name = "FILE")]
-        output: String,
+        // /// Mesh (exo | mesh | stl | vtk) or segmentation (npy | spn) output
+        // #[arg(long, short, value_name = "FILE")]
+        // output: String,
 
-        /// Number of voxels in the x-direction
-        #[arg(long, short = 'x', value_name = "NEL")]
-        nelx: Option<usize>,
+        // /// Number of voxels in the x-direction
+        // #[arg(long, short = 'x', value_name = "NEL")]
+        // nelx: Option<usize>,
 
-        /// Number of voxels in the y-direction
-        #[arg(long, short = 'y', value_name = "NEL")]
-        nely: Option<usize>,
+        // /// Number of voxels in the y-direction
+        // #[arg(long, short = 'y', value_name = "NEL")]
+        // nely: Option<usize>,
 
-        /// Number of voxels in the z-direction
-        #[arg(long, short = 'z', value_name = "NEL")]
-        nelz: Option<usize>,
+        // /// Number of voxels in the z-direction
+        // #[arg(long, short = 'z', value_name = "NEL")]
+        // nelz: Option<usize>,
 
-        /// Pass to quiet the terminal output
-        #[arg(action, long, short)]
-        quiet: bool,
+        // /// Pass to quiet the terminal output
+        // #[arg(action, long, short)]
+        // quiet: bool,
     },
 
     /// Defeatures and creates a new segmentation
@@ -323,6 +325,57 @@ enum Commands {
 }
 
 #[derive(Subcommand)]
+enum ConvertSubcommand {
+        /// Converts mesh file types (inp | stl) -> (exo | mesh | stl | vtk)
+        Mesh(ConvertMeshArgs),
+        /// Converts segmentation file types (npy | spn) -> (npy | spn)
+        Segmentation(ConvertSegmentationArgs),
+}
+
+#[derive(clap::Args)]
+struct ConvertMeshArgs {
+    /// Mesh input file (inp | stl)
+    #[arg(long, short, value_name = "FILE")]
+    input: String,
+
+    /// Mesh output file (exo | mesh | stl | vtk)
+    #[arg(long, short, value_name = "FILE")]
+    output: String,
+
+    /// Pass to quiet the terminal output
+    #[arg(action, long, short)]
+    quiet: bool,
+}
+
+#[derive(clap::Args)]
+struct ConvertSegmentationArgs {
+    /// Segmentation input file (npy | spn)
+    #[arg(long, short, value_name = "FILE")]
+    input: String,
+
+    /// Segmentation output file (npy | spn)
+    #[arg(long, short, value_name = "FILE")]
+    output: String,
+
+    /// Number of voxels in the x-direction
+    #[arg(long, short = 'x', value_name = "NEL")]
+    nelx: Option<usize>,
+
+    /// Number of voxels in the y-direction
+    #[arg(long, short = 'y', value_name = "NEL")]
+    nely: Option<usize>,
+
+    /// Number of voxels in the z-direction
+    #[arg(long, short = 'z', value_name = "NEL")]
+    nelz: Option<usize>,
+
+    /// Pass to quiet the terminal output
+    #[arg(action, long, short)]
+    quiet: bool,
+}
+
+
+#[derive(Subcommand)]
 enum MeshingCommands {
     /// Applies smoothing to the mesh before output
     Smooth {
@@ -433,6 +486,14 @@ where
     Vtk(T),
 }
 
+fn invalid_input(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
+    Ok(Err(format!(
+        "Invalid extension .{} from input file {}",
+        extension.unwrap_or("UNDEFINED"),
+        file
+    ))?)
+}
+
 fn invalid_output(file: &str, extension: Option<&str>) -> Result<(), ErrorWrapper> {
     Ok(Err(format!(
         "Invalid extension .{} from output file {}",
@@ -446,17 +507,34 @@ fn main() -> Result<(), ErrorWrapper> {
     let is_quiet;
     let args = Args::parse();
     let result = match args.command {
-        Some(Commands::Convert {
-            input,
-            output,
-            nelx,
-            nely,
-            nelz,
-            quiet,
-        }) => {
-            is_quiet = quiet;
-            convert(input, output, nelx, nely, nelz, quiet)
+        Some(Commands::Convert { subcommand }) => match subcommand {
+            ConvertSubcommand::Mesh(args) => {
+                is_quiet = args.quiet;
+                convert_mesh(args.input, args.output, args.quiet)
+            }
+            ConvertSubcommand::Segmentation(args) => {
+                is_quiet = args.quiet;
+                convert_segmentation(
+                    args.input,
+                    args.output,
+                    args.nelx,
+                    args.nely,
+                    args.nelz,
+                    args.quiet,
+                )
+            }
         }
+        // Some(Commands::Convert {
+        //     input,
+        //     output,
+        //     nelx,
+        //     nely,
+        //     nelz,
+        //     quiet,
+        // }) => {
+        //     is_quiet = quiet;
+        //     convert(input, output, nelx, nely, nelz, quiet)
+        // }
         Some(Commands::Defeature {
             input,
             output,
@@ -558,16 +636,14 @@ fn main() -> Result<(), ErrorWrapper> {
     result
 }
 
-fn convert(
+fn convert_mesh(
     input: String,
     output: String,
-    nelx: Option<usize>,
-    nely: Option<usize>,
-    nelz: Option<usize>,
     quiet: bool,
 ) -> Result<(), ErrorWrapper> {
+    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
     let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
-    match read_input(&input, nelx, nely, nelz, quiet)? {
+    match read_input(&input, None, None, None, quiet)? {
         InputTypes::Abaqus(finite_elements) => match output_extension {
             Some("exo") => write_output(output, OutputTypes::Exodus(finite_elements), quiet),
             Some("inp") => write_output(output, OutputTypes::Abaqus(finite_elements), quiet),
@@ -579,20 +655,23 @@ fn convert(
             ),
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
-        },
-        InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
-            Some("spn") => write_output(
-                output,
-                OutputTypes::<8, HexahedralFiniteElements>::Spn(voxels),
-                quiet,
-            ),
-            Some("npy") => write_output(
-                output,
-                OutputTypes::<8, HexahedralFiniteElements>::Npy(voxels),
-                quiet,
-            ),
-            _ => invalid_output(&output, output_extension),
-        },
+        }
+        InputTypes::Npy(_voxels) | InputTypes::Spn(_voxels) => {
+            invalid_input(&input, input_extension)
+        }
+        // InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
+        //     Some("spn") => write_output(
+        //         output,
+        //         OutputTypes::<8, HexahedralFiniteElements>::Spn(voxels),
+        //         quiet,
+        //     ),
+        //     Some("npy") => write_output(
+        //         output,
+        //         OutputTypes::<8, HexahedralFiniteElements>::Npy(voxels),
+        //         quiet,
+        //     ),
+        //     _ => invalid_output(&output, output_extension),
+        // },
         InputTypes::Stl(tessellation) => {
             let finite_elements = tessellation.into_finite_elements();
             match output_extension {
@@ -610,6 +689,40 @@ fn convert(
                 _ => invalid_output(&output, output_extension),
             }
         }
+    }
+}
+
+fn convert_segmentation(
+    input: String,
+    output: String,
+    nelx: Option<usize>,
+    nely: Option<usize>,
+    nelz: Option<usize>,
+    quiet: bool,
+) -> Result<(), ErrorWrapper> {
+    let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
+    let output_extension = Path::new(&output).extension().and_then(|ext| ext.to_str());
+    match read_input(&input, nelx, nely, nelz, quiet)? {
+        InputTypes::Abaqus(_finite_elements) => {
+            invalid_input(&input, input_extension)
+        }
+        InputTypes::Npy(voxels) | InputTypes::Spn(voxels) => match output_extension {
+            Some("spn") => write_output(
+                output,
+                OutputTypes::<8, HexahedralFiniteElements>::Spn(voxels),
+                quiet,
+            ),
+            Some("npy") => write_output(
+                output,
+                OutputTypes::<8, HexahedralFiniteElements>::Npy(voxels),
+                quiet,
+            ),
+            _ => invalid_output(&output, output_extension),
+        }
+        InputTypes::Stl(_voxels) => {
+            invalid_input(&input, input_extension)
+        }
+
     }
 }
 
