@@ -17,7 +17,7 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells
 Smooth with various number of iterations:
 
 ```sh
-automesh mesh \
+automesh mesh hex \
 --remove 0 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12 \
@@ -29,7 +29,7 @@ smooth \
 ```
 
 ```sh
-automesh mesh \
+automesh mesh hex \
 --remove 0 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12 \
@@ -45,7 +45,7 @@ smooth \
 Assess element quality to avoid oversmoothing:
 
 ```sh
-automesh mesh \
+automesh mesh hex \
 --remove 0 \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12 \
@@ -61,7 +61,7 @@ automesh metrics \
 ```
 
 ```sh
-automesh mesh \
+automesh mesh hex \
 --xscale 0.5 --yscale 0.5 --zscale 0.5 \
 --xtranslate -12 --ytranslate -12 --ztranslate -12 \
 --input spheres_resolution_2.npy \

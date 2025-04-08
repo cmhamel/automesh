@@ -6,6 +6,21 @@ automesh mesh --help
 ```
 
 ```sh
-automesh mesh smooth --help
-<!-- cmdrun automesh mesh smooth --help -->
+automesh mesh hex --help
+<!-- cmdrun automesh mesh hex --help -->
+```
+
+```sh
+automesh mesh tri --help
+<!-- cmdrun automesh mesh tri --help -->
+```
+
+```sh
+automesh mesh hex smooth --help
+<!-- cmdrun automesh mesh hex smooth --help -->
+```
+
+```sh
+automesh mesh tri smooth --help
+<!-- cmdrun automesh mesh tri smooth --help -->
 ```

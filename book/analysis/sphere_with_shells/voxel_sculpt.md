@@ -10,37 +10,16 @@ cd ~/autotwin/automesh/book/analysis/sphere_with_shells/
 Use `automesh` to create `.spn` files from the `.npy` files.
 
 ```sh
-automesh convert -i spheres_resolution_1.npy -o spheres_resolution_1.spn
-automesh convert -i spheres_resolution_2.npy -o spheres_resolution_2.spn
-automesh convert -i spheres_resolution_3.npy -o spheres_resolution_3.spn
-automesh convert -i spheres_resolution_4.npy -o spheres_resolution_4.spn
+automesh convert segmentation -i spheres_resolution_1.npy -o spheres_resolution_1.spn
+automesh convert segmentation -i spheres_resolution_2.npy -o spheres_resolution_2.spn
+automesh convert segmentation -i spheres_resolution_3.npy -o spheres_resolution_3.spn
+automesh convert segmentation -i spheres_resolution_4.npy -o spheres_resolution_4.spn
 ```
 
+For example,
+
 ```sh
-    automesh 0.2.9
-     Reading spheres_resolution_1.npy
-        Done 751.583µs
-     Writing spheres_resolution_1.spn
-        Done 1.06475ms
-       Total 2.683ms
-    automesh 0.2.9
-     Reading spheres_resolution_2.npy
-        Done 584.458µs
-     Writing spheres_resolution_2.spn
-        Done 2.841667ms
-       Total 3.562583ms
-    automesh 0.2.9
-     Reading spheres_resolution_3.npy
-        Done 805.417µs
-     Writing spheres_resolution_3.spn
-        Done 14.427833ms
-       Total 15.353708ms
-    automesh 0.2.9
-     Reading spheres_resolution_4.npy
-        Done 2.367291ms
-     Writing spheres_resolution_4.spn
-        Done 235.7805ms
-       Total 238.266791ms
+<!-- cmdrun automesh convert segmentation -i spheres_resolution_4.npy -o spheres_resolution_4.spn -->
 ```
 
 Run Sculpt.
