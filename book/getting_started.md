@@ -1,6 +1,7 @@
 # Getting Started
 
-*Work in progress*
+In this section, we use a simple segmentation to create a finite element mesh, a
+smoothed finite element mesh, and an isosurface.
 
 ## Segmentation Input
 
@@ -737,4 +738,7 @@ The surfaces are visualized below:
 :---: | :---:
 ![isosurface_mesh_lab](fig/isosurface_mesh_lab.png) | ![isosurface_cubit_cut_plane](fig/isosurface_cubit_cut_plane.png)
 
-See the [Isosurface](isosurface/README.md) section for more information.
+`automesh` creates an isosurface from the boundary faces of voxels.  The
+quadrilateral faces are divided into two triangles.  The [Isosurface](https://autotwin.github.io/automesh/isosurface/index.html) section contains more details about alternative methods used to create an isosurface.
+
+The [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section contains more examples of the command line interface.
