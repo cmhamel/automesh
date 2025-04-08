@@ -8,7 +8,7 @@ touch benches/compare/automesh_block.out
 for NUM in 100 107 115 124 133 143 154 165 178 191 205 221 237 255 274 294 316 340 365 392 422 453 487
 do
   python benches/block.py --num ${NUM}
-  cargo run -qr -- convert -i benches/block/block_${NUM}.npy -o benches/block/block_${NUM}.spn --quiet
+  cargo run -qr -- convert segmentation -i benches/block/block_${NUM}.npy -o benches/block/block_${NUM}.spn --quiet
   echo -n "${NUM}:" >> benches/compare/automesh_block.out
   for i in `seq 1 10`
   do
@@ -30,7 +30,7 @@ do
   for i in `seq 1 10`
   do
     start="$(date +'%s.%N')"
-    cargo run -qr -- mesh -i book/analysis/sphere_with_shells/spheres_resolution_${NUM}.npy -o benches/compare/compare.exo --remove 0 --quiet
+    cargo run -qr -- mesh hex -i book/analysis/sphere_with_shells/spheres_resolution_${NUM}.npy -o benches/compare/compare.exo --remove 0 --quiet
     echo -n " $(date +"%s.%N - ${start}" | bc)" >> benches/compare/automesh_remov.out
   done
   echo >> benches/compare/automesh_remov.out

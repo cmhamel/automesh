@@ -656,15 +656,15 @@ automesh convert --help
 For example, to convert the `octahedron.npy` to `octahedron2.spn`:
 
 ```sh
-automesh convert -i octahedron.npy -o octahedron2.spn
-<!-- cmdrun automesh convert -i octahedron.npy -o octahedron2.spn -->
+automesh convert segmentation -i octahedron.npy -o octahedron2.spn
+<!-- cmdrun automesh convert segmentation -i octahedron.npy -o octahedron2.spn -->
 ```
 
 To convert from `octahedron2.spn` to `octahedron3.npy`:
 
 ```sh
-automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
-<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
+automesh convert segmentation -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
+<!-- cmdrun automesh convert segmentation -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
 ```
 
 > Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified using `--nelx`, `--nely`, `--nelz` (or, equivalently `-x`, `-y`, `-z`) flags.
@@ -691,8 +691,8 @@ To convert the `octahedron.npy` into an ABAQUS finite element mesh, while removi
 segmentation `0` from the mesh:
 
 ```sh
-automesh mesh -r 0 -i octahedron.npy -o octahedron.inp
-<!-- cmdrun -r 0 -i octahedron.npy -o octahedron.inp -->
+automesh mesh hex -r 0 -i octahedron.npy -o octahedron.inp
+<!-- cmdrun hex -r 0 -i octahedron.npy -o octahedron.inp -->
 ```
 
 ## Smoothing
@@ -722,17 +722,19 @@ See the [Smoothing](smoothing/README.md) section for more information.
 
 ## Isosurface
 
-An isosurface can be generated from a segmentation using the `--surface` flag.
+An isosurface can be generated from a segmentation using the `tri` command.
 
-To create a mesh of the three isosurfaces contained in the `octahedron` example:
+To create a mesh of the outer isosurfaces contained in the `octahedron` example:
 
 ```sh
-automesh mesh -i octahedron.npy -o octahedron.stl --surface
-<!-- cmdrun automesh mesh -i octahedron.npy -o octahedron.stl --surface -->
+automesh mesh tri -r 0 1 2 -i octahedron.npy -o octahedron.stl
+<!-- cmdrun automesh mesh tri -r 0 1 2 -i octahedron.npy -o octahedron.stl -->
 ```
 
 The surfaces are visualized below:
 
-[to come]
+`octahedron.stl` in MeshLab | `octahedron.stl` in Cubit with cut plane
+:---: | :---:
+![isosurface_mesh_lab](fig/isosurface_mesh_lab.png) | ![isosurface_cubit_cut_plane](fig/isosurface_cubit_cut_plane.png)
 
 See the [Isosurface](isosurface/README.md) section for more information.
