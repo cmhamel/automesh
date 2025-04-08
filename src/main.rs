@@ -648,7 +648,7 @@ fn main() -> Result<(), ErrorWrapper> {
                     args.quiet,
                 )
             }
-        }
+        },
         Some(Commands::Metrics {
             input,
             output,
@@ -727,7 +727,7 @@ fn convert_mesh(input: String, output: String, quiet: bool) -> Result<(), ErrorW
             ),
             Some("vtk") => write_output(output, OutputTypes::Vtk(finite_elements), quiet),
             _ => invalid_output(&output, output_extension),
-        }
+        },
         InputTypes::Npy(_voxels) | InputTypes::Spn(_voxels) => {
             invalid_input(&input, input_extension)
         }
@@ -775,7 +775,7 @@ fn convert_segmentation(
                 quiet,
             ),
             _ => invalid_output(&output, output_extension),
-        }
+        },
         InputTypes::Stl(_voxels) => invalid_input(&input, input_extension),
     }
 }
@@ -829,7 +829,7 @@ fn defeature(
                 )
             }
             _ => invalid_output(&output, output_extension),
-        }
+        },
         _ => {
             let input_extension = Path::new(&input).extension().and_then(|ext| ext.to_str());
             Err(format!(
