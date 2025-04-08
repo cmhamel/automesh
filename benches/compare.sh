@@ -13,7 +13,7 @@ do
   for i in `seq 1 10`
   do
     start="$(date +'%s.%N')"
-    cargo run -qr -- mesh -i benches/block/block_${NUM}.npy -o benches/compare/compare.exo --quiet
+    cargo run -qr -- mesh hex -i benches/block/block_${NUM}.npy -o benches/compare/compare.exo --quiet
     echo -n " $(date +"%s.%N - ${start}" | bc)" >> benches/compare/automesh_block.out
   done
   echo >> benches/compare/automesh_block.out
