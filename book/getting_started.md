@@ -1,6 +1,7 @@
 # Getting Started
 
-*Work in progress*
+In this section, we use a simple segmentation to create a finite element mesh, a
+smoothed finite element mesh, and an isosurface.
 
 ## Segmentation Input
 
@@ -567,10 +568,12 @@ is shown below: ![spheres_cont_cut](analysis/sphere_with_shells/img/spheres_cont
 
 ## Segmentation File Types
 
+Two types of segmentation files types are supported: `.spn` and `.npy`.
+
 The `.spn` file can be thought of as the most elementary segmentation file type because it is
 saved as an ASCII text file and is therefore readily human-readable.
 Below is an abbreviated and commented `.spn` segmentation of the (`7 x 7 x 7`) octahedron
-discussed previously.
+discussed above.
 
 ```sh
 0 # slice 1, row 1
@@ -626,16 +629,16 @@ discussed previously.
 ```
 
 A disadvantage of `.spn` is that it can become difficult to keep track of data
-slice-by-slice.  Because it is not a compressed binary file, the `.spn` often has a
-large file size.
+slice-by-slice.  Because it is not a compressed binary file, the `.spn` has a
+larger file size than the equivalent `.npy`.
 
 The `.npy` segmentation file format is an alternative to the `.spn`
 format.  The `.npy` format can be advantageous because is can be generated easily
-from Python.  The `.npy` approach can be useful because Python can be used to
+from Python.  This approach can be useful because Python can be used to
 algorithmically create a segmentation and serialized the segmentation to a compressed
-binary file (in `.npy` format).
+binary file in `.npy` format.
 
-Here we illustrate creating the octahedron segmentation in Python:
+We illustrate creating the octahedron segmentation in Python:
 
 ```python
 <!-- cmdrun cat octahedron.py -->
@@ -654,15 +657,15 @@ automesh convert --help
 For example, to convert the `octahedron.npy` to `octahedron2.spn`:
 
 ```sh
-automesh convert -i octahedron.npy -o octahedron2.spn
-<!-- cmdrun automesh convert -i octahedron.npy -o octahedron2.spn -->
+automesh convert segmentation -i octahedron.npy -o octahedron2.spn
+<!-- cmdrun automesh convert segmentation -i octahedron.npy -o octahedron2.spn -->
 ```
 
 To convert from `octahedron2.spn` to `octahedron3.npy`:
 
 ```sh
-automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
-<!-- cmdrun automesh convert -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
+automesh convert segmentation -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy
+<!-- cmdrun automesh convert segmentation -i octahedron2.spn -x 7 -y 7 -z 7 -o octahedron3.npy -->
 ```
 
 > Remark: Notice that the `.spn` requires number of voxels in each of the x, y, and z dimensions to be specified using `--nelx`, `--nely`, `--nelz` (or, equivalently `-x`, `-y`, `-z`) flags.
@@ -689,8 +692,8 @@ To convert the `octahedron.npy` into an ABAQUS finite element mesh, while removi
 segmentation `0` from the mesh:
 
 ```sh
-automesh mesh -r 0 -i octahedron.npy -o octahedron.inp
-<!-- cmdrun -r 0 -i octahedron.npy -o octahedron.inp -->
+automesh mesh hex -r 0 -i octahedron.npy -o octahedron.inp
+<!-- cmdrun hex -r 0 -i octahedron.npy -o octahedron.inp -->
 ```
 
 ## Smoothing
@@ -720,17 +723,22 @@ See the [Smoothing](smoothing/README.md) section for more information.
 
 ## Isosurface
 
-An isosurface can be generated from a segmentation using the `--surface` flag.
+An isosurface can be generated from a segmentation using the `tri` command.
 
-To create a mesh of the three isosurfaces contained in the `octahedron` example:
+To create a mesh of the outer isosurfaces contained in the `octahedron` example:
 
 ```sh
-automesh mesh -i octahedron.npy -o octahedron.stl --surface
-<!-- cmdrun automesh mesh -i octahedron.npy -o octahedron.stl --surface -->
+automesh mesh tri -r 0 1 2 -i octahedron.npy -o octahedron.stl
+<!-- cmdrun automesh mesh tri -r 0 1 2 -i octahedron.npy -o octahedron.stl -->
 ```
 
 The surfaces are visualized below:
 
-[to come]
+`octahedron.stl` in MeshLab | `octahedron.stl` in Cubit with cut plane
+:---: | :---:
+![isosurface_mesh_lab](fig/isosurface_mesh_lab.png) | ![isosurface_cubit_cut_plane](fig/isosurface_cubit_cut_plane.png)
 
-See the [Isosurface](isosurface/README.md) section for more information.
+`automesh` creates an isosurface from the boundary faces of voxels.  The
+quadrilateral faces are divided into two triangles.  The [Isosurface](https://autotwin.github.io/automesh/isosurface/index.html) section contains more details about alternative methods used to create an isosurface.
+
+The [Sphere with Shells](https://autotwin.github.io/automesh/analysis/sphere_with_shells/index.html) section contains more examples of the command line interface.

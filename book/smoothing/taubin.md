@@ -52,7 +52,7 @@ front | iso | `xz` midplane
 
 Figure. Smoothing results after 10 (top row), 50 (middle row), and 200 (bottom row) iterations.
 
-The results demonstrate that our implementation of Taubin smoothing on volumetric meshes composed of hexahedral elements performs well. All smoothing operations completed within 7.5 ms. The noise in the $x > 0$ hemisphere was effectively removed, without volumetric shrinkage. The $x < 0$ hemisphere did not degrade from its original configuration.
+The results demonstrate that our implementation of Taubin smoothing on volumetric meshes composed of hexahedral elements performs well. All smoothing operations completed within 7.5 ms. Unlike Laplace smoothing, which drastically reduces volume (e.g., -16% in 10 iterations), Taubin smoothing preserves volumes (e.g., +1% in 200 iterations).  Thus, the noise in the $x > 0$ hemisphere was effectively removed, with very small volumetric change. The $x < 0$ hemisphere did not degrade from its original configuration.
 
 ## Source
 
