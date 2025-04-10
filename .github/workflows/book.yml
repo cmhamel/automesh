@@ -1,11 +1,12 @@
 name: Book
+env:
+  CARGO_TERM_COLOR: always
 on:
   pull_request:
     branches: main
   push:
     branches: main
-env:
-  CARGO_TERM_COLOR: always
+permissions: {}
 jobs:
   mdbook:
     runs-on: ubuntu-latest

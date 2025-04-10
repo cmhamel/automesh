@@ -2,6 +2,7 @@ name: Bump
 on:
   release:
     types: published
+permissions: {}
 jobs:
   bump:
     runs-on: ubuntu-latest
