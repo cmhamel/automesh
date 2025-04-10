@@ -1,4 +1,7 @@
 name: Rust
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.head_ref }}
 env:
   CARGO_TERM_COLOR: always
 on:
@@ -8,84 +11,90 @@ on:
     types: published
 permissions: {}
 jobs:
-  bench:
+  Bench:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - name: Toolchain
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
         with:
           toolchain: nightly
-      - uses: actions/setup-python@v5
+      - name: Python
+        uses: actions/setup-python@v5
         with:
           check-latest: true
           python-version: 3.13
-      - name: numpy
-        run: pip install numpy
-      - name: pillow
-        run: pip install pillow
-      - name: block
+      - name: Dependencies
+        run: pip install numpy pillow
+      - name: Block
         run: ./benches/block.sh
-      - name: bench
+      - name: Bench
         run: rustup run nightly cargo bench
-  coverage:
+  Coverage:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - name: Toolchain
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
         with:
           toolchain: stable
-      - uses: taiki-e/install-action@cargo-llvm-cov
-      - name: llvm-cov
+      - name: Install
+        uses: taiki-e/install-action@a48a50298f98c47e46a957ae6f82c44cc4878e42
+        with:
+          tool: cargo-llvm-cov
+      - name: Coverage
         run: cargo llvm-cov --profile release --cobertura --output-path coverage.xml
-      - name: report
-        uses: insightsengineering/coverage-action@v2
+      - name: Report
+        uses: insightsengineering/coverage-action@4ee65a3ad48fa3246ac32da9cf6b702b001599f8
         with:
           fail: false
           publish: true
-  package:
+  Package:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: cleanup
+      - name: Cleanup
         run: rm -fr book/ sandbox/ tests/
-      - name: package
+      - name: Package
         run: cargo package
-      - name: login
+      - name: Login
         if: github.event_name == 'release'
         run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
-      - name: publish
+      - name: Publish
         if: github.event_name == 'release'
         run: cargo publish
-  test:
+  Test:
     if: github.event_name != 'release'
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         toolchain:
           - beta
           - stable
-    runs-on: ${{ matrix.os }}
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - name: Toolchain
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
         with:
           components: clippy, rustfmt
-          default: true
           toolchain: ${{ matrix.toolchain }}
-      - name: build
+      - name: Build
         run: cargo build --release
-      - name: clippy
+      - name: Clippy
         run: cargo clippy -- -D warnings
-      - name: clippy
+      - name: Clippy tests
         run: cargo clippy --tests
-      - name: doc
+      - name: Docs
         run: cargo rustdoc --release -- --html-in-header docs/katex.html
-      - name: fmt
+      - name: Format
         run: cargo fmt --all -- --check
-      - name: test
+      - name: Test
         run: cargo test --release
