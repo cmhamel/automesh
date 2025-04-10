@@ -32,8 +32,6 @@ jobs:
       - name: Bench
         run: rustup run nightly cargo bench
   Coverage:
-    permissions:
-      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,12 +45,7 @@ jobs:
         with:
           tool: cargo-llvm-cov
       - name: Coverage
-        run: cargo llvm-cov --profile release --cobertura --output-path coverage.xml
-      - name: Report
-        uses: insightsengineering/coverage-action@4ee65a3ad48fa3246ac32da9cf6b702b001599f8
-        with:
-          fail: false
-          publish: true
+        run: rustup run nightly cargo llvm-cov --profile release --fail-under-functions 55 --fail-under-lines 69 --fail-under-regions 36
   Package:
     runs-on: ubuntu-latest
     steps:
