@@ -32,6 +32,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           from-branch: ${{ steps.bump.outputs.bump_branch }}
-          to-branch: ${{ github.event.repository.default_branch }}
           repository-owner: autotwin
           repository: ${{ github.event.repository.name }}
+          to-branch: ${{ github.event.repository.default_branch }}
