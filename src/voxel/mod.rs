@@ -8,11 +8,11 @@ pub mod test;
 use std::time::Instant;
 
 use super::{
+    Coordinate, Coordinates, NSD, Octree, Tree, Vector,
     fem::{
-        Blocks, Connectivity, FiniteElementMethods, HexahedralFiniteElements, HEX,
+        Blocks, Connectivity, FiniteElementMethods, HEX, HexahedralFiniteElements,
         NODE_NUMBERING_OFFSET,
     },
-    Coordinate, Coordinates, Octree, Tree, Vector, NSD,
 };
 use conspire::math::TensorArray;
 use ndarray::{Array3, Axis};
@@ -274,7 +274,7 @@ fn filter_voxel_data(data: &VoxelData, remove: Option<Blocks>) -> (VoxelDataSize
                     data_kj
                         .iter()
                         .enumerate()
-                        .filter(|(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
+                        .filter(|&(_, &data_kji)| removed_data.binary_search(&data_kji).is_err())
                         .map(|(i, data_kji)| ([i, j, k], *data_kji))
                         .collect::<Vec<([usize; NSD], u8)>>()
                 })
