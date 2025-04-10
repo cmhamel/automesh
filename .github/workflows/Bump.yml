@@ -2,13 +2,14 @@ name: Bump
 on:
   release:
     types: published
+permissions: {}
 jobs:
-  bump:
+  Bump:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: bump
+      - name: Bump
         id: bump
         run: |
           VERSION=$(cargo tree | grep automesh | cut -d " " -f 2 | cut -d "v" -f 2)
@@ -26,11 +27,11 @@ jobs:
           git branch $BUMP_BRANCH
           git checkout $BUMP_BRANCH
           git push --set-upstream origin $BUMP_BRANCH
-      - name: pr
+      - name: PR
         uses: rematocorp/open-pull-request-action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           from-branch: ${{ steps.bump.outputs.bump_branch }}
-          to-branch: ${{ github.event.repository.default_branch }}
           repository-owner: autotwin
           repository: ${{ github.event.repository.name }}
+          to-branch: ${{ github.event.repository.default_branch }}

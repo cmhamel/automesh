@@ -1,11 +1,17 @@
 name: Python
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+env:
+    CARGO_TERM_COLOR: always
 on:
   pull_request:
     branches: main
   release:
     types: published
+permissions: {}
 jobs:
-  test:
+  Test:
     if: github.event_name != 'release'
     strategy:
       fail-fast: false
@@ -14,90 +20,96 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     runs-on: ${{ matrix.os }}
     steps:
-    - name: checkout
+    - name: Checkout
       uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
+    - name: Toolchain
+      uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
       with:
         components: clippy
-        default: true
         toolchain: stable
-    - uses: actions/setup-python@v5
+    - name: Python
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: clippy
+    - name: Clippy
       run: cargo clippy --features python -- -D warnings
-    - name: automesh
+    - name: Install
       run: pip install .[dev]
-    - name: pycodestyle
+    - name: Style
       run: pycodestyle --verbose .
-    - name: pytest
+    - name: Test
       run: pytest --verbose
-  source:
+  Source:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: Rust
-        uses: actions-rs/toolchain@v1
+      - name: Toolchain
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
         with:
-          default: true
           toolchain: stable
-      - name: python
+      - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.13
-      - name: requirements
+      - name: Dependencies
         run: pip install build maturin twine
-      - name: source
+      - name: Source
         run: python -m build . --sdist
-      - name: check
+      - name: Check
         run: twine check dist/*
-      - uses: actions/upload-artifact@v4
+      - name: Dist
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
-  wheel:
+  Wheel:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Toolchain
+      uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
       with:
-        default: true
         toolchain: stable
-    - uses: actions/setup-python@v5
+    - name: Python
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: requirements
+    - name: Dependencies
       run: pip install build maturin twine
-    - name: foo
+    - name: Hack
       if: matrix.os == 'macos-latest'
       run: brew uninstall --ignore-dependencies xz
-    - name: wheel
+    - name: Wheel
       run: maturin build --release --features python
-    - name: check
+    - name: Check
       run: twine check target/wheels/*
-    - uses: actions/upload-artifact@v4
+    - name: Upload
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-${{ matrix.python-version }}-dist
         path: target/wheels
-  twine:
-    needs: [source, wheel]
+  Twine:
+    needs: [Source, Wheel]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/download-artifact@v4
-    - uses: actions/setup-python@v5
+    - name: Download
+      uses: actions/download-artifact@v4
+    - name: Python
+      uses: actions/setup-python@v5
       with:
         check-latest: true
         python-version: 3.13
-    - name: requirements
+    - name: Dependencies
       run: pip install twine
-    - name: wheels
+    - name: Wheels
       run: mv ./*-dist*/*.whl dist/
-    - name: upload
+    - name: Upload
       if: github.event_name == 'release'
       run: twine upload -u __token__ -p ${{ secrets.PYPI_TOKEN }} dist/*

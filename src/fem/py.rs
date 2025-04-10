@@ -151,6 +151,17 @@ impl TriangularFiniteElements {
             nodal_coordinates,
         }
     }
+    /// Constructs and returns a new hexahedral finite elements class from an Abaqus file.
+    #[staticmethod]
+    pub fn from_inp(file_path: &str) -> Result<Self, PyIntermediateError> {
+        let (element_blocks, element_node_connectivity, nodal_coordinates) =
+            finite_element_data_from_inp(file_path)?;
+        Ok(Self::from_data(
+            element_blocks,
+            element_node_connectivity,
+            nodal_coordinates.as_foo(),
+        ))
+    }
     /// Smooths the nodal coordinates according to the provided smoothing method.
     #[pyo3(signature = (method="Taubin", hierarchical=false, iterations=10, pass_band=0.1, scale=0.6307))]
     pub fn smooth(
@@ -186,5 +197,49 @@ impl TriangularFiniteElements {
         self.element_node_connectivity = finite_elements.element_node_connectivity;
         self.nodal_coordinates = finite_elements.nodal_coordinates.as_foo();
         Ok(())
+    }
+    /// Writes the finite elements data to a new Exodus file.
+    pub fn write_exo(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_to_exodus(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates.as_foo(),
+        )?)
+    }
+    /// Writes the finite elements data to a new Abaqus file.
+    pub fn write_inp(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_to_abaqus(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates.as_foo(),
+        )?)
+    }
+    /// Writes the finite elements data to a new Mesh file.
+    pub fn write_mesh(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_to_mesh(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates.as_foo(),
+        )?)
+    }
+    /// Writes the finite elements quality metrics to a new file.
+    pub fn write_metrics(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_metrics(
+            file_path,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates.as_foo(),
+        )?)
+    }
+    /// Writes the finite elements data to a new VTK file.
+    pub fn write_vtk(&self, file_path: &str) -> Result<(), PyIntermediateError> {
+        Ok(write_finite_elements_to_vtk(
+            file_path,
+            &self.element_blocks,
+            &self.element_node_connectivity,
+            &self.nodal_coordinates.as_foo(),
+        )?)
     }
 }

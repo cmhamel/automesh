@@ -1,50 +1,56 @@
 name: Book
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+env:
+  CARGO_TERM_COLOR: always
 on:
   pull_request:
     branches: main
   push:
     branches: main
-env:
-  CARGO_TERM_COLOR: always
+permissions: {}
 jobs:
-  mdbook:
+  Build:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - name: Toolchain
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
         with:
-          default: true
           toolchain: stable
-      - uses: actions/setup-python@v5
+      - name: Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.12
-      - name: cli
+          python-version: 3.13
+      - name: CLI
         run: cargo install --path .
-      - name: mdbook
+      - name: Install
         run: cargo install mdbook mdbook-cmdrun mdbook-katex
-      - name: rust
+      - name: Rust
         run: cargo build --release
-      - name: python
+      - name: Python
         run: pip install .
-      - name: test
+      - name: Test
         run: mdbook test --library-path target/release/deps/
-      - name: build
+      - name: Build
         run: mdbook build
-      - name: move
+      - name: Move
         run: mkdir -p _site/ && cp -r book/build/* _site/
-      - name: upload
+      - name: Upload
         uses: actions/upload-pages-artifact@v3
-  deploy:
+  Deploy:
     if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: mdbook
+    needs: Build
     permissions:
       id-token: write
       pages: write
     runs-on: ubuntu-latest
     steps:
-      - id: deployment
+      - name: Deployment
+        id: deployment
         uses: actions/deploy-pages@v4
