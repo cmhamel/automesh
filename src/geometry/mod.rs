@@ -1,5 +1,5 @@
 // generic stuff used in all prmitives
-use bbox;
+// use bbox;
 use enum_dispatch::enum_dispatch;
 use min_max::{max, min};
 use nalgebra::{self, Vector3};
@@ -7,9 +7,72 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 
 // some local types
-pub type BoundingBox = bbox::BoundingBox<f64>;
+// pub type BoundingBox = bbox::BoundingBox<f64>;
 pub type Point = nalgebra::Point3<f64>;
+pub type Matrix = nalgebra::Matrix3<f64>;
+pub type Vector = nalgebra::Vector3<f64>;
 // pub type Widths = nalgebra::Point3<f64>;
+
+pub struct BoundingBox {
+    min: [f64; 3],
+    max: [f64; 3]
+}
+
+impl BoundingBox {
+    pub fn new(min: [f64; 3], max: [f64; 3]) -> Self {
+        Self {
+            min: min,
+            max: max
+        }
+    }
+
+    pub fn corners(&self) -> [Vector; 8] {
+        let vec: [Vector; 8] = [
+            Vector::new(self.min[0], self.min[1], self.min[2]),
+            Vector::new(self.max[0], self.min[1], self.min[2]),
+            Vector::new(self.max[0], self.max[1], self.min[2]),
+            Vector::new(self.min[0], self.max[1], self.min[2]),
+            //
+            Vector::new(self.min[0], self.min[1], self.max[2]),
+            Vector::new(self.max[0], self.min[1], self.max[2]),
+            Vector::new(self.max[0], self.max[1], self.max[2]),
+            Vector::new(self.min[0], self.max[1], self.max[2])
+        ];
+        vec
+    }
+
+    pub fn intersect(&self, bb: BoundingBox) -> BoundingBox {
+        let bb_new = BoundingBox::new(
+            [
+                max(self.min[0], bb.min[0]),
+                max(self.min[1], bb.min[1]),
+                max(self.min[2], bb.min[2])
+            ],
+            [
+                min(self.max[0], bb.max[0]),
+                min(self.max[1], bb.max[1]),
+                min(self.max[2], bb.max[2])
+            ]
+        );
+        bb_new
+    }
+
+    pub fn union(&self, bb: BoundingBox) -> BoundingBox {
+        let bb_new = BoundingBox::new(
+            [
+                min(self.min[0], bb.min[0]),
+                min(self.min[1], bb.min[1]),
+                min(self.min[2], bb.min[2])
+            ],
+            [
+                max(self.max[0], bb.max[0]),
+                max(self.max[1], bb.max[1]),
+                max(self.max[2], bb.max[2])
+            ]
+        );
+        bb_new
+    }
+}
 
 /// enum of all currently supported primitives
 #[enum_dispatch(GeometricPrimitive)]
@@ -85,6 +148,44 @@ pub trait GeometricPrimitive {
         // let _ = voxels
         //     .iter()
         //     .map(|entry| writeln!(file, "{}", entry));
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AffineTransformation {
+    a: Matrix,
+    c: Vector,
+    primitive: Box<Primitive>
+}
+
+impl AffineTransformation {
+    pub fn new(
+        a: Matrix,
+        c: Vector,
+        primitive: Primitive
+    ) -> Self {
+        Self {
+            a: a,
+            // ainv: a.try_inverse().expect("Failed to invert rotation matrix"),
+            c: c,
+            primitive: Box::new(primitive)
+        }
+    }
+
+    pub fn transform(&self, x: &Vector) -> Vector {
+        // self.a.dot(x)
+        self.a * x + self.c
+    }
+
+    pub fn inverse_transform(&self) -> AffineTransformation {
+        // -self.ainv * x - self.c
+        let ainv = self.a.try_inverse().expect("Failed to invert rotation matrix");
+        let cinv = -ainv * self.c;
+        AffineTransformation {
+            a: ainv,
+            c: cinv,
+            primitive: self.primitive.clone()
+        }
     }
 }
 
@@ -301,6 +402,7 @@ impl GeometricPrimitive for Torus {
         // julia implementation below...
         // can't quite get this to work since rust is so 
         // unreadable for numerical stuff...
+        // it's almost correct.
         // a, c = g.a, g.c
         // return sqrt((c - sqrt(v[1]^2 + v[2]^2))^2 + v[3]^2) - a^2
         // let (a, c) = self.a, self.c;

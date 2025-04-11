@@ -194,11 +194,11 @@ mod test_complicated {
 
     #[test]
     fn test_write_spn() {
-        // let s1 = Sphere::new(1.);
-        // let s2 = Sphere::new(2.);
-        // let s3 = translate(Primitive::Sphere(s2), 1., 1., 0.);
-        // let g = Union::new(Primitive::Sphere(s1), s3);
-        let g = Torus::new(1., 2.5);
-        g.to_spn("test_complicated.spn", 50, 50, 50);
+        let s1 = Sphere::new(1.);
+        let s2 = Sphere::new(1.5);
+        let s3 = translate(Primitive::Sphere(s2), 1., 1., 0.);
+        let g = Union::new(Primitive::Sphere(s1), s3);
+        // let g = Torus::new(1., 2.5);
+        g.to_spn("test_complicated.spn", 250, 250, 250);
     }
 }
