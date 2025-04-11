@@ -13,6 +13,7 @@
 mod py;
 
 mod fem;
+mod geometry;
 mod tessellation;
 mod tree;
 mod voxel;
@@ -20,6 +21,15 @@ mod voxel;
 pub use fem::{
     Blocks, Connectivity, FiniteElementMethods, FiniteElementSpecifics, FiniteElements,
     HexahedralFiniteElements, Smoothing, TriangularFiniteElements,
+};
+pub use geometry::{
+    GeometricPrimitive, Primitive,
+    //
+    Difference, Intersection, Union,
+    //
+    Rotation, Translation, rotate, translate,
+    //
+    Sphere, Torus
 };
 pub use tessellation::Tessellation;
 pub use tree::{IntoFiniteElements, Octree, Tree};
